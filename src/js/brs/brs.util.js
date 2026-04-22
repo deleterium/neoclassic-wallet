@@ -2,7 +2,7 @@
  * @depends {brs.js}
  */
 
-/* global BigInteger Clipboard */
+/* global BigInteger */
 
 import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
@@ -558,7 +558,7 @@ function getClipboardText (type) {
 }
 
 export function setupClipboardFunctionality () {
-    const $el = $('#asset_id_dropdown .dropdown-menu a, #account_id, #account_id_sidebar li a')
+    const $el = $('.copy_link')
 
     if (BRS.inApp) {
         $el.on('click', function () {
@@ -570,25 +570,20 @@ export function setupClipboardFunctionality () {
             $.notify($.t('success_clipboard_copy'), { type: 'success' })
         })
     } else {
-        const clipboard = new Clipboard('.copy_link', {
-            text: function (trigger) {
-                return getClipboardText(trigger.getAttribute('data-type'))
-            }
-        })
+        // Handle click events directly
+        $el.on('click', function (e) {
+            const text = getClipboardText($(this).data('type'))
 
-        if ($el.hasClass('dropdown-toggle')) {
-            $el.removeClass('dropdown-toggle').data('toggle', '')
-            $el.parent().remove('.sbdropdown-menu')
-        }
-
-        clipboard.on('success', function (e) {
-            $.notify($.t('success_clipboard_copy'), { type: 'success' })
-        })
-
-        clipboard.on('error', function (e) {
-            $('#asset_id_dropdown .dropdown-menu').remove()
-            $('#asset_id').data('toggle', '')
-            $.notify($.t('error_clipboard_copy'), { type: 'danger' })
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    $.notify($.t('success_clipboard_copy'), { type: 'success' })
+                })
+                .catch(err => {
+                    $('#asset_id_dropdown .dropdown-menu').remove()
+                    $('#asset_id').data('toggle', '')
+                    $.notify($.t('error_clipboard_copy'), { type: 'danger' })
+                    console.error('Failed to copy: ', err)
+                })
         })
     }
 }

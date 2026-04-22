@@ -8,7 +8,6 @@ File               Date   SHA384
 ajaxmultiqueue.js  180225 z4oBihrMyAEYUPZWuSscFRjhJsg8Xh5BjNf6W5eq34YtZ9yFeGLXABTJR7VabVTG
 ajaxretry.js       180203 ia90j7KZ3lHwnJ/jSofQNFuwwtGrcTHwjd9+SY8Ls7EFiyx+vFfXvURO9fW0odQj
 bootstrap.min.js   180219 Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa
-clipboard.js       180203 E8q4FF0C3cBKqHxayVjOHWaPICaSEqWybiuRAkkxVrUO21syLamc+aHtgFVYTbe2
 notify.min.js      180219 Qnyy4lkYCL9J8NhIWAT7bMPccirUwfiBj7PLqr1ZBlSSJ0+A2XDB0UlqZcg+0VGS
 jsbn2.js           180203 cdUKnzFHcY4XFVKjQDizxT8KsIxm4/QP09T/OPUzPwG3qjx/GjU+IEB5ZZK/tua6
 jsbn.js            180203 Ru0ghEmPwQkXCUzH0MnI4ENe1VOnfhKMYBlQlBxFTTZWoD2FXeZGgxMExPBuP0iL

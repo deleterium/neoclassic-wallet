@@ -4,7 +4,6 @@
  * @depends {3rdparty/jsbn2.js}
  * @depends {3rdparty/webdb.js}
  * @depends {3rdparty/notify.min.js}
- * @depends {3rdparty/clipboard.js}
  * @depends {crypto/passphrasegenerator.js}
  * @depends {crypto/3rdparty/aes.js}
  * @depends {crypto/3rdparty/seedrandom.js}
