@@ -1241,87 +1241,51 @@ export function evAssetExchangeSidebarContextClick (e) {
 
     closeContextMenu()
 
+    const asset = BRS.assets.find(tkn => tkn.asset === assetId)
+    if (!asset) {
+        console.log('OPA!')
+        return
+    }
+
     if (option === 'add_to_group') {
         $('#asset_exchange_group_asset').val(assetId)
+        $('#asset_exchange_group_title').html(String(asset.name).escapeHTML())
 
-        dbGet('assets', {
-            asset: assetId
-        }, function (error, asset) {
-            if (error) {
-                return
-            }
+        const groupNames = [...new Set(BRS.assets
+            .filter(tkn => tkn.groupName)
+            .map(tkn => tkn.groupName))]
+        groupNames.sort((a, b) => a.localeCompare(b))
 
-            $('#asset_exchange_group_title').html(String(asset.name).escapeHTML())
+        const groupSelect = $('#asset_exchange_group_group')
+        groupSelect.empty()
 
-            dbGet('assets', function (error, assets) {
-                if (error) {
-                    return
-                }
-
-                const groupNames = []
-
-                $.each(assets, function (index, asset) {
-                    if (asset.groupName && $.inArray(asset.groupName, groupNames) === -1) {
-                        groupNames.push(asset.groupName)
-                    }
-                })
-
-                groupNames.sort(function (a, b) {
-                    if (a.toLowerCase() > b.toLowerCase()) {
-                        return 1
-                    } else if (a.toLowerCase() < b.toLowerCase()) {
-                        return -1
-                    } else {
-                        return 0
-                    }
-                })
-
-                const groupSelect = $('#asset_exchange_group_group')
-
-                groupSelect.empty()
-
-                $.each(groupNames, function (index, groupName) {
-                    groupSelect.append("<option value='" + groupName.escapeHTML() + "'" + (asset.groupName && asset.groupName === groupName ? " selected='selected'" : '') + '>' + groupName.escapeHTML() + '</option>')
-                })
-
-                groupSelect.append("<option value='0'" + (!asset.groupName ? " selected='selected'" : '') + '></option>')
-                groupSelect.append(`<option value='-1'>${$.t('new_group')}</option>`)
-
-                $('#asset_exchange_group_modal').modal('show')
-            })
+        groupNames.forEach(groupName => {
+            groupSelect.append(`<option value='${groupName.escapeHTML()}' ${asset.groupName === groupName ? " selected='selected'" : ''}>${groupName.escapeHTML()}</option>`)
         })
+
+        groupSelect.append("<option value='0'" + (!asset.groupName ? " selected='selected'" : '') + '></option>')
+        groupSelect.append(`<option value='-1'>${$.t('new_group')}</option>`)
+
+        $('#asset_exchange_group_modal').modal('show')
     } else if (option === 'remove_from_group') {
-        dbPut('assets', {
-            asset: assetId,
-            groupName: ''
-        }, function (error, item) {
-            if (error) return
-            const foundAsset = BRS.assets.find((tkn) => tkn.asset === item.asset)
-            if (foundAsset) {
-                foundAsset.groupName = ''
-            }
-            setTimeout(function () {
-                reloadCurrentPage()
-                $.notify($.t('success_asset_group_removal'), { type: 'success' })
-            }, 50)
-        })
-    } else if (option === 'remove_from_bookmarks') {
-        dbPut('assets', {
-            asset: assetId,
-            bookmarked: false
-        }, function (error, affected) {
+        asset.groupName = ''
+        dbPut('assets', asset, function (error) {
             if (error) {
                 $.notify($.t('error_save_db'), { type: 'danger' })
                 return
             }
-            const foundAsset = BRS.assets.find((tkn) => tkn.asset === affected.asset)
-            if (foundAsset) {
-                foundAsset.bookmarked = false
+            loadAssetExchangeSidebar()
+            $.notify($.t('success_asset_group_removal'), { type: 'success' })
+        })
+    } else if (option === 'remove_from_bookmarks') {
+        asset.bookmarked = false
+        dbPut('assets', asset, function (error) {
+            if (error) {
+                $.notify($.t('error_save_db'), { type: 'danger' })
+                return
             }
-            setTimeout(function () {
-                reloadCurrentPage()
-                $.notify($.t('success_asset_bookmark_removal'), { type: 'success' })
-            }, 50)
+            loadAssetExchangeSidebar()
+            $.notify($.t('success_asset_bookmark_removal'), { type: 'success' })
         })
     }
 }
@@ -1346,7 +1310,8 @@ export function formsAssetExchangeGroup () {
             foundAsset.groupName = groupName
         }
         setTimeout(function () {
-            reloadCurrentPage()
+            loadAssetExchangeSidebar()
+            // reloadCurrentPage()
             if (!groupName) {
                 $.notify($.t('success_asset_group_removal'), { type: 'success' })
             } else {
