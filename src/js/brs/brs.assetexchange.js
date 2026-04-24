@@ -17,8 +17,8 @@ import {
 } from './brs.server'
 
 import {
-    select,
-    insert,
+    dbGet,
+    dbPut,
     update
 } from './brs.database'
 
@@ -60,7 +60,7 @@ export function loadCachedAssets () {
         return
     }
     BRS.assets = []
-    select('assets', function (error, assets) {
+    dbGet('assets', function (error, assets) {
         // select already bookmarked assets
         if (error === null) {
             assets.forEach(asset => cacheAsset(asset))
@@ -79,7 +79,7 @@ export function saveCachedAssets () {
     }
     const assetsToInsert = []
     const assetsToUpdate = []
-    select('assets', function (error, dbAssets) {
+    dbGet('assets', function (error, dbAssets) {
         // select already bookmarked assets
         if (error) {
             notifyErrorSaveAsset()
@@ -104,8 +104,9 @@ export function saveCachedAssets () {
                 assetsToInsert.push(cachedAsset)
             }
         }
+        // TODO (simplify!)
         for (const eachAsset of assetsToInsert) {
-            insert('assets', [eachAsset], function (error) {
+            dbPut('assets', [eachAsset], function (error) {
                 if (error) {
                     notifyErrorSaveAsset()
                 }
@@ -301,7 +302,7 @@ export function saveAssetBookmarks (assets, callback) {
         }
     }
     if (BRS.databaseSupport) {
-        insert('assets', newAssets)
+        dbPut('assets', newAssets)
     }
     if (callback) {
         callback(newAssets, assets)
@@ -1235,7 +1236,7 @@ export function formsAssetExchangeChangeGroupName () {
             itemsToUpdate.push({ asset: asset.asset, groupName: newGroupName })
         }
     })
-    insert('assets', itemsToUpdate, function (error) {
+    dbPut('assets', itemsToUpdate, function (error) {
         if (error) {
             $.notify($.t('error_save_db'), { type: 'danger' })
             return
@@ -1261,7 +1262,7 @@ export function evAssetExchangeSidebarContextClick (e) {
     if (option === 'add_to_group') {
         $('#asset_exchange_group_asset').val(assetId)
 
-        select('assets', {
+        dbGet('assets', {
             asset: assetId
         }, function (error, asset) {
             if (error) {
@@ -1270,7 +1271,7 @@ export function evAssetExchangeSidebarContextClick (e) {
 
             $('#asset_exchange_group_title').html(String(asset.name).escapeHTML())
 
-            select('assets', function (error, assets) {
+            dbGet('assets', function (error, assets) {
                 if (error) {
                     return
                 }

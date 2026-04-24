@@ -16,8 +16,8 @@ import {
 } from './brs.util'
 
 import {
-    select,
-    insert,
+    dbGet,
+    dbPut,
     update,
     deleteRecord
 } from './brs.database'
@@ -42,7 +42,7 @@ export function pagesContacts () {
     $('#contacts_table_container').show()
     $('#contact_page_database_error').hide()
 
-    select('contacts', function (error, contacts) {
+    dbGet('contacts', function (error, contacts) {
         let rows = ''
         if (error || !contacts) {
             dataLoaded(rows)
@@ -164,7 +164,7 @@ function addContactToDatabase (data) {
         $.notify($.t('success_contact_add') + ' ' + $.t('contacts_no_db_warning'), { type: 'warning' })
         return
     }
-    insert('contacts', record, function (error) {
+    dbPut('contacts', record, function (error) {
         if (error) {
             $.notify($.t('error_save_db'))
             return
@@ -186,7 +186,7 @@ export function evUpdateContactModalOnShowBsModal (e) {
         const dbQuery = {}
         dbQuery[dbKey] = accountId
 
-        select('contacts', [dbQuery], function (error, contact) {
+        dbGet('contacts', [dbQuery], function (error, contact) {
             if (error) {
                 return
             }
@@ -201,7 +201,7 @@ export function evUpdateContactModalOnShowBsModal (e) {
     } else {
         $('#update_contact_id').val(contactId)
 
-        select('contacts', {
+        dbGet('contacts', {
             id: contactId
         }, function (error, contact) {
             if (error) {
@@ -259,7 +259,7 @@ function updateContactToDatabase (data) {
         description: data.description
     }
 
-    select('contacts', [{
+    dbGet('contacts', [{
         account: data.account
     }], function (error, contacts) {
         if (error ||
@@ -292,7 +292,7 @@ export function evDeleteContactModalOnShowBsModal (e) {
 
     $('#delete_contact_id').val(contactId)
 
-    select('contacts', {
+    dbGet('contacts', {
         id: contactId
     }, function (error, contact) {
         if (error) {
@@ -378,7 +378,7 @@ export function importContacts (imported_contacts) {
         return
     }
 
-    insert('contacts', Object.values(imported_contacts), function (error, items) {
+    dbPut('contacts', Object.values(imported_contacts), function (error, items) {
         if (error) {
             $.notify($.t('error_save_db'), { type: 'danger' })
         }

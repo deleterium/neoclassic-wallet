@@ -72,16 +72,16 @@ import {
 
 import {
     createDatabase,
-    select,
+    dbGet,
     update,
-    insert
+    dbPut
 } from './brs.database'
 
 import { BRS } from '.'
 
 // TODO Helper functions for data loading (Move to settings.js)
 function loadContacts () {
-    select('contacts', function (error, items) {
+    dbGet('contacts', function (error, items) {
         if (error) return
         items.forEach(contact => {
             BRS.contacts[contact.accountRS] = contact
@@ -90,7 +90,7 @@ function loadContacts () {
 }
 
 function loadClosedGroups () {
-    select('data', { id: 'closed_groups' }, function (error, result) {
+    dbGet('data', { id: 'closed_groups' }, function (error, result) {
         BRS.closedGroups = []
         if (error) {
             console.error('Error loading closed groups:', error)
@@ -99,7 +99,7 @@ function loadClosedGroups () {
 
         // If no data exists, insert a default record
         if (!result) {
-            insert('data', { id: 'closed_groups', contents: '' }, function (error) {
+            dbPut('data', { id: 'closed_groups', contents: '' }, function (error) {
                 if (error) console.error('Error initializing closed groups:', error)
             })
             return
@@ -522,7 +522,7 @@ export function getAccountInfo (firstRun, callback) {
             const showAssetDifference = (!BRS.downloadingBlockchain || (BRS.blocks.length > 0 && BRS.state && BRS.state.time - BRS.blocks[0].timestamp < 60 * 60 * 24 * 7))
 
             if (BRS.databaseSupport) {
-                select('data', {
+                dbGet('data', {
                     id: 'asset_balances_' + BRS.account
                 }, function (_error, asset_balance) {
                     if (asset_balance) {
@@ -550,7 +550,7 @@ export function getAccountInfo (firstRun, callback) {
                             }
                         }
                     } else {
-                        insert('data', {
+                        dbPut('data', {
                             id: 'asset_balances_' + BRS.account,
                             contents: JSON.stringify(BRS.accountInfo.assetBalances)
                         })

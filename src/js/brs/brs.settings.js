@@ -8,7 +8,7 @@ import { pageLoaded } from './brs'
 
 import { submitForm } from './brs.forms'
 
-import { select, insert, update } from './brs.database'
+import { dbGet, dbPut, update } from './brs.database'
 
 import {
     convertToNXT
@@ -30,13 +30,13 @@ export function pagesSettings () {
 
 export function getSettings () {
     if (BRS.databaseSupport) {
-        select('data', {
+        dbGet('data', {
             id: 'settings'
         }, function (_error, result) {
             if (result) {
                 BRS.settings = $.extend({}, BRS.defaultSettings, JSON.parse(result.contents))
             } else {
-                insert('data', {
+                dbPut('data', {
                     id: 'settings',
                     contents: JSON.stringify(BRS.defaultSettings)
                 })

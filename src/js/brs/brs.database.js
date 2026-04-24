@@ -42,7 +42,7 @@ export function createDatabase (callback) {
 }
 
 /**
- * SELECT operation - Retrieve data from a store
+ * GET operation - Retrieve data from a store
  * @param {string} storeName - Name of the object store (table)
  * @param {object|function} query - Either:
  *   - An object containing the primary key to search for, or
@@ -58,7 +58,7 @@ export function createDatabase (callback) {
  * When no query is provided (callback as second parameter), the callback's `result` will be:
  * - An array of all objects in the store
  */
-export function select (storeName, query, callback) {
+export function dbGet (storeName, query, callback) {
     if (typeof query === 'function') {
         callback = query
         query = null
@@ -83,9 +83,9 @@ export function select (storeName, query, callback) {
 }
 
 /**
- * INSERT operation - Add data to a store
+ * PUT operation - Add data to a store
  * @param {string} storeName - Name of the object store (table)
- * @param {object|Array} data - Data to insert:
+ * @param {object|Array} data - Data to insert/update:
  *   - A single object, or
  *   - An array of objects
  * @param {function} callback - Callback function(error, result)
@@ -98,7 +98,7 @@ export function select (storeName, query, callback) {
  * When an array of objects is provided as `data`, the callback's `result` will be:
  * - An array containing all inserted objects with their generated keys
  */
-export function insert (storeName, data, callback) {
+export function dbPut (storeName, data, callback) {
     const transaction = BRS.database.transaction(storeName, 'readwrite')
     const store = transaction.objectStore(storeName)
     const isArrayInput = Array.isArray(data)
@@ -141,7 +141,7 @@ export function insert (storeName, data, callback) {
  */
 export function update (storeName, data, key, callback) {
     // IndexedDB uses put for both insert and update
-    return insert(storeName, [{ ...data, ...key }], callback)
+    return dbPut(storeName, [{ ...data, ...key }], callback)
 }
 
 /**
