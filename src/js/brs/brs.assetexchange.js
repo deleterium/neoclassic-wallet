@@ -17,6 +17,12 @@ import {
 } from './brs.server'
 
 import {
+    select,
+    insert,
+    update
+} from './brs.database'
+
+import {
     formatOrderPricePerWholeQNT,
     calculateOrderPricePerWholeQNT,
     calculatePricePerWholeQNT,
@@ -54,7 +60,7 @@ export function loadCachedAssets () {
         return
     }
     BRS.assets = []
-    BRS.database.select('assets', null, function (error, assets) {
+    select('assets', function (error, assets) {
         // select already bookmarked assets
         if (error === null) {
             assets.forEach(asset => cacheAsset(asset))
@@ -73,7 +79,7 @@ export function saveCachedAssets () {
     }
     const assetsToInsert = []
     const assetsToUpdate = []
-    BRS.database.select('assets', null, function (error, dbAssets) {
+    select('assets', function (error, dbAssets) {
         // select already bookmarked assets
         if (error) {
             notifyErrorSaveAsset()
@@ -99,16 +105,16 @@ export function saveCachedAssets () {
             }
         }
         for (const eachAsset of assetsToInsert) {
-            BRS.database.insert('assets', [eachAsset], function (error) {
+            insert('assets', [eachAsset], function (error) {
                 if (error) {
                     notifyErrorSaveAsset()
                 }
             })
         }
         for (const eachAsset of assetsToUpdate) {
-            BRS.database.update('assets', eachAsset, [{
+            update('assets', eachAsset, {
                 asset: eachAsset.asset
-            }], function (error) {
+            }, function (error) {
                 if (error) {
                     notifyErrorSaveAsset()
                 }
@@ -281,50 +287,22 @@ export function saveAssetBookmarks (assets, callback) {
     const newAssets = []
 
     for (const asset of assets) {
-        const newAsset = {
-            asset: String(asset.asset),
-            name: String(asset.name),
-            description: String(asset.description),
-            account: String(asset.account),
-            accountRS: String(asset.accountRS),
-            quantityQNT: String(asset.quantityQNT),
-            quantityCirculatingQNT: String(asset.quantityCirculatingQNT),
-            decimals: parseInt(asset.decimals, 10),
-            groupName: '',
-            bookmarked: true
-        }
-
-        newAssets.push(newAsset)
-
         const foundAsset = BRS.assets.find(Obj => Obj.asset === asset.asset)
         if (foundAsset) {
-            if (foundAsset.bookmarked === true) {
-                // asset already bookmarked
-                newAssets.pop()
-            } else {
+            if (foundAsset.bookmarked === false) {
                 foundAsset.bookmarked = true
+                newAssets.push(foundAsset)
             }
         } else {
-            BRS.assets.push(newAsset)
+            // never?
+            asset.bookmarked = true
+            BRS.assets.push(asset)
+            newAssets.push(asset)
         }
-        if (BRS.databaseSupport) {
-            BRS.database.select('assets', [{ asset: newAsset.asset }], function (error, assets) {
-                if (error !== null) {
-                    return
-                }
-                if (assets.length === 0) {
-                    BRS.database.insert('assets', [newAsset], null)
-                } else {
-                    BRS.database.update('assets', {
-                        bookmarked: true
-                    }, [{
-                        asset: newAsset.asset
-                    }], null)
-                }
-            })
-        }
-    };
-
+    }
+    if (BRS.databaseSupport) {
+        insert('assets', newAssets)
+    }
     if (callback) {
         callback(newAssets, assets)
     }
@@ -536,11 +514,11 @@ export function evAssetExchangeSidebarClick (e, data) {
                 $links.hide()
             }
 
-            BRS.database.update('data', {
+            update('data', {
                 contents: BRS.closedGroups.join('#')
-            }, [{
+            }, {
                 id: 'closed_groups'
-            }])
+            })
         }
         return
     }
@@ -1249,15 +1227,21 @@ export function formsAssetExchangeChangeGroupName () {
         }
     }
 
-    BRS.database.update('assets', {
-        groupName: newGroupName
-    }, [{
-        groupName: oldGroupName
-    }], function () {
-        setTimeout(function () {
-            reloadCurrentPage()
-            $.notify($.t('success_group_name_update'), { type: 'success' })
-        }, 50)
+    const itemsToUpdate = []
+    BRS.assets.forEach(asset => {
+        if (!asset.bookmarked) return
+        if (asset.groupName === oldGroupName) {
+            asset.groupName = newGroupName
+            itemsToUpdate.push({ asset: asset.asset, groupName: newGroupName })
+        }
+    })
+    insert('assets', itemsToUpdate, function (error) {
+        if (error) {
+            $.notify($.t('error_save_db'), { type: 'danger' })
+            return
+        }
+        reloadCurrentPage()
+        $.notify($.t('success_group_name_update'), { type: 'success' })
     })
 
     return {
@@ -1277,17 +1261,16 @@ export function evAssetExchangeSidebarContextClick (e) {
     if (option === 'add_to_group') {
         $('#asset_exchange_group_asset').val(assetId)
 
-        BRS.database.select('assets', [{
+        select('assets', {
             asset: assetId
-        }], function (error, asset) {
+        }, function (error, asset) {
             if (error) {
                 return
             }
-            asset = asset[0]
 
             $('#asset_exchange_group_title').html(String(asset.name).escapeHTML())
 
-            BRS.database.select('assets', [], function (error, assets) {
+            select('assets', function (error, assets) {
                 if (error) {
                     return
                 }
@@ -1329,11 +1312,11 @@ export function evAssetExchangeSidebarContextClick (e) {
         if (foundAsset) {
             foundAsset.groupName = ''
         }
-        BRS.database.update('assets', {
+        update('assets', {
             groupName: ''
-        }, [{
+        }, {
             asset: assetId
-        }], function () {
+        }, function () {
             setTimeout(function () {
                 reloadCurrentPage()
                 $.notify($.t('success_asset_group_removal'), { type: 'success' })
@@ -1344,11 +1327,11 @@ export function evAssetExchangeSidebarContextClick (e) {
         if (foundAsset) {
             foundAsset.bookmarked = false
         }
-        BRS.database.update('assets', {
+        update('assets', {
             bookmarked: false
-        }, [{
+        }, {
             asset: assetId
-        }], function (error, affected) {
+        }, function (error, affected) {
             if (error) {
                 $.notify($.t('error_save_db'), { type: 'danger' })
             }
@@ -1375,11 +1358,11 @@ export function formsAssetExchangeGroup () {
         foundAsset.groupName = groupName
     }
 
-    BRS.database.update('assets', {
+    update('assets', {
         groupName
-    }, [{
+    }, {
         asset: assetId
-    }], function () {
+    }, function () {
         setTimeout(function () {
             reloadCurrentPage()
             if (!groupName) {

@@ -15,6 +15,13 @@ import {
     dataLoaded
 } from './brs.util'
 
+import {
+    select,
+    insert,
+    update,
+    deleteRecord
+} from './brs.database'
+
 export function getContactByName (nameToFind) {
     for (const accountId in BRS.contacts) {
         if (BRS.contacts[accountId].name === nameToFind) {
@@ -35,7 +42,7 @@ export function pagesContacts () {
     $('#contacts_table_container').show()
     $('#contact_page_database_error').hide()
 
-    BRS.database.select('contacts', null, function (error, contacts) {
+    select('contacts', function (error, contacts) {
         let rows = ''
         if (error || !contacts) {
             dataLoaded(rows)
@@ -157,7 +164,7 @@ function addContactToDatabase (data) {
         $.notify($.t('success_contact_add') + ' ' + $.t('contacts_no_db_warning'), { type: 'warning' })
         return
     }
-    BRS.database.insert('contacts', record, function (error) {
+    insert('contacts', record, function (error) {
         if (error) {
             $.notify($.t('error_save_db'))
             return
@@ -179,7 +186,7 @@ export function evUpdateContactModalOnShowBsModal (e) {
         const dbQuery = {}
         dbQuery[dbKey] = accountId
 
-        BRS.database.select('contacts', [dbQuery], function (error, contact) {
+        select('contacts', [dbQuery], function (error, contact) {
             if (error) {
                 return
             }
@@ -194,13 +201,12 @@ export function evUpdateContactModalOnShowBsModal (e) {
     } else {
         $('#update_contact_id').val(contactId)
 
-        BRS.database.select('contacts', [{
+        select('contacts', {
             id: contactId
-        }], function (error, contact) {
+        }, function (error, contact) {
             if (error) {
                 return
             }
-            contact = contact[0]
             $('#update_contact_name').val(contact.name)
             $('#update_contact_email').val(contact.email)
             $('#update_contact_account_id').val(contact.accountRS)
@@ -253,7 +259,7 @@ function updateContactToDatabase (data) {
         description: data.description
     }
 
-    BRS.database.select('contacts', [{
+    select('contacts', [{
         account: data.account
     }], function (error, contacts) {
         if (error ||
@@ -261,15 +267,15 @@ function updateContactToDatabase (data) {
             $.notify($.t('error_save_db'))
             return
         }
-        BRS.database.update('contacts', {
+        update('contacts', {
             name: data.name,
             email: data.email,
             account: data.account,
             accountRS: data.account_rs,
             description: data.description
-        }, [{
+        }, {
             id: Number(data.contact_id)
-        }], function (error) {
+        }, function (error) {
             if (error || (contacts.length && data.account !== contacts[0].account)) {
                 $.notify($.t('error_save_db'))
                 return
@@ -286,13 +292,12 @@ export function evDeleteContactModalOnShowBsModal (e) {
 
     $('#delete_contact_id').val(contactId)
 
-    BRS.database.select('contacts', [{
+    select('contacts', {
         id: contactId
-    }], function (error, contact) {
+    }, function (error, contact) {
         if (error) {
             return
         }
-        contact = contact[0]
 
         $('#delete_contact_name').html(contact.name.escapeHTML())
         $('#delete_contact_account_rs').html(contact.accountRS)
@@ -305,7 +310,7 @@ export function formsDeleteContact () {
     const id = parseInt($('#delete_contact_id').val(), 10)
     const accountRs = $('#delete_contact_account_rs').val()
 
-    BRS.database.delete('contacts', [{
+    deleteRecord('contacts', [{
         id
     }], function () {
         delete BRS.contacts[accountRs]
@@ -329,60 +334,60 @@ export function exportContacts () {
     }
 }
 
+/**
+ * Validates an incoming JSON object to ensure it has the required structure.
+ * @param {Object} jsonObj - The JSON object to validate.
+ * @returns {boolean} Returns `true` if the object is valid, otherwise `false`.
+ */
+function isValidImport (jsonObj) {
+    if (typeof jsonObj !== 'object' || jsonObj === null) {
+        return false
+    }
+    for (const key in jsonObj) {
+        if (!BRS.rsRegEx.test(key)) {
+            return false
+        }
+        const item = jsonObj[key]
+        if (typeof item !== 'object' || item === null) {
+            return false
+        }
+        // Check that all fields are present (even if empty)
+        const requiredFields = ['name', 'email', 'account', 'accountRS', 'description']
+        for (const field of requiredFields) {
+            if (!(field in item)) {
+                return false
+            }
+        }
+        if (!item.name || !item.account || !item.accountRS) {
+            return false
+        }
+        if (key !== item.accountRS) {
+            return false
+        }
+    }
+    return true
+}
+
 export function importContacts (imported_contacts) {
     console.log('Import contacts called')
     console.log(imported_contacts)
 
-    $.each(imported_contacts, function (index, imported_contact) {
-        console.log('Importing contact ' + imported_contact.name)
+    if (!isValidImport(imported_contacts)) {
+        // TODO TRANSLATION
+        $.notify("File does not match 'contacts' requirements.", { type: 'danger' })
+        return
+    }
 
-        BRS.database.select('contacts', [{
-            account: imported_contact.account
-        }, {
-            name: imported_contact.name
-        }], function (_error, contacts) {
-            if (contacts && contacts.length) {
-                if (contacts[0].name === imported_contact.name) {
-                    $.notify($.t('error_contact_name_exists'), { type: 'danger' })
-                    console.log('Error, contact already exists with same name:' + imported_contact.name)
-                } else {
-                    $.notify($.t('error_contact_account_id_exists'), { type: 'danger' })
-                    console.log('Error, contact already exists with same account ID:' + imported_contact.account)
-                }
-            } else {
-                BRS.database.insert('contacts', {
-                    name: imported_contact.name,
-                    email: imported_contact.email,
-                    account: imported_contact.account,
-                    accountRS: imported_contact.accountRS,
-                    description: imported_contact.description
-                }, function (error) {
-                    if (error) {
-                        $.notify($.t('error_save_db'), { type: 'danger' })
-                    }
-                    BRS.contacts[imported_contact.account] = {
-                        name: imported_contact.name,
-                        email: imported_contact.email,
-                        account: imported_contact.account,
-                        accountRS: imported_contact.accountRS,
-                        description: imported_contact.description
-                    }
-
-                    setTimeout(function () {
-                        $.notify($.t('success_contact_add'), { type: 'success' })
-
-                        if (BRS.currentPage === 'contacts') {
-                            reloadCurrentPage()
-                        } else if (BRS.currentPage === 'messages' && BRS.selectedContext) {
-                            const heading = BRS.selectedContext.find('h4.list-group-item-heading')
-                            if (heading.length) {
-                                heading.html(imported_contact.name.escapeHTML())
-                            }
-                            BRS.selectedContext.data('context', 'messages_sidebar_update_context')
-                        }
-                    }, 50)
-                })
-            }
+    insert('contacts', Object.values(imported_contacts), function (error, items) {
+        if (error) {
+            $.notify($.t('error_save_db'), { type: 'danger' })
+        }
+        items.forEach(item => {
+            BRS.contacts[item.accountRS] = item
         })
+        $.notify($.t('success_contact_add'), { type: 'success' })
+        if (BRS.currentPage === 'contacts') {
+            reloadCurrentPage()
+        }
     })
 }

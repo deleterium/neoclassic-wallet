@@ -8,6 +8,8 @@ import { pageLoaded } from './brs'
 
 import { submitForm } from './brs.forms'
 
+import { select, insert, update } from './brs.database'
+
 import {
     convertToNXT
 } from './brs.util'
@@ -28,15 +30,15 @@ export function pagesSettings () {
 
 export function getSettings () {
     if (BRS.databaseSupport) {
-        BRS.database.select('data', [{
+        select('data', {
             id: 'settings'
-        }], function (_error, result) {
-            if (result && result.length) {
-                BRS.settings = $.extend({}, BRS.defaultSettings, JSON.parse(result[0].contents))
+        }, function (_error, result) {
+            if (result) {
+                BRS.settings = $.extend({}, BRS.defaultSettings, JSON.parse(result.contents))
             } else {
-                BRS.database.insert('data', {
+                insert('data', {
                     id: 'settings',
-                    contents: '{}'
+                    contents: JSON.stringify(BRS.defaultSettings)
                 })
                 BRS.settings = BRS.defaultSettings
             }
@@ -128,11 +130,11 @@ export function updateSettings (key, value) {
     }
 
     if (BRS.databaseSupport) {
-        BRS.database.update('data', {
+        update('data', {
             contents: JSON.stringify(BRS.settings)
-        }, [{
+        }, {
             id: 'settings'
-        }])
+        })
     }
 
     applySettings(key)

@@ -2,7 +2,6 @@
  * @depends {3rdparty/bootstrap.min.js}
  * @depends {3rdparty/jsbn.js}
  * @depends {3rdparty/jsbn2.js}
- * @depends {3rdparty/webdb.js}
  * @depends {3rdparty/notify.min.js}
  * @depends {crypto/passphrasegenerator.js}
  * @depends {crypto/3rdparty/aes.js}
@@ -10,7 +9,7 @@
  * @depends {util/extensions.js}
  */
 
-/* global WebDB BigInteger */
+/* global BigInteger */
 
 import hashicon from 'hashicon'
 
@@ -71,7 +70,44 @@ import {
     showTransactionModal
 } from './brs.modals.transaction'
 
+import {
+    createDatabase,
+    select,
+    update,
+    insert
+} from './brs.database'
+
 import { BRS } from '.'
+
+// TODO Helper functions for data loading (Move to settings.js)
+function loadContacts () {
+    select('contacts', function (error, items) {
+        if (error) return
+        items.forEach(contact => {
+            BRS.contacts[contact.accountRS] = contact
+        })
+    })
+}
+
+function loadClosedGroups () {
+    select('data', { id: 'closed_groups' }, function (error, result) {
+        BRS.closedGroups = []
+        if (error) {
+            console.error('Error loading closed groups:', error)
+            return
+        }
+
+        // If no data exists, insert a default record
+        if (!result) {
+            insert('data', { id: 'closed_groups', contents: '' }, function (error) {
+                if (error) console.error('Error initializing closed groups:', error)
+            })
+            return
+        }
+
+        BRS.closedGroups = result.contents.split('#')
+    })
+}
 
 export function init () {
     try {
@@ -91,6 +127,8 @@ export function init () {
     })
 
     createDatabase(function () {
+        loadContacts()
+        loadClosedGroups()
         getSettings()
     })
 
@@ -430,100 +468,6 @@ export function goToPageNumber (pageNumber) {
     BRS.pages[BRS.currentPage]()
 }
 
-export function createDatabase (callback) {
-    const schema = {
-        contacts: {
-            id: {
-                primary: true,
-                autoincrement: true,
-                type: 'NUMBER'
-            },
-            name: 'VARCHAR(100) COLLATE NOCASE',
-            email: 'VARCHAR(200)',
-            account: 'VARCHAR(25)',
-            accountRS: 'VARCHAR(25)',
-            description: 'TEXT'
-        },
-        assets: {
-            account: 'VARCHAR(25)',
-            accountRS: 'VARCHAR(25)',
-            asset: {
-                primary: true,
-                type: 'VARCHAR(25)'
-            },
-            description: 'TEXT',
-            name: 'VARCHAR(10)',
-            decimals: 'NUMBER',
-            quantityQNT: 'VARCHAR(15)',
-            groupName: 'VARCHAR(30) COLLATE NOCASE'
-        },
-        data: {
-            id: {
-                primary: true,
-                type: 'VARCHAR(40)'
-            },
-            contents: 'TEXT'
-        }
-    }
-
-    BRS.assetTableKeys = ['account', 'accountRS', 'asset', 'description', 'name', 'position', 'decimals', 'quantityQNT', 'groupName']
-
-    try {
-        BRS.database = new WebDB('BRS_USER_DB', schema, 2, 4, function (error, db) {
-            if (!error) {
-                BRS.databaseSupport = true
-
-                // loadContacts
-                BRS.database.select('contacts', null, function (error, contacts) {
-                    if (error) return
-                    for (const contact of contacts) {
-                        BRS.contacts[contact.accountRS] = contact
-                    }
-                })
-
-                BRS.database.select('data', [{
-                    id: 'asset_exchange_version'
-                }], function (_error, result) {
-                    if (!result || !result.length) {
-                        BRS.database.delete('assets', [], function (error, affected) {
-                            if (!error) {
-                                BRS.database.insert('data', {
-                                    id: 'asset_exchange_version',
-                                    contents: 2
-                                })
-                            }
-                        })
-                    }
-                })
-
-                BRS.database.select('data', [{
-                    id: 'closed_groups'
-                }], function (_error, result) {
-                    if (result && result.length) {
-                        BRS.closedGroups = result[0].contents.split('#')
-                    } else {
-                        BRS.database.insert('data', {
-                            id: 'closed_groups',
-                            contents: ''
-                        })
-                    }
-                })
-                if (callback) {
-                    callback()
-                }
-            } else if (callback) {
-                callback()
-            }
-        })
-    } catch (err) {
-        BRS.database = null
-        BRS.databaseSupport = false
-        if (callback) {
-            callback()
-        }
-    }
-}
-
 export function getAccountInfo (firstRun, callback) {
     sendRequest('getAccount', {
         account: BRS.account,
@@ -578,11 +522,11 @@ export function getAccountInfo (firstRun, callback) {
             const showAssetDifference = (!BRS.downloadingBlockchain || (BRS.blocks.length > 0 && BRS.state && BRS.state.time - BRS.blocks[0].timestamp < 60 * 60 * 24 * 7))
 
             if (BRS.databaseSupport) {
-                BRS.database.select('data', [{
+                select('data', {
                     id: 'asset_balances_' + BRS.account
-                }], function (_error, asset_balance) {
-                    if (asset_balance && asset_balance.length) {
-                        let previous_balances = asset_balance[0].contents
+                }, function (_error, asset_balance) {
+                    if (asset_balance) {
+                        let previous_balances = asset_balance.contents
 
                         if (!BRS.accountInfo.assetBalances) {
                             BRS.accountInfo.assetBalances = []
@@ -596,17 +540,17 @@ export function getAccountInfo (firstRun, callback) {
                             } else {
                                 previous_balances = []
                             }
-                            BRS.database.update('data', {
+                            update('data', {
                                 contents: current_balances
-                            }, [{
+                            }, {
                                 id: 'asset_balances_' + BRS.account
-                            }])
+                            })
                             if (showAssetDifference) {
                                 checkAssetDifferences(BRS.accountInfo.assetBalances, previous_balances)
                             }
                         }
                     } else {
-                        BRS.database.insert('data', {
+                        insert('data', {
                             id: 'asset_balances_' + BRS.account,
                             contents: JSON.stringify(BRS.accountInfo.assetBalances)
                         })
