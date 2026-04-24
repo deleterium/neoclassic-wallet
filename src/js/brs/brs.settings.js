@@ -8,7 +8,7 @@ import { pageLoaded } from './brs'
 
 import { submitForm } from './brs.forms'
 
-import { dbGet, dbPut, update } from './brs.database'
+import { dbGet, dbPut } from './brs.database'
 
 import {
     convertToNXT
@@ -130,10 +130,9 @@ export function updateSettings (key, value) {
     }
 
     if (BRS.databaseSupport) {
-        update('data', {
+        dbPut('data', {
+            id: 'settings',
             contents: JSON.stringify(BRS.settings)
-        }, {
-            id: 'settings'
         })
     }
 

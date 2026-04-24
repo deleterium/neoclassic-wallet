@@ -18,7 +18,6 @@ import {
 import {
     dbGet,
     dbPut,
-    update,
     deleteRecord
 } from './brs.database'
 
@@ -251,37 +250,28 @@ export function formsUpdateContact (data) {
 }
 
 function updateContactToDatabase (data) {
-    BRS.contacts[data.account_rs] = {
+    dbPut('contacts', {
+        id: Number(data.contact_id),
         name: data.name,
         email: data.email,
         account: data.account,
         accountRS: data.account_rs,
         description: data.description
-    }
-
-    dbGet('contacts', [{
-        account: data.account
-    }], function (error, contacts) {
-        if (error ||
-                (contacts && contacts.length && String(contacts[0].id) !== data.contact_id)) {
+    }, function (error, item) {
+        if (error || !item) {
             $.notify($.t('error_save_db'))
             return
         }
-        update('contacts', {
+        // update contact only after sucessful db update
+        BRS.contacts[data.account_rs] = {
             name: data.name,
             email: data.email,
             account: data.account,
             accountRS: data.account_rs,
             description: data.description
-        }, {
-            id: Number(data.contact_id)
-        }, function (error) {
-            if (error || (contacts.length && data.account !== contacts[0].account)) {
-                $.notify($.t('error_save_db'))
-                return
-            }
-            setTimeout(notifyContactOperationSuccess, 50, $.t('success_contact_update'))
-        })
+        }
+
+        setTimeout(notifyContactOperationSuccess, 50, $.t('success_contact_update'))
     })
 }
 

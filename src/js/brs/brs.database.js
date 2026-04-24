@@ -133,18 +133,6 @@ export function dbPut (storeName, data, callback) {
 }
 
 /**
- * UPDATE operation - Update existing data in a store
- * @param {string} storeName - Name of the object store (table)
- * @param {object} data - Data to update
- * @param {object} key - primary key to update
- * @param {function} callback - Callback function(error, result)
- */
-export function update (storeName, data, key, callback) {
-    // IndexedDB uses put for both insert and update
-    return dbPut(storeName, [{ ...data, ...key }], callback)
-}
-
-/**
  * DELETE operation - Remove data from a store
  * @param {string} storeName - Name of the object store (table)
  * @param {object} query - Query parameter to identify the record to delete (primary key)

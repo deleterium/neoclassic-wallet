@@ -73,7 +73,6 @@ import {
 import {
     createDatabase,
     dbGet,
-    update,
     dbPut
 } from './brs.database'
 
@@ -540,10 +539,9 @@ export function getAccountInfo (firstRun, callback) {
                             } else {
                                 previous_balances = []
                             }
-                            update('data', {
+                            dbPut('data', {
+                                id: 'asset_balances_' + BRS.account,
                                 contents: current_balances
-                            }, {
-                                id: 'asset_balances_' + BRS.account
                             })
                             if (showAssetDifference) {
                                 checkAssetDifferences(BRS.accountInfo.assetBalances, previous_balances)
