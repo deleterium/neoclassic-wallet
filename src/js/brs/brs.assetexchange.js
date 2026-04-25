@@ -47,22 +47,37 @@ import {
     closeContextMenu
 } from './brs.sidebar'
 
+export function loadClosedGroupsFromDB () {
+    if (!BRS.databaseSupport) return
+
+    dbGet('data', { id: 'closed_groups' }, function (error, result) {
+        if (error) {
+            console.error('Error loading closed groups:', error)
+            return
+        }
+        // If no data exists, insert a default record
+        if (!result) {
+            dbPut('data', { id: 'closed_groups', contents: '' }, function (error) {
+                if (error) console.error('Error initializing closed groups:', error)
+            })
+            return
+        }
+        BRS.closedGroups = result.contents.split('#')
+    })
+}
+
 export function pagesAssetExchange (callback) {
     $('.content.content-stretch:visible').width($('.page:visible').width())
 
     loadAssetExchangeSidebar(callback)
 }
 
-export function loadCachedAssets () {
-    if (!BRS.databaseSupport) {
-        // only cached
-        return
-    }
-    BRS.assets = []
+export function loadAssetsFromDB () {
+    if (!BRS.databaseSupport) return
+
     dbGet('assets', function (error, assets) {
-        // select already bookmarked assets
         if (error === null) {
-            assets.forEach(asset => cacheAsset(asset))
+            BRS.assets = assets
         }
     })
 }

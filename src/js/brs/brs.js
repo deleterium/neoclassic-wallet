@@ -14,7 +14,7 @@
 import hashicon from 'hashicon'
 
 import {
-    getSettings
+    loadSettingsFromDB
 } from './brs.settings'
 
 import {
@@ -42,6 +42,8 @@ import {
 } from './brs.util'
 
 import {
+    loadClosedGroupsFromDB,
+    loadAssetsFromDB,
     saveCachedAssets,
     cacheUserAssets,
     goToAsset
@@ -76,36 +78,15 @@ import {
     dbPut
 } from './brs.database'
 
+import { loadContactsFromDB } from './brs.contacts'
+
 import { BRS } from '.'
 
-// TODO Helper functions for data loading (Move to settings.js)
-function loadContacts () {
-    dbGet('contacts', function (error, items) {
-        if (error) return
-        items.forEach(contact => {
-            BRS.contacts[contact.accountRS] = contact
-        })
-    })
-}
-
-function loadClosedGroups () {
-    dbGet('data', { id: 'closed_groups' }, function (error, result) {
-        BRS.closedGroups = []
-        if (error) {
-            console.error('Error loading closed groups:', error)
-            return
-        }
-
-        // If no data exists, insert a default record
-        if (!result) {
-            dbPut('data', { id: 'closed_groups', contents: '' }, function (error) {
-                if (error) console.error('Error initializing closed groups:', error)
-            })
-            return
-        }
-
-        BRS.closedGroups = result.contents.split('#')
-    })
+function loadAllDBValues () {
+    loadContactsFromDB()
+    loadClosedGroupsFromDB()
+    loadAssetsFromDB()
+    loadSettingsFromDB()
 }
 
 export function init () {
@@ -125,11 +106,9 @@ export function init () {
         offset: 10
     })
 
-    createDatabase(function () {
-        loadContacts()
-        loadClosedGroups()
-        getSettings()
-    })
+    BRS.multiQueue = $.ajaxMultiQueue(4)
+
+    createDatabase(loadAllDBValues)
 
     // Give some more time to loading settings
     setTimeout(function () {
@@ -210,10 +189,7 @@ export function checkSelectedNode () {
 }
 
 export function autoSelectServer () {
-    if (!BRS.multiQueue) {
-        BRS.multiQueue = $.ajaxMultiQueue(8)
-    }
-    const ajaxCall = BRS.multiQueue.queue
+    const ajaxCall = $.ajaxMultiQueue(8).queue
     // shuffleArray but keep localhost as first one
     const mainnetServers = BRS.nodes.filter(obj => obj.testnet === false).slice(1)
     for (let i = mainnetServers.length - 1; i > 0; i--) {

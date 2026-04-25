@@ -180,9 +180,6 @@ export function sendRequest (requestType, data, callback, async) {
 }
 
 export function processAjaxRequest (requestType, data, callback, async) {
-    if (!BRS.multiQueue) {
-        BRS.multiQueue = $.ajaxMultiQueue(8)
-    }
     let extra
     if (data._extra) {
         extra = data._extra

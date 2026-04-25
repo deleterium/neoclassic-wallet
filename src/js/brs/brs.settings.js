@@ -28,26 +28,26 @@ export function pagesSettings () {
     pageLoaded()
 }
 
-export function getSettings () {
-    if (BRS.databaseSupport) {
-        dbGet('data', {
-            id: 'settings'
-        }, function (_error, result) {
-            if (result) {
-                BRS.settings = $.extend({}, BRS.defaultSettings, JSON.parse(result.contents))
-            } else {
-                dbPut('data', {
-                    id: 'settings',
-                    contents: JSON.stringify(BRS.defaultSettings)
-                })
-                BRS.settings = BRS.defaultSettings
-            }
-            applySettings()
-        })
-    } else {
+export function loadSettingsFromDB () {
+    if (!BRS.databaseSupport) {
         BRS.settings = BRS.defaultSettings
         applySettings()
+        return
     }
+    dbGet('data', {
+        id: 'settings'
+    }, function (_error, result) {
+        if (result) {
+            BRS.settings = $.extend({}, BRS.defaultSettings, JSON.parse(result.contents))
+        } else {
+            dbPut('data', {
+                id: 'settings',
+                contents: JSON.stringify(BRS.defaultSettings)
+            })
+            BRS.settings = BRS.defaultSettings
+        }
+        applySettings()
+    })
 }
 
 function applySettings (key) {

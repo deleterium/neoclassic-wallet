@@ -21,6 +21,17 @@ import {
     deleteRecord
 } from './brs.database'
 
+export function loadContactsFromDB () {
+    if (!BRS.databaseSupport) return
+
+    dbGet('contacts', function (error, items) {
+        if (error) return
+        items.forEach(contact => {
+            BRS.contacts[contact.accountRS] = contact
+        })
+    })
+}
+
 export function getContactByName (nameToFind) {
     for (const accountId in BRS.contacts) {
         if (BRS.contacts[accountId].name === nameToFind) {

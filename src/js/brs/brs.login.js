@@ -45,7 +45,6 @@ import {
 } from './brs.util'
 
 import {
-    loadCachedAssets,
     cacheUserAssets
 } from './brs.assetexchange'
 
@@ -181,8 +180,6 @@ export function loginCommon () {
     }
 
     setupClipboardFunctionality()
-
-    loadCachedAssets()
 
     checkLocationHash(getEncryptionPassword())
 

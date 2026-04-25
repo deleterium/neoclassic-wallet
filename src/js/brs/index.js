@@ -51,7 +51,6 @@ import { addEventListeners } from './brs.eventlisteners'
 import {
     pagesAssetExchange,
     formsAddAssetBookmark,
-    formsAddAssetBookmarkComplete,
     incomingAssetExchange,
     formsOrderAsset,
     formsOrderAssetComplete,
@@ -201,7 +200,6 @@ export const BRS = {
         deleteContact: formsDeleteContact,
         addCommitment: formsAddCommitment,
         addAssetBookmark: formsAddAssetBookmark,
-        addAssetBookmarkComplete: formsAddAssetBookmarkComplete,
         orderAsset: formsOrderAsset,
         orderAssetComplete: formsOrderAssetComplete,
         issueAsset: formsIssueAsset,
