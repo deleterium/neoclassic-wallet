@@ -87,10 +87,8 @@ function notifyErrorSaveAsset () {
 }
 
 export function saveCachedAssets () {
-    if (!BRS.databaseSupport) {
-        // only cached
-        return
-    }
+    if (!BRS.databaseSupport) return
+
     const assetsToUpdate = []
     dbGet('assets', function (error, dbAssets) {
         if (error) {
@@ -129,18 +127,16 @@ export function saveCachedAssets () {
  */
 export function getAssetDetails (assetId) {
     const async = false
-    let asset = BRS.assets.find((tkn) => tkn.asset === assetId)
-    if (!asset) {
-        sendRequest('getAsset', {
-            asset: assetId
-        }, function (response) {
-            if (!response.errorCode) {
-                cacheAsset(response)
-                asset = response
-            }
-        }, async)
-    }
-    return asset
+    const asset = BRS.assets.find((tkn) => tkn.asset === assetId)
+    if (asset) return asset
+    sendRequest('getAsset', {
+        asset: assetId
+    }, function (response) {
+        if (!response.errorCode) {
+            cacheAsset(response)
+        }
+    }, async)
+    return BRS.assets.find((tkn) => tkn.asset === assetId)
 }
 
 export function cacheUserAssets () {
@@ -191,48 +187,53 @@ export function bookmarkAllUserAssets () {
     if (assetsToBookmark.length + idsToFetchAndBookmark.length === 0) {
         return
     }
-    let assetsToFetch = idsToFetchAndBookmark.length
-    if (assetsToFetch === 0) {
-        saveAssetBookmarks(assetsToBookmark, BRS.forms.addAssetBookmarkComplete)
-        return
-    }
+
     for (const eachAsset of idsToFetchAndBookmark) {
+        // Not all are cached, so request info about missing.
         sendRequest('getAsset+', {
             asset: eachAsset
         }, function (response) {
-            assetsToFetch--
             if (!response.errorCode) {
-                assetsToBookmark.push(response)
-            }
-            if (assetsToFetch === 0) {
-                saveAssetBookmarks(assetsToBookmark, BRS.forms.addAssetBookmarkComplete)
+                cacheAsset(response)
             }
         })
     }
+    if (idsToFetchAndBookmark.length) {
+        // TODO Add translation
+        $.notify('Some assets not bookmarked, because their details are still beeing processing. Try again in 10 seconds!', { type: 'danger' })
+    }
+    // Finish with only cached assets.
+    saveAssetBookmarks(assetsToBookmark, formsAddAssetBookmarkComplete)
 }
 
+/**
+ * Stores or updates an asset in memory based on server response.
+ * If the asset already exists in the cache, it updates its quantity and circulating quantity.
+ * Otherwise, it inserts a new asset into the cache with default options.
+ *
+ * @param {Object} asset - The asset object from the server response.
+ */
 function cacheAsset (asset) {
     const foundAsset = BRS.assets.find((tkn) => tkn.asset === asset.asset)
     if (foundAsset) {
+        // update info
+        foundAsset.quantityQNT = String(asset.quantityQNT)
         foundAsset.quantityCirculatingQNT = String(asset.quantityCirculatingQNT)
-        return
+        return foundAsset
     }
 
-    if (!asset.groupName) {
-        asset.groupName = ''
-    }
-
+    // insert new asset
     asset = {
         asset: String(asset.asset),
         name: String(asset.name),
         description: String(asset.description),
-        groupName: String(asset.groupName),
+        groupName: '',
         account: String(asset.account),
         accountRS: String(asset.accountRS),
         quantityQNT: String(asset.quantityQNT),
         quantityCirculatingQNT: String(asset.quantityCirculatingQNT),
         decimals: parseInt(asset.decimals, 10),
-        bookmarked: Boolean(asset.bookmarked)
+        bookmarked: false
     }
 
     BRS.assets.push(asset)
@@ -258,26 +259,23 @@ export function formsAddAssetBookmark (data) {
             error: $.t('no_asset_found')
         }
     }
-    saveAssetBookmarks([foundAsset], BRS.forms.addAssetBookmarkComplete)
+    saveAssetBookmarks([foundAsset], formsAddAssetBookmarkComplete)
 
     return { stop: true, hide: true }
 }
 
-export function formsAddAssetBookmarkComplete (newAssets, submittedAssets) {
+function formsAddAssetBookmarkComplete (newAssets, submittedAssets) {
     BRS.assetSearch = false
     if (newAssets.length === 0) {
         $.notify($.t('error_asset_already_bookmarked', {
             count: submittedAssets.length
         }), { type: 'danger' })
         goToAsset(submittedAssets[0].asset)
+    } else if (newAssets.length === 1) {
+        $.notify($.t('success_asset_bookmarked'), { type: 'success' })
+        goToAsset(newAssets[0].asset)
     } else {
-        let message = $.t('success_asset_bookmarked', {
-            count: newAssets.length
-        })
-        if (!BRS.databaseSupport) {
-            message += ' ' + $.t('error_assets_save_db')
-        }
-        $.notify(message, { type: 'success' })
+        $.notify($.t('success_asset_bookmarked_plural'), { type: 'success' })
         goToAsset(newAssets[0].asset)
     }
 }
@@ -292,11 +290,6 @@ export function saveAssetBookmarks (assets, callback) {
                 foundAsset.bookmarked = true
                 newAssets.push(foundAsset)
             }
-        } else {
-            // never?
-            asset.bookmarked = true
-            BRS.assets.push(asset)
-            newAssets.push(asset)
         }
     }
     if (BRS.databaseSupport) {
@@ -1374,6 +1367,24 @@ export function pagesTransferHistory () {
             dataLoaded()
         }
     })
+}
+
+/** Populates the drop-down list with the user assets, in alphabetical order.
+ * It is used in places like "transfer token", so user can pick one easily. */
+export function evAssetSelectorButtonClick (e) {
+    const $list = $(this).parent().find('ul')
+    $list.empty()
+    if (!BRS.accountInfo.assetBalances) {
+        $list.append(`<li><a class='dropdown-item' href='#' data-name='' data-asset='' data-decimals=''>${$.t('no_asset_found')}</a></li>`)
+        return
+    }
+    sortCachedAssets()
+    for (const asset of BRS.assets) {
+        const foundAsset = BRS.accountInfo.assetBalances.find((tkn) => tkn.asset === asset.asset)
+        if (foundAsset) {
+            $list.append(`<li><a class='dropdown-item' href='#' data-name='${asset.name}' data-asset='${asset.asset}' data-decimals='${asset.decimals}'>${asset.name} - ${asset.asset}</a></li>`)
+        }
+    }
 }
 
 /* MY ASSETS PAGE */

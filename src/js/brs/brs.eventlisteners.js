@@ -68,7 +68,6 @@ import {
 } from './brs.util'
 
 import {
-    sortCachedAssets,
     bookmarkAllUserAssets,
     saveAssetBookmarks,
     evAssetExchangeSidebarClick,
@@ -81,7 +80,8 @@ import {
     evAssetOrderModalOnShowBsModal,
     evAssetExchangeSidebarContextClick,
     evTransferAssetModalOnShowBsModal,
-    goToAsset
+    goToAsset,
+    evAssetSelectorButtonClick
 } from './brs.assetexchange'
 
 import {
@@ -278,21 +278,7 @@ export function addEventListeners () {
     $('#send_money_amount, #send_money_fee').on('change', function (e) {
         sendMoneyCalculateTotal($(this))
     })
-    $('span.asset_selector button').on('click', function (e) {
-        const $list = $(this).parent().find('ul')
-        $list.empty()
-        if (!BRS.accountInfo.assetBalances) {
-            $list.append(`<li><a class='dropdown-item' href='#' data-name='' data-asset='' data-decimals=''>${$.t('no_asset_found')}</a></li>`)
-            return
-        }
-        sortCachedAssets()
-        for (const asset of BRS.assets) {
-            const foundAsset = BRS.accountInfo.assetBalances.find((tkn) => tkn.asset === asset.asset)
-            if (foundAsset) {
-                $list.append(`<li><a class='dropdown-item' href='#' data-name='${asset.name}' data-asset='${asset.asset}' data-decimals='${asset.decimals}'>${asset.name} - ${asset.asset}</a></li>`)
-            }
-        }
-    })
+    $('span.asset_selector button').on('click', evAssetSelectorButtonClick)
     $('span.asset_selector').on('click', 'ul li a', evTransferAssetModalOnShowBsModal)
     $('.recipient_selector button').on('click', evSpanRecipientSelectorClickButton)
     $('.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
