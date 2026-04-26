@@ -1389,141 +1389,77 @@ export function evAssetSelectorButtonClick (e) {
 
 /* MY ASSETS PAGE */
 export function pagesMyAssets () {
-    if (BRS.accountInfo.assetBalances && BRS.accountInfo.assetBalances.length) {
-        const result = {
-            assets: [],
-            bid_orders: {},
-            ask_orders: {}
-        }
-        const count = {
-            total_assets: BRS.accountInfo.assetBalances.length,
-            assets: 0,
-            ignored_assets: 0,
-            ask_orders: 0,
-            bid_orders: 0
+    if (!BRS.accountInfo.assetBalances || !BRS.accountInfo.assetBalances.length) {
+        dataLoaded()
+        return
+    }
+    const result = {
+        assets: [],
+        bid_orders: {},
+        ask_orders: {}
+    }
+    const count = {
+        total_assets: BRS.accountInfo.assetBalances.length,
+        cachedAssets: 0,
+        requestedAssets: 0,
+        ignored_assets: 0
+    }
+
+    // First, fetch and display all asset details
+    for (let i = 0; i < BRS.accountInfo.assetBalances.length; i++) {
+        if (BRS.accountInfo.assetBalances[i].balanceQNT === '0') {
+            count.ignored_assets++
+            continue
         }
 
-        for (let i = 0; i < BRS.accountInfo.assetBalances.length; i++) {
-            if (BRS.accountInfo.assetBalances[i].balanceQNT === '0') {
-                count.ignored_assets++
-                if (checkMyAssetsPageLoaded(count)) {
-                    myAssetsPageLoaded(result)
-                }
-                continue
+        const foundAsset = BRS.assets.find(asset => asset.asset === BRS.accountInfo.assetBalances[i].asset)
+        if (foundAsset) {
+            result.assets.push({
+                asset: foundAsset.asset,
+                name: foundAsset.name,
+                quantityCirculatingQNT: foundAsset.quantityCirculatingQNT,
+                balanceQNT: new BigInteger(BRS.accountInfo.assetBalances[i].balanceQNT),
+                quantityQNT: new BigInteger(foundAsset.quantityQNT),
+                decimals: foundAsset.decimals
+            })
+            count.cachedAssets++
+            continue
+        }
+
+        sendRequest('getAsset+', {
+            asset: BRS.accountInfo.assetBalances[i].asset,
+            _extra: {
+                balanceQNT: BRS.accountInfo.assetBalances[i].balanceQNT
+            }
+        }, function (asset, input) {
+            if (BRS.currentPage !== 'my_assets') {
+                return
             }
 
-            sendRequest('getAskOrderIds+', {
-                asset: BRS.accountInfo.assetBalances[i].asset,
-                firstIndex: 0,
-                lastIndex: 0
-            }, function (response, input) {
-                if (BRS.currentPage !== 'my_assets') {
-                    return
-                }
+            asset.asset = input.asset
+            asset.balanceQNT = new BigInteger(input._extra.balanceQNT)
+            asset.quantityQNT = new BigInteger(asset.quantityQNT)
 
-                if (response.askOrderIds && response.askOrderIds.length) {
-                    sendRequest('getAskOrder+', {
-                        order: response.askOrderIds[0],
-                        _extra: {
-                            asset: input.asset
-                        }
-                    }, function (response, input) {
-                        if (BRS.currentPage !== 'my_assets') {
-                            return
-                        }
+            result.assets.push(asset)
+            count.requestedAssets++
 
-                        response.priceNQT = new BigInteger(response.priceNQT)
-
-                        result.ask_orders[input._extra.asset] = response.priceNQT
-                        count.ask_orders++
-                        if (checkMyAssetsPageLoaded(count)) {
-                            myAssetsPageLoaded(result)
-                        }
-                    })
-                } else {
-                    result.ask_orders[input.asset] = -1
-                    count.ask_orders++
-                    if (checkMyAssetsPageLoaded(count)) {
-                        myAssetsPageLoaded(result)
-                    }
-                }
-            })
-
-            sendRequest('getBidOrderIds+', {
-                asset: BRS.accountInfo.assetBalances[i].asset,
-                firstIndex: 0,
-                lastIndex: 0
-            }, function (response, input) {
-                if (BRS.currentPage !== 'my_assets') {
-                    return
-                }
-
-                if (response.bidOrderIds && response.bidOrderIds.length) {
-                    sendRequest('getBidOrder+', {
-                        order: response.bidOrderIds[0],
-                        _extra: {
-                            asset: input.asset
-                        }
-                    }, function (response, input) {
-                        if (BRS.currentPage !== 'my_assets') {
-                            return
-                        }
-
-                        response.priceNQT = new BigInteger(response.priceNQT)
-
-                        result.bid_orders[input._extra.asset] = response.priceNQT
-                        count.bid_orders++
-                        if (checkMyAssetsPageLoaded(count)) {
-                            myAssetsPageLoaded(result)
-                        }
-                    })
-                } else {
-                    result.bid_orders[input.asset] = -1
-                    count.bid_orders++
-                    if (checkMyAssetsPageLoaded(count)) {
-                        myAssetsPageLoaded(result)
-                    }
-                }
-            })
-
-            sendRequest('getAsset+', {
-                asset: BRS.accountInfo.assetBalances[i].asset,
-                _extra: {
-                    balanceQNT: BRS.accountInfo.assetBalances[i].balanceQNT
-                }
-            }, function (asset, input) {
-                if (BRS.currentPage !== 'my_assets') {
-                    return
-                }
-
-                asset.asset = input.asset
-                asset.balanceQNT = new BigInteger(input._extra.balanceQNT)
-                asset.quantityQNT = new BigInteger(asset.quantityQNT)
-
-                result.assets[count.assets] = asset
-                count.assets++
-
-                if (checkMyAssetsPageLoaded(count)) {
-                    myAssetsPageLoaded(result)
-                }
-            })
-        }
-    } else {
-        dataLoaded()
+            if (checkMyAssetsPageLoaded(count)) {
+                myAssetsPageLoaded(result)
+            }
+        })
+    }
+    if (checkMyAssetsPageLoaded(count)) {
+        myAssetsPageLoaded(result)
     }
 }
 
 function checkMyAssetsPageLoaded (count) {
-    if ((count.assets + count.ignored_assets === count.total_assets) && (count.assets === count.ask_orders) && (count.assets === count.bid_orders)) {
-        return true
-    } else {
-        return false
-    }
+    return count.assets + count.requestedAssets + count.ignored_assets === count.total_assets
 }
 
 function myAssetsPageLoaded (result) {
     let rows = ''
-    // let total
+
     result.assets.sort(function (a, b) {
         if (a.name.toLowerCase() > b.name.toLowerCase()) {
             return 1
@@ -1537,54 +1473,84 @@ function myAssetsPageLoaded (result) {
     for (let i = 0; i < result.assets.length; i++) {
         const asset = result.assets[i]
 
-        const lowestAskOrder = result.ask_orders[asset.asset]
-        const highestBidOrder = result.bid_orders[asset.asset]
+        rows += `<tr data-asset="${String(asset.asset).escapeHTML()}">`
+        rows += `<td><a href='#' data-goto-asset='${String(asset.asset).escapeHTML()}'>${String(asset.name).escapeHTML()}</a></td>`
+        rows += `<td class="quantity">${formatQuantity(asset.balanceQNT, asset.decimals)}</td>`
+        rows += `<td>${formatQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>`
+        rows += `<td id="ask-order-${String(asset.asset).escapeHTML()}"><i class="fas fa-spinner my-fa-spin"></i></td>`
+        rows += `<td id="bid-order-${String(asset.asset).escapeHTML()}"><i class="fas fa-spinner my-fa-spin"></i></td>`
+        rows += `<td id="value-order-${String(asset.asset).escapeHTML()}"><i class="fas fa-spinner my-fa-spin"></i></td>`
+        rows += `<td><a href='#' data-toggle='modal' data-target='#transfer_asset_modal' data-asset='${String(asset.asset).escapeHTML()}' data-name='${String(asset.name).escapeHTML()}' data-decimals='${String(asset.decimals).escapeHTML()}'>${$.t('transfer')}</a></td>`
+        rows += '</tr>'
+    }
 
-        // if (highestBidOrder != -1) {
-        //     total = new BigInteger(calculateOrderTotalNQT(asset.balanceQNT, highestBidOrder, asset.decimals))
-        // } else {
-        //     total = 0
-        // }
+    // Initial page loaded, fetch order details asynchronously
+    for (let i = 0; i < BRS.accountInfo.assetBalances.length; i++) {
+        if (BRS.accountInfo.assetBalances[i].balanceQNT === '0') {
+            continue
+        }
 
-        let tentative = -1
-        let totalNQT
-        if (BRS.unconfirmedTransactions.length) {
-            for (let j = 0; j < BRS.unconfirmedTransactions.length; j++) {
-                const unconfirmedTransaction = BRS.unconfirmedTransactions[j]
+        const assetId = BRS.accountInfo.assetBalances[i].asset
 
-                if (unconfirmedTransaction.type === 2 && unconfirmedTransaction.subtype === 1 && unconfirmedTransaction.attachment.asset === asset.asset) {
-                    if (tentative === -1) {
-                        if (unconfirmedTransaction.recipient === BRS.account) {
-                            tentative = new BigInteger(unconfirmedTransaction.attachment.quantityQNT)
-                        } else {
-                            tentative = new BigInteger('-' + unconfirmedTransaction.attachment.quantityQNT)
-                        }
-                    } else {
-                        if (unconfirmedTransaction.recipient === BRS.account) {
-                            tentative = tentative.add(new BigInteger(unconfirmedTransaction.attachment.quantityQNT))
-                        } else {
-                            tentative = tentative.add(new BigInteger('-' + unconfirmedTransaction.attachment.quantityQNT))
-                        }
-                    }
-                }
+        sendRequest('getAskOrders+', {
+            asset: assetId,
+            firstIndex: 0,
+            lastIndex: 0
+        }, function (response, input) {
+            if (BRS.currentPage !== 'my_assets') {
+                return
             }
-        }
 
-        if (highestBidOrder !== -1) {
-            totalNQT = new BigInteger(calculateOrderTotalNQT(asset.balanceQNT, highestBidOrder))
-        }
+            if (response.errorCode || !response.askOrders[0]) {
+                updateAskOrderCell(input.asset, null)
+                return
+            }
+            updateAskOrderCell(response.askOrders[0].asset, response.askOrders[0].priceNQT, response.askOrders[0].decimals)
+        })
 
-        let sign = '+'
+        sendRequest('getBidOrders+', {
+            asset: assetId,
+            firstIndex: 0,
+            lastIndex: 0,
+            _extra: {
+                balanceQNT: BRS.accountInfo.assetBalances[i].balanceQNT
+            }
+        }, function (response, input) {
+            if (BRS.currentPage !== 'my_assets') {
+                return
+            }
 
-        if (tentative !== -1 && tentative.compareTo(BigInteger.ZERO) < 0) {
-            tentative = tentative.abs()
-            sign = '-'
-        }
-
-        rows += '<tr' + (tentative !== -1 ? " class='tentative tentative-allow-links'" : '') + " data-asset='" + String(asset.asset).escapeHTML() + "'><td><a href='#' data-goto-asset='" + String(asset.asset).escapeHTML() + "'>" + String(asset.name).escapeHTML() + "</a></td><td class='quantity'>" + formatQuantity(asset.balanceQNT, asset.decimals) + (tentative !== -1 ? ' ' + sign + " <span class='added_quantity'>" + formatQuantity(tentative, asset.decimals) + '</span>' : '') + '</td><td>' + formatQuantity(asset.quantityCirculatingQNT, asset.decimals) + '</td><td>' + (lowestAskOrder !== -1 ? formatOrderPricePerWholeQNT(lowestAskOrder, asset.decimals) : '/') + '</td><td>' + (highestBidOrder !== -1 ? formatOrderPricePerWholeQNT(highestBidOrder, asset.decimals) : '/') + '</td><td>' + (highestBidOrder !== -1 ? formatAmount(totalNQT) : '/') + "</td><td><a href='#' data-toggle='modal' data-target='#transfer_asset_modal' data-asset='" + String(asset.asset).escapeHTML() + "' data-name='" + String(asset.name).escapeHTML() + "' data-decimals='" + String(asset.decimals).escapeHTML() + "'>" + $.t('transfer') + '</a></td></tr>'
+            if (response.errorCode || !response.bidOrders[0]) {
+                updateBidOrderCell(input.asset, null)
+                return
+            }
+            updateBidOrderCell(response.bidOrders[0].asset, response.bidOrders[0].priceNQT, response.bidOrders[0].decimals, input._extra.balanceQNT)
+        })
     }
 
     dataLoaded(rows)
+}
+
+function updateAskOrderCell (assetId, priceNQT, decimals) {
+    const cellSelector = '#ask-order-' + assetId.escapeHTML()
+    if (priceNQT === null) {
+        $(cellSelector).text('--')
+        return
+    }
+    $(cellSelector).text(formatOrderPricePerWholeQNT(priceNQT, decimals))
+}
+
+function updateBidOrderCell (assetId, priceNQT, decimals, userBalanceQNT) {
+    const orderSelector = '#bid-order-' + assetId.escapeHTML()
+    const valueSelector = '#value-order-' + assetId.escapeHTML()
+    if (priceNQT === null) {
+        $(orderSelector).text('--')
+        $(valueSelector).text('--')
+        return
+    }
+    $(orderSelector).text(formatOrderPricePerWholeQNT(priceNQT, decimals))
+    const totalNQT = calculateOrderTotalNQT(userBalanceQNT, priceNQT)
+    $(valueSelector).text(formatAmount(totalNQT))
 }
 
 export function incomingMyAssets () {
