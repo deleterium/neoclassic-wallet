@@ -336,14 +336,10 @@ function loadAssetExchangeSidebar (callback) {
     $('#asset_exchange_page').removeClass('no_assets')
 
     bookmarkedAssets.sort(function (a, b) {
+        // First level: Group name A->Z. No group is last
+        // Second level: Asset name A->Z.
         if (!a.groupName && !b.groupName) {
-            if (a.name > b.name) {
-                return 1
-            } else if (a.name < b.name) {
-                return -1
-            } else {
-                return 0
-            }
+            return a.name.localeCompare(b.name)
         } else if (!a.groupName) {
             return 1
         } else if (!b.groupName) {
@@ -353,13 +349,7 @@ function loadAssetExchangeSidebar (callback) {
         } else if (a.groupName < b.groupName) {
             return -1
         } else {
-            if (a.name > b.name) {
-                return 1
-            } else if (a.name < b.name) {
-                return -1
-            } else {
-                return 0
-            }
+            return a.name.localeCompare(b.name)
         }
     })
 
@@ -368,49 +358,65 @@ function loadAssetExchangeSidebar (callback) {
     let isClosedGroup = false
 
     const isSearch = BRS.assetSearch !== false
-    // let searchResults = 0
 
     for (const asset of bookmarkedAssets) {
-        if (isSearch) {
-            if (BRS.assetSearch.indexOf(asset.asset) === -1) {
-                continue
-            // } else {
-            //     searchResults++
-            }
+        if (isSearch && BRS.assetSearch.indexOf(asset.asset) === -1) {
+            continue
         }
 
         if (asset.groupName !== lastGroup) {
+            lastGroup = asset.groupName
             const to_check = (asset.groupName ? asset.groupName : 'undefined')
-
             if (BRS.closedGroups.indexOf(to_check) !== -1) {
                 isClosedGroup = true
             } else {
                 isClosedGroup = false
             }
 
+            const angleDirection = isClosedGroup ? 'right' : 'down'
             if (asset.groupName) {
                 ungrouped = false
-                rows += "<a href='#' class='list-group-item list-group-item-action" + (asset.groupName === 'Ignore List' ? ' no-context' : '') + "'" + (asset.groupName !== 'Ignore List' ? " data-context='asset_exchange_sidebar_group_context' " : "data-context=''") + " data-groupname='" + asset.groupName.escapeHTML() + "' data-closed='" + isClosedGroup + "'><strong>" + asset.groupName.escapeHTML() + "<i class='right fas pull-right fa-angle-" + (isClosedGroup ? 'right' : 'down') + "'></i></strong></a>"
+                rows += `
+                    <a href='#'
+                    class='list-group-item list-group-item-action'
+                    data-context='asset_exchange_sidebar_group_context'
+                    data-groupname='${asset.groupName.escapeHTML()}'
+                    data-closed='${isClosedGroup}'>
+                        <strong>
+                            ${asset.groupName.escapeHTML()}
+                            <i class='right fas pull-right fa-angle-${angleDirection}'></i>
+                        </strong>
+                    </a>`
             } else {
                 ungrouped = true
-                rows += "<a href='#' class='list-group-item list-group-item-action no-context' data-closed='" + isClosedGroup + "'><strong class='list-group-item-heading'>" + $.t('ungrouped') + "<i class='right fa pull-right fa-angle-" + (isClosedGroup ? 'right' : 'down') + "'></i></strong></a>"
+                rows += `
+                    <a href='#' 
+                    class='list-group-item list-group-item-action no-context' 
+                    data-closed='${isClosedGroup}'>
+                        <strong class='list-group-item-heading'>
+                            ${$.t('ungrouped')}
+                            <i class='right fa pull-right fa-angle-${angleDirection}'></i>
+                        </strong>
+                    </a>`
             }
-
-            lastGroup = asset.groupName
         }
 
         const accountAsset = BRS.accountInfo.assetBalances?.find((Obj) => Obj.asset === asset.asset)
         const userAssetQuantity = accountAsset === undefined ? '0' : formatQuantity(accountAsset.balanceQNT, asset.decimals)
-        rows += "<a href='#' class='list-group-item list-group-item-" +
-                (ungrouped ? 'ungrouped' : 'grouped') +
-                (userAssetQuantity === '0' ? ' not_owns_asset' : ' owns_asset') +
-                "' data-asset='" + String(asset.asset).escapeHTML() + "'" +
-                (!ungrouped ? " data-groupname='" + asset.groupName.escapeHTML() + "'" : '') +
-                (isClosedGroup ? " style='display:none'" : '') +
-                " data-closed='" + isClosedGroup +
-                "'>"
-        rows += createBookmarkSidebarHTMLItem(asset, userAssetQuantity)
-        rows += '</a>'
+        let itemClass = 'list-group-item list-group-item-'
+        itemClass += ungrouped ? 'ungrouped' : 'grouped'
+        itemClass += userAssetQuantity === '0' ? ' not_owns_asset' : ' owns_asset'
+        const dataGroupname = ungrouped ? '' : ` data-groupname="${asset.groupName.escapeHTML()}"`
+        const hideClosedGroup = isClosedGroup ? 'style="display:none"' : ''
+        rows += `
+            <a href='#'
+            class='${itemClass}'
+            data-asset='${String(asset.asset).escapeHTML()}'
+            ${dataGroupname}
+            ${hideClosedGroup}
+            data-closed='${isClosedGroup}'>
+                ${createBookmarkSidebarHTMLItem(asset, userAssetQuantity)}
+            </a>`
     }
 
     let active = $('#asset_exchange_sidebar a.active')
@@ -672,27 +678,28 @@ export function updateMiniTradeHistory () {
         firstIndex: 0,
         lastIndex: 49
     }, function (response, input) {
-        if (response.trades && response.trades.length) {
-            let rows = ''
-            for (const trade of response.trades) {
-                trade.priceNQT = new BigInteger(trade.priceNQT)
-                trade.quantityQNT = new BigInteger(trade.quantityQNT)
-                trade.totalNQT = new BigInteger(calculateOrderTotalNQT(trade.priceNQT, trade.quantityQNT))
-                rows += '<tr>'
-                rows += '<td>' + formatTimestamp(trade.timestamp) + '</td>'
-                rows += '<td>' + formatQuantity(trade.quantityQNT, BRS.currentAsset.decimals) + '</td>'
-                rows += "<td class='asset_price'>" + formatOrderPricePerWholeQNT(trade.priceNQT, BRS.currentAsset.decimals) + '</td>'
-                rows += '<td>' + formatAmount(trade.totalNQT) + '</td>'
-                rows += "<td><a href='#' data-transaction='" + trade.askOrder + "'>" + trade.askOrder.slice(0, 8) + '...</a></td>'
-                rows += "<td><a href='#' data-transaction='" + String(trade.bidOrder).escapeHTML() + "'>" + trade.bidOrder.slice(0, 8) + '...</a></td>'
-                rows += '</tr>'
-            }
-            $('#asset_exchange_trade_history_table tbody').empty().append(rows)
-            dataLoadFinished($('#asset_exchange_trade_history_table'), true)
-        } else {
+        if (!response.trades || !response.trades.length) {
             $('#asset_exchange_trade_history_table tbody').empty()
             dataLoadFinished($('#asset_exchange_trade_history_table'), true)
+            return
         }
+        let rows = ''
+        for (const trade of response.trades) {
+            trade.priceNQT = new BigInteger(trade.priceNQT)
+            trade.quantityQNT = new BigInteger(trade.quantityQNT)
+            trade.totalNQT = new BigInteger(calculateOrderTotalNQT(trade.priceNQT, trade.quantityQNT))
+            rows += `
+                <tr>
+                    <td>${formatTimestamp(trade.timestamp)}</td>
+                    <td>${formatQuantity(trade.quantityQNT, BRS.currentAsset.decimals)}</td>
+                    <td class='asset_price'>${formatOrderPricePerWholeQNT(trade.priceNQT, BRS.currentAsset.decimals)}</td>
+                    <td>${formatAmount(trade.totalNQT)}</td>
+                    <td><a href='#' data-transaction='${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
+                    <td><a href='#' data-transaction='${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
+                </tr>`
+        }
+        $('#asset_exchange_trade_history_table tbody').empty().append(rows)
+        dataLoadFinished($('#asset_exchange_trade_history_table'), true)
     })
 }
 
@@ -779,17 +786,23 @@ function loadAssetOrders (type, assetId, refresh) {
                 accountHTML += '</a>'
             }
 
-            rows += `<tr class='${className}' data-transaction='${order.order}' data-quantity='${order.quantityQNT.toString()}' data-price='${order.priceNQT.toString()}'>`
+            rows += `
+                <tr class='${className}'
+                    data-transaction='${order.order}'
+                    data-quantity='${order.quantityQNT.toString()}'
+                    data-price='${order.priceNQT.toString()}'>`
             if (type === 'ask') {
-                rows += "<td class='bold red-asset'>" + formatOrderPricePerWholeQNT(order.priceNQT, BRS.currentAsset.decimals) + '</td>'
-                rows += '<td>' + formatQuantity(order.quantityQNT, BRS.currentAsset.decimals) + '</td>'
-                rows += '<td>' + formatAmount(order.totalNQT) + '</td>'
-                rows += `<td>${accountHTML}</td>`
+                rows += `
+                    <td class='bold red-asset'>${formatOrderPricePerWholeQNT(order.priceNQT, BRS.currentAsset.decimals)}</td>
+                    <td>${formatQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
+                    <td>${formatAmount(order.totalNQT)}</td>
+                    <td>${accountHTML}</td>`
             } else {
-                rows += `<td>${accountHTML}</td>`
-                rows += '<td>' + formatAmount(order.totalNQT) + '</td>'
-                rows += '<td>' + formatQuantity(order.quantityQNT, BRS.currentAsset.decimals) + '</td>'
-                rows += "<td class='bold green-asset'>" + formatOrderPricePerWholeQNT(order.priceNQT, BRS.currentAsset.decimals) + '</td>'
+                rows += `
+                    <td>${accountHTML}</td>
+                    <td>${formatAmount(order.totalNQT)}</td>
+                    <td>${formatQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
+                    <td class='bold green-asset'>${formatOrderPricePerWholeQNT(order.priceNQT, BRS.currentAsset.decimals)}</td>`
             }
             rows += '</tr>'
             first = false
@@ -1138,17 +1151,23 @@ export function formsOrderAssetComplete (response, data) {
     data.priceNQT = new BigInteger(data.priceNQT)
     data.totalNQT = new BigInteger(calculateOrderTotalNQT(data.quantityQNT, data.priceNQT))
 
-    let rowToAdd = `<tr class='tentative' data-transaction='${response.transaction}' data-quantity='${data.quantityQNT.toString()}' data-price='${data.priceNQT.toString()}'>`
+    let rowToAdd = `
+        <tr class='tentative'
+            data-transaction='${response.transaction}'
+            data-quantity='${data.quantityQNT.toString()}'
+            data-price='${data.priceNQT.toString()}'>`
     if (data.requestType === 'placeBidOrder') {
-        rowToAdd += `<td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>`
-        rowToAdd += '<td>' + formatAmount(data.totalNQT) + '</td>'
-        rowToAdd += '<td>' + formatQuantity(data.quantityQNT, BRS.currentAsset.decimals) + '</td>'
-        rowToAdd += '<td>' + formatOrderPricePerWholeQNT(data.priceNQT, BRS.currentAsset.decimals) + '</td>'
+        rowToAdd += `
+            <td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>
+            <td>${formatAmount(data.totalNQT)}</td>
+            <td>${formatQuantity(data.quantityQNT, BRS.currentAsset.decimals)}</td>
+            <td>${formatOrderPricePerWholeQNT(data.priceNQT, BRS.currentAsset.decimals)}</td>`
     } else {
-        rowToAdd += '<td>' + formatOrderPricePerWholeQNT(data.priceNQT, BRS.currentAsset.decimals) + '</td>'
-        rowToAdd += '<td>' + formatQuantity(data.quantityQNT, BRS.currentAsset.decimals) + '</td>'
-        rowToAdd += '<td>' + formatAmount(data.totalNQT) + '</td>'
-        rowToAdd += `<td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>`
+        rowToAdd += `
+            <td>${formatOrderPricePerWholeQNT(data.priceNQT, BRS.currentAsset.decimals)}</td>
+            <td>${formatQuantity(data.quantityQNT, BRS.currentAsset.decimals)}</td>
+            <td>${formatAmount(data.totalNQT)}</td>
+            <td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>`
     }
     rowToAdd += '</tr>'
 
@@ -1346,22 +1365,21 @@ export function pagesTransferHistory () {
                 BRS.hasMorePages = true
                 response.transfers.pop()
             }
-
             const transfers = response.transfers
-
             let rows = ''
-
             for (let i = 0; i < transfers.length; i++) {
                 transfers[i].quantityQNT = new BigInteger(transfers[i].quantityQNT)
-
-                const type = (transfers[i].recipientRS === BRS.accountRS ? 'receive' : 'send')
-
-                rows += "<tr><td><a href='#' data-transaction='" + String(transfers[i].assetTransfer).escapeHTML() + "'>" + String(transfers[i].assetTransfer).escapeHTML() + "</a></td><td><a href='#' data-goto-asset='" + String(transfers[i].asset).escapeHTML() + "'>" + String(transfers[i].name).escapeHTML() + '</a></td><td>' + formatTimestamp(transfers[i].timestamp) + "</td><td style='color:" + (type === 'receive' ? 'green' : 'red') + "'>" + formatQuantity(transfers[i].quantityQNT, transfers[i].decimals) + '</td>' +
-                        "<td><a href='#' data-user='" + getAccountFormatted(transfers[i], 'recipient') + "' class='user_info'>" + getAccountTitle(transfers[i], 'recipient') + '</a></td>' +
-                        "<td><a href='#' data-user='" + getAccountFormatted(transfers[i], 'sender') + "' class='user_info'>" + getAccountTitle(transfers[i], 'sender') + '</a></td>' +
-                        '</tr>'
+                const type = transfers[i].recipientRS === BRS.accountRS ? 'receive' : 'send'
+                rows += `
+                    <tr>
+                        <td><a href='#' data-transaction='${String(transfers[i].assetTransfer).escapeHTML()}'>${String(transfers[i].assetTransfer).escapeHTML()}</a></td>
+                        <td><a href='#' data-goto-asset='${String(transfers[i].asset).escapeHTML()}'>${String(transfers[i].name).escapeHTML()}</a></td>
+                        <td>${formatTimestamp(transfers[i].timestamp)}</td>
+                        <td style='color:${type === 'receive' ? 'green' : 'red'}'>${formatQuantity(transfers[i].quantityQNT, transfers[i].decimals)}</td>
+                        <td><a href='#' data-user='${getAccountFormatted(transfers[i], 'recipient')}' class='user_info'>${getAccountTitle(transfers[i], 'recipient')}</a></td>
+                        <td><a href='#' data-user='${getAccountFormatted(transfers[i], 'sender')}' class='user_info'>${getAccountTitle(transfers[i], 'sender')}</a></td>
+                    </tr>`
             }
-
             dataLoaded(rows)
         } else {
             dataLoaded()
@@ -1473,15 +1491,16 @@ function myAssetsPageLoaded (result) {
     for (let i = 0; i < result.assets.length; i++) {
         const asset = result.assets[i]
 
-        rows += `<tr data-asset="${String(asset.asset).escapeHTML()}">`
-        rows += `<td><a href='#' data-goto-asset='${String(asset.asset).escapeHTML()}'>${String(asset.name).escapeHTML()}</a></td>`
-        rows += `<td class="quantity">${formatQuantity(asset.balanceQNT, asset.decimals)}</td>`
-        rows += `<td>${formatQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>`
-        rows += `<td id="ask-order-${String(asset.asset).escapeHTML()}"><i class="fas fa-spinner my-fa-spin"></i></td>`
-        rows += `<td id="bid-order-${String(asset.asset).escapeHTML()}"><i class="fas fa-spinner my-fa-spin"></i></td>`
-        rows += `<td id="value-order-${String(asset.asset).escapeHTML()}"><i class="fas fa-spinner my-fa-spin"></i></td>`
-        rows += `<td><a href='#' data-toggle='modal' data-target='#transfer_asset_modal' data-asset='${String(asset.asset).escapeHTML()}' data-name='${String(asset.name).escapeHTML()}' data-decimals='${String(asset.decimals).escapeHTML()}'>${$.t('transfer')}</a></td>`
-        rows += '</tr>'
+        rows += `
+            <tr data-asset="${String(asset.asset).escapeHTML()}">
+                <td><a href='#' data-goto-asset='${String(asset.asset).escapeHTML()}'>${String(asset.name).escapeHTML()}</a></td>
+                <td class="quantity">${formatQuantity(asset.balanceQNT, asset.decimals)}</td>
+                <td>${formatQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>
+                <td id="ask-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</i></td>
+                <td id="bid-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</td>
+                <td id="value-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</td>
+                <td><a href='#' data-toggle='modal' data-target='#transfer_asset_modal' data-asset='${String(asset.asset).escapeHTML()}' data-name='${String(asset.name).escapeHTML()}' data-decimals='${String(asset.decimals).escapeHTML()}'>${$.t('transfer')}</a></td>
+            </tr>`
     }
 
     // Initial page loaded, fetch order details asynchronously
@@ -1900,14 +1919,15 @@ function openOrdersLoaded (orders, type, callback) {
             cancelText = `<a href='#' data-toggle='modal' data-target='#cancel_order_modal' data-order='${completeOrder.order}' data-type='${type}'><i class="fas fa-trash"></i></a>`
         }
 
-        rows += `<tr data-order='${completeOrder.order}' ${rowClass}>`
-        rows += `<td><a href='#' data-goto-asset='${completeOrder.asset}'>${completeOrder.assetName}</a></td>`
-        rows += `<td>${formatQuantity(completeOrder.originalQuantityQNT, completeOrder.assetDecimals)}</td>`
-        rows += `<td>${filled}</td>`
-        rows += `<td>${formatOrderPricePerWholeQNT(completeOrder.priceNQT, completeOrder.assetDecimals)}</td>`
-        rows += `<td>${formatAmount(completeOrder.totalNQT)}</td>`
-        rows += `<td class='cancel'>${cancelText}</td>`
-        rows += '</tr>'
+        rows += `
+            <tr data-order='${completeOrder.order}' ${rowClass}>
+                <td><a href='#' data-goto-asset='${completeOrder.asset}'>${completeOrder.assetName}</a></td>
+                <td>${formatQuantity(completeOrder.originalQuantityQNT, completeOrder.assetDecimals)}</td>
+                <td>${filled}</td>
+                <td>${formatOrderPricePerWholeQNT(completeOrder.priceNQT, completeOrder.assetDecimals)}</td>
+                <td>${formatAmount(completeOrder.totalNQT)}</td>
+                <td class='cancel'>${cancelText}</td>
+            </tr>`
     }
 
     $('#open_' + type + '_orders_table tbody').empty().append(rows)
