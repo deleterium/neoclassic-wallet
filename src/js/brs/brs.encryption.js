@@ -7,9 +7,9 @@
 import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
 import pako from 'pako'
+import sha256 from 'js-sha256'
 
 import curve25519 from '../crypto/curve25519'
-import * as jssha from '../crypto/jssha256'
 import converters from '../util/converters'
 
 import {
@@ -53,12 +53,12 @@ export function getAccountPublicKey (account) {
  */
 export function getPublicKey (hexSecretPhrase) {
     const secretPhraseBytes = converters.hexStringToByteArray(hexSecretPhrase)
-    const digest = jssha.SHA256_hash(secretPhraseBytes)
+    const digest = sha256.digest(secretPhraseBytes)
     return converters.byteArrayToHexString(curve25519.keygen(digest).p)
 }
 
 function getPrivateKey (secretPhrase) {
-    const pk = jssha.SHA256_hash(converters.stringToByteArray(secretPhrase))
+    const pk = sha256.digest(converters.stringToByteArray(secretPhrase))
     curve25519.clamp(pk)
     return converters.byteArrayToHexString(pk)
 }
@@ -68,7 +68,7 @@ export function getAccountId (secretPhrase) {
 }
 
 export function getAccountIdFromPublicKey (publicKey, RSFormat) {
-    const accountBA = jssha.SHA256_hash(converters.hexStringToByteArray(publicKey))
+    const accountBA = sha256.digest(converters.hexStringToByteArray(publicKey))
 
     const accountId = byteArrayToBigInteger(accountBA.slice(0, 8)).toString()
 
@@ -253,20 +253,27 @@ function decryptNote (message, options, secretPhrase) {
 //     BRS._sharedKeys[account] = sharedKey
 // }
 
+function doubleHash (data1, data2) {
+    const combined = new Uint8Array(data1.length + data2.length)
+    combined.set(data1)
+    combined.set(data2, data1.length)
+    return sha256.digest(combined)
+}
+
 export function signBytes (message, hexSecretPhrase) {
     const messageBytes = converters.hexStringToByteArray(message)
     const secretPhraseBytes = converters.hexStringToByteArray(hexSecretPhrase)
 
-    const digest = jssha.SHA256_hash(secretPhraseBytes)
+    const digest = sha256.digest(secretPhraseBytes)
     const s = curve25519.keygen(digest).s
 
-    const m = jssha.SHA256_hash(messageBytes)
+    const m = sha256.digest(messageBytes)
 
-    const x = jssha.SHA256_double_hash(m, s)
+    const x = doubleHash(m, s)
 
     const y = curve25519.keygen(x).p
 
-    const h = jssha.SHA256_double_hash(m, y)
+    const h = doubleHash(m, y)
 
     const v = curve25519.sign(h, x, s)
 
@@ -281,9 +288,9 @@ export function verifyBytes (signature, message, publicKey) {
     const h = signatureBytes.slice(32)
     const y = curve25519.verify(v, h, publicKeyBytes)
 
-    const m = jssha.SHA256_hash(messageBytes)
+    const m = sha256.digest(messageBytes)
 
-    const h2 = jssha.SHA256_double_hash(m, y)
+    const h2 = doubleHash(m, y)
 
     return areByteArraysEqual(h, h2)
 }
@@ -316,7 +323,8 @@ export function tryToDecryptMessage (message) {
     }
     return decryptNote(message.attachment.encryptedMessage.data, {
         nonce: message.attachment.encryptedMessage.nonce,
-        account: (message.recipient === BRS.account ? message.sender : message.recipient)
+        account: (message.recipient === BRS.account ? message.sender : message.recipient),
+        isText: message.attachment.encryptedMessage.isText
     })
 }
 
@@ -590,7 +598,8 @@ export function decryptAllMessages (messages, password) {
 
                 const decoded = decryptNote(message.attachment.encryptedMessage.data, {
                     nonce: message.attachment.encryptedMessage.nonce,
-                    account: otherUser
+                    account: otherUser,
+                    isText: message.attachment.encryptedMessage.isText
                 }, password)
 
                 BRS._decryptedTransactions[message.transaction] = {
@@ -661,7 +670,7 @@ function aesEncrypt (plaintext, options) {
         sharedKey[i] ^= options.nonce[i]
     }
 
-    const key = converters.byteArrayToWordArray(jssha.SHA256_hash(sharedKey))
+    const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
 
     const tmp = new Uint8Array(16)
 
@@ -704,7 +713,7 @@ function aesDecrypt (ivCiphertext, options) {
         sharedKey[i] ^= options.nonce[i]
     }
 
-    const key = converters.byteArrayToWordArray(jssha.SHA256_hash(sharedKey))
+    const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
 
     const encrypted = CryptoJS.lib.CipherParams.create({
         ciphertext,
