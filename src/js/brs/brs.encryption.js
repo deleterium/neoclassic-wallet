@@ -8,7 +8,7 @@ import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
 import pako from 'pako'
 
-import * as curve25519 from '../crypto/curve25519'
+import curve25519 from '../crypto/curve25519'
 import * as jssha from '../crypto/jssha256'
 import converters from '../util/converters'
 
@@ -59,7 +59,8 @@ export function getPublicKey (hexSecretPhrase) {
 
 function getPrivateKey (secretPhrase) {
     const pk = jssha.SHA256_hash(converters.stringToByteArray(secretPhrase))
-    return converters.byteArrayToHexString(curve25519.clamp(pk))
+    curve25519.clamp(pk)
+    return converters.byteArrayToHexString(pk)
 }
 
 export function getAccountId (secretPhrase) {
@@ -651,7 +652,7 @@ function aesEncrypt (plaintext, options) {
     const text = converters.byteArrayToWordArray(plaintext)
     let sharedKey
     if (!options.sharedKey) {
-        sharedKey = curve25519.sharedKeyGen(options.privateKey, options.publicKey)
+        sharedKey = curve25519.sharedkey(options.privateKey, options.publicKey)
     } else {
         sharedKey = options.sharedKey.slice(0) // clone
     }
@@ -694,7 +695,7 @@ function aesDecrypt (ivCiphertext, options) {
 
     let sharedKey
     if (!options.sharedKey) {
-        sharedKey = curve25519.sharedKeyGen(options.privateKey, options.publicKey)
+        sharedKey = curve25519.sharedkey(options.privateKey, options.publicKey)
     } else {
         sharedKey = options.sharedKey.slice(0) // clone
     }
@@ -729,7 +730,7 @@ function encryptData (plaintext, options) {
     }
 
     if (!options.sharedKey) {
-        options.sharedKey = curve25519.sharedKeyGen(options.privateKey, options.publicKey)
+        options.sharedKey = curve25519.sharedkey(options.privateKey, options.publicKey)
     }
 
     const compressedPlaintext = pako.gzip(new Uint8Array(plaintext))
@@ -752,7 +753,7 @@ function encryptData (plaintext, options) {
 
 function decryptData (data, options) {
     if (!options.sharedKey) {
-        options.sharedKey = curve25519.sharedKeyGen(options.privateKey, options.publicKey)
+        options.sharedKey = curve25519.sharedkey(options.privateKey, options.publicKey)
     }
 
     const compressedPlaintext = aesDecrypt(data, options)
