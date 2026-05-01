@@ -869,6 +869,9 @@ export default (function () {
 
     function sharedkey (k, oP) {
         const P = []
+        if (oP.every(byte => byte === 0)) {
+            return P.fill(0)
+        }
         k = k || []
         clamp(k)
         core(P, null, k, oP)
