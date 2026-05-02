@@ -19,9 +19,11 @@ import {
 import {
     getAccountId,
     setDecryptionPassword,
-    addDecryptedTransaction,
-    tryToDecryptMessage,
-    decryptAllMessages
+    addDecryptedTransactionToCache,
+    getDecryptedMessageFromCache,
+    decryptAllMessages,
+    getDecryptionPassword,
+    decryptAttachmentField
 } from './brs.encryption'
 
 import {
@@ -186,26 +188,113 @@ export function incomingMessages (transactions) {
     }
 }
 
-const msgFromTemplate = `
-<div class="direct-chat-msg %pendingClass%">
-    <div class="direct-chat-infos clearfix">
-        <span class="direct-chat-name float-left">%from%</span>
-        <span class="direct-chat-timestamp float-right">%timestamp%</span>
-    </div>
-    <img class="direct-chat-img" src="%imgsrc%">
-    <div class="direct-chat-text">%message%</div>
-</div>`
-const msgToTemplate = `
-<div class="direct-chat-msg right %pendingClass%">
-    <div class="direct-chat-infos clearfix">
-        <span class="direct-chat-name float-right">%from%</span>
-        <span class="direct-chat-timestamp float-left">%timestamp%</span>
-    </div>
-    <img class="direct-chat-img" src="%imgsrc%">
-    <div class="direct-chat-text">%message%</div>
-</div>`
+/**
+ * Get plain message in a given transaction.
+ * @param {Transaction} A transaction object from the blockchain
+ * @returns {string} The message, inf any, or undefine if not present
+ */
+export function getMessageFromTX (transaction) {
+    if (!transaction.attachment) {
+        return
+    }
+    if (!transaction.attachment['version.Message'] && transaction.attachment.message) {
+        // Message version zero
+        try {
+            return converters.hexStringToString(transaction.attachment.message)
+        } catch (err) {
+            // legacy
+            if (transaction.attachment.message.indexOf('feff') === 0) {
+                return convertFromHex16(transaction.attachment.message)
+            }
+            return convertFromHex8(transaction.attachment.message)
+        }
+    }
+    if (transaction.attachment['version.Message'] === 1) {
+        return transaction.attachment.message
+    }
+    if (transaction.attachment['version.Message'] > 1) {
+        return 'unsupported_message_version'
+    }
+}
+
+/**
+ * Get information about encryptedMessage in a given Transaction. Do not decrypt.
+ * Meant to be fast.
+ * @param {Transaction} A transaction object from the blockchain
+ * @returns {response} Object {
+ *     message: {string} Empty if no message. Empty if it is not decrypted.
+ *     isDecrypted: {boolean}
+ * } OR {undefined} if no EncryptedMessage in that TX
+ */
+export function getEncryptedMessageFromTX (transaction) {
+    if (!transaction.attachment || !transaction.attachment.encryptedMessage) {
+        return
+    }
+    const cachedMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptedMessage')
+    if (cachedMessage) {
+        return {
+            message: cachedMessage,
+            isDecrypted: true
+        }
+    }
+    return {
+        message: '',
+        isDecrypted: false
+    }
+}
+
+/**
+ * Get information about EncryptToSelfMessage in a given Transaction. Do not decrypt.
+ * Meant to be fast.
+ * @param {Transaction} A transaction object from the blockchain
+ * @returns {response} Object {
+ *     message: {string} Empty if no message. Empty if it is not decrypted.
+ *     isDecrypted: {boolean}
+ * } OR {undefined} if no EncryptedMessage in that TX
+ */
+export function getEncryptToSelfMessageFromTX (transaction) {
+    if (!transaction.attachment || !transaction.attachment.encryptToSelfMessage) {
+        return
+    }
+    const cachedMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptToSelfMessage')
+    if (cachedMessage) {
+        return {
+            message: cachedMessage,
+            isDecrypted: true
+        }
+    }
+    return {
+        message: '',
+        isDecrypted: false
+    }
+}
+
+
+export /* async */ function decryptAttachmentFieldAndUpdateSelector (transaction, field, passphrase, querySelector) {
+    itemID = '#' + querySelector
+    const decoded = /* await */ decryptAttachmentField(transaction, field, passphrase)
+    $(itemID).html(decoded.escapeHTML().nl2br())
+}
 
 function buildChatMessages (account_id) {
+    const msgFromTemplate = `
+        <div class="direct-chat-msg %pendingClass%">
+            <div class="direct-chat-infos clearfix">
+                <span class="direct-chat-name float-left">%from%</span>
+                <span class="direct-chat-timestamp float-right">%timestamp%</span>
+            </div>
+            <img class="direct-chat-img" src="%imgsrc%">
+            <div class="direct-chat-text">%message%</div>
+        </div>`
+    const msgToTemplate = `
+        <div class="direct-chat-msg right %pendingClass%">
+            <div class="direct-chat-infos clearfix">
+                <span class="direct-chat-name float-right">%from%</span>
+                <span class="direct-chat-timestamp float-left">%timestamp%</span>
+            </div>
+            <img class="direct-chat-img" src="%imgsrc%">
+            <div class="direct-chat-text">%message%</div>
+        </div>`
     let output = ''
 
     const messages = BRS._messages[account_id].slice(0)
@@ -219,84 +308,59 @@ function buildChatMessages (account_id) {
         messages.push(...unconfirmedTransactions.reverse())
     }
 
-    if (messages) {
-        for (let i = 0; i < messages.length; i++) {
-            let decoded = false
-            let extra = ''
-            const type = ''
+    for (let i = 0; i < messages.length; i++) {
+        const message = messages[i]
 
-            if (!messages[i].attachment) {
-                decoded = $.t('message_empty')
-            } else if (messages[i].attachment.encryptedMessage) {
-                try {
-                    decoded = tryToDecryptMessage(messages[i])
-                    extra = 'decrypted'
-                } catch (err) {
-                    if (err.errorCode && err.errorCode === 1) {
-                        decoded = $.t('error_decryption_passphrase_required')
-                        extra = 'to_decrypt'
-                    } else {
-                        decoded = $.t('error_decryption_unknown')
-                    }
-                }
+        const containerID = 'message' + message.transaction
+        const plainMessage = getMessageFromTX(message)
+        let messageField = 'no_data'
+        if (plainMessage !== undefined) {
+            // public message
+            if (plainMessage === '') {
+                messageField = $.t('message_empty')
             } else {
-                if (!messages[i].attachment['version.Message']) {
-                    try {
-                        decoded = converters.hexStringToString(messages[i].attachment.message)
-                    } catch (err) {
-                        // legacy
-                        if (messages[i].attachment.message.indexOf('feff') === 0) {
-                            decoded = convertFromHex16(messages[i].attachment.message)
-                        } else {
-                            decoded = convertFromHex8(messages[i].attachment.message)
-                        }
-                    }
+                messageField = plainMessage.escapeHTML().nl2br()
+            }
+        }
+        const secretMessage = getEncryptedMessageFromTX(message)
+        if (!plainMessage && secretMessage) {
+            if (secretMessage.isDecrypted) {
+                // encrypted message but already decoded in cache
+                messageField = '<i class="fas fa-lock"></i> ' + secretMessage.message.escapeHTML().nl2br()
+            } else {
+                // encrypted message, will be decoded async if there is passphrase available, or button to show modal for decryption
+                const passphrase = getDecryptionPassword()
+                if (passphrase) {
+                    messageField = `<i class="fas fa-lock"></i> <span id="${containerID}">${BRS.pendingTransactionHTML}</span>`
+                    setTimeout(decryptAttachmentFieldAndUpdateSelector, 10, message, 'encryptedMessage', passphrase, containerID)
                 } else {
-                    decoded = String(messages[i].attachment.message)
+                    // Show button for decryption
+                    messageField = "<i class='fas fa-exclamation-triangle'></i> " + '<button class="btn btn-warning unlock-messages"><i class="fas fa-key"></i></button>'
                 }
             }
+        }
 
-            if (decoded !== false) {
-                if (!decoded) {
-                    decoded = $.t('message_empty')
-                }
-                decoded = String(decoded).escapeHTML().nl2br()
+        const day = formatTimestamp(message.timestamp)
 
-                if (extra === 'to_decrypt') {
-                    decoded = "<i class='fas fa-exclamation-triangle'></i> " + '<button class="btn btn-warning unlock-messages"><i class="fas fa-key"></i></button>'
-                } else if (extra === 'decrypted') {
-                    if (type === 'payment') {
-                        decoded = '<strong>+' + formatAmount(messages[i].amountNQT) + ' ' + BRS.valueSuffix + '</strong><br />' + decoded
-                    }
+        let pendingClass = ''
+        if (message.unconfirmed === true) {
+            pendingClass = 'messagePending'
+        }
 
-                    decoded = "<i class='fas fa-lock'></i> " + decoded
-                }
-            } else {
-                decoded = "<i class='fas fa-exclamation-triangle'></i> " + $.t('error_could_not_decrypt_message')
-                extra = 'decryption_failed'
-            }
-
-            const day = formatTimestamp(messages[i].timestamp)
-
-            let pendingClass = ''
-            if (messages[i].unconfirmed === true) {
-                pendingClass = 'messagePending'
-            }
-            if (messages[i].sender === BRS.account) {
-                output += msgToTemplate
-                    .replace('%pendingClass%', pendingClass)
-                    .replace('%from%', $.t('you'))
-                    .replace('%timestamp%', day)
-                    .replace('%imgsrc%', hashicon(messages[i].sender, { size: 40 }).toDataURL())
-                    .replace('%message%', decoded)
-            } else {
-                output += msgFromTemplate
-                    .replace('%pendingClass%', pendingClass)
-                    .replace('%from%', messages[i].senderRS)
-                    .replace('%timestamp%', day)
-                    .replace('%imgsrc%', hashicon(messages[i].sender, { size: 40 }).toDataURL())
-                    .replace('%message%', decoded)
-            }
+        if (message.sender === BRS.account) {
+            output += msgToTemplate
+                .replace('%pendingClass%', pendingClass)
+                .replace('%from%', $.t('you'))
+                .replace('%timestamp%', day)
+                .replace('%imgsrc%', hashicon(message.sender, { size: 40 }).toDataURL())
+                .replace('%message%', messageField)
+        } else {
+            output += msgFromTemplate
+                .replace('%pendingClass%', pendingClass)
+                .replace('%from%', message.senderRS)
+                .replace('%timestamp%', day)
+                .replace('%imgsrc%', hashicon(message.sender, { size: 40 }).toDataURL())
+                .replace('%message%', messageField)
         }
     }
     return output
@@ -362,7 +426,7 @@ export function formsSendMessageComplete (response, data) {
     }
 
     if (data.message && data.encryptedMessageData) {
-        addDecryptedTransaction(response.transaction, {
+        addDecryptedTransactionToCache(response.transaction, {
             encryptedMessage: String(data._extra.message)
         })
     }

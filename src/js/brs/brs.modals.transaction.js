@@ -10,7 +10,11 @@ import { BRS } from '.'
 
 import { sendRequest } from './brs.server'
 
-import { tryToDecrypt } from './brs.encryption'
+import {
+    getDecryptedMessageFromCache,
+    getDecryptionPassword,
+    removeDecryptionForm
+} from './brs.encryption'
 
 import {
     formatOrderPricePerWholeQNT,
@@ -20,8 +24,6 @@ import {
     formatQuantity,
     formatAmount,
     formatTimestamp,
-    convertFromHex16,
-    convertFromHex8,
     convertNumericToRSAccountFormat,
     getAssetLink,
     fullHashToId,
@@ -33,6 +35,10 @@ import {
 import { getAssetDetails } from './brs.assetexchange'
 
 import { getTransactionDetails } from './brs.transactions'
+import {
+    decryptAttachmentFieldAndUpdateSelector,
+    getMessageFromTX
+} from './brs.messages'
 
 export function showTransactionModal (transaction) {
     if (BRS.fetchingModalData) {
@@ -616,16 +622,8 @@ function processTransactionModalData (transaction) {
                     data.discount = transaction.attachment.discountNQT
                 }
                 if (transaction.attachment.goodsData) {
-                    if (BRS.account === purchase.seller || BRS.account === purchase.buyer) {
-                        tryToDecrypt(transaction, {
-                            goodsData: {
-                                title: $.t('data'),
-                                nonce: 'goodsNonce'
-                            }
-                        }, (purchase.buyer === BRS.account ? purchase.seller : purchase.buyer))
-                    } else {
-                        data.data = $.t('encrypted_goods_data_no_permission')
-                    }
+                    // Removed legacy decryption operation
+                    data.data = 'encrypted_goods_data_is_unsupported_in_neoclassic'
                 }
                 let callout
                 if (BRS.account === purchase.buyer) {
@@ -705,64 +703,111 @@ function processTransactionModalData (transaction) {
             return
         }
         const $output = $('#transaction_info_output_bottom')
-        $output.html('')
-        let showMessage = false
-        if (transaction.attachment.message) {
-            let message
-            if (!transaction.attachment['version.Message']) {
-                try {
-                    message = converters.hexStringToString(transaction.attachment.message)
-                } catch (err) {
-                    // legacy
-                    if (transaction.attachment.message.indexOf('feff') === 0) {
-                        message = convertFromHex16(transaction.attachment.message)
-                    } else {
-                        message = convertFromHex8(transaction.attachment.message)
-                    }
-                }
-            } else {
-                message = String(transaction.attachment.message)
-            }
-            let outHTML = "<div style='color:#999999;padding-bottom:10px'>"
-            outHTML += `<i class='fas fa-unlock'></i>${$.t('public_message')}</div>`
-            if (transaction.attachment.messageIsText === true) {
-                outHTML += `<div class='modal-text-box'>${String(message).escapeHTML().nl2br()}</div>`
-            } else {
-                // Show both bytes and try to decode string
-                outHTML += `<label>${$.t('bytes')}:</label>`
-                outHTML += `<div class='modal-text-box'>${String(message).escapeHTML().nl2br()}</div>`
-                outHTML += `<label>${$.t('text')}:</label>`
-                outHTML += `<div class='modal-text-box'>${String(converters.hexStringToString(message)).escapeHTML().nl2br()}</div>`
-            }
-            $output.append(outHTML)
-            showMessage = true
-        }
-        if (transaction.attachment.encryptedMessage || (transaction.attachment.encryptToSelfMessage && BRS.account === transaction.sender)) {
-            $output.append("<div id='transaction_info_decryption_form'></div><div id='transaction_info_decryption_output' style='display:none;'></div>")
-            showMessage = true
-            if (BRS.account === transaction.recipient || BRS.account === transaction.sender) {
-                const fieldsToDecrypt = {}
-                if (transaction.attachment.encryptedMessage) {
-                    const dataType = ` (${transaction.attachment.encryptedMessage.isText ? $.t('text') : $.t('bytes')})`
-                    fieldsToDecrypt.encryptedMessage = $.t('encrypted_message') + dataType
-                }
-                if (transaction.attachment.encryptToSelfMessage && BRS.account === transaction.sender) {
-                    const dataType = ` (${transaction.attachment.encryptToSelfMessage.isText ? $.t('text') : $.t('bytes')})`
-                    fieldsToDecrypt.encryptToSelfMessage = $.t('note_to_self') + dataType
-                }
-                tryToDecrypt(transaction, fieldsToDecrypt, (transaction.recipient === BRS.account ? transaction.sender : transaction.recipient), {
-                    noPadding: true,
-                    formEl: '#transaction_info_decryption_form',
-                    outputEl: '#transaction_info_decryption_output'
-                })
-            } else {
-                $output.append('<div>' + $.t('encrypted_message_no_permission') + '</div>')
-            }
-        }
-        if (showMessage) {
-            $output.show()
+        const showDecryptionForm = drawAttachmentMessages(transaction, $output)
+        if (showDecryptionForm) {
+            BRS._encryptedNote = transaction
+            $('#decrypt_note_form_container').detach().appendTo($output)
+            $('#decrypt_note_form_container').show()
+        } else {
+            BRS._encryptedNote = null
         }
     }
 
     processTransactionModalDataMain()
+}
+
+/**
+ * Processes the attachment messages for a given transaction and updates the
+ * provided output element.
+ * @param {Transaction} transaction - The transaction object containing attachment details.
+ * @param {*} $output - The jQuery object representing the DOM element to update with attachment message content.
+ * @param {String} providedPassphrase - Optional passphrase provided by the user for decryption purposes.
+ * @returns {boolean} - Returns true if a decryption form needs to be shown, false otherwise.
+ */
+export function drawAttachmentMessages(transaction, $output, providedPassphrase) {
+    removeDecryptionForm()
+    $output.html('')
+    let showMessage = false, messageHTML = ''
+    let showEncrypted = false, encryptedHTML = ''
+    let showEncryptedToSelf = false, EncryptedToSelfHTML = ''
+    let showDecryptionForm = false
+
+    if (transaction.attachment.message) {
+        const messageText = getMessageFromTX(transaction)
+        if (transaction.attachment.messageIsText === true) {
+            messageHTML += `<div class='modal-text-box'>${messageText.escapeHTML().nl2br()}</div>`
+        } else {
+            // Show both bytes and try to decode string
+            messageHTML += `<br><label>${$.t('bytes')}:</label>`
+            messageHTML += `<div class='modal-text-box'>${messageText.escapeHTML().nl2br()}</div>`
+            messageHTML += `<label>${$.t('text')}:</label>`
+            messageHTML += `<div class='modal-text-box'>${converters.hexStringToString(messageText).escapeHTML().nl2br()}</div>`
+        }
+        showMessage = true
+    }
+    if (transaction.attachment.encryptedMessage) {
+        showEncrypted = true
+        let containerID = 'encryptedMessage' + transaction.transaction
+        if (transaction.recipient !== BRS.account && transaction.sender !== BRS.account) {
+            encryptedHTML = $t('data_is_encrypted')
+        } else {
+            const secretMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptedMessage')
+            if (secretMessage !== undefined) {
+                // encrypted message but already decoded in cache
+                encryptedHTML = secretMessage.escapeHTML().nl2br()
+            } else {
+                const passphrase = providedPassphrase === undefined ? getDecryptionPassword() : providedPassphrase;
+                if (passphrase) {
+                    // decode async
+                    encryptedHTML = `<span id="${containerID}">${BRS.pendingTransactionHTML}</span>`
+                    setTimeout(decryptAttachmentFieldAndUpdateSelector, 10, transaction, 'encryptedMessage', passphrase, containerID)
+                } else {
+                    // Show panel for decryption
+                    showEncrypted = false
+                    showDecryptionForm = true
+                }
+            }
+        }
+    }
+    if (transaction.attachment.encryptToSelfMessage) {
+        showEncryptedToSelf = true
+        let containerID = 'msgToSelf' + transaction.transaction
+        if (transaction.sender !== BRS.account) {
+            EncryptedToSelfHTML = $t('data_is_encrypted')
+        } else {
+            const secretMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptToSelfMessage')
+            if (secretMessage !== undefined) {
+                // encrypted message but already decoded in cache
+                EncryptedToSelfHTML = secretMessage.escapeHTML().nl2br()
+            } else {
+                const passphrase = providedPassphrase === undefined ? getDecryptionPassword() : providedPassphrase;
+                if (passphrase) {
+                    // decode async
+                    EncryptedToSelfHTML = `<span id="${containerID}">${BRS.pendingTransactionHTML}</span>`
+                    setTimeout(decryptAttachmentFieldAndUpdateSelector, 10, transaction, 'encryptToSelfMessage', passphrase, containerID)
+                } else {
+                    // Show panel for decryption
+                    showEncryptedToSelf = false
+                    showDecryptionForm = true
+                }
+            }
+        }
+    }
+    let finalHTML = ''
+    if (showMessage) {
+        finalHTML += `<label><i class='fas fa-unlock'></i> ${$.t('public_message')}</label>`
+        finalHTML += messageHTML
+    }
+    if (showEncrypted) {
+        finalHTML += `<label><i class='fas fa-lock'></i> ${$.t('encrypted_message')}</label>`
+        finalHTML += `<div class="modal-text-box">${encryptedHTML}</div>`
+    }
+    if (showEncryptedToSelf) {
+        finalHTML += `<label><i class='fas fa-lock'></i> ${$.t('note_to_self')}</label>`
+        finalHTML += `<div class="modal-text-box">${EncryptedToSelfHTML}</div>`
+    }
+    $output.html(finalHTML)
+    $output.show()
+
+    return showDecryptionForm
 }

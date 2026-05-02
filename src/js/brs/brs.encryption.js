@@ -19,6 +19,7 @@ import {
 import {
     getTranslatedFieldName
 } from './brs.util'
+import { drawAttachmentMessages } from './brs.modals.transaction'
 
 export function generatePublicKey (secretPhrase) {
     if (!secretPhrase) {
@@ -307,153 +308,40 @@ export function setDecryptionPassword (password) {
     BRS._decryptionPassword = password
 }
 
-export function addDecryptedTransaction (identifier, content) {
+export function getDecryptionPassword () {
+    if (BRS.rememberPassword) {
+        return BRS._password
+    }
+    if (BRS._decryptionPassword) {
+        return BRS._decryptionPassword
+    }
+    return undefined
+}
+
+export function addDecryptedTransactionToCache (identifier, content) {
     if (!BRS._decryptedTransactions[identifier]) {
         BRS._decryptedTransactions[identifier] = content
-    }
-}
-
-export function tryToDecryptMessage (message) {
-    if (BRS._decryptedTransactions && BRS._decryptedTransactions[message.transaction]) {
-        return BRS._decryptedTransactions[message.transaction].encryptedMessage
-    }
-
-    if (!message.attachment.encryptedMessage.data) {
-        return $.t('message_empty')
-    }
-    return decryptNote(message.attachment.encryptedMessage.data, {
-        nonce: message.attachment.encryptedMessage.nonce,
-        account: (message.recipient === BRS.account ? message.sender : message.recipient),
-        isText: message.attachment.encryptedMessage.isText
-    })
-}
-
-export function tryToDecrypt (transaction, fields, account, options) {
-    let showDecryptionForm = false
-
-    if (!options) {
-        options = {}
-    }
-
-    const nrFields = Object.keys(fields).length
-
-    const formEl = (options.formEl ? String(options.formEl).escapeHTML() : '#transaction_info_output_bottom')
-    const outputEl = (options.outputEl ? String(options.outputEl).escapeHTML() : '#transaction_info_output_bottom')
-
-    let output = ''
-
-    const identifier = (options.identifier ? transaction[options.identifier] : transaction.transaction)
-
-    // check in cache first..
-    if (BRS._decryptedTransactions && BRS._decryptedTransactions[identifier]) {
-        const decryptedTransaction = BRS._decryptedTransactions[identifier]
-
-        $.each(fields, function (key, title) {
-            if (typeof title !== 'string') {
-                title = title.title
-            }
-
-            if (key in decryptedTransaction) {
-                output += "<div style='" + (!options.noPadding && title ? 'padding-left:5px;' : '') + "'>" + (title ? '<label' + (nrFields > 1 ? " style='margin-top:5px'" : '') + "><i class='fas fa-lock'></i> " + String(title).escapeHTML() + '</label>' : '') + "<div class='modal-text-box'>" + String(decryptedTransaction[key]).escapeHTML().nl2br() + '</div></div>'
-            } else {
-                // if a specific key was not found, the cache is outdated..
-                output = ''
-                delete BRS._decryptedTransactions[identifier]
-                return false
-            }
-        })
-    }
-
-    if (!output) {
-        $.each(fields, function (key, title) {
-            let data = ''
-
-            let encrypted = ''
-            let nonce = ''
-            let isText = true
-            const nonceField = (typeof title !== 'string' ? title.nonce : key + 'Nonce')
-
-            if (key === 'encryptedMessage' || key === 'encryptToSelfMessage') {
-                encrypted = transaction.attachment[key].data
-                nonce = transaction.attachment[key].nonce
-                isText = transaction.attachment[key].isText
-            } else if (transaction.attachment && transaction.attachment[key]) {
-                encrypted = transaction.attachment[key]
-                nonce = transaction.attachment[nonceField]
-            } else if (transaction[key] && typeof transaction[key] === 'object') {
-                encrypted = transaction[key].data
-                nonce = transaction[key].nonce
-            } else if (transaction[key]) {
-                encrypted = transaction[key]
-                nonce = transaction[nonceField]
-            } else {
-                encrypted = ''
-            }
-
-            if (encrypted) {
-                if (typeof title !== 'string') {
-                    title = title.title
-                }
-
-                try {
-                    let destinationAccount = account
-                    if (key === 'encryptToSelfMessage') {
-                        destinationAccount = BRS.account
-                    }
-                    data = decryptNote(encrypted, {
-                        nonce,
-                        account: destinationAccount,
-                        isText
-                    })
-                } catch (err) {
-                    if (err.errorCode && err.errorCode === 1) {
-                        showDecryptionForm = true
-                        return false
-                    } else {
-                        if (title) {
-                            let translatedTitle = getTranslatedFieldName(title).toLowerCase()
-                            if (!translatedTitle) {
-                                translatedTitle = String(title).escapeHTML().toLowerCase()
-                            }
-
-                            data = $.t('error_could_not_decrypt_var', {
-                                var: translatedTitle
-                            }).capitalize()
-                        } else {
-                            data = $.t('error_could_not_decrypt')
-                        }
-                    }
-                }
-
-                output += "<div style='" + (!options.noPadding && title ? 'padding-left:5px;' : '') + "'>" + (title ? '<label' + (nrFields > 1 ? " style='margin-top:5px'" : '') + "><i class='fas fa-lock'></i> " + String(title).escapeHTML() + '</label>' : '') + "<div class='modal-text-box'>" + String(data).escapeHTML().nl2br() + '</div></div>'
-            }
-        })
-    }
-
-    if (showDecryptionForm) {
-        BRS._encryptedNote = {
-            transaction,
-            fields,
-            account,
-            options,
-            identifier
-        }
-
-        $('#decrypt_note_form_container').detach().appendTo(formEl)
-
-        $('#decrypt_note_form_container, ' + formEl).show()
     } else {
-        removeDecryptionForm()
-        $(outputEl).append(output).show()
+        // Merge content
+        Object.assign(BRS._decryptedTransactions[identifier], content);
     }
 }
 
-export function removeDecryptionForm ($modal) {
-    if (($modal && $modal.find('#decrypt_note_form_container').length) || (!$modal && $('#decrypt_note_form_container').length)) {
-        $('#decrypt_note_form_container input').val('')
-        $('#decrypt_note_form_container').find('.callout').html($.t('passphrase_required_to_decrypt_data'))
-        $('#decrypt_note_form_container').hide().detach().appendTo('body')
+/** Get a decoded from cache.
+ * @param {TransactionID} TransactionID from blockchain
+ * @returns {string|undefined} Decoded message, or undefined if no decoded message found
+ */
+export function getDecryptedMessageFromCache (txid, field) {
+    if (!BRS._decryptedTransactions || !BRS._decryptedTransactions[txid] || !BRS._decryptedTransactions[txid][field]) {
+        return undefined
     }
+    return BRS._decryptedTransactions[txid][field]
+}
+
+export function removeDecryptionForm () {
+    $('#decrypt_note_form_container input').val('')
+    $('#decrypt_note_form_container').find('.callout').html($.t('passphrase_required_to_decrypt_data'))
+    $('#decrypt_note_form_container').hide().detach().appendTo('body')
 }
 
 export function decryptNoteFormSubmit () {
@@ -467,14 +355,8 @@ export function decryptNoteFormSubmit () {
     let password = $form.find('input[name=secretPhrase]').val()
 
     if (!password) {
-        if (BRS.rememberPassword) {
-            password = BRS._password
-        } else if (BRS._decryptionPassword) {
-            password = BRS._decryptionPassword
-        } else {
-            $form.find('.callout').html($.t('error_passphrase_required')).show()
-            return
-        }
+        $form.find('.callout').html($.t('error_passphrase_required')).show()
+        return
     }
 
     const accountId = getAccountId(password)
@@ -484,89 +366,51 @@ export function decryptNoteFormSubmit () {
     }
 
     const rememberPassword = $form.find('input[name=rememberPassword]').is(':checked')
-
-    const otherAccount = BRS._encryptedNote.account
-
-    let output = ''
-    let decryptionError = false
-    const decryptedFields = {}
-
-    const nrFields = Object.keys(BRS._encryptedNote.fields).length
-
-    $.each(BRS._encryptedNote.fields, function (key, title) {
-        let data = ''
-
-        let encrypted = ''
-        let nonce = ''
-        const nonceField = (typeof title !== 'string' ? title.nonce : key + 'Nonce')
-
-        if (key === 'encryptedMessage' || key === 'encryptToSelfMessage') {
-            encrypted = BRS._encryptedNote.transaction.attachment[key].data
-            nonce = BRS._encryptedNote.transaction.attachment[key].nonce
-        } else if (BRS._encryptedNote.transaction.attachment && BRS._encryptedNote.transaction.attachment[key]) {
-            encrypted = BRS._encryptedNote.transaction.attachment[key]
-            nonce = BRS._encryptedNote.transaction.attachment[nonceField]
-        } else if (BRS._encryptedNote.transaction[key] && typeof BRS._encryptedNote.transaction[key] === 'object') {
-            encrypted = BRS._encryptedNote.transaction[key].data
-            nonce = BRS._encryptedNote.transaction[key].nonce
-        } else if (BRS._encryptedNote.transaction[key]) {
-            encrypted = BRS._encryptedNote.transaction[key]
-            nonce = BRS._encryptedNote.transaction[nonceField]
-        } else {
-            encrypted = ''
-        }
-
-        if (encrypted) {
-            if (typeof title !== 'string') {
-                title = title.title
-            }
-
-            try {
-                let destinationAccount = otherAccount
-                if (key === 'encryptToSelfMessage') {
-                    destinationAccount = BRS.account
-                }
-                data = decryptNote(encrypted, {
-                    nonce,
-                    account: destinationAccount
-                }, password)
-
-                decryptedFields[key] = data
-            } catch (err) {
-                decryptionError = true
-                const message = String(err.message ? err.message : err)
-
-                $form.find('.callout').html(message.escapeHTML())
-                return false
-            }
-
-            output += "<div style='" + (!BRS._encryptedNote.options.noPadding && title ? 'padding-left:5px;' : '') + "'>" + (title ? '<label' + (nrFields > 1 ? " style='margin-top:5px'" : '') + "><i class='fas fa-lock'></i> " + String(title).escapeHTML() + '</label>' : '') + "<div class='modal-text-box'>" + String(data).escapeHTML().nl2br() + '</div></div>'
-        }
-    })
-
-    if (decryptionError) {
-        return
+    if (rememberPassword) {
+        setDecryptionPassword(password)
     }
 
-    BRS._decryptedTransactions[BRS._encryptedNote.identifier] = decryptedFields
-
-    // only save 150 decryptions maximum in cache...
-    const decryptionKeys = Object.keys(BRS._decryptedTransactions)
-
-    if (decryptionKeys.length > 150) {
-        delete BRS._decryptedTransactions[decryptionKeys[0]]
-    }
-
-    removeDecryptionForm()
-
-    const outputEl = (BRS._encryptedNote.options.outputEl ? String(BRS._encryptedNote.options.outputEl).escapeHTML() : '#transaction_info_output_bottom')
-
-    $(outputEl).append(output).show()
+    const $output = $('#transaction_info_output_bottom')
+    drawAttachmentMessages(BRS._encryptedNote, $output, password)
 
     BRS._encryptedNote = null
+}
 
-    if (rememberPassword) {
-        BRS._decryptionPassword = password
+/**
+ * Decrypt the encrypted message of the given transaction.
+ * @param {Transaction} tx - The transaction containing the encrypted message.
+ * @param {String} password - User password
+ * @returns {String} The message decrypted. If the message was not text, it returns the decoded hex string.
+ * 
+ * @description
+ * * This function decrypts the encrypted message from a transaction using the provided password.
+ * It checks if the account ID derived from the password matches the current user's account.
+ * If the message is successfully decrypted, it updates the cache at `BRS._decryptedTransactions`.
+ * In case of an error during decryption, it logs the error and returns an appropriate error message.
+ */
+export /* async */ function decryptAttachmentField (tx, field, password) {
+    const accountId = getAccountId(password)
+    if (accountId !== BRS.account) {
+        return $.t('error_incorrect_passphrase')
+    }
+    if (!tx.attachment[field]) {
+        return ''
+    }
+    try {
+        let recipientID = BRS.account
+        if (field === 'encryptedMessage') {
+            recipientID = (tx.sender === BRS.account ? tx.recipient : tx.sender)
+        }
+        const decoded = decryptNote(tx.attachment[field].data, {
+            nonce: tx.attachment[field].nonce,
+            account: recipientID,
+            isText: tx.attachment[field].isText
+        }, password)
+        addDecryptedTransactionToCache(tx.transaction, { [field]: decoded })
+        return decoded
+    } catch (err) {
+        console.error(err)
+        return $.t('error_decryption_unknown')
     }
 }
 
