@@ -21,7 +21,6 @@ import {
     setDecryptionPassword,
     addDecryptedTransactionToCache,
     getDecryptedMessageFromCache,
-    decryptAllMessages,
     getDecryptionPassword,
     decryptAttachmentField
 } from './brs.encryption'
@@ -269,10 +268,9 @@ export function getEncryptToSelfMessageFromTX (transaction) {
     }
 }
 
-
 export /* async */ function decryptAttachmentFieldAndUpdateSelector (transaction, field, passphrase, querySelector) {
-    itemID = '#' + querySelector
-    const decoded = /* await */ decryptAttachmentField(transaction, field, passphrase)
+    const itemID = '#' + querySelector
+    const decoded = /* await */ decryptAttachmentField(transaction, field, false, passphrase)
     $(itemID).html(decoded.escapeHTML().nl2br())
 }
 
@@ -451,7 +449,6 @@ export function formsDecryptMessages (data) {
             hide: true
         }
     }
-    let success = false
     try {
         const messagesToDecrypt = []
         for (const otherUser in BRS._messages) {
@@ -472,24 +469,23 @@ export function formsDecryptMessages (data) {
             }
         }
 
-        success = decryptAllMessages(messagesToDecrypt, data.secretPhrase)
+        for (const message of messagesToDecrypt) {
+            if (message.attachment.encryptedMessage) {
+                decryptAttachmentField(message, 'encryptedMessage', true, data.secretPhrase)
+            }
+        }
     } catch (err) {
-        if (err.errorCode && err.errorCode <= 2) {
+        if (err.brsError) {
             return {
-                error: err.message.escapeHTML()
+                error: err.brsError
             }
-        } else {
-            return {
-                error: $.t('error_messages_decrypt')
-            }
+        }
+        return {
+            error: $.t('error_messages_decrypt')
         }
     }
 
-    if (success) {
-        $.notify($.t('success_messages_decrypt'), { type: 'success' })
-    } else {
-        $.notify($.t('error_messages_decrypt'), { type: 'danger' })
-    }
+    $.notify($.t('success_messages_decrypt'), { type: 'success' })
 
     reloadCurrentPage()
 

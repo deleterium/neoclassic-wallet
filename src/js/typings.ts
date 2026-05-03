@@ -11,3 +11,32 @@ export type WordArray = {
     sigBytes: number,
     words: Uint32Array
 }
+
+export interface Transaction {
+    amountNQT: string;
+    attachment?: any;
+    block: string;
+    blockTimestamp: number;
+    cashBackId: string;
+    confirmations?: number;
+    deadline: number;
+    ecBlockHeight: number;
+    ecBlockId: string;
+    feeNQT: string;
+    fullHash: string;
+    height: number;
+    recipient?: string;
+    recipientRS?: string;
+    referencedTransactionFullHash?: string;
+    requestProcessingTime: number;
+    sender: string;
+    senderPublicKey: string;
+    senderRS: string;
+    signature: string;
+    signatureHash: string;
+    subtype: number;
+    timestamp: number;
+    transaction: string;
+    type: number;
+    version: number;
+}

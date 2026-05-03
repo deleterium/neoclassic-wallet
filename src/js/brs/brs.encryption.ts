@@ -365,21 +365,33 @@ export function decryptNoteFormSubmit () {
 /**
  * Decrypt the encrypted message of the given transaction.
  * @param {Transaction} tx - The transaction containing the encrypted message.
- * @param {String} password - User password
- * @returns {String} The message decrypted. If the message was not text, it returns the decoded hex string.
+ * @param {boolean} throwOnError - Set true to throw exception on error. If false, the error is returned as decoded message.
+ * @param {string} password - User password
+ * @returns {string} The message decrypted. If the message was not text, it returns the decoded hex string.
  * 
  * @description
  * * This function decrypts the encrypted message from a transaction using the provided password.
+ * If the transaction already was decoded, return it.
  * It checks if the account ID derived from the password matches the current user's account.
- * If the message is successfully decrypted, it updates the cache at `BRS._decryptedTransactions`.
- * In case of an error during decryption, it logs the error and returns an appropriate error message.
+ * If the message is successfully decrypted, it updates the decrypted messages cache.
+ * In case of an error during decryption, it can return the error, or, if throwOnError, throws an object with prop `brsError` with the error message.
  */
-export /* async */ function decryptAttachmentField (tx: Transaction, field: 'encryptedMessage' | 'encryptToSelfMessage', password: string) {
+export /* async */ function decryptAttachmentField (tx: Transaction, field: 'encryptedMessage' | 'encryptToSelfMessage', throwOnError: boolean, password: string) {
+    const messageInCache = getDecryptedMessageFromCache(tx.transaction, field)
+    if (messageInCache) {
+        return messageInCache
+    }
     const accountId = getAccountId(password)
     if (accountId !== BRS.account) {
+        if (throwOnError) {
+            throw { brsError: $.t('error_incorrect_passphrase') }
+        }
         return $.t('error_incorrect_passphrase')
     }
     if (!tx.attachment[field]) {
+        if (throwOnError) {
+            throw { brsError: $.t('message_empty') }
+        }
         return ''
     }
     try {
@@ -398,64 +410,16 @@ export /* async */ function decryptAttachmentField (tx: Transaction, field: 'enc
         return decoded
     } catch (err: any) {
         if (err.brsErrorMessage) {
+            if (throwOnError) {
+                throw err
+            }
             return err.brsErrorMessage
         }
         console.error(err)
+        if (throwOnError) {
+            throw { brsError: $.t('error_decryption_unknown') }
+        }
         return $.t('error_decryption_unknown')
-    }
-}
-
-export function decryptAllMessages (messages, password) {
-    if (!password) {
-        throw {
-            message: $.t('error_passphrase_required'),
-            errorCode: 1
-        }
-    } else {
-        const accountId = getAccountId(password)
-        if (accountId !== BRS.account) {
-            throw {
-                message: $.t('error_incorrect_passphrase'),
-                errorCode: 2
-            }
-        }
-    }
-
-    let success = 0
-    let error = 0
-
-    for (let i = 0; i < messages.length; i++) {
-        const message = messages[i]
-
-        if (message.attachment.encryptedMessage && !BRS._decryptedTransactions[message.transaction]) {
-            try {
-                const otherUser = (message.sender === BRS.account ? message.recipient : message.sender)
-                const options = createCryptoOptions(
-                    otherUser,
-                    message.attachment.encryptedMessage.nonce,
-                    message.attachment.encryptedMessage.isText,
-                    password
-                )
-                const decoded = decryptNote(message.attachment.encryptedMessage.data, options)
-
-                BRS._decryptedTransactions[message.transaction] = {
-                    encryptedMessage: decoded
-                }
-
-                success++
-            } catch (err) {
-                BRS._decryptedTransactions[message.transaction] = {
-                    encryptedMessage: $.t('error_decryption_unknown')
-                }
-                error++
-            }
-        }
-    }
-
-    if (success || !error) {
-        return true
-    } else {
-        return false
     }
 }
 
