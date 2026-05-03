@@ -10,7 +10,7 @@ import { BRS } from '.'
 import { sendRequest } from './brs.server'
 
 import {
-    getPublicKey,
+    getPublicKeyFromPassphrase,
     signBytes,
     verifyBytes
 } from './brs.encryption'
@@ -27,21 +27,21 @@ export function formsSignMessage () {
     $('#sign_message_output').hide()
     const isHex = $('#sign_message_data_is_hex').is(':checked')
     let data = $('#sign_message_data').val()
-    const passphrase = converters.stringToHexString($('#sign_message_passphrase').val())
+    const passphrase = $('#sign_message_passphrase').val()
     if (!isHex) {
         data = converters.stringToHexString(data)
     }
     sendRequest('parseTransaction', { transactionBytes: data }, function (result) {
         console.log(result)
         let signedTransaction = ''
-        const signature = signBytes(data, passphrase)
+        const signature = signBytes(data, converters.stringToHexString(passphrase))
         if (result.errorCode == null) {
             $('#sign_message_error').text($.t('warning_sign_transaction'))
             $('#sign_message_error').show()
             signedTransaction = data.substr(0, 192) + signature + data.substr(320)
         }
         $('#sign_message_output_signature').text(signature)
-        $('#sign_message_output_public_key').text(getPublicKey(passphrase))
+        $('#sign_message_output_public_key').text(getPublicKeyFromPassphrase(passphrase))
         $('#sign_message_output_signed_transaction').text(signedTransaction)
         $('#sign_message_output').show()
     }, false)

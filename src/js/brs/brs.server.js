@@ -21,11 +21,11 @@ import {
 
 import { showRawTransactionModal } from './brs.modals.advanced'
 
-export function setServerPassword (password) {
+export function setSavedPassword (password) {
     BRS._password = password
 }
 
-export function getServerPassword () {
+export function getSavedPassword () {
     return BRS._password
 }
 

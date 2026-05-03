@@ -13,6 +13,7 @@ import curve25519 from '../crypto/curve25519'
 import converters from '../util/converters'
 
 import {
+    getSavedPassword,
     sendRequest
 } from './brs.server'
 
@@ -25,16 +26,13 @@ type CryptoOptions = {
     isText: boolean
 }
 
-export function generatePublicKey (secretPhrase) {
-    if (!secretPhrase) {
-        if (BRS.rememberPassword) {
-            secretPhrase = BRS._password
-        } else {
-            throw $.t('error_generate_public_key_noBRS._password')
-        }
+export function generatePublicKey (secretPhrase?: string) {
+    const passphrase = secretPhrase ?? getSavedPassword()
+    if (!passphrase) {
+        throw $.t('error_generate_public_key_noBRS._password')
     }
 
-    return getPublicKey(converters.stringToHexString(secretPhrase))
+    return getPublicKeyFromPassphrase(secretPhrase)
 }
 
 export function getAccountPublicKey (account: string) {
@@ -55,23 +53,26 @@ export function getAccountPublicKey (account: string) {
 }
 
 /**
- * @param {String} hexSecretPhrase in hexString format
+ * @param {String} secretphrase in hexString format
  * @returns publicKey in hexString format
  */
-export function getPublicKey (hexSecretPhrase) {
-    const secretPhraseBytes = converters.hexStringToByteArray(hexSecretPhrase)
+export function getPublicKeyFromPassphrase (secretphrase?: string) : HexString {
+    if (!secretphrase) {
+        throw $.t('error_generate_public_key_no_password')
+    }
+    const secretPhraseBytes = converters.stringToByteArray(secretphrase)
     const digest = sha256.digest(secretPhraseBytes)
     return converters.byteArrayToHexString(curve25519.keygen(digest).p)
 }
 
-function getPrivateKey (secretPhrase) {
+function getPrivateKey (secretPhrase: string) {
     const pk = sha256.digest(converters.stringToByteArray(secretPhrase))
     curve25519.clamp(pk)
     return converters.byteArrayToHexString(pk)
 }
 
 export function getAccountId (secretPhrase) {
-    return getAccountIdFromPublicKey(getPublicKey(converters.stringToHexString(secretPhrase)))
+    return getAccountIdFromPublicKey(getPublicKeyFromPassphrase(secretPhrase))
 }
 
 export function getAccountIdFromPublicKey (publicKey, RSFormat) {

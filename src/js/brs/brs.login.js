@@ -19,7 +19,7 @@ import {
 } from './brs.settings'
 
 import {
-    setServerPassword,
+    setSavedPassword,
     sendRequest
 } from './brs.server'
 
@@ -32,7 +32,7 @@ import {
 } from './brs.contacts'
 
 import {
-    getPublicKey,
+    getPublicKeyFromPassphrase,
     getAccountId,
     setEncryptionPassword,
     getEncryptionPassword,
@@ -282,7 +282,7 @@ function loginWithPassphrase (passphrase) {
 
         BRS.account = getAccountId(passphrase)
         BRS.accountRS = convertNumericToRSAccountFormat(BRS.account)
-        BRS.publicKey = getPublicKey(converters.stringToHexString(passphrase))
+        BRS.publicKey = getPublicKeyFromPassphrase(passphrase)
         BRS.accountRSExtended = BRS.accountRS + '-' + BigInt(`0x${BRS.publicKey}`).toString(36).toUpperCase()
 
         sendRequest('getAccountPublicKey', {
@@ -308,7 +308,7 @@ function loginWithPassphrase (passphrase) {
             if ($('#remember_password').is(':checked')) {
                 BRS.rememberPassword = true
                 $('#remember_password').prop('checked', false)
-                setServerPassword(passphrase)
+                setSavedPassword(passphrase)
                 $('.secret_phrase, .show_secret_phrase').hide()
                 $('.hide_secret_phrase').show()
             }
@@ -363,6 +363,6 @@ function unlock () {
 export function logout () {
     setDecryptionPassword('')
     setEncryptionPassword('')
-    setServerPassword('')
+    setSavedPassword('')
     window.location.reload()
 }
