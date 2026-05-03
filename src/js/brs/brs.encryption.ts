@@ -2,7 +2,7 @@
  * @depends {brs.js}
  */
 
-/* global BigInteger CryptoJS */
+/* global CryptoJS */
 
 import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
@@ -16,10 +16,16 @@ import {
     sendRequest
 } from './brs.server'
 
-import {
-    getTranslatedFieldName
-} from './brs.util'
 import { drawAttachmentMessages } from './brs.modals.transaction'
+
+import { ByteArray, HexString, Transaction } from '../typings'
+
+type CryptoOptions = {
+    nonce: HexString,
+    privateKey: HexString,
+    publicKey: HexString,
+    isText: boolean
+}
 
 export function generatePublicKey (secretPhrase) {
     if (!secretPhrase) {
@@ -33,14 +39,16 @@ export function generatePublicKey (secretPhrase) {
     return getPublicKey(converters.stringToHexString(secretPhrase))
 }
 
-export function getAccountPublicKey (account) {
+export function getAccountPublicKey (account: string) {
     let publicKey = ''
     // synchronous!
     sendRequest('getAccountPublicKey', {
         account
     }, function (response) {
         if (!response.publicKey) {
-            throw $.t('error_no_public_key')
+            throw {
+                brsErrorMessage: $.t('error_no_public_key')
+            }
         } else {
             publicKey = response.publicKey
         }
@@ -71,7 +79,7 @@ export function getAccountId (secretPhrase) {
 export function getAccountIdFromPublicKey (publicKey, RSFormat) {
     const accountBA = sha256.digest(converters.hexStringToByteArray(publicKey))
 
-    const accountId = byteArrayToBigInteger(accountBA.slice(0, 8)).toString()
+    const accountId = converters.byteArrayToBigInteger(accountBA.slice(0, 8)).toString()
 
     if (RSFormat) {
         const address = new NxtAddress(accountId)
@@ -174,50 +182,28 @@ export function encryptNote (message, options, secretPhrase) {
 //     }
 // }
 
-function decryptNote (message, options, secretPhrase) {
-    try {
-        if (!options.sharedKey) {
-            if (!options.privateKey) {
-                if (!secretPhrase) {
-                    if (BRS.rememberPassword) {
-                        secretPhrase = BRS._password
-                    } else if (BRS._decryptionPassword) {
-                        secretPhrase = BRS._decryptionPassword
-                    } else {
-                        throw {
-                            message: $.t('error_decryption_passphrase_required'),
-                            errorCode: 1
-                        }
-                    }
-                }
+function decryptNote (message: HexString, options: CryptoOptions) {
+    const decryptedData = decryptData(converters.hexStringToByteArray(message), options)
+    if (options.isText) {
+        return converters.byteArrayToString(decryptedData)
+    }
+    return converters.byteArrayToHexString(decryptedData)
+}
 
-                options.privateKey = converters.hexStringToByteArray(getPrivateKey(secretPhrase))
+function createCryptoOptions (otherUser: string, nonce: HexString, isText: boolean, secretPhrase?: string) : CryptoOptions {
+    const publicKey = getAccountPublicKey(otherUser)
+    const password = secretPhrase || getDecryptionPassword()
+    if (!password) {
+        throw {
+                brsErrorMessage: $.t('error_decryption_passphrase_required')
             }
-
-            if (!options.publicKey) {
-                if (!options.account) {
-                    throw {
-                        message: $.t('error_account_id_not_specified'),
-                        errorCode: 2
-                    }
-                }
-
-                options.publicKey = converters.hexStringToByteArray(getAccountPublicKey(options.account))
-            }
-        }
-
-        options.nonce = converters.hexStringToByteArray(options.nonce)
-
-        return decryptData(converters.hexStringToByteArray(message), options)
-    } catch (err) {
-        if (err.errorCode && err.errorCode < 3) {
-            throw err
-        } else {
-            throw {
-                message: $.t('error_message_decryption'),
-                errorCode: 3
-            }
-        }
+    }
+    const privateKey = getPrivateKey(password)
+    return {
+        nonce,
+        publicKey,
+        privateKey,
+        isText
     }
 }
 
@@ -388,7 +374,7 @@ export function decryptNoteFormSubmit () {
  * If the message is successfully decrypted, it updates the cache at `BRS._decryptedTransactions`.
  * In case of an error during decryption, it logs the error and returns an appropriate error message.
  */
-export /* async */ function decryptAttachmentField (tx, field, password) {
+export /* async */ function decryptAttachmentField (tx: Transaction, field: 'encryptedMessage' | 'encryptToSelfMessage', password: string) {
     const accountId = getAccountId(password)
     if (accountId !== BRS.account) {
         return $.t('error_incorrect_passphrase')
@@ -399,16 +385,21 @@ export /* async */ function decryptAttachmentField (tx, field, password) {
     try {
         let recipientID = BRS.account
         if (field === 'encryptedMessage') {
-            recipientID = (tx.sender === BRS.account ? tx.recipient : tx.sender)
+            recipientID = (tx.sender === BRS.account ? tx.recipient : tx.sender) as string
         }
-        const decoded = decryptNote(tx.attachment[field].data, {
-            nonce: tx.attachment[field].nonce,
-            account: recipientID,
-            isText: tx.attachment[field].isText
-        }, password)
+        const options = createCryptoOptions(
+            recipientID,
+            tx.attachment[field].nonce,
+            tx.attachment[field].isText,
+            password
+        )
+        const decoded = decryptNote(tx.attachment[field].data, options)
         addDecryptedTransactionToCache(tx.transaction, { [field]: decoded })
         return decoded
-    } catch (err) {
+    } catch (err: any) {
+        if (err.brsErrorMessage) {
+            return err.brsErrorMessage
+        }
         console.error(err)
         return $.t('error_decryption_unknown')
     }
@@ -439,12 +430,13 @@ export function decryptAllMessages (messages, password) {
         if (message.attachment.encryptedMessage && !BRS._decryptedTransactions[message.transaction]) {
             try {
                 const otherUser = (message.sender === BRS.account ? message.recipient : message.sender)
-
-                const decoded = decryptNote(message.attachment.encryptedMessage.data, {
-                    nonce: message.attachment.encryptedMessage.nonce,
-                    account: otherUser,
-                    isText: message.attachment.encryptedMessage.isText
-                }, password)
+                const options = createCryptoOptions(
+                    otherUser,
+                    message.attachment.encryptedMessage.nonce,
+                    message.attachment.encryptedMessage.isText,
+                    password
+                )
+                const decoded = decryptNote(message.attachment.encryptedMessage.data, options)
 
                 BRS._decryptedTransactions[message.transaction] = {
                     encryptedMessage: decoded
@@ -479,18 +471,6 @@ function areByteArraysEqual (bytes1, bytes2) {
     }
 
     return true
-}
-
-function byteArrayToBigInteger (byteArray, startIndex) {
-    let value = new BigInteger('0', 10)
-    let temp1, temp2
-    for (let i = byteArray.length - 1; i >= 0; i--) {
-        temp1 = value.multiply(new BigInteger('256', 10))
-        temp2 = temp1.add(new BigInteger(byteArray[i].toString(10), 10))
-        value = temp2
-    }
-
-    return value
 }
 
 function aesEncrypt (plaintext, options) {
@@ -536,7 +516,7 @@ function aesEncrypt (plaintext, options) {
     return ivOut.concat(ciphertextOut)
 }
 
-function aesDecrypt (ivCiphertext, options) {
+function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) {
     if (ivCiphertext.length < 16 || ivCiphertext.length % 16 !== 0) {
         throw {
             name: 'invalid ciphertext'
@@ -546,15 +526,14 @@ function aesDecrypt (ivCiphertext, options) {
     const iv = converters.byteArrayToWordArray(ivCiphertext.slice(0, 16))
     const ciphertext = converters.byteArrayToWordArray(ivCiphertext.slice(16))
 
-    let sharedKey
-    if (!options.sharedKey) {
-        sharedKey = curve25519.sharedkey(options.privateKey, options.publicKey)
-    } else {
-        sharedKey = options.sharedKey.slice(0) // clone
-    }
+    const sharedKey = curve25519.sharedkey(
+        converters.hexStringToByteArray(options.privateKey),
+        converters.hexStringToByteArray(options.publicKey)
+    )
 
+    const nonce = converters.hexStringToByteArray(options.nonce)
     for (let i = 0; i < 32; i++) {
-        sharedKey[i] ^= options.nonce[i]
+        sharedKey[i] ^= nonce[i]
     }
 
     const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
@@ -569,9 +548,9 @@ function aesDecrypt (ivCiphertext, options) {
         iv
     })
 
-    const plaintext = converters.wordArrayToByteArray(decrypted)
+    const decryptedBA = converters.wordArrayToByteArray(decrypted)
 
-    return plaintext
+    return decryptedBA
 }
 
 function encryptData (plaintext, options) {
@@ -604,19 +583,10 @@ function encryptData (plaintext, options) {
     }
 }
 
-function decryptData (data, options) {
-    if (!options.sharedKey) {
-        options.sharedKey = curve25519.sharedkey(options.privateKey, options.publicKey)
-    }
 
-    const compressedPlaintext = aesDecrypt(data, options)
-
-    const binData = new Uint8Array(compressedPlaintext)
-
-    const data2 = pako.inflate(binData)
-
-    if (options.isText) {
-        return converters.byteArrayToString(data2)
-    }
-    return converters.byteArrayToHexString(data2)
+function decryptData (data: ByteArray, options: CryptoOptions) {
+    const compressedDecrypted = aesDecrypt(data, options)
+    const compressedDecryptedBA = new Uint8Array(compressedDecrypted)
+    const decrypted = pako.inflate(compressedDecryptedBA)
+    return decrypted
 }
