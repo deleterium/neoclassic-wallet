@@ -1,0 +1,13 @@
+
+export type HexChar = 
+    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
+    'a' | 'A' | 'b' | 'B' | 'c' | 'C' | 'd' | 'D' | 'e' | 'E' | 'f' | 'F';
+
+export type ByteArray = number[]
+
+export type HexString = string
+
+export type WordArray = {
+    sigBytes: number,
+    words: Uint32Array
+}
