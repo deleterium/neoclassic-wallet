@@ -301,7 +301,7 @@ export function processAjaxRequest (requestType, data, callback, async) {
 
         if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode && !response.error) {
             const publicKey = generatePublicKey(secretPhrase)
-            const signature = signBytes(response.unsignedTransactionBytes, converters.stringToHexString(secretPhrase))
+            const signature = signBytes(response.unsignedTransactionBytes, secretPhrase)
             if (!verifyBytes(signature, response.unsignedTransactionBytes, publicKey)) {
                 const errorMessage = $.t('error_signature_verification_client')
                 if (callback) {

@@ -34,7 +34,7 @@ export function formsSignMessage () {
     sendRequest('parseTransaction', { transactionBytes: data }, function (result) {
         console.log(result)
         let signedTransaction = ''
-        const signature = signBytes(data, converters.stringToHexString(passphrase))
+        const signature = signBytes(data, passphrase)
         if (result.errorCode == null) {
             $('#sign_message_error').text($.t('warning_sign_transaction'))
             $('#sign_message_error').show()

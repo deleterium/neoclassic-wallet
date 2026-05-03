@@ -71,16 +71,16 @@ function getPrivateKey (secretPhrase: string) {
     return converters.byteArrayToHexString(pk)
 }
 
-export function getAccountId (secretPhrase) {
-    return getAccountIdFromPublicKey(getPublicKeyFromPassphrase(secretPhrase))
+export function getAccountId (secretPhrase: string) {
+    return getAccountIdFromPublicKey(getPublicKeyFromPassphrase(secretPhrase), false)
 }
 
-export function getAccountIdFromPublicKey (publicKey, RSFormat) {
+export function getAccountIdFromPublicKey (publicKey: HexString, isRSFormat: boolean) {
     const accountBA = sha256.digest(converters.hexStringToByteArray(publicKey))
 
     const accountId = converters.byteArrayToBigInteger(accountBA.slice(0, 8)).toString()
 
-    if (RSFormat) {
+    if (isRSFormat) {
         const address = new NxtAddress(accountId)
         return address.getAccountRS(BRS.prefix)
     } else {
@@ -246,9 +246,9 @@ function doubleHash (data1, data2) {
     return sha256.digest(combined)
 }
 
-export function signBytes (message, hexSecretPhrase) {
+export function signBytes (message: HexString, secretPhrase: string) : HexString {
     const messageBytes = converters.hexStringToByteArray(message)
-    const secretPhraseBytes = converters.hexStringToByteArray(hexSecretPhrase)
+    const secretPhraseBytes = converters.stringToByteArray(secretPhrase)
 
     const digest = sha256.digest(secretPhraseBytes)
     const s = curve25519.keygen(digest).s
@@ -266,7 +266,7 @@ export function signBytes (message, hexSecretPhrase) {
     return converters.byteArrayToHexString(v.concat(h))
 }
 
-export function verifyBytes (signature, message, publicKey) {
+export function verifyBytes (signature: HexString, message: HexString, publicKey: HexString) : boolean {
     const signatureBytes = converters.hexStringToByteArray(signature)
     const messageBytes = converters.hexStringToByteArray(message)
     const publicKeyBytes = converters.hexStringToByteArray(publicKey)
@@ -281,19 +281,19 @@ export function verifyBytes (signature, message, publicKey) {
     return areByteArraysEqual(h, h2)
 }
 
-export function setEncryptionPassword (password) {
+export function setEncryptionPassword (password: string) : void {
     BRS._password = password
 }
 
-export function getEncryptionPassword () {
+export function getEncryptionPassword () : string {
     return BRS._password
 }
 
-export function setDecryptionPassword (password) {
+export function setDecryptionPassword (password: string) : void {
     BRS._decryptionPassword = password
 }
 
-export function getDecryptionPassword () {
+export function getDecryptionPassword () : string | undefined {
     if (BRS.rememberPassword) {
         return BRS._password
     }
@@ -303,7 +303,7 @@ export function getDecryptionPassword () {
     return undefined
 }
 
-export function addDecryptedTransactionToCache (identifier, content) {
+export function addDecryptedTransactionToCache (identifier: string, content: any) {
     if (!BRS._decryptedTransactions[identifier]) {
         BRS._decryptedTransactions[identifier] = content
     } else {
@@ -316,7 +316,7 @@ export function addDecryptedTransactionToCache (identifier, content) {
  * @param {TransactionID} TransactionID from blockchain
  * @returns {string|undefined} Decoded message, or undefined if no decoded message found
  */
-export function getDecryptedMessageFromCache (txid, field) {
+export function getDecryptedMessageFromCache (txid: string, field: 'encryptedMessage' | 'encryptToSelfMessage') : string | undefined {
     if (!BRS._decryptedTransactions || !BRS._decryptedTransactions[txid] || !BRS._decryptedTransactions[txid][field]) {
         return undefined
     }
@@ -337,7 +337,7 @@ export function getDecryptedMessageFromCache (txid, field) {
  * If the message is successfully decrypted, it updates the decrypted messages cache.
  * In case of an error during decryption, it can return the error, or, if throwOnError, throws an object with prop `brsError` with the error message.
  */
-export /* async */ function decryptAttachmentField (tx: Transaction, field: 'encryptedMessage' | 'encryptToSelfMessage', throwOnError: boolean, password: string) {
+export /* async */ function decryptAttachmentField (tx: Transaction, field: 'encryptedMessage' | 'encryptToSelfMessage', throwOnError: boolean, password: string) : string {
     const messageInCache = getDecryptedMessageFromCache(tx.transaction, field)
     if (messageInCache) {
         return messageInCache
@@ -384,7 +384,7 @@ export /* async */ function decryptAttachmentField (tx: Transaction, field: 'enc
     }
 }
 
-function areByteArraysEqual (bytes1, bytes2) {
+function areByteArraysEqual (bytes1: ByteArray, bytes2: ByteArray) : boolean {
     if (bytes1.length !== bytes2.length) {
         return false
     }
