@@ -52,11 +52,6 @@ import {
 } from './brs.contacts'
 
 import {
-    removeDecryptionForm,
-    decryptNoteFormSubmit
-} from './brs.encryption'
-
-import {
     submitForm
 } from './brs.forms'
 
@@ -113,7 +108,9 @@ import {
     evModalOnShowBsModal,
     resetModalMultiOut,
     evModalOnHiddenBsModal,
-    evAdvancedInfoClick
+    evAdvancedInfoClick,
+    removeDecryptionForm,
+    decryptNoteFormSubmit
 } from './brs.modals'
 
 import {

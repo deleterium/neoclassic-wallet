@@ -20,6 +20,13 @@ import {
     evSpanRecipientSelectorClickUlLiA
 } from './brs.recipient'
 
+import { drawAttachmentMessages } from './brs.modals.transaction'
+
+import {
+    getAccountId,
+    setDecryptionPassword
+} from './brs.encryption'
+
 export function setupLockableModal () {
     // save the original function object
     const _superModal = $.fn.modal
@@ -317,4 +324,42 @@ export function evAdvancedInfoClick (e) {
     } else {
         $(this).text($.t('advanced'))
     }
+}
+
+export function removeDecryptionForm () {
+    $('#decrypt_note_form_container input').val('')
+    $('#decrypt_note_form_container').find('.callout').html($.t('passphrase_required_to_decrypt_data'))
+    $('#decrypt_note_form_container').hide().detach().appendTo('body')
+}
+
+export function decryptNoteFormSubmit () {
+    const $form = $('#decrypt_note_form_container')
+
+    if (!BRS._encryptedNote) {
+        $form.find('.callout').html($.t('error_encrypted_note_not_found')).show()
+        return
+    }
+
+    const password = $form.find('input[name=secretPhrase]').val()
+
+    if (!password) {
+        $form.find('.callout').html($.t('error_passphrase_required')).show()
+        return
+    }
+
+    const accountId = getAccountId(password)
+    if (accountId !== BRS.account) {
+        $form.find('.callout').html($.t('error_incorrect_passphrase')).show()
+        return
+    }
+
+    const rememberPassword = $form.find('input[name=rememberPassword]').is(':checked')
+    if (rememberPassword) {
+        setDecryptionPassword(password)
+    }
+
+    const $output = $('#transaction_info_output_bottom')
+    drawAttachmentMessages(BRS._encryptedNote, $output, password)
+
+    BRS._encryptedNote = null
 }

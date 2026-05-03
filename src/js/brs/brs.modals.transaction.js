@@ -12,8 +12,7 @@ import { sendRequest } from './brs.server'
 
 import {
     getDecryptedMessageFromCache,
-    getDecryptionPassword,
-    removeDecryptionForm
+    getDecryptionPassword
 } from './brs.encryption'
 
 import {
@@ -32,9 +31,12 @@ import {
     createInfoTable
 } from './brs.util'
 
+import { removeDecryptionForm } from './brs.modals'
+
 import { getAssetDetails } from './brs.assetexchange'
 
 import { getTransactionDetails } from './brs.transactions'
+
 import {
     decryptAttachmentFieldAndUpdateSelector,
     getMessageFromTX
