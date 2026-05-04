@@ -413,11 +413,7 @@ function aesEncrypt (plaintext: Uint8Array, options: CryptoOptions) : ByteArray 
 
     const tmp = new Uint8Array(16)
 
-    if (window.crypto) {
-        window.crypto.getRandomValues(tmp)
-    } else {
-        window.msCrypto.getRandomValues(tmp)
-    }
+    window.crypto.getRandomValues(tmp)
 
     const iv = converters.byteArrayToWordArray(tmp)
     const encrypted = CryptoJS.AES.encrypt(text, key, {

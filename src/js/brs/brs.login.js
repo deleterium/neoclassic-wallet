@@ -92,9 +92,7 @@ export function registerAccount () {
     const $loading = $('#account_phrase_generator_loading')
     const $loaded = $('#account_phrase_generator_loaded')
 
-    if (window.crypto || window.msCrypto) {
-        $loading.find('span.loading_text').html($.t('generating_passphrase_wait'))
-    }
+    $loading.find('span.loading_text').html($.t('generating_passphrase_wait'))
 
     $loading.show()
     $loaded.hide()

@@ -106,6 +106,12 @@ export function init () {
         offset: 10
     })
 
+    // Browser support required
+    if (!window.crypto || !window.crypto.subtle) {
+        $.notify($.t('error_encryption_browser_support'))
+        return
+    }
+
     BRS.multiQueue = $.ajaxMultiQueue(4)
 
     createDatabase(loadAllDBValues)
