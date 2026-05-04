@@ -3,15 +3,15 @@
  */
 
 import { BRS } from '.'
-import converters from '../util/converters'
 
 import {
     sendRequest
 } from './brs.server'
 
 import {
-    generatePublicKey,
-    encryptNote
+    encryptNote,
+    createEncryptionToOtherOptions,
+    createEncryptionToSelfOptions
 } from './brs.encryption'
 
 import {
@@ -55,7 +55,6 @@ function getErrorMessage (requestType) {
 }
 
 export function addMessageData (data, requestType) {
-    let encrypted
     if (requestType === 'sendMessage') {
         data.add_message = true
         data.message_is_text = 'on'
@@ -92,26 +91,23 @@ export function addMessageData (data, requestType) {
 
     if (data.add_message && data.message) {
         if (data.encrypt_message) {
-            const options = {}
-
+            let account = ''
             if (data.recipient) {
-                options.account = data.recipient
+                account = data.recipient
             } else if (data.encryptedMessageRecipient) {
-                options.account = data.encryptedMessageRecipient
+                account = data.encryptedMessageRecipient
                 delete data.encryptedMessageRecipient
             }
-
-            if (data.recipientPublicKey) {
-                options.publicKey = data.recipientPublicKey
-            }
-            options.isText = data.message_is_text === 'on'
-
-            encrypted = encryptNote(data.message, options, data.secretPhrase)
-
+            const options = createEncryptionToOtherOptions(
+                account,
+                data.publicKey,
+                data.message_is_text === 'on',
+                data.secretPhrase
+            )
+            const encrypted = encryptNote(data.message, options)
             data.encryptedMessageData = encrypted.message
             data.encryptedMessageNonce = encrypted.nonce
             data.messageToEncryptIsText = data.message_is_text === 'on' ? 'true' : 'false'
-
             delete data.message
             delete data.message_is_text
         } else {
@@ -124,15 +120,14 @@ export function addMessageData (data, requestType) {
     }
 
     if (data.add_note_to_self && data.note_to_self) {
-        encrypted = encryptNote(data.note_to_self, {
-            isText: data.note_to_self_is_text === 'on',
-            publicKey: converters.hexStringToByteArray(generatePublicKey(data.secretPhrase))
-        }, data.secretPhrase)
-
+        const options = createEncryptionToSelfOptions(
+            data.note_to_self_is_text === 'on',
+            data.secretPhrase
+        )
+        const encrypted = encryptNote(data.note_to_self, options)
         data.encryptToSelfMessageData = encrypted.message
         data.encryptToSelfMessageNonce = encrypted.nonce
         data.messageToEncryptToSelfIsText = data.note_to_self_is_text === 'on' ? 'true' : 'false'
-
         delete data.note_to_self
         delete data.note_to_self_is_text
     } else {

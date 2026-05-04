@@ -65,7 +65,7 @@ export function getPublicKeyFromPassphrase (secretphrase?: string) : HexString {
     return converters.byteArrayToHexString(curve25519.keygen(digest).p)
 }
 
-function getPrivateKey (secretPhrase: string) {
+function getPrivateKey (secretPhrase: string) : HexString {
     const pk = sha256.digest(converters.stringToByteArray(secretPhrase))
     curve25519.clamp(pk)
     return converters.byteArrayToHexString(pk)
@@ -88,69 +88,66 @@ export function getAccountIdFromPublicKey (publicKey: HexString, isRSFormat: boo
     }
 }
 
-export function encryptNote (message, options, secretPhrase) {
-    try {
-        if (!options.sharedKey) {
-            if (!options.privateKey) {
-                if (!secretPhrase) {
-                    if (BRS.rememberPassword) {
-                        secretPhrase = BRS._password
-                    } else {
-                        throw {
-                            message: $.t('error_encryption_passphrase_required'),
-                            errorCode: 1
-                        }
-                    }
-                }
-
-                options.privateKey = converters.hexStringToByteArray(getPrivateKey(secretPhrase))
-            }
-
-            if (!options.publicKey) {
-                if (!options.account) {
-                    throw {
-                        message: $.t('error_account_id_not_specified'),
-                        errorCode: 2
-                    }
-                }
-
-                try {
-                    options.publicKey = converters.hexStringToByteArray(getAccountPublicKey(options.account))
-                } catch (err) {
-                    const nxtAddress = new NxtAddress(options.account)
-
-                    if (!nxtAddress.isOk()) {
-                        throw {
-                            message: $.t('error_invalid_account_id'),
-                            errorCode: 3
-                        }
-                    } else {
-                        throw {
-                            message: $.t('error_public_key_not_specified'),
-                            errorCode: 4
-                        }
-                    }
-                }
-            } else if (typeof options.publicKey === 'string') {
-                options.publicKey = converters.hexStringToByteArray(options.publicKey)
-            }
+export function createEncryptionToOtherOptions (
+    otherAccount: string,
+    otherPublicKey: HexString,
+    isText: boolean,
+    secretPhrase?: string
+) : CryptoOptions {
+    const publicKey = otherPublicKey || getAccountPublicKey(otherAccount)
+    if (publicKey.length !== 64) {
+        throw {
+            message: $.t('error_public_key_not_specified'),
         }
+    }
+    const password = secretPhrase || getDecryptionPassword()
+    if (!password) {
+        throw {
+                message: $.t('error_decryption_passphrase_required')
+            }
+    }
+    const privateKey = getPrivateKey(password)
+    const nonce = new Uint8Array(32)
+    window.crypto.getRandomValues(nonce)
 
+    return {
+        publicKey,
+        privateKey,
+        isText,
+        nonce: converters.byteArrayToHexString(nonce)
+    }
+}
+
+export function createEncryptionToSelfOptions (isText: boolean, secretPhrase?: string) : CryptoOptions {
+    const password = secretPhrase || getDecryptionPassword()
+    if (!password) {
+        throw {
+            message: $.t('error_decryption_passphrase_required')
+        }
+    }
+    const privateKey = getPrivateKey(password)
+    const publicKey = getPublicKeyFromPassphrase(password)
+    const nonce = new Uint8Array(32)
+    window.crypto.getRandomValues(nonce)
+    return {
+        publicKey,
+        privateKey,
+        isText,
+        nonce: converters.byteArrayToHexString(nonce)
+    }
+}
+
+export function encryptNote (message: HexString, options: CryptoOptions) {
+    try {
         const dataToEncrypt = options.isText ? converters.stringToByteArray(message) : converters.hexStringToByteArray(message)
         const encrypted = encryptData(dataToEncrypt, options)
-
         return {
-            message: converters.byteArrayToHexString(encrypted.data),
-            nonce: converters.byteArrayToHexString(encrypted.nonce)
+            message: converters.byteArrayToHexString(encrypted),
+            nonce: options.nonce
         }
     } catch (err) {
-        if (err.errorCode && err.errorCode < 5) {
-            throw err
-        } else {
-            throw {
-                message: $.t('error_message_encryption'),
-                errorCode: 5
-            }
+        throw {
+            message: $.t('error_message_encryption')
         }
     }
 }
@@ -398,25 +395,18 @@ function areByteArraysEqual (bytes1: ByteArray, bytes2: ByteArray) : boolean {
     return true
 }
 
-function aesEncrypt (plaintext, options) {
-    if (!window.crypto && !window.msCrypto) {
-        throw {
-            errorCode: -1,
-            message: $.t('error_encryption_browser_support')
-        }
-    }
-
+function aesEncrypt (plaintext: Uint8Array, options: CryptoOptions) : ByteArray {
     // CryptoJS likes WordArray parameters
     const text = converters.byteArrayToWordArray(plaintext)
-    let sharedKey
-    if (!options.sharedKey) {
-        sharedKey = curve25519.sharedkey(options.privateKey, options.publicKey)
-    } else {
-        sharedKey = options.sharedKey.slice(0) // clone
-    }
+
+    const sharedKey = curve25519.sharedkey(
+        converters.hexStringToByteArray(options.privateKey),
+        converters.hexStringToByteArray(options.publicKey)
+    )
+    const nonceBA = converters.hexStringToByteArray(options.nonce)
 
     for (let i = 0; i < 32; i++) {
-        sharedKey[i] ^= options.nonce[i]
+        sharedKey[i] ^= nonceBA[i]
     }
 
     const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
@@ -478,36 +468,11 @@ function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) {
     return decryptedBA
 }
 
-function encryptData (plaintext, options) {
-    if (!window.crypto && !window.msCrypto) {
-        throw {
-            errorCode: -1,
-            message: $.t('error_encryption_browser_support')
-        }
-    }
-
-    if (!options.sharedKey) {
-        options.sharedKey = curve25519.sharedkey(options.privateKey, options.publicKey)
-    }
-
-    const compressedPlaintext = pako.gzip(new Uint8Array(plaintext))
-
-    options.nonce = new Uint8Array(32)
-
-    if (window.crypto) {
-        window.crypto.getRandomValues(options.nonce)
-    } else {
-        window.msCrypto.getRandomValues(options.nonce)
-    }
-
-    const data = aesEncrypt(compressedPlaintext, options)
-
-    return {
-        nonce: options.nonce,
-        data
-    }
+function encryptData (data: ByteArray, options: CryptoOptions) : ByteArray {
+    const compressedData = pako.gzip(new Uint8Array(data))
+    const encrypted = aesEncrypt(compressedData, options)
+    return encrypted
 }
-
 
 function decryptData (data: ByteArray, options: CryptoOptions) {
     const compressedDecrypted = aesDecrypt(data, options)
