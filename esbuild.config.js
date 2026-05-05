@@ -1,7 +1,7 @@
 const esbuild = require('esbuild')
 
 const configDev = {
-    entryPoints: ['src/js/brs/index.js'],
+    entryPoints: ['src/js/brs/index.ts'],
     outfile: 'dist/js/index.dev.js',
     bundle: true,
     minify: false,
@@ -10,7 +10,7 @@ const configDev = {
     target: 'es2020'
 }
 const configMin = {
-    entryPoints: ['src/js/brs/index.js'],
+    entryPoints: ['src/js/brs/index.ts'],
     outfile: 'dist/js/index.min.js',
     bundle: true,
     minify: true,

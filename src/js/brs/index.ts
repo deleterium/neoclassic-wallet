@@ -115,6 +115,7 @@ import {
 } from './brs.modals.signmessage'
 import { init } from './brs'
 import { formsClearData } from './brs.modal.cleardata'
+import { Transaction } from '../typings'
 
 export const BRS = {
     version: '1.0.0',
@@ -289,10 +290,8 @@ export const BRS = {
     // from encryption
     _password: '',
     _decryptionPassword: '',
-    _decryptedTransactions: {},
-    _encryptedNote: null,
-    _sharedKeys: {},
-    _publicKeys: {},
+    _decryptedTransactions: {} as { [key: string]: any},
+    _publicKeys: {} as { [key: string]: string},
 
     // from assetexchange
     assets: [],
@@ -313,6 +312,7 @@ export const BRS = {
 
     // from modals
     fetchingModalData: false,
+    _encryptedNote: null as null | Transaction,
 
     // from modals.account
     userInfoModal: {
@@ -320,9 +320,10 @@ export const BRS = {
     }
 }
 
+// @ts-ignore: Browser only
 window.jQuery = window.$ = $
 
-$(document).ready(function () {
+document.addEventListener('DOMContentLoaded', function () {
     let done = 0
     const pages = [
         { location: 'body', path: 'html/sidebar_context.html' },
@@ -355,7 +356,7 @@ $(document).ready(function () {
         { location: '#content', path: 'html/pages/blocks.html' },
         { location: '#lockscreen', path: 'html/pages/lockscreen.html' }
     ]
-    function loadHTMLOn (domName, path) {
+    function loadHTMLOn (domName: string, path: string) {
         $.get(path, '', (data) => {
             $(domName).prepend(data)
             $('#loading_bar').val(80 + (done / pages.length) * 20)
@@ -369,7 +370,6 @@ $(document).ready(function () {
         i18next.use(i18nHttpApi).init({
             fallbackLng: 'en',
             lowerCaseLng: true,
-            detectLngFromLocalStorage: true,
             backend: {
                 loadPath: './locales/__lng__.json'
             },
@@ -380,7 +380,7 @@ $(document).ready(function () {
                 suffix: '__'
             }
         }, function () {
-            jqueryI18next.init(i18next, window.$, {
+            jqueryI18next.init(i18next, $, {
                 tName: 't', // --> appends $.t = i18next.t
                 i18nName: 'i18n', // --> appends $.i18n = i18next
                 handleName: 'localize', // --> appends $(selector).localize(opts);
