@@ -292,6 +292,7 @@ export const BRS = {
     _decryptedTransactions: {},
     _encryptedNote: null,
     _sharedKeys: {},
+    _publicKeys: {},
 
     // from assetexchange
     assets: [],

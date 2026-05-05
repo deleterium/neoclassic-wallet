@@ -29,6 +29,29 @@ type CryptoOptions = {
     isText: boolean
 }
 
+// region Public key Cache
+
+function getAccountPublicKeyFromCache(account: string) {
+    let accountID = account
+    if (BRS.rsRegEx.test(account)) {
+        const nxtAccount = new NxtAddress(account)
+        accountID = nxtAccount.getAccountId()
+    }
+    if (!BRS._publicKeys[accountID]) {
+        return undefined
+    }
+    return BRS._publicKeys[accountID]
+}
+
+export function setAccountPublicKeyToCache(account: string, publicKey: HexString) {
+    let accountID = account
+    if (BRS.rsRegEx.test(account)) {
+        const nxtAccount = new NxtAddress(account)
+        accountID = nxtAccount.getAccountId()
+    }
+    BRS._publicKeys[accountID] = publicKey
+}
+
 // region Public Key
 
 export function generatePublicKey (secretPhrase?: string) {
@@ -40,17 +63,22 @@ export function generatePublicKey (secretPhrase?: string) {
 }
 
 export function getAccountPublicKey (account: string) {
+    const publicKeyInCache = getAccountPublicKeyFromCache(account)
+    if (publicKeyInCache) {
+        return publicKeyInCache
+    }
     let publicKey = ''
     // synchronous!
     sendRequest('getAccountPublicKey', {
         account
-    }, function (response) {
+    }, function (response: any, input: any) {
         if (!response.publicKey) {
             throw {
                 brsErrorMessage: $.t('error_no_public_key')
             }
         } else {
             publicKey = response.publicKey
+            setAccountPublicKeyToCache(input.account, response.publicKey)
         }
     }, false)
     return publicKey
