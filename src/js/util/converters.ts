@@ -132,7 +132,7 @@ export default {
     byteArrayToBigInteger (bytes: ByteArray, opt_startIndex?: number) : BigInteger {
         const index = this.checkBytesToIntInput(bytes, 8, opt_startIndex)
         let value = new BigInteger('0', 10)
-        let temp1, temp2
+        let temp1: BigInteger; let temp2: BigInteger
         for (let i = 7; i >= 0; i--) {
             temp1 = value.multiply(new BigInteger('256', 10))
             temp2 = temp1.add(new BigInteger(bytes[index + i].toString(10), 10))
@@ -173,7 +173,7 @@ export default {
         }
         const byteArray = new Array(wordArray.words.length * 4)
         let offset = 0
-        let word; let i
+        let word: number; let i: number
         for (i = 0; i < len; i++) {
             word = wordArray.words[i]
             byteArray[offset++] = word >> 24
@@ -187,7 +187,7 @@ export default {
         if (length === 0) {
             return ''
         }
-        let UintBytes
+        let UintBytes: Uint8Array
         if (opt_startIndex && length) {
             const index = this.checkBytesToIntInput(bytes, length, opt_startIndex)
             UintBytes = new Uint8Array(bytes.slice(index, index + length))
