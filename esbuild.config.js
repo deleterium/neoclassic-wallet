@@ -19,5 +19,8 @@ const configMin = {
     target: 'es2020'
 }
 
-esbuild.build(configDev).catch(() => process.exit(1))
-esbuild.build(configMin).catch(() => process.exit(1))
+esbuild.build(configDev)
+    .then(() => {
+        return esbuild.build(configMin)
+    })
+    .catch(() => process.exit(1))
