@@ -7,7 +7,7 @@
 import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
 import pako from 'pako'
-import sha256 from 'js-sha256'
+import { sha256 } from 'js-sha256'
 import curve25519 from '../crypto/curve25519'
 import converters from '../util/converters'
 
@@ -193,7 +193,7 @@ export function createEncryptionToSelfOptions (isText: boolean, secretPhrase?: s
 
 // region Sign / Verify
 
-function doubleHash (data1, data2) {
+function doubleHash (data1: ByteArray, data2: ByteArray) {
     const combined = new Uint8Array(data1.length + data2.length)
     combined.set(data1)
     combined.set(data2, data1.length)
@@ -222,6 +222,12 @@ export function signBytes (message: HexString, secretPhrase: string) : HexString
     const y = curve25519.keygen(x).p
     const h = doubleHash(m, y)
     const v = curve25519.sign(h, x, s)
+    if (!v) {
+        throw {
+            // TODO add translation
+            message: 'error_on_signature_process'
+        }
+    }
     return converters.byteArrayToHexString(v.concat(h))
 }
 
@@ -433,5 +439,5 @@ function aesEncrypt (plaintext: Uint8Array, options: CryptoOptions) : ByteArray 
     })
     const ivOut = converters.wordArrayToByteArray(encrypted.iv)
     const ciphertextOut = converters.wordArrayToByteArray(encrypted.ciphertext)
-    return ivOut.concat(ciphertextOut)
+    return [...ivOut, ...ciphertextOut]
 }
