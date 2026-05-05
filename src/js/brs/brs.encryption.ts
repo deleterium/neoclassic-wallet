@@ -8,7 +8,6 @@ import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
 import pako from 'pako'
 import sha256 from 'js-sha256'
-
 import curve25519 from '../crypto/curve25519'
 import converters from '../util/converters'
 
@@ -17,7 +16,11 @@ import {
     sendRequest
 } from './brs.server'
 
-import { ByteArray, HexString, Transaction } from '../typings'
+import {
+    ByteArray,
+    HexString,
+    Transaction
+} from '../typings'
 
 type CryptoOptions = {
     nonce: HexString,
@@ -26,12 +29,13 @@ type CryptoOptions = {
     isText: boolean
 }
 
+// region Public Key
+
 export function generatePublicKey (secretPhrase?: string) {
     const passphrase = secretPhrase ?? getSavedPassword()
     if (!passphrase) {
         throw $.t('error_generate_public_key_noBRS._password')
     }
-
     return getPublicKeyFromPassphrase(secretPhrase)
 }
 
@@ -65,26 +69,49 @@ export function getPublicKeyFromPassphrase (secretphrase?: string) : HexString {
     return converters.byteArrayToHexString(curve25519.keygen(digest).p)
 }
 
+// region Private Key
+
 function getPrivateKey (secretPhrase: string) : HexString {
     const pk = sha256.digest(converters.stringToByteArray(secretPhrase))
     curve25519.clamp(pk)
     return converters.byteArrayToHexString(pk)
 }
 
+// region Accound ID
+
 export function getAccountId (secretPhrase: string) {
-    return getAccountIdFromPublicKey(getPublicKeyFromPassphrase(secretPhrase), false)
+    const publicKey = getPublicKeyFromPassphrase(secretPhrase)
+    const accountId = getAccountIdFromPublicKey(publicKey, false)
+    return accountId
 }
 
 export function getAccountIdFromPublicKey (publicKey: HexString, isRSFormat: boolean) {
     const accountBA = sha256.digest(converters.hexStringToByteArray(publicKey))
-
     const accountId = converters.byteArrayToBigInteger(accountBA.slice(0, 8)).toString()
-
     if (isRSFormat) {
         const address = new NxtAddress(accountId)
         return address.getAccountRS(BRS.prefix)
     } else {
         return accountId
+    }
+}
+
+// region CryptoOption
+
+function createCryptoOptions (otherUser: string, nonce: HexString, isText: boolean, secretPhrase?: string) : CryptoOptions {
+    const publicKey = getAccountPublicKey(otherUser)
+    const password = secretPhrase || getDecryptionPassword()
+    if (!password) {
+        throw {
+                brsErrorMessage: $.t('error_decryption_passphrase_required')
+            }
+    }
+    const privateKey = getPrivateKey(password)
+    return {
+        nonce,
+        publicKey,
+        privateKey,
+        isText
     }
 }
 
@@ -109,7 +136,6 @@ export function createEncryptionToOtherOptions (
     const privateKey = getPrivateKey(password)
     const nonce = new Uint8Array(32)
     window.crypto.getRandomValues(nonce)
-
     return {
         publicKey,
         privateKey,
@@ -137,104 +163,7 @@ export function createEncryptionToSelfOptions (isText: boolean, secretPhrase?: s
     }
 }
 
-export function encryptNote (message: HexString, options: CryptoOptions) {
-    try {
-        const dataToEncrypt = options.isText ? converters.stringToByteArray(message) : converters.hexStringToByteArray(message)
-        const encrypted = encryptData(dataToEncrypt, options)
-        return {
-            message: converters.byteArrayToHexString(encrypted),
-            nonce: options.nonce
-        }
-    } catch (err) {
-        throw {
-            message: $.t('error_message_encryption')
-        }
-    }
-}
-
-// BRS.decryptData = function (data, options, secretPhrase) {
-//     try {
-//         const message = ''
-//         return BRS.decryptNote(message, options, secretPhrase)
-//     } catch (err) {
-//         const mesage = String(err.message ? err.message : err)
-
-//         if (err.errorCode && err.errorCode == 1) {
-//             return false
-//         } else {
-//             if (options.title) {
-//                 let translatedTitle = getTranslatedFieldName(options.title).toLowerCase()
-//                 if (!translatedTitle) {
-//                     translatedTitle = String(options.title).escapeHTML().toLowerCase()
-//                 }
-
-//                 return $.t('error_could_not_decrypt_var', {
-//                     var: translatedTitle
-//                 }).capitalize()
-//             } else {
-//                 return $.t('error_could_not_decrypt')
-//             }
-//         }
-//     }
-// }
-
-function decryptNote (message: HexString, options: CryptoOptions) {
-    const decryptedData = decryptData(converters.hexStringToByteArray(message), options)
-    if (options.isText) {
-        return converters.byteArrayToString(decryptedData)
-    }
-    return converters.byteArrayToHexString(decryptedData)
-}
-
-function createCryptoOptions (otherUser: string, nonce: HexString, isText: boolean, secretPhrase?: string) : CryptoOptions {
-    const publicKey = getAccountPublicKey(otherUser)
-    const password = secretPhrase || getDecryptionPassword()
-    if (!password) {
-        throw {
-                brsErrorMessage: $.t('error_decryption_passphrase_required')
-            }
-    }
-    const privateKey = getPrivateKey(password)
-    return {
-        nonce,
-        publicKey,
-        privateKey,
-        isText
-    }
-}
-
-// BRS.getSharedKeyWithAccount = function (account) {
-//     if (account in BRS._sharedKeys) {
-//         return BRS._sharedKeys[account]
-//     }
-
-//     let secretPhrase
-
-//     if (BRS.rememberPassword) {
-//         secretPhrase = BRS._password
-//     } else if (BRS._decryptionPassword) {
-//         secretPhrase = BRS._decryptionPassword
-//     } else {
-//         throw {
-//             message: $.t('error_passphrase_required'),
-//             errorCode: 3
-//         }
-//     }
-
-//     const privateKey = converters.hexStringToByteArray(getPrivateKey(secretPhrase))
-
-//     const publicKey = converters.hexStringToByteArray(getPublicKey(account, true))
-
-//     const sharedKey = curve25519.sharedKeyGen(privateKey, publicKey)
-
-//     const sharedKeys = Object.keys(BRS._sharedKeys)
-
-//     if (sharedKeys.length > 50) {
-//         delete BRS._sharedKeys[sharedKeys[0]]
-//     }
-
-//     BRS._sharedKeys[account] = sharedKey
-// }
+// region Sign / Verify
 
 function doubleHash (data1, data2) {
     const combined = new Uint8Array(data1.length + data2.length)
@@ -243,23 +172,28 @@ function doubleHash (data1, data2) {
     return sha256.digest(combined)
 }
 
+function areByteArraysEqual (bytes1: ByteArray, bytes2: ByteArray) : boolean {
+    if (bytes1.length !== bytes2.length) {
+        return false
+    }
+    for (let i = 0; i < bytes1.length; ++i) {
+        if (bytes1[i] !== bytes2[i]) {
+            return false
+        }
+    }
+    return true
+}
+
 export function signBytes (message: HexString, secretPhrase: string) : HexString {
     const messageBytes = converters.hexStringToByteArray(message)
     const secretPhraseBytes = converters.stringToByteArray(secretPhrase)
-
     const digest = sha256.digest(secretPhraseBytes)
     const s = curve25519.keygen(digest).s
-
     const m = sha256.digest(messageBytes)
-
     const x = doubleHash(m, s)
-
     const y = curve25519.keygen(x).p
-
     const h = doubleHash(m, y)
-
     const v = curve25519.sign(h, x, s)
-
     return converters.byteArrayToHexString(v.concat(h))
 }
 
@@ -270,13 +204,12 @@ export function verifyBytes (signature: HexString, message: HexString, publicKey
     const v = signatureBytes.slice(0, 32)
     const h = signatureBytes.slice(32)
     const y = curve25519.verify(v, h, publicKeyBytes)
-
     const m = sha256.digest(messageBytes)
-
     const h2 = doubleHash(m, y)
-
     return areByteArraysEqual(h, h2)
 }
+
+// region Passphrase helper
 
 export function setEncryptionPassword (password: string) : void {
     BRS._password = password
@@ -300,6 +233,8 @@ export function getDecryptionPassword () : string | undefined {
     return undefined
 }
 
+// region Decryption cache
+
 export function addDecryptedTransactionToCache (identifier: string, content: any) {
     if (!BRS._decryptedTransactions[identifier]) {
         BRS._decryptedTransactions[identifier] = content
@@ -319,6 +254,8 @@ export function getDecryptedMessageFromCache (txid: string, field: 'encryptedMes
     }
     return BRS._decryptedTransactions[txid][field]
 }
+
+// region Decryption process
 
 /**
  * Decrypt the encrypted message of the given transaction.
@@ -381,50 +318,19 @@ export /* async */ function decryptAttachmentField (tx: Transaction, field: 'enc
     }
 }
 
-function areByteArraysEqual (bytes1: ByteArray, bytes2: ByteArray) : boolean {
-    if (bytes1.length !== bytes2.length) {
-        return false
+function decryptNote (message: HexString, options: CryptoOptions) {
+    const decryptedData = decryptData(converters.hexStringToByteArray(message), options)
+    if (options.isText) {
+        return converters.byteArrayToString(decryptedData)
     }
-
-    for (let i = 0; i < bytes1.length; ++i) {
-        if (bytes1[i] !== bytes2[i]) {
-            return false
-        }
-    }
-
-    return true
+    return converters.byteArrayToHexString(decryptedData)
 }
 
-function aesEncrypt (plaintext: Uint8Array, options: CryptoOptions) : ByteArray {
-    // CryptoJS likes WordArray parameters
-    const text = converters.byteArrayToWordArray(plaintext)
-
-    const sharedKey = curve25519.sharedkey(
-        converters.hexStringToByteArray(options.privateKey),
-        converters.hexStringToByteArray(options.publicKey)
-    )
-    const nonceBA = converters.hexStringToByteArray(options.nonce)
-
-    for (let i = 0; i < 32; i++) {
-        sharedKey[i] ^= nonceBA[i]
-    }
-
-    const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
-
-    const tmp = new Uint8Array(16)
-
-    window.crypto.getRandomValues(tmp)
-
-    const iv = converters.byteArrayToWordArray(tmp)
-    const encrypted = CryptoJS.AES.encrypt(text, key, {
-        iv
-    })
-
-    const ivOut = converters.wordArrayToByteArray(encrypted.iv)
-
-    const ciphertextOut = converters.wordArrayToByteArray(encrypted.ciphertext)
-
-    return ivOut.concat(ciphertextOut)
+function decryptData (data: ByteArray, options: CryptoOptions) {
+    const compressedDecrypted = aesDecrypt(data, options)
+    const compressedDecryptedBA = new Uint8Array(compressedDecrypted)
+    const decrypted = pako.inflate(compressedDecryptedBA)
+    return decrypted
 }
 
 function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) {
@@ -433,35 +339,44 @@ function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) {
             name: 'invalid ciphertext'
         }
     }
-
     const iv = converters.byteArrayToWordArray(ivCiphertext.slice(0, 16))
     const ciphertext = converters.byteArrayToWordArray(ivCiphertext.slice(16))
-
     const sharedKey = curve25519.sharedkey(
         converters.hexStringToByteArray(options.privateKey),
         converters.hexStringToByteArray(options.publicKey)
     )
-
     const nonce = converters.hexStringToByteArray(options.nonce)
     for (let i = 0; i < 32; i++) {
         sharedKey[i] ^= nonce[i]
     }
-
     const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
-
     const encrypted = CryptoJS.lib.CipherParams.create({
         ciphertext,
         iv,
         key
     })
-
     const decrypted = CryptoJS.AES.decrypt(encrypted, key, {
         iv
     })
-
     const decryptedBA = converters.wordArrayToByteArray(decrypted)
-
     return decryptedBA
+}
+
+// region Encryption process
+
+export function encryptNote (message: HexString, options: CryptoOptions) {
+    try {
+        const dataToEncrypt = options.isText ? converters.stringToByteArray(message) : converters.hexStringToByteArray(message)
+        const encrypted = encryptData(dataToEncrypt, options)
+        return {
+            message: converters.byteArrayToHexString(encrypted),
+            nonce: options.nonce
+        }
+    } catch (err) {
+        throw {
+            message: $.t('error_message_encryption')
+        }
+    }
 }
 
 function encryptData (data: ByteArray, options: CryptoOptions) : ByteArray {
@@ -470,9 +385,25 @@ function encryptData (data: ByteArray, options: CryptoOptions) : ByteArray {
     return encrypted
 }
 
-function decryptData (data: ByteArray, options: CryptoOptions) {
-    const compressedDecrypted = aesDecrypt(data, options)
-    const compressedDecryptedBA = new Uint8Array(compressedDecrypted)
-    const decrypted = pako.inflate(compressedDecryptedBA)
-    return decrypted
+function aesEncrypt (plaintext: Uint8Array, options: CryptoOptions) : ByteArray {
+    // CryptoJS likes WordArray parameters
+    const text = converters.byteArrayToWordArray(plaintext)
+    const sharedKey = curve25519.sharedkey(
+        converters.hexStringToByteArray(options.privateKey),
+        converters.hexStringToByteArray(options.publicKey)
+    )
+    const nonceBA = converters.hexStringToByteArray(options.nonce)
+    for (let i = 0; i < 32; i++) {
+        sharedKey[i] ^= nonceBA[i]
+    }
+    const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
+    const tmp = new Uint8Array(16)
+    window.crypto.getRandomValues(tmp)
+    const iv = converters.byteArrayToWordArray(tmp)
+    const encrypted = CryptoJS.AES.encrypt(text, key, {
+        iv
+    })
+    const ivOut = converters.wordArrayToByteArray(encrypted.iv)
+    const ciphertextOut = converters.wordArrayToByteArray(encrypted.ciphertext)
+    return ivOut.concat(ciphertextOut)
 }
