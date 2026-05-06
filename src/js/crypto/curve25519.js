@@ -868,7 +868,7 @@ export default (function () {
     }
 
     function sharedkey (k, oP) {
-        const P = []
+        const P = new Array(32)
         if (oP.every(byte => byte === 0)) {
             return P.fill(0)
         }
