@@ -276,7 +276,7 @@ function checkMerchantField (requestType, data) {
      * Specific modals are coded at BRS.forms.FORMNAME and form data
      * is passed as parameter.
      */
-export function submitForm ($btn) {
+export async function submitForm ($btn) {
     let formErrorFunction
     let $form
     let data
@@ -336,7 +336,7 @@ export function submitForm ($btn) {
     data = getFormData($form)
 
     if (typeof formFunction === 'function') {
-        const output = formFunction(data)
+        const output = await formFunction(data)
         if (output.error) {
             endWithError(output.error.escapeHTML())
             return

@@ -305,7 +305,7 @@ export function getDecryptedMessageFromCache (txid: string, field: 'encryptedMes
  * If the message is successfully decrypted, it updates the decrypted messages cache.
  * In case of an error during decryption, it can return the error, or, if throwOnError, throws an object with prop `brsError` with the error message.
  */
-export /* async */ function decryptAttachmentField (tx: Transaction, field: 'encryptedMessage' | 'encryptToSelfMessage', throwOnError: boolean, password: string) : string {
+export async function decryptAttachmentField (tx: Transaction, field: 'encryptedMessage' | 'encryptToSelfMessage', throwOnError: boolean, password: string) : Promise<string> {
     const messageInCache = getDecryptedMessageFromCache(tx.transaction, field)
     if (messageInCache) {
         return messageInCache
@@ -334,7 +334,7 @@ export /* async */ function decryptAttachmentField (tx: Transaction, field: 'enc
             tx.attachment[field].isText,
             password
         )
-        const decoded = decryptNote(tx.attachment[field].data, options)
+        const decoded = await decryptNote(tx.attachment[field].data, options)
         addDecryptedTransactionToCache(tx.transaction, { [field]: decoded })
         return decoded
     } catch (err: any) {
@@ -352,48 +352,56 @@ export /* async */ function decryptAttachmentField (tx: Transaction, field: 'enc
     }
 }
 
-function decryptNote (message: HexString, options: CryptoOptions) {
-    const decryptedData = decryptData(converters.hexStringToByteArray(message), options)
+async function decryptNote (message: HexString, options: CryptoOptions) : Promise<HexString> {
+    const decryptedData = await decryptData(converters.hexStringToByteArray(message), options)
     if (options.isText) {
         return converters.byteArrayToString(decryptedData)
     }
     return converters.byteArrayToHexString(decryptedData)
 }
 
-function decryptData (data: ByteArray, options: CryptoOptions) {
-    const compressedDecrypted = aesDecrypt(data, options)
-    const compressedDecryptedBA = new Uint8Array(compressedDecrypted)
-    const decrypted = pako.inflate(compressedDecryptedBA)
+async function decryptData (data: ByteArray, options: CryptoOptions) : Promise<Uint8Array> {
+    const compressedDecrypted = await aesDecrypt(data, options)
+    const decrypted = pako.inflate(compressedDecrypted)
     return decrypted
 }
 
-function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) {
+async function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) : Promise<Uint8Array> {
     if (ivCiphertext.length < 16 || ivCiphertext.length % 16 !== 0) {
         throw {
             name: 'invalid ciphertext'
         }
     }
-    const iv = converters.byteArrayToWordArray(ivCiphertext.slice(0, 16))
-    const ciphertext = converters.byteArrayToWordArray(ivCiphertext.slice(16))
-    const sharedKey = curve25519.sharedkey(
+    const iv = new Uint8Array(ivCiphertext.slice(0, 16))
+    const ciphertext = new Uint8Array(ivCiphertext.slice(16))
+    const sharedKey = new Uint8Array(curve25519.sharedkey(
         converters.hexStringToByteArray(options.privateKey),
         converters.hexStringToByteArray(options.publicKey)
-    )
+    ))
     const nonce = converters.hexStringToByteArray(options.nonce)
+
     for (let i = 0; i < 32; i++) {
         sharedKey[i] ^= nonce[i]
     }
-    const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
-    const encrypted = CryptoJS.lib.CipherParams.create({
-        ciphertext,
-        iv,
-        key
-    })
-    const decrypted = CryptoJS.AES.decrypt(encrypted, key, {
-        iv
-    })
-    const decryptedBA = converters.wordArrayToByteArray(decrypted)
-    return decryptedBA
+    const ciphertextBuffer = new Uint8Array(ciphertext).buffer
+    const ivBuffer = new Uint8Array(iv).buffer
+    const keyBuffer = await window.crypto.subtle.digest('SHA-256', sharedKey.buffer)
+    const cryptoKey = await window.crypto.subtle.importKey(
+        'raw',
+        keyBuffer,
+        { name: 'AES-CBC' },
+        false,
+        ['decrypt']
+    )
+    const decrypted = await window.crypto.subtle.decrypt(
+        {
+            name: 'AES-CBC',
+            iv: ivBuffer
+        },
+        cryptoKey,
+        ciphertextBuffer
+    )
+    return new Uint8Array(decrypted)
 }
 
 // region Encryption process

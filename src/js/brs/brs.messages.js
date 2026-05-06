@@ -268,9 +268,9 @@ export function getEncryptToSelfMessageFromTX (transaction) {
     }
 }
 
-export /* async */ function decryptAttachmentFieldAndUpdateSelector (transaction, field, passphrase, querySelector) {
+export async function decryptAttachmentFieldAndUpdateSelector (transaction, field, passphrase, querySelector) {
     const itemID = '#' + querySelector
-    const decoded = /* await */ decryptAttachmentField(transaction, field, false, passphrase)
+    const decoded = await decryptAttachmentField(transaction, field, false, passphrase)
     $(itemID).html(decoded.escapeHTML().nl2br())
 }
 
@@ -434,7 +434,7 @@ export function formsSendMessageComplete (response, data) {
     }
 }
 
-export function formsDecryptMessages (data) {
+export async function formsDecryptMessages (data) {
     const accountId = getAccountId(data.secretPhrase)
     if (accountId !== BRS.account) {
         return {
@@ -471,7 +471,7 @@ export function formsDecryptMessages (data) {
 
         for (const message of messagesToDecrypt) {
             if (message.attachment.encryptedMessage) {
-                decryptAttachmentField(message, 'encryptedMessage', true, data.secretPhrase)
+                await decryptAttachmentField(message, 'encryptedMessage', true, data.secretPhrase)
             }
         }
     } catch (err) {
