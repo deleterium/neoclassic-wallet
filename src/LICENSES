@@ -24,7 +24,6 @@ Outdated/Unchecked - WIP:
 passphrasegenerator.js - custom - based on https://github.com/michenriksen/diceware (UNLICENSE) and https://github.com/ggozad/mnemonic.js (MIT)
 seedrandom.js - MIT - https://github.com/davidbau/seedrandom
 
-signing/crypto.js - MIT - https://github.com/Jaguar0625/JavaScriptNrs
 signing/curve25519.js - MIT - https://github.com/Jaguar0625/JavaScriptNrs
 xoreddata.js - MIT - BloodyRookie
 ajaxretry.js - MIT - https://github.com/dcherman/jQuery.ajaxRetry
@@ -35,6 +34,5 @@ autolink.js - MIT - https://github.com/bryanwoods/autolink-js
 jsbn.js / jsbn2.js - BSD - http://www-cs-students.stanford.edu/~tjw/jsbn/
 nxtaddress.js - public domain
 addclear.js - https://github.com/skorecky/Add-Clear
-cryptojs - BSD - https://code.google.com/p/crypto-js/
 
 

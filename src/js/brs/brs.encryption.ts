@@ -406,10 +406,10 @@ async function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) : Pr
 
 // region Encryption process
 
-export function encryptNote (message: HexString, options: CryptoOptions) {
+export async function encryptNote (message: HexString, options: CryptoOptions) {
     try {
         const dataToEncrypt = options.isText ? converters.stringToByteArray(message) : converters.hexStringToByteArray(message)
-        const encrypted = encryptData(dataToEncrypt, options)
+        const encrypted = await encryptData(dataToEncrypt, options)
         return {
             message: converters.byteArrayToHexString(encrypted),
             nonce: options.nonce
@@ -421,31 +421,49 @@ export function encryptNote (message: HexString, options: CryptoOptions) {
     }
 }
 
-function encryptData (data: ByteArray, options: CryptoOptions) : ByteArray {
+async function encryptData (data: ByteArray, options: CryptoOptions) : Promise<ByteArray> {
     const compressedData = pako.gzip(new Uint8Array(data))
-    const encrypted = aesEncrypt(compressedData, options)
+    const encrypted = await aesEncrypt(compressedData, options)
     return encrypted
 }
 
-function aesEncrypt (plaintext: Uint8Array, options: CryptoOptions) : ByteArray {
-    // CryptoJS likes WordArray parameters
-    const text = converters.byteArrayToWordArray(plaintext)
-    const sharedKey = curve25519.sharedkey(
+async function aesEncrypt (plaintext: Uint8Array, options: CryptoOptions) : Promise<ByteArray> {
+    const sharedKey = new Uint8Array(curve25519.sharedkey(
         converters.hexStringToByteArray(options.privateKey),
         converters.hexStringToByteArray(options.publicKey)
-    )
-    const nonceBA = converters.hexStringToByteArray(options.nonce)
+    ));
+    const nonceBA = converters.hexStringToByteArray(options.nonce);
     for (let i = 0; i < 32; i++) {
-        sharedKey[i] ^= nonceBA[i]
+        sharedKey[i] ^= nonceBA[i];
     }
-    const key = converters.byteArrayToWordArray(sha256.digest(sharedKey))
-    const tmp = new Uint8Array(16)
-    window.crypto.getRandomValues(tmp)
-    const iv = converters.byteArrayToWordArray(tmp)
-    const encrypted = CryptoJS.AES.encrypt(text, key, {
-        iv
-    })
-    const ivOut = converters.wordArrayToByteArray(encrypted.iv)
-    const ciphertextOut = converters.wordArrayToByteArray(encrypted.ciphertext)
-    return [...ivOut, ...ciphertextOut]
+    const keyBuffer = await window.crypto.subtle.digest('SHA-256', sharedKey.buffer);
+
+    // Generate a random initialization vector (IV)
+    const iv = new Uint8Array(16);
+    window.crypto.getRandomValues(iv);
+
+
+    // Derive the encryption key using SHA-256
+    const cryptoKey = await window.crypto.subtle.importKey(
+        'raw',
+        keyBuffer,
+        { name: 'AES-CBC' },
+        false,
+        ['encrypt']
+    );
+    const plaintextBuffer = new Uint8Array(plaintext).buffer
+    // Encrypt the data using AES-CBC
+    const encryptedBuffer = await window.crypto.subtle.encrypt(
+        {
+            name: 'AES-CBC',
+            iv: iv.buffer
+        },
+        cryptoKey,
+        plaintextBuffer
+    );
+
+    // Convert the IV and ciphertext to a single byte array
+    const ivOut = Array.from(iv);
+    const ciphertextOut = Array.from(new Uint8Array(encryptedBuffer));
+    return [...ivOut, ...ciphertextOut];
 }

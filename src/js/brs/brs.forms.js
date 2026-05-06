@@ -54,7 +54,7 @@ function getErrorMessage (requestType) {
     }
 }
 
-export function addMessageData (data, requestType) {
+async function addMessageData (data, requestType) {
     if (requestType === 'sendMessage') {
         data.add_message = true
         data.message_is_text = 'on'
@@ -104,7 +104,7 @@ export function addMessageData (data, requestType) {
                 data.message_is_text === 'on',
                 data.secretPhrase
             )
-            const encrypted = encryptNote(data.message, options)
+            const encrypted = await encryptNote(data.message, options)
             data.encryptedMessageData = encrypted.message
             data.encryptedMessageNonce = encrypted.nonce
             data.messageToEncryptIsText = data.message_is_text === 'on' ? 'true' : 'false'
@@ -124,7 +124,7 @@ export function addMessageData (data, requestType) {
             data.note_to_self_is_text === 'on',
             data.secretPhrase
         )
-        const encrypted = encryptNote(data.note_to_self, options)
+        const encrypted = await encryptNote(data.note_to_self, options)
         data.encryptToSelfMessageData = encrypted.message
         data.encryptToSelfMessageNonce = encrypted.nonce
         data.messageToEncryptToSelfIsText = data.note_to_self_is_text === 'on' ? 'true' : 'false'
@@ -382,7 +382,7 @@ export async function submitForm ($btn) {
     }
 
     try {
-        data = addMessageData(data, requestType)
+        data = await addMessageData(data, requestType)
     } catch (err) {
         errorStr = err.message
         if (!errorStr) {
