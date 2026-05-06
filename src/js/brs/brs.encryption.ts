@@ -2,8 +2,6 @@
  * @depends {brs.js}
  */
 
-/* global CryptoJS */
-
 import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
 import pako from 'pako'
@@ -99,8 +97,10 @@ export function getPublicKeyFromPassphrase (secretphrase?: string) : HexString {
 
 // region Private Key
 
-function getPrivateKey (secretPhrase: string) : HexString {
-    const pk = sha256.digest(converters.stringToByteArray(secretPhrase))
+async function getPrivateKey (secretPhrase: string) : Promise<HexString> {
+     const encoder = new TextEncoder();
+     const secretPhraseBytes = encoder.encode(secretPhrase);
+     const pk = new Uint8Array(await crypto.subtle.digest('SHA-256', secretPhraseBytes))
     curve25519.clamp(pk)
     return converters.byteArrayToHexString(pk)
 }
@@ -126,7 +126,7 @@ export function getAccountIdFromPublicKey (publicKey: HexString, isRSFormat: boo
 
 // region CryptoOption
 
-function createCryptoOptions (otherUser: string, nonce: HexString, isText: boolean, secretPhrase?: string) : CryptoOptions {
+async function createCryptoOptions (otherUser: string, nonce: HexString, isText: boolean, secretPhrase?: string) : Promise<CryptoOptions> {
     const publicKey = getAccountPublicKey(otherUser)
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
@@ -134,7 +134,7 @@ function createCryptoOptions (otherUser: string, nonce: HexString, isText: boole
                 brsErrorMessage: $.t('error_decryption_passphrase_required')
             }
     }
-    const privateKey = getPrivateKey(password)
+    const privateKey = await getPrivateKey(password)
     return {
         nonce,
         publicKey,
@@ -143,12 +143,12 @@ function createCryptoOptions (otherUser: string, nonce: HexString, isText: boole
     }
 }
 
-export function createEncryptionToOtherOptions (
+export async function createEncryptionToOtherOptions (
     otherAccount: string,
     otherPublicKey: HexString,
     isText: boolean,
     secretPhrase?: string
-) : CryptoOptions {
+) : Promise<CryptoOptions> {
     const publicKey = otherPublicKey || getAccountPublicKey(otherAccount)
     if (publicKey.length !== 64) {
         throw {
@@ -161,7 +161,7 @@ export function createEncryptionToOtherOptions (
                 message: $.t('error_decryption_passphrase_required')
             }
     }
-    const privateKey = getPrivateKey(password)
+    const privateKey = await getPrivateKey(password)
     const nonce = new Uint8Array(32)
     window.crypto.getRandomValues(nonce)
     return {
@@ -172,14 +172,14 @@ export function createEncryptionToOtherOptions (
     }
 }
 
-export function createEncryptionToSelfOptions (isText: boolean, secretPhrase?: string) : CryptoOptions {
+export async function createEncryptionToSelfOptions (isText: boolean, secretPhrase?: string) : Promise<CryptoOptions> {
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
         throw {
             message: $.t('error_decryption_passphrase_required')
         }
     }
-    const privateKey = getPrivateKey(password)
+    const privateKey = await getPrivateKey(password)
     const publicKey = getPublicKeyFromPassphrase(password)
     const nonce = new Uint8Array(32)
     window.crypto.getRandomValues(nonce)
@@ -328,7 +328,7 @@ export async function decryptAttachmentField (tx: Transaction, field: 'encrypted
         if (field === 'encryptedMessage') {
             recipientID = (tx.sender === BRS.account ? tx.recipient : tx.sender) as string
         }
-        const options = createCryptoOptions(
+        const options = await createCryptoOptions(
             recipientID,
             tx.attachment[field].nonce,
             tx.attachment[field].isText,

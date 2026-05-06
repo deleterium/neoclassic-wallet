@@ -98,7 +98,7 @@ async function addMessageData (data, requestType) {
                 account = data.encryptedMessageRecipient
                 delete data.encryptedMessageRecipient
             }
-            const options = createEncryptionToOtherOptions(
+            const options = await createEncryptionToOtherOptions(
                 account,
                 data.publicKey,
                 data.message_is_text === 'on',
@@ -120,7 +120,7 @@ async function addMessageData (data, requestType) {
     }
 
     if (data.add_note_to_self && data.note_to_self) {
-        const options = createEncryptionToSelfOptions(
+        const options = await createEncryptionToSelfOptions(
             data.note_to_self_is_text === 'on',
             data.secretPhrase
         )
