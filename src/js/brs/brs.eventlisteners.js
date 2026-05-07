@@ -4,8 +4,6 @@
 
 import { BRS } from '.'
 
-import { fnAjaxMultiQueue } from './brs.ajaxmultiqueue'
-
 import {
     autoSelectServer,
     getState,
@@ -624,9 +622,6 @@ export function addEventListeners () {
     // from brs.utils.js
     $.fn.tree = treeViewHandler
     $('.sidebar-menu .treeview').tree()
-
-    // from brs.ajaxmultiqueue
-    $.ajaxMultiQueue = fnAjaxMultiQueue
 
     // from brs.blocks.js
     $('#block_info_latest_block').on('click', function (e) {
