@@ -168,7 +168,7 @@ export function addEventListeners () {
             getState(null)
         }
     })
-    $('span.node_selector button').on('click', function (e) {
+    $('span.node_selector button').on('click', function () {
         const $list = $(this).parent().find('ul')
         $list.empty()
         if (BRS.settings.automatic_node_selection) {
@@ -246,7 +246,7 @@ export function addEventListeners () {
     $('#lockscreen_register1, #lockscreen_register2').on('click', registerAccount)
     $('#lockscreen_registration_cancel').on('click', showLoginScreen)
     $('#lockscreen_registration_cancel2, #lockscreen_registration_cancel3, #lockscreen_registration_cancel4, #lockscreen_registration_cancel5').on('click', showLoginOrWelcomeScreen)
-    $('#lockscreen_next').on('click', function (event) {
+    $('#lockscreen_next').on('click', function () {
         $('.step_2').hide()
         $('.step_3').show()
     })
@@ -272,7 +272,7 @@ export function addEventListeners () {
         }
         sendMoneyCalculateTotal($(this))
     })
-    $('#send_money_amount, #send_money_fee').on('change', function (e) {
+    $('#send_money_amount, #send_money_fee').on('change', function () {
         sendMoneyCalculateTotal($(this))
     })
     $('span.asset_selector button').on('click', evAssetSelectorButtonClick)
@@ -348,7 +348,7 @@ export function addEventListeners () {
             $('#asset_exchange_group_new_group_div').hide()
         }
     })
-    $('#asset_exchange_group_modal').on('hidden.bs.modal', function (e) {
+    $('#asset_exchange_group_modal').on('hidden.bs.modal', function () {
         $('#asset_exchange_group_new_group_div').val('').hide()
     })
     $('#transfer_asset_modal').on('show.bs.modal', evTransferAssetModalOnShowBsModal)
@@ -373,7 +373,7 @@ export function addEventListeners () {
     })
 
     // from brs.messages.js
-    $('#send_message_modal').on('show.bs.modal', function (e) {
+    $('#send_message_modal').on('show.bs.modal', function () {
         if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
             const recipientAddress = convertNumericToRSAccountFormat(BRS.currentSubPage)
             $('#send_message_message').val($('#message_in_chatbox').val())
@@ -446,7 +446,7 @@ export function addEventListeners () {
         const value = $(this).val()
         updateSettings(key, value)
     })
-    $('#settings_box input[type=text]').on('input', function (e) {
+    $('#settings_box input[type=text]').on('input', function () {
         const key = $(this).attr('name')
         let value = $(this).val()
         if (/_warning/i.test(key) && key !== 'asset_transfer_warning') {
@@ -454,7 +454,7 @@ export function addEventListeners () {
         }
         updateSettings(key, value)
     })
-    $('#settings_box input[type=checkbox]').on('change', function (e) {
+    $('#settings_box input[type=checkbox]').on('change', function () {
         const key = $(this).attr('name')
         const value = this.checked
         updateSettings(key, value)
@@ -487,21 +487,21 @@ export function addEventListeners () {
     $('#send_money_same_out_checkbox').on('change', evSameOutCheckboxChange)
     $('#multi_out_fee').on('change', evMultiOutFeeChange)
     $('.add_recipients').on('click', evAddRecipientsClick)
-    $('.add_message').on('change', function (e) {
+    $('.add_message').on('change', function () {
         if ($(this).is(':checked')) {
             $(this).closest('form').find('.optional_message').fadeIn()
         } else {
             $(this).closest('form').find('.optional_message').hide()
         }
     })
-    $('.add_note_to_self').on('change', function (e) {
+    $('.add_note_to_self').on('change', function () {
         if ($(this).is(':checked')) {
             $(this).closest('form').find('.optional_note').fadeIn()
         } else {
             $(this).closest('form').find('.optional_note').hide()
         }
     })
-    $('.sell_to_specific').on('change', function (e) {
+    $('.sell_to_specific').on('change', function () {
         if ($(this).is(':checked')) {
             $(this).closest('form').find('.optional_sell_to_specific').fadeIn()
         } else {
@@ -530,7 +530,7 @@ export function addEventListeners () {
         const account = $(this).data('user')
         showAccountModal(account)
     })
-    $('#user_info_modal').on('hidden.bs.modal', function (e) {
+    $('#user_info_modal').on('hidden.bs.modal', function () {
         $(this).find('table tbody').empty()
         $(this).find('.data-container:not(.data-loading,.data-never-loading)').addClass('data-loading')
         BRS.userInfoModal.user = 0
@@ -538,7 +538,7 @@ export function addEventListeners () {
     $('#user_info_modal a[data-toggle="pill"]').on('shown.bs.tab', evShowBsTab)
 
     // from brs.modals.accountinfo.js
-    $('#account_info_modal').on('show.bs.modal', function (e) {
+    $('#account_info_modal').on('show.bs.modal', function () {
         $('#account_info_name').val(BRS.accountInfo.name)
         $('#account_info_description').val(BRS.accountInfo.description)
     })
@@ -546,12 +546,12 @@ export function addEventListeners () {
     // from brs.modals.block.js
     $('#blocks_table, #blocks_forged_table, #dashboard_blocks_table').on('click', 'a[data-block]', evBlocksTableClick)
     $('#block_info_modal_info_tab').tab('show')
-    $('#block_info_modal').on('hide.bs.modal', function (e) {
+    $('#block_info_modal').on('hide.bs.modal', function () {
         $('#block_info_modal_info_tab').tab('show')
     })
 
     // from brs.modals.escrow.js
-    $('#escrow_table').on('click', 'a[data-escrow]', function (e) {
+    $('#escrow_table').on('click', 'a[data-escrow]', function () {
         e.preventDefault()
         const escrowId = $(this).data('escrow')
         showEscrowDecisionModal(escrowId)
@@ -561,14 +561,14 @@ export function addEventListeners () {
     $('#brs_modal').on('show.bs.modal', evBrsModalOnShowBsModal)
 
     // from brs.modals.request.js
-    $('#request_burst_qr_modal').on('show.bs.modal', function (e) {
+    $('#request_burst_qr_modal').on('show.bs.modal', function () {
         $('#new_qr_button').hide()
         $('#request_burst_immutable').prop('checked', true)
         $('#request_burst_account_id').val(String(BRS.accountRS).escapeHTML())
         $('#request_burst_response_div').hide()
     })
     $('#generate_qr_button').on('click', evGenerateQrButtonClick)
-    $('#request_burst_qr_modal').on('hide.bs.modal', function (e) {
+    $('#request_burst_qr_modal').on('hide.bs.modal', function () {
         $('#request_burst_div').show()
         $('#request_burst_response_div').hide()
         $('#generate_qr_button').show()
@@ -576,7 +576,7 @@ export function addEventListeners () {
         $('#request_burst_response_div').hide()
         $('#request_burst_qr_modal').find('.error_message').html('').hide()
     })
-    $('#new_qr_button').on('click', function (e) {
+    $('#new_qr_button').on('click', function () {
         $('#request_burst_div').show()
         $('#request_burst_response_div').hide()
         $('#request_burst_amount').val('')
@@ -588,7 +588,7 @@ export function addEventListeners () {
 
     // from brs.modals.signmessage.js
     $('#sign_message_tab').tab('show')
-    $('#sign_message_modal').on('hidden.bs.modal', function (e) {
+    $('#sign_message_modal').on('hidden.bs.modal', function () {
         $('#sign_message_tab').tab('show')
         $('#sign_message_output_signature').text('')
         $('#sign_message_output_public_key').text('')
@@ -611,11 +611,11 @@ export function addEventListeners () {
         const transactionId = $(this).data('transaction')
         showTransactionModal(transactionId)
     })
-    $('#send_money_modal').on('hide.bs.modal', function (e) {
+    $('#send_money_modal').on('hide.bs.modal', function () {
         $('#total_amount_multi_out').html('?')
     })
     $('#transaction_info_modal_info_tab').tab('show')
-    $('#transaction_info_modal').on('hide.bs.modal', function (e) {
+    $('#transaction_info_modal').on('hide.bs.modal', function () {
         $('#transaction_info_modal_info_tab').tab('show')
         removeDecryptionForm($(this))
         $('#transaction_info_output_bottom, #transaction_info_bottom').html('').hide()
@@ -633,7 +633,7 @@ export function addEventListeners () {
         e.preventDefault()
         blocksInfoLoad(BRS.blocks[0].height.toString())
     })
-    $('#block_info_search').on('click', function (e) {
+    $('#block_info_search').on('click', function () {
         const userInput = $('#block_info_input_block').val()
         const currentBlock = Number(userInput)
         if (isNaN(currentBlock) || currentBlock < 0) {
@@ -641,7 +641,7 @@ export function addEventListeners () {
         }
         blocksInfoLoad($('#block_info_input_block').val())
     })
-    $('#block_info_previous_block').on('click', function (e) {
+    $('#block_info_previous_block').on('click', function () {
         const userInput = $('#block_info_input_block').val()
         const currentBlock = Number(userInput)
         if (isNaN(currentBlock) || currentBlock <= 0) {
@@ -649,7 +649,7 @@ export function addEventListeners () {
         }
         blocksInfoLoad(currentBlock - 1)
     })
-    $('#block_info_next_block').on('click', function (e) {
+    $('#block_info_next_block').on('click', function () {
         const userInput = $('#block_info_input_block').val()
         const currentBlock = Number(userInput)
         if (isNaN(currentBlock) || currentBlock < 0) {

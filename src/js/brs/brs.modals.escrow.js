@@ -19,7 +19,7 @@ export function showEscrowDecisionModal (escrow) {
     if (typeof escrow !== 'object') {
         sendRequest('getEscrowTransaction', {
             escrow
-        }, function (response, input) {
+        }, function (response) {
             processEscrowDecisionModalData(response)
         })
     } else {

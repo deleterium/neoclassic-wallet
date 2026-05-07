@@ -98,9 +98,9 @@ export function getPublicKeyFromPassphrase (secretphrase?: string) : HexString {
 // region Private Key
 
 async function getPrivateKey (secretPhrase: string) : Promise<HexString> {
-     const encoder = new TextEncoder();
-     const secretPhraseBytes = encoder.encode(secretPhrase);
-     const pk = new Uint8Array(await crypto.subtle.digest('SHA-256', secretPhraseBytes))
+    const encoder = new TextEncoder();
+    const secretPhraseBytes = encoder.encode(secretPhrase);
+    const pk = new Uint8Array(await crypto.subtle.digest('SHA-256', secretPhraseBytes))
     curve25519.clamp(pk)
     return converters.byteArrayToHexString(pk)
 }
@@ -131,8 +131,8 @@ async function createCryptoOptions (otherUser: string, nonce: HexString, isText:
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
         throw {
-                brsErrorMessage: $.t('error_decryption_passphrase_required')
-            }
+            brsErrorMessage: $.t('error_decryption_passphrase_required')
+        }
     }
     const privateKey = await getPrivateKey(password)
     return {
@@ -158,8 +158,8 @@ export async function createEncryptionToOtherOptions (
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
         throw {
-                message: $.t('error_decryption_passphrase_required')
-            }
+            message: $.t('error_decryption_passphrase_required')
+        }
     }
     const privateKey = await getPrivateKey(password)
     const nonce = new Uint8Array(32)

@@ -74,7 +74,6 @@ import {
 import {
     incomingUpdateDashboardTransactions,
     pagesTransactions,
-    incomingTransactions
 } from './brs.transactions'
 
 import {
@@ -115,7 +114,7 @@ import {
     formsSignMessage,
     formsVerifyMessage
 } from './brs.modals.signmessage'
-import { init } from './brs'
+import { init, reloadCurrentPage } from './brs'
 import { formsClearData } from './brs.modal.cleardata'
 import { Transaction } from '../typings'
 
@@ -186,7 +185,7 @@ export const BRS = {
         my_assets: incomingMyAssets,
         open_orders: incomingOpenOrders,
         updateDashboardTransactions: incomingUpdateDashboardTransactions,
-        transactions: incomingTransactions,
+        transactions: reloadCurrentPage,
         peers: incomingPeers,
         messages: incomingMessages
     },
@@ -322,7 +321,7 @@ export const BRS = {
     }
 }
 
-// @ts-ignore: Browser only
+// @ts-expect-error: Browser only
 window.jQuery = window.$ = $
 
 document.addEventListener('DOMContentLoaded', function () {

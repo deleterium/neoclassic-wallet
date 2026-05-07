@@ -4,11 +4,12 @@ module.exports = {
         es2021: true,
         jquery: true
     },
-    extends: 'standard',
-    overrides: [
+    extends: [
+        'plugin:@typescript-eslint/recommended',
     ],
+    parser: '@typescript-eslint/parser',
     parserOptions: {
-        ecmaVersion: 'latest',
+        ecmaVersion: 2020,
         sourceType: 'module'
     },
     rules: {
@@ -18,7 +19,8 @@ module.exports = {
         'handle-callback-err': 'warn',
         'n/no-callback-literal': 'off',
         'no-throw-literal': 'off',
-        'no-unused-vars': 'warn',
+        '@typescript-eslint/no-unused-vars': 'warn',
+        '@typescript-eslint/no-explicit-any': 'off', // Currently needed (migration)
         'brace-style': ['warn', '1tbs', { allowSingleLine: false }]
     }
 }

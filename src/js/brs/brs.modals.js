@@ -86,7 +86,7 @@ export function evDocumentOnClickRemoveRecipient (e) {
     }
 }
 
-export function evMultiOutAmountChange (e) {
+export function evMultiOutAmountChange () {
     // get amount for each recipient
     let amount_total = 0
     $('#multi_out_recipients .row').each(function (index, row) {
@@ -123,7 +123,7 @@ export function evMultiOutSameAmountChange () {
     $('#total_amount_multi_out').html(formatAmount(convertToNQT(amount_total)) + ' ' + BRS.valueSuffix)
 }
 
-export function evSameOutCheckboxChange (e) {
+export function evSameOutCheckboxChange () {
     $('#total_amount_multi_out').html('?')
     if ($(this).is(':checked')) {
         $('#multi_out_same_recipients').fadeIn()
@@ -138,7 +138,7 @@ export function evSameOutCheckboxChange (e) {
     }
 }
 
-export function evMultiOutFeeChange (e) {
+export function evMultiOutFeeChange () {
     if ($('#send_money_same_out_checkbox').is(':checked')) {
         evMultiOutSameAmountChange()
     } else {
@@ -186,7 +186,7 @@ export function resetModalMultiOut () {
 }
 
 // Reset form to initial state when modal is closed
-export function evModalOnHiddenBsModal (e) {
+export function evModalOnHiddenBsModal () {
     resetModalMultiOut()
 
     // Multi-transfers
@@ -206,7 +206,7 @@ export function evModalOnHiddenBsModal (e) {
     })
     // End multi-transfers
 
-    $(this).find(':input:not(button)').each(function (index) {
+    $(this).find(':input:not(button)').each(function () {
         const defaultValue = $(this).data('default')
         const type = $(this).attr('type')
         const tag = $(this).prop('tagName').toLowerCase()

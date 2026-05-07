@@ -218,7 +218,7 @@ export function autoSelectServer () {
             type: 'GET',
             timeout: 2000,
             async: true
-        }).done(function (response, status, xhr) {
+        }).done(function (response, status) {
             if (status === 'success' && response.errorCode === undefined) {
                 const fasterResponse = responses.find(row => row[1] === response.block)
                 if (fasterResponse) {
@@ -415,7 +415,7 @@ export function pageLoaded (callback) {
     }
 }
 
-export function addPagination (section) {
+export function addPagination () {
     let output = ''
 
     if (BRS.pageNumber === 2) {
@@ -812,7 +812,7 @@ export function evIdSearchSubmit (e) {
         try {
             // signed to unsigned conversion
             searchText = (BigInt(userInput) + (1n << 64n)).toString(10)
-        } catch (_e) {
+        } catch (err) {
             searchText = userInput
         }
     }
@@ -866,7 +866,7 @@ export function evIdSearchSubmit (e) {
         sendRequest('getBlock', {
             block: splitted[1].trim(),
             includeTransactions: 'true'
-        }, function (response, input) {
+        }, function (response) {
             if (!response.errorCode) {
                 // response.block = input.block;
                 showBlockModal(response)
@@ -874,7 +874,7 @@ export function evIdSearchSubmit (e) {
                 sendRequest('getBlock', {
                     height: splitted[1].trim(),
                     includeTransactions: 'true'
-                }, function (response, input) {
+                }, function (response) {
                     if (!response.errorCode) {
                         // response.block = input.block;
                         showBlockModal(response)
@@ -907,7 +907,7 @@ export function evIdSearchSubmit (e) {
             if (response.accounts.length === 1) {
                 sendRequest('getAccount', {
                     account: response.accounts[0]
-                }, function (response2, input) {
+                }, function (response2) {
                     if (response2.errorCode) {
                         $.notify($.t('error_search_no_results'), { type: 'danger' })
                         return

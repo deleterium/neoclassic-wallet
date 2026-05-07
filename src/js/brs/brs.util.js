@@ -571,7 +571,7 @@ export function setupClipboardFunctionality () {
         })
     } else {
         // Handle click events directly
-        $el.on('click', function (e) {
+        $el.on('click', function () {
             const text = getClipboardText($(this).data('type'))
 
             navigator.clipboard.writeText(text)
@@ -656,7 +656,7 @@ export function dataLoadFinished ($el, fadeIn) {
     }
 }
 
-export function createInfoTable (data, fixed) {
+export function createInfoTable (data) {
     let rows = ''
 
     for (let key in data) {

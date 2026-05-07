@@ -13,7 +13,7 @@ import {
     formatTimestamp
 } from './brs.util'
 
-export function evBrsModalOnShowBsModal (e) {
+export function evBrsModalOnShowBsModal () {
     if (BRS.fetchingModalData) {
         return
     }

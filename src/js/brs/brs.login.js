@@ -5,7 +5,6 @@
 /* global PassPhraseGenerator */
 
 import { BRS } from '.'
-import converters from '../util/converters'
 
 import {
     checkSelectedNode,
@@ -106,7 +105,7 @@ export function registerAccount () {
             $loaded.show()
 
             PassPhraseGenerator.generatePassPhrase('#account_phrase_generator_panel')
-        }).fail(function (jqxhr, settings, exception) {
+        }).fail(function () {
             alert($.t('error_word_list'))
         })
     } else {

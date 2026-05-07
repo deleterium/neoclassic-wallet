@@ -265,7 +265,7 @@ export function addUnconfirmedTransaction (transactionId, callback) {
                         }
                     })
                 }
-            } catch (e) {}
+            } catch (err) {}
 
             if (!alreadyProcessed) {
                 BRS.unconfirmedTransactions.unshift(response)
@@ -347,10 +347,6 @@ export function pagesTransactions () {
         }
         dataLoaded(rows)
     })
-}
-
-export function incomingTransactions (transactions) {
-    reloadCurrentPage()
 }
 
 function displayUnconfirmedTransactions (viewAccount) {

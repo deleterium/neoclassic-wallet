@@ -22,7 +22,7 @@ export function showSubscriptionCancelModal (subscription) {
     if (typeof subscription !== 'object') {
         sendRequest('getSubscription', {
             subscription
-        }, function (response, input) {
+        }, function (response) {
             processSubscriptionCancelModalData(response)
         })
     } else {

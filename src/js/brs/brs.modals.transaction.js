@@ -92,7 +92,7 @@ function processTransactionModalData (transaction) {
 
         $('#transaction_info_modal_transaction').html(String(transaction.transaction).escapeHTML())
         $('#transaction_info_tab_link').tab('show')
-        $('#transaction_info_details_table tbody').empty().append(createInfoTable(transactionDetails, true))
+        $('#transaction_info_details_table tbody').empty().append(createInfoTable(transactionDetails))
         $('#transaction_info_table tbody').empty()
     }
 
@@ -726,12 +726,15 @@ function processTransactionModalData (transaction) {
  * @param {String} providedPassphrase - Optional passphrase provided by the user for decryption purposes.
  * @returns {boolean} - Returns true if a decryption form needs to be shown, false otherwise.
  */
-export function drawAttachmentMessages(transaction, $output, providedPassphrase) {
+export function drawAttachmentMessages (transaction, $output, providedPassphrase) {
     removeDecryptionForm()
     $output.html('')
-    let showMessage = false, messageHTML = ''
-    let showEncrypted = false, encryptedHTML = ''
-    let showEncryptedToSelf = false, EncryptedToSelfHTML = ''
+    let showMessage = false
+    let messageHTML = ''
+    let showEncrypted = false
+    let encryptedHTML = ''
+    let showEncryptedToSelf = false
+    let EncryptedToSelfHTML = ''
     let showDecryptionForm = false
 
     if (transaction.attachment.message) {
@@ -749,16 +752,16 @@ export function drawAttachmentMessages(transaction, $output, providedPassphrase)
     }
     if (transaction.attachment.encryptedMessage) {
         showEncrypted = true
-        let containerID = 'encryptedMessage' + transaction.transaction
+        const containerID = 'encryptedMessage' + transaction.transaction
         if (transaction.recipient !== BRS.account && transaction.sender !== BRS.account) {
-            encryptedHTML = $t('data_is_encrypted')
+            encryptedHTML = $.t('data_is_encrypted')
         } else {
             const secretMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptedMessage')
             if (secretMessage !== undefined) {
                 // encrypted message but already decoded in cache
                 encryptedHTML = secretMessage.escapeHTML().nl2br()
             } else {
-                const passphrase = providedPassphrase === undefined ? getDecryptionPassword() : providedPassphrase;
+                const passphrase = providedPassphrase === undefined ? getDecryptionPassword() : providedPassphrase
                 if (passphrase) {
                     // decode async
                     encryptedHTML = `<span id="${containerID}">${BRS.pendingTransactionHTML}</span>`
@@ -773,16 +776,16 @@ export function drawAttachmentMessages(transaction, $output, providedPassphrase)
     }
     if (transaction.attachment.encryptToSelfMessage) {
         showEncryptedToSelf = true
-        let containerID = 'msgToSelf' + transaction.transaction
+        const containerID = 'msgToSelf' + transaction.transaction
         if (transaction.sender !== BRS.account) {
-            EncryptedToSelfHTML = $t('data_is_encrypted')
+            EncryptedToSelfHTML = $.t('data_is_encrypted')
         } else {
             const secretMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptToSelfMessage')
             if (secretMessage !== undefined) {
                 // encrypted message but already decoded in cache
                 EncryptedToSelfHTML = secretMessage.escapeHTML().nl2br()
             } else {
-                const passphrase = providedPassphrase === undefined ? getDecryptionPassword() : providedPassphrase;
+                const passphrase = providedPassphrase === undefined ? getDecryptionPassword() : providedPassphrase
                 if (passphrase) {
                     // decode async
                     EncryptedToSelfHTML = `<span id="${containerID}">${BRS.pendingTransactionHTML}</span>`

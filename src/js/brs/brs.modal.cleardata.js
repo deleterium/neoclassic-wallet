@@ -6,7 +6,7 @@ import { drop } from './brs.database'
 
 export function formsClearData (data) {
     const onDropped = function (error) {
-        if (error != null) {
+        if (error !== null) {
             alert('Something wrong happened')
         } else {
             console.log('Table deleted')

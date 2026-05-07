@@ -35,7 +35,7 @@ export function formsSignMessage () {
         console.log(result)
         let signedTransaction = ''
         const signature = signBytes(data, passphrase)
-        if (result.errorCode == null) {
+        if (result.errorCode === null) {
             $('#sign_message_error').text($.t('warning_sign_transaction'))
             $('#sign_message_error').show()
             signedTransaction = data.substr(0, 192) + signature + data.substr(320)

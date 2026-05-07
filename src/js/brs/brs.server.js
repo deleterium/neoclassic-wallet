@@ -296,7 +296,7 @@ export function processAjaxRequest (requestType, data, callback, async) {
         currentSubPage,
         shouldRetry: (type === 'GET' ? 2 : undefined),
         data
-    }).done(function (response, status, xhr) {
+    }).done(function (response) {
         response = addUnconfirmedProperty(response, requestType)
 
         if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode && !response.error) {
@@ -932,7 +932,7 @@ export function broadcastTransactionBytes (transactionData, callback, originalRe
         data: {
             transactionBytes: transactionData
         }
-    }).done(function (response, status, xhr) {
+    }).done(function (response) {
         if (callback) {
             if (response.errorCode) {
                 if (!response.errorDescription) {

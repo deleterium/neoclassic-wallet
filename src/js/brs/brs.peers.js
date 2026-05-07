@@ -184,7 +184,7 @@ function versionCompare (v1, v2) {
         const version1 = new Version(v1)
         const version2 = new Version(v2)
         return version1.isGreaterThanOrEqualTo(version2)
-    } catch (e) {
+    } catch (err) {
         return false
     }
 }

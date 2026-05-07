@@ -473,7 +473,7 @@ export function incomingAssetExchange () {
     updateQuantitiesInAssetExchangeSidebarContent()
 }
 
-export function evAssetExchangeSidebarClick (e, data) {
+export function evAssetExchangeSidebarClick (e) {
     e.preventDefault()
 
     const assetClicked = String($(this).data('asset')).escapeHTML()
@@ -677,7 +677,7 @@ export function updateMiniTradeHistory () {
         account: ($('#ae_show_my_trades_only').is(':checked')) ? BRS.account : '',
         firstIndex: 0,
         lastIndex: 49
-    }, function (response, input) {
+    }, function (response) {
         if (!response.trades || !response.trades.length) {
             $('#asset_exchange_trade_history_table tbody').empty()
             dataLoadFinished($('#asset_exchange_trade_history_table'), true)
@@ -710,7 +710,7 @@ function loadAssetOrders (type, assetId, refresh) {
         asset: assetId,
         firstIndex: 0,
         lastIndex: 49
-    }, function (response, input) {
+    }, function (response) {
         let orders = response[type + 'Orders']
         let i
         if (!orders) {
@@ -828,7 +828,7 @@ function isUserCancelledOrder (order) {
     return false
 }
 
-export function evAssetExchangeSearchInput (e) {
+export function evAssetExchangeSearchInput () {
     const input = $.trim($(this).val()).toUpperCase()
 
     if (!input) {
@@ -901,7 +901,7 @@ export function evAssetExchangeOrdersTableClick (e) {
     }
 }
 
-export function evSellBuyAutomaticPriceClick (e) {
+export function evSellBuyAutomaticPriceClick () {
     try {
         const type = ($(this).attr('id') === 'sell_automatic_price' ? 'sell' : 'buy')
         const assetMult = BigInt('1'.padEnd(BRS.currentAsset.decimals + 1, '0'))
@@ -1023,7 +1023,7 @@ export function evAssetExchangeQuantityPriceKeydown (e) {
 }
 
 // calculate preview price (calculated on every keypress)
-export function evCalculatePricePreviewKeyup (e) {
+export function evCalculatePricePreviewKeyup () {
     const orderType = $(this).data('type').toLowerCase()
 
     try {
@@ -1359,7 +1359,7 @@ export function pagesTransferHistory () {
         account: BRS.accountRS,
         firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
         lastIndex: BRS.pageSize * BRS.pageNumber
-    }, function (response, input) {
+    }, function (response) {
         if (response.transfers && response.transfers.length) {
             if (response.transfers.length > BRS.pageSize) {
                 BRS.hasMorePages = true
@@ -1389,7 +1389,7 @@ export function pagesTransferHistory () {
 
 /** Populates the drop-down list with the user assets, in alphabetical order.
  * It is used in places like "transfer token", so user can pick one easily. */
-export function evAssetSelectorButtonClick (e) {
+export function evAssetSelectorButtonClick () {
     const $list = $(this).parent().find('ul')
     $list.empty()
     if (!BRS.accountInfo.assetBalances) {
@@ -1726,9 +1726,8 @@ export function formsTransferAsset (data) {
     }
 }
 
-export function formsTransferAssetComplete (response, data) {
+export function formsTransferAssetComplete () {
     if (BRS.currentPage === 'my_assets') {
-        // TODO Why only in my_assets?
         reloadCurrentPage()
     }
 }

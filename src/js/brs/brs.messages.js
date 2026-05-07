@@ -26,7 +26,6 @@ import {
 } from './brs.encryption'
 
 import {
-    formatAmount,
     formatTimestamp,
     convertFromHex16,
     convertFromHex8,

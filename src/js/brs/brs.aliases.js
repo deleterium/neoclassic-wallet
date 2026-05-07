@@ -461,14 +461,14 @@ export function formsSellAliasComplete (response, data) {
     }
 }
 
-export function evSellAliasSellToSpecificClick (e) {
+export function evSellAliasSellToSpecificClick () {
     const $form = $(this).closest('form')
     $form.find('.account_info').hide()
     $form.find('input[name=recipient]').val('')
     $form.find('input[name=converted_account_id]').val('')
 }
 
-export function evBuyAliasModalOnShowBsModal (e) {
+export function evBuyAliasModalOnShowBsModal () {
     const $modal = $(this)
 
     const $invoker = $(e.relatedTarget)
@@ -792,7 +792,7 @@ export function evAliasSearchSubmit (e) {
 
     sendRequest('getAlias', {
         aliasName: alias
-    }, function (response, input) {
+    }, function (response) {
         if (response.errorCode) {
             $.notify($.t('error_alias_not_found') +
                     " <a href='#' data-toggle='modal' data-target='#register_alias_modal' data-prefill-alias='" +

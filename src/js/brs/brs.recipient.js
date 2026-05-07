@@ -91,7 +91,7 @@ export function formsSendMoneyMulti (data) {
         requestType = 'sendMoneyMultiSame'
         try {
             rowAmountNQT = convertToNQT(data.amount_multi_out_same)
-        } catch (e) {
+        } catch (err) {
             return { error: 'Invalid amount' }
         }
         data.amountNXT = data.amount_multi_out_same
@@ -127,7 +127,7 @@ export function formsSendMoneyMulti (data) {
             }
             try {
                 rowAmountNQT = convertToNQT(data.amount_multi_out[i])
-            } catch (e) {
+            } catch (err) {
                 return { error: 'Invalid amount' }
             }
             if (rowAmountNQT === '0') {
@@ -489,7 +489,7 @@ function checkForMerchant (accountInfo, modal) {
     }
 }
 
-export function evSpanRecipientSelectorClickButton (e) {
+export function evSpanRecipientSelectorClickButton () {
     const $list = $(this).parent().find('ul')
     if (!Object.keys(BRS.contacts).length) {
         $list.html(`<li><a class='dropdown-item' href='#' data-contact=''>${$.t('error_no_contacts_available')}</a></li>`)
