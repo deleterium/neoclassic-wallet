@@ -51,6 +51,8 @@ import {
     getInitialTransactions
 } from './brs.transactions'
 
+import PassPhraseGenerator from './brs.passphrase.generator'
+
 export function showLoginOrWelcomeScreen () {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
         showLoginScreen()
@@ -88,32 +90,8 @@ export function registerAccount () {
     $('#account_phrase_generator_panel').show()
     $('#account_phrase_generator_panel .step_3 .callout').hide()
 
-    const $loading = $('#account_phrase_generator_loading')
-    const $loaded = $('#account_phrase_generator_loaded')
-
-    $loading.find('span.loading_text').html($.t('generating_passphrase_wait'))
-
-    $loading.show()
-    $loaded.hide()
-
-    if (typeof PassPhraseGenerator === 'undefined') {
-        $.when(
-            $.getScript('js/3rdparty/seedrandom.min.js'),
-            $.getScript('js/3rdparty/passphrasegenerator.js')
-        ).done(function () {
-            $loading.hide()
-            $loaded.show()
-
-            PassPhraseGenerator.generatePassPhrase('#account_phrase_generator_panel')
-        }).fail(function () {
-            alert($.t('error_word_list'))
-        })
-    } else {
-        $loading.hide()
-        $loaded.show()
-
-        PassPhraseGenerator.generatePassPhrase('#account_phrase_generator_panel')
-    }
+    $('#account_phrase_generator_loaded').show()
+    PassPhraseGenerator.generatePassPhrase('#account_phrase_generator_panel')
 }
 
 export function verifyGeneratedPassphrase () {
