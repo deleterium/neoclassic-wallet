@@ -28,7 +28,6 @@ signing/curve25519.js - MIT - https://github.com/Jaguar0625/JavaScriptNrs
 xoreddata.js - MIT - BloodyRookie
 ajaxretry.js - MIT - https://github.com/dcherman/jQuery.ajaxRetry
 ajaxmultiqueue.js - MIT - https://github.com/GeReV/jQuery.ajaxMultiQueue
-autolink.js - MIT - https://github.com/bryanwoods/autolink-js
 
 
 jsbn.js / jsbn2.js - BSD - http://www-cs-students.stanford.edu/~tjw/jsbn/

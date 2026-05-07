@@ -226,7 +226,7 @@ function processTransactionModalData (transaction) {
         case 1:
             // alias assignment
             data.alias = transaction.attachment.alias
-            data.data_formatted_html = transaction.attachment.uri.autoLink()
+            data.data_formatted_html = transaction.attachment.uri
             return
         case 6:
             // alias sale/transfer/sale cancelation

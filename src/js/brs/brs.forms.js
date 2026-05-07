@@ -143,6 +143,10 @@ async function addMessageData (data, requestType) {
 }
 
 function checkInvalidFormFields ($form) {
+    function hasAttr (DOM, name) {
+        return DOM.attr(name) !== undefined
+    }
+
     let errorMessage = ''
 
     $form.find(':input').each(function () {
@@ -151,7 +155,7 @@ function checkInvalidFormFields ($form) {
         }
         const name = String($(this).attr('name')).replace('NXT', '').replace('NQT', '').capitalize()
         const value = $(this).val()
-        if ($(this).hasAttr('max')) {
+        if (hasAttr($(this), 'max')) {
             if (!/^[-\d.]+$/.test(value)) {
                 errorMessage = $.t('error_not_a_number', {
                     field: getTranslatedFieldName(name).toLowerCase()
@@ -168,7 +172,7 @@ function checkInvalidFormFields ($form) {
                 }
             }
         }
-        if ($(this).hasAttr('min')) {
+        if (hasAttr($(this), 'min')) {
             if (!/^[-\d.]+$/.test(value)) {
                 errorMessage = $.t('error_not_a_number', {
                     field: getTranslatedFieldName(name).toLowerCase()

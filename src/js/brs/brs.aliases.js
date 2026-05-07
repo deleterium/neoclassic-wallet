@@ -811,7 +811,7 @@ export function evAliasShowSearchResult (response) {
     const data = {
         account: getAccountTitle(response, 'account'),
         last_updated: formatTimestamp(response.timestamp),
-        data_formatted_html: String(response.aliasURI).autoLink()
+        data_formatted_html: String(response.aliasURI)
     }
     if ('priceNQT' in response) {
         if (response.buyer === BRS.account) {
