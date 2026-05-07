@@ -7,6 +7,8 @@ import i18next from 'i18next'
 import jqueryI18next from 'jquery-i18next'
 import i18nHttpApi from 'i18next-http-backend'
 
+import '../util/string.extensions'
+
 import {
     pagesSettings
 } from './brs.settings'
