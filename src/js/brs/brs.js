@@ -3,10 +3,6 @@
  * @depends {3rdparty/jsbn.js}
  * @depends {3rdparty/jsbn2.js}
  * @depends {3rdparty/notify.min.js}
- * @depends {crypto/passphrasegenerator.js}
- * @depends {crypto/3rdparty/aes.js}
- * @depends {crypto/3rdparty/seedrandom.js}
- * @depends {util/extensions.js}
  */
 
 /* global BigInteger */
@@ -139,19 +135,6 @@ export function init () {
 
     setInterval(setHeaderClock, 1000)
 
-    /*
-          $("#asset_exchange_search input[name=q]").addClear({
-          right: 0,
-          top: 4,
-          onClear: function(input) {
-          $("#asset_exchange_search").trigger("submit");
-          }
-          });
-
-          $("#id_search input[name=q], #alias_search input[name=q]").addClear({
-          right: 0,
-          top: 4
-          }); */
 }
 
 export function setStateInterval (seconds) {
