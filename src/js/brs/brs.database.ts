@@ -13,7 +13,7 @@ import { BRS } from '.'
  * Sets up database schema and loads existing data into memory.
  * @param {function} [callback] - Optional callback function to execute after database is created succesfully.
  */
-export function createDatabase (callback) {
+export function createDatabase (callback: () => void): void {
     const dbName = 'BRS_USER_DB'
     const dbVersion = 2
     const request = indexedDB.open(dbName, dbVersion)
@@ -23,12 +23,12 @@ export function createDatabase (callback) {
         BRS.databaseSupport = false
     }
     request.onsuccess = function (event) {
-        BRS.database = event.target.result
+        BRS.database = (event.target as IDBRequest).result
         BRS.databaseSupport = true
         callback()
     }
     request.onupgradeneeded = function (event) {
-        const db = event.target.result
+        const db: IDBDatabase = (event.target as IDBRequest).result
         if (!db.objectStoreNames.contains('contacts')) {
             db.createObjectStore('contacts', { keyPath: 'id', autoIncrement: true })
         }
@@ -58,14 +58,19 @@ export function createDatabase (callback) {
  * When no query is provided (callback as second parameter), the callback's `result` will be:
  * - An array of all objects in the store
  */
-export function dbGet (storeName, query, callback) {
+export function dbGet <T extends string | number> (
+    storeName: string,
+    query: Record<string, T> | ((error: any, result: any) => void) | null,
+    callback?: (error: any, result: any) => void
+): void {
+    if (BRS.database === null) return
     if (typeof query === 'function') {
-        callback = query
+        callback = query as (error: any, result: any) => void
         query = null
     }
     const transaction = BRS.database.transaction(storeName, 'readonly')
     const store = transaction.objectStore(storeName)
-    let request
+    let request: IDBRequest
     if (!query) {
         request = store.getAll()
     } else {
@@ -77,7 +82,7 @@ export function dbGet (storeName, query, callback) {
         if (callback) callback(null, request.result)
     }
     request.onerror = function (error) {
-        if (callback) callback(error)
+        if (callback) callback(error, {})
         else console.error('select() error: ', error)
     }
 }
@@ -98,12 +103,17 @@ export function dbGet (storeName, query, callback) {
  * When an array of objects is provided as `data`, the callback's `result` will be:
  * - An array containing all inserted objects with their generated keys
  */
-export function dbPut (storeName, data, callback) {
+export function dbPut <T extends object | Array<object>> (
+    storeName: string,
+    data: T,
+    callback?: (error: any, result: T) => void
+): void {
+    if (BRS.database === null) return
     const transaction = BRS.database.transaction(storeName, 'readwrite')
     const store = transaction.objectStore(storeName)
     const isArrayInput = Array.isArray(data)
-    const itemsToInsert = isArrayInput ? data : [data]
-    const requests = itemsToInsert.map(item => {
+    const itemsToInsert = isArrayInput ? data as Array<object> : [data]
+    const requests: Promise<any>[] = (itemsToInsert as Array<object>).map(item => {
         return new Promise((resolve, reject) => {
             const request = store.put(item)
             request.onsuccess = () => {
@@ -118,16 +128,17 @@ export function dbPut (storeName, data, callback) {
     Promise.allSettled(requests)
         .then(results => {
             if (!callback) return
-            const errors = results.filter(r => r.status === 'rejected')
+            const errors = results.filter((r: any) => r.status === 'rejected')
+            const successfulResults = results.filter((r: any) => r.status === 'fulfilled').map((r: any) => r.value)
             if (errors.length > 0) {
-                callback(new Error('Some inserts failed'), results)
+                callback(new Error('Some inserts failed'), results as T)
             } else {
-                const result = isArrayInput ? results.map(r => r.value) : results[0].value
-                callback(null, result)
+                const result = isArrayInput ? successfulResults : successfulResults[0]
+                callback(null, result as T)
             }
         })
         .catch(error => {
-            if (callback) callback(error)
+            if (callback) callback(error, {} as T)
             else console.error('insert() error: ', error)
         })
 }
@@ -138,7 +149,12 @@ export function dbPut (storeName, data, callback) {
  * @param {object} query - Query parameter to identify the record to delete (primary key)
  * @param {function} callback - Callback function(error)
  */
-export function deleteRecord (storeName, query, callback) {
+export function deleteRecord <T extends string | number> (
+    storeName: string,
+    query: Record<string, T>,
+    callback?: (error: any) => void
+): void {
+    if (BRS.database === null) return
     const transaction = BRS.database.transaction(storeName, 'readwrite')
     const store = transaction.objectStore(storeName)
     const indexName = Object.keys(query)[0]
@@ -158,7 +174,8 @@ export function deleteRecord (storeName, query, callback) {
  * @param {string} storeName - Name of the object store (table)
  * @param {function} callback - Callback function(error)
  */
-export function drop (storeName, callback) {
+export function drop(storeName: string, callback?: (error: any) => void): void {
+    if (BRS.database === null) return
     const transaction = BRS.database.transaction(storeName, 'readwrite')
     const store = transaction.objectStore(storeName)
     const request = store.clear()

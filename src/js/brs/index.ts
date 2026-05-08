@@ -145,7 +145,7 @@ export const BRS = {
     publicKey: '',
     accountInfo: {} as GetAccountResponse,
 
-    database: null,
+    database: null as IDBDatabase | null,
     databaseSupport: false,
 
     settings: {} as BrsSettings,
