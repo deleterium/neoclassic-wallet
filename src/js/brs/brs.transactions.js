@@ -277,7 +277,7 @@ export function addUnconfirmedTransaction (transactionId, callback) {
 
             BRS.incoming.updateDashboardTransactions(BRS.unconfirmedTransactions, true)
 
-            getAccountInfo()
+            getAccountInfo(false)
         } else if (callback) {
             callback(false)
         }

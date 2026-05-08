@@ -7,6 +7,12 @@
 
 /* global BigInteger */
 
+import {
+    AssetBalance,
+    GetAssetResponse,
+    GetAssetsByNameResponse
+} from '../typings'
+
 import hashicon from 'hashicon'
 
 import {
@@ -87,7 +93,7 @@ function loadAllDBValues () {
     loadSettingsFromDB()
 }
 
-export function init () {
+export function init () : void {
     try {
         if (window.localStorage) {
             BRS.hasLocalStorage = true
@@ -139,24 +145,21 @@ export function init () {
 
 }
 
-export function setStateInterval (seconds) {
+export function setStateInterval (seconds: number) : void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
         return
     }
-
     if (BRS.stateInterval) {
         clearInterval(BRS.stateInterval)
     }
-
     BRS.stateIntervalSeconds = seconds
-
     BRS.stateInterval = setInterval(function () {
         getState()
     }, 1000 * seconds)
 }
 
-export function checkSelectedNode () {
-    const preferedNode = $('#prefered_node').val()
+export function checkSelectedNode () : void {
+    const preferedNode = $('#prefered_node').val() as string
     if (preferedNode !== BRS.server) {
         // Server changed, get new network details
         BRS.server = preferedNode
@@ -179,7 +182,7 @@ export function checkSelectedNode () {
     }
 }
 
-export function autoSelectServer () {
+export function autoSelectServer () : void {
     const ajaxCall = fnAjaxMultiQueue(8).queue
     // shuffleArray but keep localhost as first one
     const mainnetServers = BRS.nodes.filter(obj => obj.testnet === false).slice(1)
@@ -188,7 +191,7 @@ export function autoSelectServer () {
         [mainnetServers[i], mainnetServers[j]] = [mainnetServers[j], mainnetServers[i]]
     }
     mainnetServers.unshift(BRS.nodes[0])
-    const responses = []
+    const responses: [string, string, number][] = []
     setTimeout(() => {
         // choose winner
         responses.sort((a, b) => b[2] - a[2])
@@ -216,7 +219,7 @@ export function autoSelectServer () {
     }
 }
 
-function setHeaderClock () {
+function setHeaderClock () : void {
     const lastBlockDate = new Date(Date.UTC(2014, 7, 11, 2, 0, 0, 0) + BRS.state.lastBlockTimestamp * 1000)
     const diffSeconds = Math.floor((Date.now() - lastBlockDate.getTime()) / 1000)
     const minutes = (diffSeconds / 60) < 10 ? '0' + Math.floor(diffSeconds / 60).toString() : Math.floor(diffSeconds / 60).toString()
@@ -224,7 +227,7 @@ function setHeaderClock () {
     $('#header_block_time').html(minutes + ':' + seconds)
 }
 
-export function getState (callback) {
+export function getState (callback?: () => void) : void {
     checkSelectedNode()
 
     sendRequest('getBlockchainStatus', function (response) {
@@ -265,7 +268,7 @@ export function getState (callback) {
             getBlock(BRS.state.lastBlock, handleInitialBlocks)
             if (BRS.account) {
                 getInitialTransactions()
-                getAccountInfo()
+                getAccountInfo(false)
             }
             break
         case (previousLastBlock !== BRS.state.lastBlock):
@@ -301,35 +304,28 @@ export function getState (callback) {
 /**
  * Handles clicks in sidebar, changing current page if needed
  */
-export function evSidebarClick (e) {
+export function evSidebarClick (e: JQuery.ClickEvent) : void {
     e.preventDefault()
-    if ($(this).data('toggle') === 'modal') {
+    if ($(e.currentTarget).data('toggle') === 'modal') {
         return
     }
-    const page = $(this).data('page')
+    const page = $(e.currentTarget).data('page')
     if (page === 'keep' || page === BRS.currentPage) {
         return
     }
     $('.page').hide()
     $('#' + page + '_page').show()
-    // $('.content-header h1').find('.loading_dots').remove()
     $('#sidebar .active').removeClass('active')
     $(e.currentTarget).addClass('active')
-
-    // if (BRS.currentPage !== 'messages') {
-    //     $('#inline_message_password').val('')
-    // }
-
     loadPage(page)
 }
 
 /** Load a page for first time (setting up global variables) */
-function loadPage (page) {
+function loadPage (page: string) : void {
     BRS.currentPage = page
     BRS.currentSubPage = ''
     BRS.pageNumber = 1
     BRS.showPageNumbers = false
-
     if (BRS.pages[page]) {
         pageLoading()
         BRS.pages[page]()
@@ -337,7 +333,7 @@ function loadPage (page) {
 }
 
 /** Reload current page, keeping variables like pagination */
-export function reloadCurrentPage () {
+export function reloadCurrentPage () : void {
     if (!BRS.pages[BRS.currentPage]) {
         console.log('Possible bug on reloadCurrentPage.')
         return
@@ -347,7 +343,7 @@ export function reloadCurrentPage () {
 }
 
 /** Go to a page, updating sidebar menu */
-export function goToPage (page) {
+export function goToPage (page: string) : void {
     let $link = $('ul.sidebar-menu a[data-page=' + page + ']')
 
     if ($link.length > 1) {
@@ -371,9 +367,8 @@ export function goToPage (page) {
     loadPage(page)
 }
 
-export function pageLoading () {
+export function pageLoading () : void {
     BRS.hasMorePages = false
-
     const $pageHeader = $('#' + BRS.currentPage + '_page .content-header h1')
     $pageHeader.find('.loading_dots').remove()
     $pageHeader.append("<span class='loading_dots'>" + BRS.loadingDotsHTML + '</span>')
@@ -381,26 +376,22 @@ export function pageLoading () {
     $pageContainer.addClass('data-loading')
 }
 
-export function pageLoaded (callback) {
+export function pageLoaded (callback?: () => void) {
     const $currentPage = $('#' + BRS.currentPage + '_page')
-
     $currentPage.find('.content-header h1 .loading_dots').remove()
-
     if ($currentPage.hasClass('paginated')) {
         addPagination()
     }
-
     window.scrollTo({
         top: 0,
         behavior: 'smooth'
     })
-
     if (callback) {
         callback()
     }
 }
 
-export function addPagination () {
+export function addPagination () : void {
     let output = ''
 
     if (BRS.pageNumber === 2) {
@@ -423,18 +414,13 @@ export function addPagination () {
     }
 }
 
-export function goToPageNumber (pageNumber) {
-    /* if (!pageLoaded) {
-          return;
-          } */
+export function goToPageNumber (pageNumber: number) {
     BRS.pageNumber = pageNumber
-
     pageLoading()
-
     BRS.pages[BRS.currentPage]()
 }
 
-export function getAccountInfo (firstRun, callback) {
+export function getAccountInfo (firstRun: boolean, callback?: () => void) {
     sendRequest('getAccount', {
         account: BRS.account,
         getCommittedAmount: 'true'
@@ -447,7 +433,7 @@ export function getAccountInfo (firstRun, callback) {
             $('#account_balance, #account_committed_balance, #account_balance_sendmoney').html('0')
             $('#account_nr_assets').html('0')
 
-            if (BRS.accountInfo.errorCode === 5) {
+            if (response.errorCode === 5) {
                 if (BRS.downloadingBlockchain) {
                     if (BRS.newlyCreatedAccount) {
                         $('#dashboard_message').addClass('alert-success').removeClass('alert-danger').html($.t('status_new_account', {
@@ -466,7 +452,7 @@ export function getAccountInfo (firstRun, callback) {
                     })).show()
                 }
             } else {
-                $('#dashboard_message').addClass('alert-danger').removeClass('alert-success').html(BRS.accountInfo.errorDescription ? BRS.accountInfo.errorDescription.escapeHTML() : $.t('error_unknown')).show()
+                $('#dashboard_message').addClass('alert-danger').removeClass('alert-success').html(response.errorDescription ? response.errorDescription.escapeHTML() : $.t('error_unknown')).show()
             }
         } else {
             if (BRS.accountRS && BRS.accountInfo.accountRS !== BRS.accountRS) {
@@ -545,7 +531,7 @@ export function getAccountInfo (firstRun, callback) {
                 }
             }
 
-            $('#account_nr_assets').html(nr_assets)
+            $('#account_nr_assets').html(nr_assets.toString())
 
             if (response.name) {
                 $('#account_name').html(response.name.escapeHTML()).removeAttr('data-i18n')
@@ -563,7 +549,7 @@ export function getAccountInfo (firstRun, callback) {
     })
 }
 
-function checkAssetDifferences (current_balances, previous_balances) {
+function checkAssetDifferences (current_balances: AssetBalance[], previous_balances: AssetBalance[]) : void {
     const current_balances_ = {}
     const previous_balances_ = {}
 
@@ -646,86 +632,77 @@ function checkAssetDifferences (current_balances, previous_balances) {
     }
 }
 
-export function checkLocationHash (password) {
-    if (window.location.hash) {
-        const hash = window.location.hash.replace('#', '').split(':')
-        let $modal
-        if (hash.length === 2) {
-            if (hash[0] === 'message') {
-                $modal = $('#send_message_modal')
-            } else if (hash[0] === 'send') {
-                $modal = $('#send_money_modal')
-            } else if (hash[0] === 'asset') {
-                goToAsset(hash[1])
-                return
-            } else {
-                $modal = ''
-            }
-
-            if ($modal) {
-                let account_id = String($.trim(hash[1]))
-                if (!/^\d+$/.test(account_id) && account_id.indexOf('@') !== 0) {
-                    account_id = '@' + account_id
-                }
-
-                $modal.find('input[name=recipient]').val(account_id.unescapeHTML()).trigger('blur')
-                if (password && typeof password === 'string') {
-                    $modal.find('input[name=secretPhrase]').val(password)
-                }
-                $modal.modal('show')
-            }
-        }
-
-        window.location.hash = '#'
+export function checkLocationHash () : void {
+    if (!window.location.hash) {
+        return
     }
+    const hash = window.location.hash.replace('#', '').split(':')
+    let $modal: JQuery<HTMLElement> | undefined
+    if (hash.length !== 2) {
+        return
+    }
+    if (hash[0] === 'message') {
+        $modal = $('#send_message_modal')
+    } else if (hash[0] === 'send') {
+        $modal = $('#send_money_modal')
+    } else if (hash[0] === 'asset') {
+        goToAsset(hash[1])
+        return
+    }
+
+    if ($modal) {
+        let account_id = hash[1].trim()
+        if (!/^\d+$/.test(account_id) && account_id.indexOf('@') !== 0) {
+            account_id = '@' + account_id
+        }
+        $modal.find('input[name=recipient]').val(account_id.unescapeHTML()).trigger('blur')
+        $modal.modal('show')
+    }
+    window.location.hash = '#'
 }
 
-export function updateBlockchainDownloadProgress () {
-    let percentage
+export function updateBlockchainDownloadProgress () : void {
+    let percentage: number
     if (BRS.state.lastBlockchainFeederHeight && BRS.state.numberOfBlocks < BRS.state.lastBlockchainFeederHeight) {
-        percentage = parseInt(Math.round((BRS.state.numberOfBlocks / BRS.state.lastBlockchainFeederHeight) * 100), 10)
+        percentage = Math.round((BRS.state.numberOfBlocks / BRS.state.lastBlockchainFeederHeight) * 100)
     } else {
         percentage = 100
     }
-
     if (percentage === 100) {
         $('#downloading_blockchain .progress').hide()
     } else {
         $('#downloading_blockchain .progress').show()
         $('#downloading_blockchain .progress-bar').css('width', percentage + '%')
-        $('#downloading_blockchain .sr-only').html($.t('percent_complete', {
-            percent: percentage
-        }))
+        $('#downloading_blockchain .sr-only').html($.t('percent_complete', { percent: percentage }))
     }
 }
 
-export function checkIfOnAFork () {
-    if (!BRS.downloadingBlockchain) {
-        let onAFork = true
-
-        if (BRS.blocks.length >= 10) {
-            for (let i = 0; i < 10; i++) {
-                if (BRS.blocks[i].generator !== BRS.account) {
-                    onAFork = false
-                    break
-                }
+export function checkIfOnAFork () : void {
+    if (BRS.downloadingBlockchain) {
+        return
+    }
+    let onAFork = true
+    if (BRS.blocks.length >= 10) {
+        for (let i = 0; i < 10; i++) {
+            if (BRS.blocks[i].generator !== BRS.account) {
+                onAFork = false
+                break
             }
-        } else {
-            onAFork = false
         }
-
-        if (onAFork) {
-            $.notify($.t('fork_warning'), { type: 'danger' })
-        }
+    } else {
+        onAFork = false
+    }
+    if (onAFork) {
+        $.notify($.t('fork_warning'), { type: 'danger' })
     }
 }
 
 /** Checks if a Number is valid and greater than minimum fee. If not, return minimum fee */
-export function checkMinimumFee (value) {
+export function checkMinimumFee (value: number) : number {
     return (isNaN(value) ? BRS.minimumFeeNumber : (value < BRS.minimumFeeNumber ? BRS.minimumFeeNumber : value))
 }
 
-export function showFeeSuggestionsNG (input_form) {
+export function showFeeSuggestionsNG (input_form: HTMLElement) : void {
     const $groups = $(input_form).find('.has-suggested-fee-group')
     if ($groups.length === 0) {
         $(input_form).find('[name=feeNXT]').trigger('change')
@@ -755,7 +732,7 @@ export function showFeeSuggestionsNG (input_form) {
     })
 }
 
-function showAccountSearchResults (accountsList) {
+function showAccountSearchResults (accountsList: string[]) : void {
     if (BRS.currentPage !== 'search_results') {
         goToPage('search_results')
     }
@@ -768,7 +745,7 @@ function showAccountSearchResults (accountsList) {
     $('#search_results_ul_container').html(items)
 }
 
-function showAssetSearchResults (assets) {
+function showAssetSearchResults (assets: GetAssetResponse[]) {
     if (BRS.currentPage !== 'search_results') {
         goToPage('search_results')
     }
@@ -791,7 +768,7 @@ function showAssetSearchResults (assets) {
 
 export function evIdSearchSubmit (e) {
     e.preventDefault()
-    const userInput = $('#search_box input').val().trim()
+    const userInput = ($('#search_box input').val() as string).trim()
     let searchText = userInput
     if (searchText.startsWith('-')) {
         try {
@@ -908,7 +885,7 @@ export function evIdSearchSubmit (e) {
     case 'token':
         sendRequest('getAssetsByName', {
             name: splitted[1].trim()
-        }, function (response) {
+        }, function (response: GetAssetsByNameResponse ) {
             if (response.errorCode || !response.assets || response.assets.length === 0) {
                 $.notify($.t('error_search_no_results'), { type: 'danger' })
                 return

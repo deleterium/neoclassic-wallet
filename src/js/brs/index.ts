@@ -114,15 +114,24 @@ import {
     formsSignMessage,
     formsVerifyMessage
 } from './brs.modals.signmessage'
+
 import { init, reloadCurrentPage } from './brs'
+
 import { formsClearData } from './brs.modal.cleardata'
-import { Transaction } from '../typings'
+
+import {
+    BlockchainStatus,
+    BrsSettings,
+    GetAccountResponse,
+    GetBlockResponse,
+    Transaction
+} from '../typings'
 
 export const BRS = {
     version: '1.0.0',
     server: '',
-    state: {},
-    blocks: [],
+    state: {} as BlockchainStatus,
+    blocks: [] as GetBlockResponse[],
     genesis: '0',
     genesisRS: 'S-2222-2222-2222-22222',
     minimumFee: 0.01,
@@ -134,12 +143,12 @@ export const BRS = {
     account: '',
     accountRS: '',
     publicKey: '',
-    accountInfo: {},
+    accountInfo: {} as GetAccountResponse,
 
     database: null,
     databaseSupport: false,
 
-    settings: {},
+    settings: {} as BrsSettings,
     contacts: {},
 
     isTestNet: false,
@@ -158,6 +167,7 @@ export const BRS = {
     pageNumber: 1,
     pageSize: 25,
     showPageNumbers: false,
+    hasMorePages: false,
 
     pages: {
         settings: pagesSettings,

@@ -88,7 +88,7 @@ export function dbGet (storeName, query, callback) {
  * @param {object|Array} data - Data to insert/update:
  *   - A single object, or
  *   - An array of objects
- * @param {function} callback - Callback function(error, result)
+ * @param {function=} callback - Callback function(error, result)
  * @returns {void}
  *
  * @description

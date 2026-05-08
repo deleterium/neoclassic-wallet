@@ -156,7 +156,7 @@ export function loginCommon () {
 
     setupClipboardFunctionality()
 
-    checkLocationHash(getEncryptionPassword())
+    checkLocationHash()
 
     $(window).on('hashchange', checkLocationHash)
 
