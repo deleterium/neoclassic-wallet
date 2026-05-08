@@ -1472,7 +1472,7 @@ export function pagesMyAssets () {
 }
 
 function checkMyAssetsPageLoaded (count) {
-    return count.assets + count.requestedAssets + count.ignored_assets === count.total_assets
+    return count.cachedAssets + count.requestedAssets + count.ignored_assets === count.total_assets
 }
 
 function myAssetsPageLoaded (result) {
