@@ -502,7 +502,7 @@ export function getAccountTitle (object, acc) {
         return $.t('multiple')
     }
     if (type === 'string' || type === 'number') {
-        formattedAcc = object
+        formattedAcc = convertNumericToRSAccountFormat(object)
         object = null
     } else {
         if (typeof object[acc + 'RS'] === 'undefined') {
@@ -512,7 +512,7 @@ export function getAccountTitle (object, acc) {
         }
     }
 
-    if (formattedAcc === BRS.account || formattedAcc === BRS.accountRS) {
+    if (formattedAcc === BRS.accountRS) {
         return $.t('you')
     } else if (formattedAcc in BRS.contacts) {
         return BRS.contacts[formattedAcc].name.escapeHTML()
