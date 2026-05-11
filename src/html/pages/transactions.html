@@ -204,6 +204,12 @@
     <h1 data-i18n="search_results">search_results</h1>
   </section>
   <section class="content">
-    <div id="search_results_ul_container"></div>
+    <div class="container-fluid data-container">
+      <div id="search_results_contents"></div>
+      <div class="data-loading-container"><i class="fas fa-circle-notch fa-spin fa-3x" style="display: block"></i></div>
+      <div class="data-empty-container">
+        <p data-i18n="error_search_invalid">error_search_invalid</p>
+      </div>
+    </div>
   </section>
 </div>

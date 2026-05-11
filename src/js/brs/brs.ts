@@ -8,7 +8,10 @@
 /* global BigInteger */
 
 import {
+    Alias,
     AssetBalance,
+    GetAccountResponse,
+    GetAliasesResponse,
     GetAssetResponse,
     GetAssetsByNameResponse
 } from '../typings'
@@ -34,13 +37,16 @@ import {
 } from './brs.blocks'
 
 import {
-    evAliasShowSearchResult
+    showAliasModal
 } from './brs.aliases'
 
 import {
     formatQuantity,
     convertNumericToRSAccountFormat,
-    formatStyledAmount
+    formatStyledAmount,
+    dataLoaded,
+    formatAmount,
+    getAccountTitle
 } from './brs.util'
 
 import {
@@ -424,7 +430,7 @@ export function getAccountInfo (firstRun: boolean, callback?: () => void) {
     sendRequest('getAccount', {
         account: BRS.account,
         getCommittedAmount: 'true'
-    }, function (response) {
+    }, function (response: GetAccountResponse) {
         const previousAccountInfo = BRS.accountInfo
 
         BRS.accountInfo = response
@@ -733,41 +739,96 @@ export function showFeeSuggestionsNG (input_form: HTMLElement) : void {
 }
 
 function showAccountSearchResults (accountsList: string[]) : void {
-    if (BRS.currentPage !== 'search_results') {
-        goToPage('search_results')
-    }
-    let items = '<ul>'
+    // TODO: feat: Add a late update, drawing a table and updating details async?
+    let resultHTML = `<strong>${$.t('account')}:</strong><ul>`
     for (const account of accountsList) {
         const accountRS = convertNumericToRSAccountFormat(account)
-        items += `<li><a href="#" data-user="${accountRS}" class="user-info">${accountRS}</a></li>`
+        resultHTML += `<li><a href="#" data-user="${accountRS}" class="user-info">${accountRS}</a></li>`
     }
-    items += '</ul>'
-    $('#search_results_ul_container').html(items)
+    resultHTML += '</ul>'
+    dataLoaded(resultHTML)
 }
 
 function showAssetSearchResults (assets: GetAssetResponse[]) {
-    if (BRS.currentPage !== 'search_results') {
-        goToPage('search_results')
-    }
-    let items = '<table class="table table-striped">' +
-            '<thead><tr>' +
-            `<th>${$.t('name')}</th>` +
-            `<th>${$.t('asset_id')}</th>` +
-            `<th>${$.t('issuer')}</th>` +
-            `<th>${$.t('description')}</th>` +
-            '</tr></thead><tbody>'
+    let resultHTML = `
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>${$.t('name')}</th>
+              <th>${$.t('asset_id')}</th>
+              <th>${$.t('issuer')}</th>
+              <th>${$.t('description')}</th>
+            </tr>
+          </thead>
+          <tbody>`
     for (const asset of assets) {
-        items += `<tr><td>${asset.name}</td>`
-        items += `<td><a href="#" data-goto-asset="${asset.asset}">${asset.asset}</a></td>`
-        items += `<td><a href="#" data-user="${asset.accountRS}" class="user-info">${asset.accountRS}</a></td>`
-        items += `<td>${String(asset.description).escapeHTML()}</td></tr>`
+        resultHTML += `
+            <tr>
+              <td>${asset.name}</td>
+              <td><a href="#" data-goto-asset="${asset.asset}">${asset.asset}</a></td>
+              <td><a href="#" data-user="${asset.accountRS}" class="user-info">${asset.accountRS}</a></td>
+              <td>${String(asset.description).escapeHTML()}</td>
+            </tr>`
     }
-    items += '</tbody></table>'
-    $('#search_results_ul_container').html(items)
+    resultHTML += `
+          </tbody>
+        </table>`
+    dataLoaded(resultHTML)
 }
 
-export function evIdSearchSubmit (e) {
-    e.preventDefault()
+function showAliasesSearchResults (aliases: Alias[]) {
+    let resultHTML = `
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>${$.t('alias_name')}</th>
+              <th>${$.t('account')}</th>
+              <th>${$.t('tld')}</th>
+              <th>${$.t('alias_uri')}</th>
+              <th>${$.t('status')}</th>
+              <th>${$.t('price')}</th>
+            </tr>
+          </thead>
+          <tbody>`
+    for (const alias of aliases) {
+        // TODO add transalation and show here and in alias page
+        let status = '/'
+        if (alias.priceNQT && !alias.buyer) {
+            status = $.t('for_sale_indirect')
+        } else if (alias.priceNQT) {
+            status = $.t('for_sale_direct') + ` - ${getAccountTitle(alias.buyer)}`
+        }
+        resultHTML += `
+            <tr>
+              <td><a href="#" data-alias="${alias.alias}">${alias.aliasName}</a></td>
+              <td><a href="#" data-user="${alias.accountRS}" class="user-info">${alias.accountRS}</a></td>
+              <td>${alias.tldName}</td>
+              <td>${alias.aliasURI.escapeHTML()}</td>
+              <td>${status}</td>
+              <th>${alias.priceNQT ? formatAmount(alias.priceNQT) : ''}</th>
+            </tr>`
+    }
+    resultHTML += `
+          </tbody>
+        </table>`
+    dataLoaded(resultHTML)
+}
+
+export function pagesSearchResults () {
+    function requestAccountAndShow(accountValue: string) {
+        sendRequest('getAccount', {
+            account: accountValue,
+            getCommittedAmount: 'true'
+        }, function (response: GetAccountResponse) {
+            if (response.errorCode) {
+                dataLoaded($.t('error_search_no_results'))
+                return
+            }
+            showAccountModal(response)
+            showAccountSearchResults([response.account])
+        })
+    }
+
     const userInput = ($('#search_box input').val() as string).trim()
     let searchText = userInput
     if (searchText.startsWith('-')) {
@@ -779,83 +840,68 @@ export function evIdSearchSubmit (e) {
         }
     }
     if (BRS.rsRegEx.test(searchText)) {
-        sendRequest('getAccount', {
-            account: searchText
-        }, function (response, input) {
-            if (response.errorCode) {
-                $.notify($.t('error_search_no_results'), { type: 'danger' })
-                return
-            }
-            response.account = input.account
-            showAccountModal(response)
-        })
+        requestAccountAndShow(searchText)
         return
     }
     if (BRS.idRegEx.test(searchText)) {
         sendRequest('getTransaction', {
             transaction: searchText
-        }, function (response, input) {
+        }, function (response) {
             if (response.errorCode) {
-                $.notify($.t('error_search_no_results'), { type: 'danger' })
+                dataLoaded($.t('no_transactions_found'))
                 return
             }
-            response.transaction = input.transaction
             showTransactionModal(response)
+            const htmlResult = `
+                <strong>${$.t('transaction')}:</strong>
+                <ul>
+                  <li><a href="#" data-transaction="${response.transaction}">${response.transaction}</a></li>
+                </ul>`
+            dataLoaded(htmlResult)
         })
         return
     }
     const splitted = searchText.split(':')
     if (splitted.length !== 2) {
-        $.notify($.t('error_search_invalid'), { type: 'danger' })
+        dataLoaded('')
         return
     }
     switch (splitted[0].trim()) {
     case 'a':
     case 'address':
-        sendRequest('getAccount', {
-            account: splitted[1].trim()
-        }, function (response, input) {
-            if (response.errorCode) {
-                $.notify($.t('error_search_no_results'), { type: 'danger' })
-                return
-            }
-            response.account = input.account
-            showAccountModal(response)
-        })
+        requestAccountAndShow(splitted[1].trim())
         return
     case 'b':
     case 'block':
         sendRequest('getBlock', {
-            block: splitted[1].trim(),
+            height: splitted[1].trim(),
             includeTransactions: 'true'
         }, function (response) {
-            if (!response.errorCode) {
-                // response.block = input.block;
-                showBlockModal(response)
-            } else {
-                sendRequest('getBlock', {
-                    height: splitted[1].trim(),
-                    includeTransactions: 'true'
-                }, function (response) {
-                    if (!response.errorCode) {
-                        // response.block = input.block;
-                        showBlockModal(response)
-                    } else {
-                        $.notify($.t('error_search_no_results'), { type: 'danger' })
-                    }
-                })
+            if (response.errorCode) {
+                dataLoaded($.t('error_search_no_results'))
+                return
             }
+            showBlockModal(response)
+            const htmlResult = `
+                <strong>${$.t('block')}:</strong>
+                <ul>
+                  <li><a href="#" data-block="${response.height}">${response.height}</a></li>
+                </ul>`
+            dataLoaded(htmlResult)
         })
         return
     case 'alias':
-        sendRequest('getAlias', {
+        sendRequest('getAliasesByName', {
             aliasName: splitted[1].trim()
-        }, function (response) {
-            if (response.errorCode) {
-                $.notify($.t('error_search_no_results'), { type: 'danger' })
+        }, function (response: GetAliasesResponse) {
+            if (response.errorCode || !response.aliases || response.aliases.length === 0) {
+                dataLoaded($.t('error_search_no_results'))
                 return
             }
-            evAliasShowSearchResult(response)
+            if (response.aliases.length === 1) {
+                showAliasModal(response.aliases[0]) 
+            }
+            showAliasesSearchResults(response.aliases)
         })
         return
     case 'name':
@@ -863,22 +909,13 @@ export function evIdSearchSubmit (e) {
             name: splitted[1].trim()
         }, function (response) {
             if (response.errorCode || !response.accounts || response.accounts.length === 0) {
-                $.notify($.t('error_search_no_results'), { type: 'danger' })
+                dataLoaded($.t('error_search_no_results'))
                 return
             }
             if (response.accounts.length === 1) {
-                sendRequest('getAccount', {
-                    account: response.accounts[0]
-                }, function (response2) {
-                    if (response2.errorCode) {
-                        $.notify($.t('error_search_no_results'), { type: 'danger' })
-                        return
-                    }
-                    showAccountModal(response2)
-                })
+                requestAccountAndShow(response.accounts[0])
                 return
             }
-            // show multi result page
             showAccountSearchResults(response.accounts)
         })
         return
@@ -887,13 +924,13 @@ export function evIdSearchSubmit (e) {
             name: splitted[1].trim()
         }, function (response: GetAssetsByNameResponse ) {
             if (response.errorCode || !response.assets || response.assets.length === 0) {
-                $.notify($.t('error_search_no_results'), { type: 'danger' })
+                dataLoaded($.t('error_search_no_results'))
                 return
             }
             showAssetSearchResults(response.assets)
         })
         return
     default:
-        $.notify($.t('error_search_invalid'), { type: 'danger' })
+        dataLoaded('')
     }
 }

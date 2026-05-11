@@ -7,7 +7,8 @@ import { NxtAddress } from '../util/nxtaddress'
 
 import {
     reloadCurrentPage,
-    pageLoaded
+    pageLoaded,
+    goToPage
 } from './brs'
 
 import {
@@ -18,7 +19,6 @@ import {
     convertToNXT,
     formatAmount,
     formatTimestamp,
-    getAccountTitle,
     getAccountFormatted,
     dataLoadFinished,
     createInfoTable,
@@ -334,7 +334,7 @@ export function pagesAliases () {
                 const aliasName = String(alias.aliasName).escapeHTML()
                 rows += '<tr' + (alias.tentative ? " class='tentative'" : '') +
                                 " data-alias='" + aliasName.toLowerCase() +
-                                "'><td class='alias'>" + aliasName +
+                                `'><td class='alias'><a href="#" data-alias="${alias.alias}">${aliasName}</a>` +
                                 "</td><td class='uri'>" +
                                 (alias.aliasURI.indexOf('http') === 0
                                     ? "<a href='" + alias.aliasURI + "' target='_blank'>" + alias.shortAliasURI + '</a>'
@@ -781,52 +781,79 @@ export function formsSetAliasComplete (response, data) {
 
 export function evAliasSearchSubmit (e) {
     e.preventDefault()
+    const alias = $('#alias_search input[name=q]').val()
+    $('#search_box input').val('alias:' + alias)
+    // Execute the search via "search pages"
+    goToPage('search_results')
+}
 
+/**
+ * Opens a "Alias Modal" with the given alias.
+ * @param {string|Alias} alias - If string, the alias ID to be requested and shown. If the object, just show it.
+ * @returns 
+ */
+export function showAliasModal (alias) {
     if (BRS.fetchingModalData) {
         return
     }
-
+    if (typeof alias === 'object') {
+        aliasModalDataReady(alias)
+        return
+    }
     BRS.fetchingModalData = true
-
-    const alias = $.trim($('#alias_search input[name=q]').val())
-
     sendRequest('getAlias', {
-        aliasName: alias
+        alias: alias
     }, function (response) {
+        BRS.fetchingModalData = false
         if (response.errorCode) {
-            $.notify($.t('error_alias_not_found') +
-                    " <a href='#' data-toggle='modal' data-target='#register_alias_modal' data-prefill-alias='" +
-                    String(alias).escapeHTML() + "'>" +
-                    $.t('register_q') + '</a>', { type: 'danger' })
-            BRS.fetchingModalData = false
+            $.notify(`${$.t('error_alias_not_found')} - ${String(alias).escapeHTML()}`)
             return
+
         }
-        evAliasShowSearchResult(response)
+        aliasModalDataReady(response)
     })
 }
 
-export function evAliasShowSearchResult (response) {
+/**
+ * Draws the data into "Alias Modal"
+ * @param {import('../typings').Alias} response - Alias data
+ */
+function aliasModalDataReady(response) {
+    function getCalloutHTML() {
+        if (!('priceNQT' in response)) {
+            return ''
+        }
+        let aliasCallout
+        if (response.buyer === BRS.account) {
+            aliasCallout = $.t('alias_sale_direct_offer', {
+                burst: formatAmount(response.priceNQT),
+                valueSuffix: BRS.valueSuffix
+            })
+            aliasCallout += `<a href='#' data-alias='${response.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
+        } else if (typeof response.buyer === 'undefined') {
+            aliasCallout = $.t('alias_sale_indirect_offer', {
+                burst: formatAmount(response.priceNQT),
+                valueSuffix: BRS.valueSuffix
+            })
+            aliasCallout += ` <a href='#' data-alias='${response.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
+        } else {
+            aliasCallout = $.t('error_alias_sale_different_account')
+            $('#alias_sale_callout').html($.t('error_alias_sale_different_account')).show()
+        }
+        return aliasCallout
+    }
+
     $('#alias_info_table tbody').empty()
     $('#alias_info_modal_alias').html(String(response.aliasName).escapeHTML())
     const data = {
-        account: getAccountTitle(response, 'account'),
+        account: response.accountRS,
         last_updated: formatTimestamp(response.timestamp),
         data_formatted_html: String(response.aliasURI)
     }
-    if ('priceNQT' in response) {
-        if (response.buyer === BRS.account) {
-            $('#alias_sale_callout').html($.t('alias_sale_direct_offer', {
-                burst: formatAmount(response.priceNQT),
-                value_suffix: BRS.valueSuffix
-            }) + " <a href='#' data-alias='" + String(response.aliasName).escapeHTML() + "' data-toggle='modal' data-target='#buy_alias_modal'>" + $.t('buy_it_q') + '</a>').show()
-        } else if (typeof response.buyer === 'undefined') {
-            $('#alias_sale_callout').html($.t('alias_sale_indirect_offer', {
-                burst: formatAmount(response.priceNQT),
-                value_suffix: BRS.valueSuffix
-            }) + " <a href='#' data-alias='" + String(response.aliasName).escapeHTML() + "' data-toggle='modal' data-target='#buy_alias_modal'>" + $.t('buy_it_q') + '</a>').show()
-        } else {
-            $('#alias_sale_callout').html($.t('error_alias_sale_different_account')).show()
-        }
+    const aliasCallout = getCalloutHTML()
+    if (aliasCallout) {
+        $('#alias_sale_callout').html(aliasCallout)
+        $('#alias_sale_callout').show()
     } else {
         $('#alias_sale_callout').hide()
     }

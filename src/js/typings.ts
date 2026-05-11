@@ -90,6 +90,7 @@ export interface GetAccountResponse {
     unconfirmedBalanceNQT: string;
     forgedBalanceNQT: string;
     guaranteedBalanceNQT: string;
+    committedBalanceNQT?: string; // only when called with "getCommittedAmount: 'true'"
     account: string;
     accountRS: string;
     accountRSExtended: string;
@@ -171,3 +172,23 @@ export interface GetAssetsByNameResponse {
     errorCode?: number;
     errorDescription?: string;
 }
+
+export interface Alias {
+    account: string;
+    accountRS: string;
+    aliasName: string;
+    timestamp: number;
+    alias: string;
+    aliasURI: string;
+    tld: string;
+    tldName: string;
+    priceNQT?: string; // Optional, only if on sale.
+    buyer?: string;    // Optional, only if direct sale to other account.
+};
+
+export interface GetAliasesResponse {
+    aliases: Alias[];
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+};

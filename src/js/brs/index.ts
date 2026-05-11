@@ -115,7 +115,7 @@ import {
     formsVerifyMessage
 } from './brs.modals.signmessage'
 
-import { init, reloadCurrentPage } from './brs'
+import { init, pagesSearchResults, reloadCurrentPage } from './brs'
 
 import { formsClearData } from './brs.modal.cleardata'
 
@@ -185,6 +185,7 @@ export const BRS = {
         transactions: pagesTransactions,
         peers: pagesPeers,
         subscription: pagesSubscription,
+        search_results: pagesSearchResults,
         messages: pagesMessages
     },
     incoming: {

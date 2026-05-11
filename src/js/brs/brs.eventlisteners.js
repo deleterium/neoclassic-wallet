@@ -10,8 +10,7 @@ import {
     evSidebarClick,
     reloadCurrentPage,
     goToPage,
-    goToPageNumber,
-    evIdSearchSubmit
+    goToPageNumber
 } from './brs'
 
 import {
@@ -39,7 +38,8 @@ import {
     evRegisterAliasModalOnShowBsModal,
     setAliasType,
     evAliasSearchSubmit,
-    evSellAliasSellToSpecificClick
+    evSellAliasSellToSpecificClick,
+    showAliasModal
 } from './brs.aliases'
 
 import {
@@ -215,7 +215,14 @@ export function addEventListeners () {
 
         goToPageNumber($(this).data('page'))
     })
-    $('#search_btn').on('click', evIdSearchSubmit)
+    $('#search_box').on('keyup', function (e) {
+        if (e.key !== 'Enter') return
+        goToPage('search_results')
+    })
+    $('#search_btn').on('click', function (e) {
+        e.preventDefault()
+        goToPage('search_results')
+    })
     $('#login_button').on('click', evLoginButtonClick)
 
     // from brs.forms.js
@@ -414,6 +421,11 @@ export function addEventListeners () {
         setAliasType(type, $('#register_alias_uri').val())
     })
     $('#alias_search').on('submit', evAliasSearchSubmit)
+    $('#search_results_contents, #aliases_table').on('click', 'a[data-alias]', function (e) {
+        e.preventDefault()
+        const alias = $(this).data('alias')
+        showAliasModal(alias)
+    })
 
     // from brs.contacts.js
     $('#update_contact_modal').on('show.bs.modal', evUpdateContactModalOnShowBsModal)
@@ -523,7 +535,7 @@ export function addEventListeners () {
     $('.advanced_info a').on('click', evAdvancedInfoClick)
 
     // from brs.modals.account.js
-    $('#blocks_table, #blocks_forged_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_ul_container').on('click', 'a[data-user]', function (e) {
+    $('#blocks_table, #blocks_forged_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents').on('click', 'a[data-user]', function (e) {
         e.preventDefault()
         const account = $(this).data('user')
         showAccountModal(account)
@@ -542,7 +554,7 @@ export function addEventListeners () {
     })
 
     // from brs.modals.block.js
-    $('#blocks_table, #blocks_forged_table, #dashboard_blocks_table').on('click', 'a[data-block]', evBlocksTableClick)
+    $('#blocks_table, #blocks_forged_table, #dashboard_blocks_table, #search_results_contents').on('click', 'a[data-block]', evBlocksTableClick)
     $('#block_info_modal_info_tab').tab('show')
     $('#block_info_modal').on('hide.bs.modal', function () {
         $('#block_info_modal_info_tab').tab('show')
@@ -604,7 +616,7 @@ export function addEventListeners () {
     })
 
     // from brs.modals.transaction.js
-    $('#transactions_table, #dashboard_transactions_table, #transfer_history_table, #asset_exchange_trade_history_table, #block_info_table, #block_info_transactions_table, #user_info_modal_transactions_table').on('click', 'a[data-transaction]', function (e) {
+    $('#transactions_table, #dashboard_transactions_table, #transfer_history_table, #asset_exchange_trade_history_table, #block_info_table, #block_info_transactions_table, #user_info_modal_transactions_table, #search_results_contents').on('click', 'a[data-transaction]', function (e) {
         e.preventDefault()
         const transactionId = $(this).data('transaction')
         showTransactionModal(transactionId)
