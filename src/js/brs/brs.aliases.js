@@ -468,17 +468,21 @@ export function evSellAliasSellToSpecificClick () {
     $form.find('input[name=converted_account_id]').val('')
 }
 
-export function evBuyAliasModalOnShowBsModal () {
+/**
+ * Called when showing "Buy Alias Modal". Invoker is "<a>" with "data-buy-alias" set. Fetches the alias details and shows them.
+ * @param {*} e Event 
+ */
+export function evBuyAliasModalOnShowBsModal (e) {
     const $modal = $(this)
 
     const $invoker = $(e.relatedTarget)
 
     BRS.fetchingModalData = true
 
-    const alias = String($invoker.data('alias'))
+    const alias = String($invoker.data('buy-alias'))
 
     sendRequest('getAlias', {
-        aliasName: alias
+        alias: alias
     }, function (response) {
         BRS.fetchingModalData = false
 
@@ -493,12 +497,14 @@ export function evBuyAliasModalOnShowBsModal () {
                 e.preventDefault()
                 $.notify($.t('error_alias_sale_different_account'), { type: 'danger' })
             } else {
-                $modal.find('input[name=aliasName]').val(alias.escapeHTML())
-                $modal.find('.alias_name_display').html(alias.escapeHTML())
+                $modal.find('input[name=alias]').val(response.alias.escapeHTML())
+                $modal.find('.alias_id_display').html(response.alias.escapeHTML())
+                $modal.find('.alias_name_display').html(response.aliasName.escapeHTML())
+                $modal.find('.alias_tld_display').html(response.tldName.escapeHTML())
                 $modal.find('input[name=amountNXT]').val(convertToNXT(response.priceNQT)).prop('readonly', true)
             }
         }
-    }, false)
+    })
 }
 
 export function formsBuyAliasError () {
@@ -829,13 +835,13 @@ function aliasModalDataReady(response) {
                 burst: formatAmount(response.priceNQT),
                 valueSuffix: BRS.valueSuffix
             })
-            aliasCallout += `<a href='#' data-alias='${response.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
+            aliasCallout += `<a href='#' data-buy-alias='${response.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
         } else if (typeof response.buyer === 'undefined') {
             aliasCallout = $.t('alias_sale_indirect_offer', {
                 burst: formatAmount(response.priceNQT),
                 valueSuffix: BRS.valueSuffix
             })
-            aliasCallout += ` <a href='#' data-alias='${response.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
+            aliasCallout += ` <a href='#' data-buy-alias='${response.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
         } else {
             aliasCallout = $.t('error_alias_sale_different_account')
             $('#alias_sale_callout').html($.t('error_alias_sale_different_account')).show()

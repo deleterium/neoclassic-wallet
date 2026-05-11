@@ -792,11 +792,18 @@ function showAliasesSearchResults (aliases: Alias[]) {
           <tbody>`
     for (const alias of aliases) {
         // TODO add transalation and show here and in alias page
-        let status = '/'
+        let statusHTML = '/'
         if (alias.priceNQT && !alias.buyer) {
-            status = $.t('for_sale_indirect')
+            statusHTML = $.t('for_sale_indirect')
         } else if (alias.priceNQT) {
-            status = $.t('for_sale_direct') + ` - ${getAccountTitle(alias.buyer)}`
+            statusHTML = $.t('for_sale_direct') + `<br />${getAccountTitle(alias.buyer)}`
+        }
+        let priceHTML = ''
+        if (alias.priceNQT) {
+            priceHTML += formatAmount(alias.priceNQT)
+            if (alias.buyer === BRS.account || !alias.buyer) {
+                priceHTML += `<br /><a href="#" data-buy-alias="${alias.alias}" data-toggle="modal" data-target="#buy_alias_modal">${$.t('buy_it_q')}</a>`
+            }
         }
         resultHTML += `
             <tr>
@@ -804,8 +811,8 @@ function showAliasesSearchResults (aliases: Alias[]) {
               <td><a href="#" data-user="${alias.accountRS}" class="user-info">${alias.accountRS}</a></td>
               <td>${alias.tldName}</td>
               <td>${alias.aliasURI.escapeHTML()}</td>
-              <td>${status}</td>
-              <th>${alias.priceNQT ? formatAmount(alias.priceNQT) : ''}</th>
+              <td>${statusHTML}</td>
+              <th>${priceHTML}</th>
             </tr>`
     }
     resultHTML += `
