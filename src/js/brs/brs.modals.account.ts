@@ -16,79 +16,116 @@ import {
     formatTimestamp,
     convertRSAccountToNumeric,
     getAccountTitle,
-    getAccountFormatted,
     dataLoadFinished
 } from './brs.util'
 
 import {
     getTransactionDetails
 } from './brs.transactions'
-import { checkRecipient } from './brs.recipient'
 
-export function showAccountModal (account) {
+import { NxtAddress } from '../util/nxtaddress'
+
+import {
+    GetAccountResponse,
+    GetAccountTransactionsResponse,
+    GetAliasesResponse,
+    GetAssetResponse,
+    GetAssetsByIssuerResponse
+} from '../typings'
+
+import { cacheAsset } from './brs.assetexchange'
+
+/** Start the process of showing an "Account Modal". 
+ * @param {string|GetAccountResponse} account - Account to be shown.
+ * @description Note that if account is a string, request 'getAccount' and draw.
+ * If it is an object, it must be an 'getAccount' response with option 'getCommitment: true'.
+ */
+export function showAccountModal (account: string | GetAccountResponse) {
     if (BRS.fetchingModalData) {
         return
     }
 
-    checkRecipient(account, $('#user_info_modal'))
-
+    let userAccount = ''
     if (typeof account === 'object') {
-        BRS.userInfoModal.user = account.account
-        accountModalDataReady(account)
+        BRS.userInfoModal = {
+            modalAccount: account,
+            assetsDetails: [],
+            issuedAssets: []
+        }
+        accountModalDataReady()
+        userAccount = account.account
     } else {
-        BRS.userInfoModal.user = account
+        userAccount = account
         BRS.fetchingModalData = true
         sendRequest('getAccount', {
-            account: BRS.userInfoModal.user
-        }, function (response) {
-            accountModalDataReady(response)
+            account: userAccount,
+            getCommittedAmount: 'true'
+        }, function (response: GetAccountResponse) {
             BRS.fetchingModalData = false
+            if (response.errorCode) {
+                $.notify($.t('error_account_id'))
+                return
+            }
+            BRS.userInfoModal = {
+                modalAccount: response,
+                assetsDetails: [],
+                issuedAssets: []
+            }
+            accountModalDataReady()
         })
     }
 
-    $('#user_info_modal_account').html(getAccountFormatted(BRS.userInfoModal.user))
+    let accountNameOrRs: string
+    const accountRS = new NxtAddress(userAccount).getAccountRS(BRS.prefix)
 
-    let accountButton
-    if (BRS.userInfoModal.user in BRS.contacts) {
-        accountButton = BRS.contacts[BRS.userInfoModal.user].name.escapeHTML()
+    // Update "actions" tab
+    if (accountRS in BRS.contacts) {
+        accountNameOrRs = BRS.contacts[accountRS].name.escapeHTML()
         $('#user_info_modal_add_as_contact').hide()
     } else {
-        accountButton = BRS.userInfoModal.user
+        accountNameOrRs = accountRS
         $('#user_info_modal_add_as_contact').show()
     }
+    $('#user_info_modal_actions button').data('account', accountNameOrRs)
 
-    $('#user_info_modal_actions button').data('account', accountButton)
+    // Update modal title
+    $('#user_info_modal_account').html(accountNameOrRs)
 }
 
-function accountModalDataReady (account) {
-    if (account.unconfirmedBalanceNQT === '0') {
+/**
+ * Second part starting to show the "Account Modal", when all info about the account is available at BRS.userInfoModal.account.
+ * It draws the "Details" tab.
+ */
+function accountModalDataReady () {
+    if (!BRS.userInfoModal) return
+    const accountInfo = BRS.userInfoModal.modalAccount
+    if (accountInfo.unconfirmedBalanceNQT === '0') {
         $('#user_info_modal_account_balance').html('0')
     } else {
-        $('#user_info_modal_account_balance').html(formatAmount(account.unconfirmedBalanceNQT) + ' ' + BRS.valueSuffix)
+        $('#user_info_modal_account_balance').html(formatAmount(accountInfo.unconfirmedBalanceNQT) + ' ' + BRS.valueSuffix)
     }
-
-    if (account.name) {
-        $('#user_info_modal_account_name').html(String(account.name).escapeHTML())
+    if (accountInfo.name) {
+        $('#user_info_modal_account_name').html(String(accountInfo.name).escapeHTML())
         $('#user_info_modal_account_name_container').show()
     } else {
         $('#user_info_modal_account_name_container').hide()
     }
-
-    if (account.description) {
+    if (accountInfo.description) {
         $('#user_info_description').show()
-        $('#user_info_modal_description').html(String(account.description).escapeHTML().nl2br())
+        $('#user_info_modal_description').html(String(accountInfo.description).escapeHTML().nl2br())
     } else {
         $('#user_info_description').hide()
     }
-
     $('#user_info_modal').modal('show')
-
     $('#user_info_modal_details_tab').tab('show')
     userInfoModalDetails()
 }
 
+/**
+ * Handles the tab switching in "Account Modal"
+ */
 export function evShowBsTab (e) {
-    switch (e.target.id) {
+    switch ((e.target as HTMLElement).id) {
     case 'user_info_modal_transactions_tab':
         return userInfoModalTransactions()
     case 'user_info_modal_assets_tab':
@@ -103,31 +140,44 @@ export function evShowBsTab (e) {
         // TODO
         return
     case 'user_info_modal_actions_tab':
-        return userInfoModalDetails()
+        // Already done 'on show modal'
+        return
     }
 }
 
 function userInfoModalTransactions () {
+    if (!BRS.userInfoModal) return
     sendRequest('getAccountTransactions', {
-        account: BRS.userInfoModal.user,
+        account: BRS.userInfoModal.modalAccount.account,
         firstIndex: 0,
         lastIndex: BRS.pageSize,
         includeIndirect: true
-    }, function (response) {
+    }, function (response: GetAccountTransactionsResponse) {
+        if (!BRS.userInfoModal) return
         let rows = ''
-        if (response.transactions && response.transactions.length) {
-            for (const transaction of response.transactions) {
-                const details = getTransactionDetails(transaction, BRS.userInfoModal.user)
-
-                rows += '<tr>'
-                rows += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "' data-timestamp='" + String(transaction.timestamp).escapeHTML() + "'>" + formatTimestamp(transaction.timestamp) + '</a></td>'
-                rows += '<td>' + details.nameOfTransaction + '</td>'
-                rows += '<td>' + details.circleText + '</td>'
-                rows += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
-                rows += '<td>' + formatAmount(transaction.feeNQT) + '</td>'
-                rows += `<td>${details.accountTitle}</td>`
-                rows += '</tr>'
-            }
+        if (!response.transactions || response.transactions.length === 0) {
+            $('#user_info_modal_transactions_table tbody').empty().append(rows)
+            dataLoadFinished($('#user_info_modal_transactions_table'))
+            return
+        }
+        for (const transaction of response.transactions) {
+            const details = getTransactionDetails(transaction, BRS.userInfoModal.modalAccount.account)
+            rows += `
+                <tr>
+                  <td>
+                    <a href='#'
+                        data-transaction='${String(transaction.transaction).escapeHTML()}'
+                        data-timestamp='${String(transaction.timestamp).escapeHTML()}'
+                    >
+                    ${formatTimestamp(transaction.timestamp)}
+                    </a>
+                  </td>
+                  <td>${details.nameOfTransaction}</td>
+                  <td>${details.circleText}</td>
+                  <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
+                  <td>${formatAmount(transaction.feeNQT)}</td>
+                  <td>${details.accountTitle}</td>
+                </tr>`
         }
         $('#user_info_modal_transactions_table tbody').empty().append(rows)
         dataLoadFinished($('#user_info_modal_transactions_table'))
@@ -135,103 +185,113 @@ function userInfoModalTransactions () {
 }
 
 function userInfoModalAliases () {
+    if (!BRS.userInfoModal) return
     sendRequest('getAliases', {
-        account: BRS.userInfoModal.user,
+        account: BRS.userInfoModal.modalAccount.account,
         timestamp: 0
-    }, function (response) {
-        let rows = ''
-
-        if (response.aliases && response.aliases.length) {
-            const aliases = response.aliases
-
-            aliases.sort(function (a, b) {
-                if (a.aliasName.toLowerCase() > b.aliasName.toLowerCase()) {
-                    return 1
-                } else if (a.aliasName.toLowerCase() < b.aliasName.toLowerCase()) {
-                    return -1
-                } else {
-                    return 0
-                }
-            })
-
-            // let alias_account_count = 0
-            // let alias_uri_count = 0
-            // let empty_alias_count = 0
-            const alias_count = aliases.length
-
-            for (let i = 0; i < alias_count; i++) {
-                const alias = aliases[i]
-
-                rows += "<tr data-alias='" + String(alias.aliasName).toLowerCase().escapeHTML() + "'><td class='alias'>" + String(alias.aliasName).escapeHTML() + "</td><td class='uri'>" + (alias.aliasURI.indexOf('http') === 0 ? "<a href='" + String(alias.aliasURI).escapeHTML() + "' target='_blank'>" + String(alias.aliasURI).escapeHTML() + '</a>' : String(alias.aliasURI).escapeHTML()) + '</td></tr>'
-                // if (!alias.uri) {
-                //     empty_alias_count++
-                // } else if (alias.aliasURI.indexOf('http') === 0) {
-                //     alias_uri_count++
-                // } else if (alias.aliasURI.indexOf('acct:') === 0 || alias.aliasURI.indexOf('nacc:') === 0) {
-                //     alias_account_count++
-                // }
-            }
+    }, function (response: GetAliasesResponse) {
+        if (!response.aliases || response.aliases.length === 0) {
+            $('#user_info_modal_aliases_table tbody').empty()
+            dataLoadFinished($('#user_info_modal_aliases_table'))
+            return
         }
-
+        let rows = ''
+        const aliases = response.aliases
+        aliases.sort(function (a, b) {
+            if (a.aliasName.toLowerCase() > b.aliasName.toLowerCase()) {
+                return 1
+            } else if (a.aliasName.toLowerCase() < b.aliasName.toLowerCase()) {
+                return -1
+            } else {
+                return 0
+            }
+        })
+        for (let i = 0; i < aliases.length; i++) {
+            const alias = aliases[i]
+            const aliasName = String(alias.aliasName).escapeHTML()
+            const tldName = String(alias.aliasName).escapeHTML()
+            const aliasURI = String(alias.aliasURI).escapeHTML()
+            rows += `
+                <tr>
+                    <td><a href="#" data-alias="${alias.alias}">${aliasName}</a></td>
+                    <td>${tldName}</td>
+                    <td>${aliasURI}</td>
+                </tr>`
+        }
         $('#user_info_modal_aliases_table tbody').empty().append(rows)
         dataLoadFinished($('#user_info_modal_aliases_table'))
     })
 }
 
+/**
+ * Third part of "Account Modal" when all info about is available.
+ * @param {import('../typings').GetAccountResponse} account 
+ * @returns 
+ */
 function userInfoModalDetails () {
-    sendRequest('getAccount', {
-        account: BRS.userInfoModal.user,
-        getCommittedAmount: 'true'
-    }, function (response) {
-        if (response.errorCode) {
-            $('#user_info_modal_details_table tbody').empty()
-            dataLoadFinished($('#user_info_modal_details_table'))
-            return
-        }
-        if (!response.publicKey || /^0+$/.test(response.publicKey)) {
-            response.publicKey = ''
-        }
-        let rows = ''
-        rows += '<tr>'
-        rows += `<td>${$.t('account_id')}</td><td>${response.account}</td>`
-        rows += '</tr><tr>'
-        if (response.name) {
-            rows += `<td>${$.t('name')}</td><td>${response.name}</td>`
-            rows += '</tr><tr>'
-        }
-        if (response.description) {
-            rows += `<td>${$.t('description')}</td><td style="word-break:break-all;word-wrap: break-word;">${response.description.escapeHTML()}</td>`
-            rows += '</tr><tr>'
-        }
-        rows += `<td>${$.t('total_balance')}</td><td>${formatAmount(response.balanceNQT)} ${BRS.valueSuffix}</td>`
-        rows += '</tr><tr>'
-        rows += `<td>${$.t('available_balance')}</td><td>${formatAmount(response.unconfirmedBalanceNQT)} ${BRS.valueSuffix}</td>`
-        rows += '</tr><tr>'
-        rows += `<td>${$.t('committed_balance')}</td><td>${formatAmount(response.committedBalanceNQT)} ${BRS.valueSuffix}</td>`
-        rows += '</tr><tr>'
-        if (response.accountRSExtended) {
-            rows += `<td>${$.t('account_extended')}</td><td style="word-break:break-all;word-wrap: break-word;">${response.accountRSExtended}</td>`
-            rows += '</tr><tr>'
-        }
-        rows += `<td>${$.t('public_key')}</td><td style="word-break:break-all;word-wrap: break-word;">${response.publicKey}</td>`
-        rows += '</tr><tr>'
-
-        rows += '</tr>'
-        $('#user_info_modal_details_table tbody').html(rows)
-        dataLoadFinished($('#user_info_modal_details_table'))
-    })
+    if (!BRS.userInfoModal) return
+    const accountInfo = BRS.userInfoModal.modalAccount
+    const publicKey = accountInfo.publicKey || ''
+    let tbodyHTML = ''
+    tbodyHTML += `
+            <tr>
+              <td>${$.t('account_id')}</td>
+              <td>${accountInfo.account}</td>
+            </tr>`
+    if (accountInfo.name) {
+        tbodyHTML += `
+            <tr>
+              <td>${$.t('name')}</td>
+              <td>${accountInfo.name}</td>
+            </tr>`
+    }
+    if (accountInfo.description) {
+        tbodyHTML += `
+            <tr>
+              <td>${$.t('description')}</td>
+              <td style="word-break:break-all;word-wrap: break-word;">${accountInfo.description.escapeHTML()}</td>
+            </tr>`
+    }
+    tbodyHTML += `
+            <tr>
+              <td>${$.t('total_balance')}</td>
+              <td>${formatAmount(accountInfo.balanceNQT)} ${BRS.valueSuffix}</td>
+            </tr>
+            <tr>
+              <td>${$.t('available_balance')}</td>
+              <td>${formatAmount(accountInfo.unconfirmedBalanceNQT)} ${BRS.valueSuffix}</td>
+            </tr>
+            <tr>
+              <td>${$.t('committed_balance')}</td>
+              <td>${formatAmount(accountInfo.committedBalanceNQT)} ${BRS.valueSuffix}</td>
+            </tr>`
+    if (accountInfo.accountRSExtended) {
+        tbodyHTML += `
+            <tr>
+              <td>${$.t('account_extended')}</td>
+              <td style="word-break:break-all;word-wrap: break-word;">${accountInfo.accountRSExtended}</td>
+            </tr>`
+    }
+    tbodyHTML += `
+            <tr>
+                <td>${$.t('public_key')}</td>
+                <td style="word-break:break-all;word-wrap: break-word;">${publicKey}</td>
+            </tr>`
+    $('#user_info_modal_details_table tbody').html(tbodyHTML)
+    dataLoadFinished($('#user_info_modal_details_table'))
 }
 
 function userInfoModalSmartcontract () {
+    if (!BRS.userInfoModal) return
     sendRequest('getAT', {
-        at: convertRSAccountToNumeric(BRS.userInfoModal.user)
+        at: convertRSAccountToNumeric(BRS.userInfoModal.modalAccount.account)
     }, function (response) {
-        let rows = ''
         if (response.errorCode) {
             $('#user_info_modal_smartcontract_table tbody').empty()
             dataLoadFinished($('#user_info_modal_smartcontract_table'))
             return
         }
+        let rows = ''
         const props = [
             'name',
             'description',
@@ -280,113 +340,149 @@ function userInfoModalSmartcontract () {
 }
 
 function userInfoModalAssets () {
-    sendRequest('getAccount', {
-        account: BRS.userInfoModal.user
-    }, function (response) {
-        if (response.assetBalances && response.assetBalances.length) {
-            const assets = {}
-            let nrAssets = 0
-            let ignoredAssets = 0
+    if (!BRS.userInfoModal) return
 
-            for (let i = 0; i < response.assetBalances.length; i++) {
-                if (response.assetBalances[i].balanceQNT === '0') {
-                    ignoredAssets++
+    const count = {
+        ignoredAssets: 0,
+        cachedAssets: 0,
+        requestedAssets: 0,
+        total: 0
+    }
 
-                    if (nrAssets + ignoredAssets === response.assetBalances.length) {
-                        userInfoModalAddIssuedAssets(assets)
-                    }
-                    continue
-                }
-
-                sendRequest('getAsset', {
-                    asset: response.assetBalances[i].asset,
-                    _extra: {
-                        balanceQNT: response.assetBalances[i].balanceQNT
-                    }
-                }, function (asset, input) {
-                    asset.asset = input.asset
-                    asset.balanceQNT = input._extra.balanceQNT
-
-                    assets[asset.asset] = asset
-                    nrAssets++
-
-                    if (nrAssets + ignoredAssets === response.assetBalances.length) {
-                        userInfoModalAddIssuedAssets(assets)
-                    }
-                })
-            }
-        } else {
-            userInfoModalAddIssuedAssets({})
+    function verifyRequestsAndProceed() {
+        if (count.cachedAssets + count.ignoredAssets + count.requestedAssets === count.total) {
+            // All done, proceed to next step.
+            userInfoModalAssetsLoaded()
         }
-    })
-}
+    }
 
-function userInfoModalAddIssuedAssets (assets) {
+    const accountInfo = BRS.userInfoModal.modalAccount
+
+    // Ensures all assets issued by the account are cached.
     sendRequest('getAssetsByIssuer', {
-        account: BRS.userInfoModal.user
-    }, function (response) {
+        account: accountInfo.account
+    }, function (response: GetAssetsByIssuerResponse) {
+        count.requestedAssets++
         if (response.assets && response.assets.length) {
-            $.each(response.assets, function (key, issuedAsset) {
-                if (assets[issuedAsset.asset]) {
-                    assets[issuedAsset.asset].issued = true
-                } else {
-                    issuedAsset.balanceQNT = '0'
-                    issuedAsset.issued = true
-                    assets[issuedAsset.asset] = issuedAsset
-                }
-            })
-
-            userInfoModalAssetsLoaded(assets)
-        } else if (!$.isEmptyObject(assets)) {
-            userInfoModalAssetsLoaded(assets)
-        } else {
-            $('#user_info_modal_assets_table tbody').empty()
-            dataLoadFinished($('#user_info_modal_assets_table'))
+            for (const issuedAsset of response.assets) {
+                cacheAsset(issuedAsset)
+            }
         }
+        verifyRequestsAndProceed()
     })
+
+    if (!accountInfo.assetBalances) {
+        count.total = 1 // Issued assets response.
+        return
+    }
+
+    count.total = accountInfo.assetBalances.length + 1 // Issued assets response.
+    for (const currAssetBalance of accountInfo.assetBalances) {
+        // Do not show assets withoud balance
+        if (currAssetBalance.balanceQNT === '0') {
+            count.ignoredAssets++
+            continue
+        }
+        // Check first in cached assets
+        const foundAsset = BRS.assets.find(asset => asset.asset === currAssetBalance.asset)
+        if (foundAsset) {
+            count.cachedAssets++
+            continue
+        }
+        // If not in cache, request and cache.
+        sendRequest('getAsset', {
+            asset: currAssetBalance.asset,
+        }, function (asset: GetAssetResponse) {
+            if (asset.errorCode) {
+                count.ignoredAssets++
+                return
+            }
+            count.requestedAssets++
+            cacheAsset(asset)
+            verifyRequestsAndProceed()
+        })
+    }
 }
 
-function userInfoModalAssetsLoaded (assets) {
-    const assetArray = []
-    let rows = ''
+interface CombinedAsset extends GetAssetResponse {
+    balanceQNT: string
+}
 
-    $.each(assets, function (key, asset) {
-        assetArray.push(asset)
-    })
+// All assets are cached and ready to be displayed in 'assets' tab.
+function userInfoModalAssetsLoaded() {
+    if (!BRS.userInfoModal) {
+        return
+    }
 
-    assetArray.sort(function (a, b) {
-        if (a.issued && b.issued) {
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1
-            } else if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1
-            } else {
-                return 0
-            }
-        } else if (a.issued) {
-            return -1
-        } else if (b.issued) {
-            return 1
-        } else {
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1
-            } else if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1
-            } else {
-                return 0
-            }
+    const accountInfo = BRS.userInfoModal.modalAccount
+    const assetBalances = accountInfo.assetBalances || []
+    const currentAccount = accountInfo.account
+
+    // Combine asset balances and issued assets, avoiding duplicates
+    const combinedAssets: CombinedAsset[] = []
+
+    // Add assets with balance (non-zero)
+    for (const balance of assetBalances) {
+        if (balance.balanceQNT === '0') {
+            continue
         }
+        const cachedAsset = BRS.assets.find(asset => asset.asset === balance.asset)
+        if (cachedAsset) {
+            combinedAssets.push({
+                ...cachedAsset,
+                balanceQNT: balance.balanceQNT
+            })
+        }
+    }
+
+    // Add issued assets (only those not already included due to balance)
+    for (const cachedAsset of BRS.assets) {
+        if (cachedAsset.account !== currentAccount) {
+            continue
+        }
+        const isAlreadyIncluded = combinedAssets.some(asset => asset.asset === cachedAsset.asset)
+        if (!isAlreadyIncluded) {
+            combinedAssets.push({
+                ...cachedAsset,
+                balanceQNT: '0'
+            })
+        }
+    }
+
+    // Sort the assets (issued first, then alphabetically)
+    combinedAssets.sort((a, b) => {
+        const aIsIssued = a.account === currentAccount
+        const bIsIssued = b.account === currentAccount
+
+        if (aIsIssued && !bIsIssued) return -1
+        if (!aIsIssued && bIsIssued) return 1
+
+        return a.name.localeCompare(b.name)
     })
 
-    for (let i = 0; i < assetArray.length; i++) {
-        const asset = assetArray[i]
-
+    // Generate HTML rows
+    let rows = ''
+    for (const asset of combinedAssets) {
         const percentageAsset = calculatePercentage(asset.balanceQNT, asset.quantityCirculatingQNT)
+        const isIssued = asset.account === currentAccount
+        const assetName = String(asset.name).escapeHTML()
+        const assetId = String(asset.asset).escapeHTML()
 
-        rows += '<tr' + (asset.issued ? " class='asset_owner'" : '') + "><td><a href='#' data-goto-asset='" + String(asset.asset).escapeHTML() + "'" + (asset.issued ? " style='font-weight:bold'" : '') + '>' + String(asset.name).escapeHTML() + "</a></td><td class='quantity'>" + formatQuantity(asset.balanceQNT, asset.decimals) + '</td><td>' + formatQuantity(asset.quantityCirculatingQNT, asset.decimals) + '</td><td>' + percentageAsset + '%</td></tr>'
+        rows += `
+            <tr>
+              <td>
+                <a href='#'
+                   data-goto-asset='${assetId}'
+                   ${isIssued ? " style='font-weight:bold'" : ''}>
+                   ${assetName}
+                </a>
+              </td>
+              <td class='quantity'>${formatQuantity(asset.balanceQNT, asset.decimals)}</td>
+              <td>${formatQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>
+              <td>${percentageAsset}%</td>
+            </tr>`
     }
 
     $('#user_info_modal_assets_table tbody').empty().append(rows)
-
     dataLoadFinished($('#user_info_modal_assets_table'))
 }

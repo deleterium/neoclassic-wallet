@@ -62,6 +62,14 @@ export interface Transaction {
     version: number;
 }
 
+export interface GetAccountTransactionsResponse {
+    transactions: Transaction[];
+    nextIndex?: number;
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 export interface BlockchainStatus {
     application: string;
     cumulativeDifficulty: string;
@@ -99,8 +107,8 @@ export interface GetAccountResponse {
     description: string;
     isAT: boolean;
     isSecured: boolean;
-    assetBalances: AssetBalance[];
-    unconfirmedAssetBalances: UnconfirmedAssetBalance[];
+    assetBalances?: AssetBalance[];
+    unconfirmedAssetBalances?: UnconfirmedAssetBalance[];
     requestProcessingTime?: number;
     errorCode?: number;
     errorDescription?: string;
@@ -166,12 +174,15 @@ export interface GetAssetResponse {
     errorDescription?: string;
 }
 
-export interface GetAssetsByNameResponse {
+export interface GetAssetsByResponse {
     assets: GetAssetResponse[];
     requestProcessingTime?: number;
+    nextIndex?: number;
     errorCode?: number;
     errorDescription?: string;
 }
+export type GetAssetsByNameResponse = GetAssetsByResponse
+export type GetAssetsByIssuerResponse = GetAssetsByResponse
 
 export interface Alias {
     account: string;

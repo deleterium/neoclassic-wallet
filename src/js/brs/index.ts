@@ -123,6 +123,7 @@ import {
     BlockchainStatus,
     BrsSettings,
     GetAccountResponse,
+    GetAssetResponse,
     GetBlockResponse,
     Transaction
 } from '../typings'
@@ -306,7 +307,7 @@ export const BRS = {
     _publicKeys: {} as { [key: string]: string},
 
     // from assetexchange
-    assets: [],
+    assets: [] as GetAssetResponse[],
     closedGroups: [],
     assetSearch: false,
     currentAsset: {},
@@ -327,8 +328,10 @@ export const BRS = {
     _encryptedNote: null as null | Transaction,
 
     // from modals.account
-    userInfoModal: {
-        user: 0
+    userInfoModal: null as null | {
+        modalAccount: GetAccountResponse
+        assetsDetails: GetAssetResponse[]
+        issuedAssets: GetAssetResponse[]
     }
 }
 

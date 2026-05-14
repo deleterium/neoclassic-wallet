@@ -518,7 +518,7 @@ export function getAccountInfo (firstRun: boolean, callback?: () => void) {
                 const currentBalances = JSON.stringify(BRS.accountInfo.assetBalances)
 
                 if (previousBalances !== currentBalances) {
-                    checkAssetDifferences(BRS.accountInfo.assetBalances, previousAccountInfo.assetBalances)
+                    checkAssetDifferences(BRS.accountInfo.assetBalances || [], previousAccountInfo.assetBalances)
                 }
             }
 

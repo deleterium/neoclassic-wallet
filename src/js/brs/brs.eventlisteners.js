@@ -421,7 +421,7 @@ export function addEventListeners () {
         setAliasType(type, $('#register_alias_uri').val())
     })
     $('#alias_search').on('submit', evAliasSearchSubmit)
-    $('#search_results_contents, #aliases_table').on('click', 'a[data-alias]', function (e) {
+    $('#search_results_contents, #aliases_table, #user_info_modal_aliases_table').on('click', 'a[data-alias]', function (e) {
         e.preventDefault()
         const alias = $(this).data('alias')
         showAliasModal(alias)
@@ -543,7 +543,7 @@ export function addEventListeners () {
     $('#user_info_modal').on('hidden.bs.modal', function () {
         $(this).find('table tbody').empty()
         $(this).find('.data-container:not(.data-loading,.data-never-loading)').addClass('data-loading')
-        BRS.userInfoModal.user = 0
+        BRS.userInfoModal = null
     })
     $('#user_info_modal a[data-toggle="pill"]').on('shown.bs.tab', evShowBsTab)
 

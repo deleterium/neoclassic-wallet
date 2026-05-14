@@ -213,7 +213,7 @@ export function bookmarkAllUserAssets () {
  *
  * @param {Object} asset - The asset object from the server response.
  */
-function cacheAsset (asset) {
+export function cacheAsset (asset) {
     const foundAsset = BRS.assets.find((tkn) => tkn.asset === asset.asset)
     if (foundAsset) {
         // update info
