@@ -9,7 +9,7 @@
     "dev": "./cpdev.sh && node esbuild.config.js && npm run start",
     "build": "./cpbuild.sh && node esbuild.config.js",
     "lang": "pushd ./lang && ./updateFiles.sh && popd",
-    "start": "npx light-server -s dist -p 1221 --no-reload",
+    "start": "python3 -m http.server -d dist 1221",
     "release": "npm run build && npm run lang"
   },
   "repository": {
@@ -27,24 +27,28 @@
     "url": "https://github.com/deleterium/neoclassic-wallet/issues"
   },
   "homepage": "https://github.com/deleterium/neoclassic-wallet#readme",
-  "dependencies": {
-    "light-server": "^2.9.1",
-    "prettier": "^2.8.0"
-  },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/bootstrap": "^5.2.10",
+    "@types/i18next": "^12.1.0",
+    "@types/jquery": "^4.0.0",
+    "@types/pako": "^2.0.4",
     "@typescript-eslint/eslint-plugin": "^8.59.2",
     "@typescript-eslint/parser": "^8.59.2",
     "admin-lte": "^3.2.0",
-    "esbuild": "^0.15.12",
-    "eslint": "^8.26.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-standard": "^1.0.2",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.6.0",
     "hashicon": "^0.3.0",
     "i18next": "^22.0.6",
     "i18next-http-backend": "^2.0.1",
+    "jiti": "^2.7.0",
     "jquery": "^3.6.1",
     "jquery-i18next": "^1.2.1",
     "js-sha256": "^0.11.1",
-    "pako": "^2.1.0"
+    "pako": "^2.1.0",
+    "prettier": "^3.8.3",
+    "typescript-eslint": "^8.59.3"
   }
 }
