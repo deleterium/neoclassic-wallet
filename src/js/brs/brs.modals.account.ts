@@ -264,6 +264,10 @@ function userInfoModalDetails () {
             <tr>
               <td>${$.t('committed_balance')}</td>
               <td>${formatAmount(accountInfo.committedBalanceNQT)} ${BRS.valueSuffix}</td>
+            </tr>
+            <tr>
+              <td>${$.t('forged_balance')}</td>
+              <td>${formatAmount(accountInfo.forgedBalanceNQT)} ${BRS.valueSuffix}</td>
             </tr>`
     if (accountInfo.accountRSExtended) {
         tbodyHTML += `

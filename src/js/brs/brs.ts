@@ -525,7 +525,6 @@ export function getAccountInfo (firstRun: boolean, callback?: () => void) {
             $('#account_balance, #account_balance_sendmoney').html(formatStyledAmount(response.unconfirmedBalanceNQT))
             $('#account_balance_locked, #account_balance_sendmoney').html(formatStyledAmount((new BigInteger(response.balanceNQT) - new BigInteger(response.unconfirmedBalanceNQT)).toString()))
             $('#account_committed_balance, #account_balance_sendmoney').html(formatStyledAmount(response.committedBalanceNQT))
-            $('#account_forged_balance').html(formatStyledAmount(response.committedBalanceNQT))
 
             let nr_assets = 0
 
