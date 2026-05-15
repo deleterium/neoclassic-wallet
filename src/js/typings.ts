@@ -203,3 +203,10 @@ export interface GetAliasesResponse {
     errorCode?: number;
     errorDescription?: string;
 };
+
+export interface GetAccountPublicKey {
+    publicKey?: string;
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+};

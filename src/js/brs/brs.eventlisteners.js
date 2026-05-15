@@ -561,7 +561,7 @@ export function addEventListeners () {
     })
 
     // from brs.modals.escrow.js
-    $('#escrow_table').on('click', 'a[data-escrow]', function () {
+    $('#escrow_table').on('click', 'a[data-escrow]', function (e) {
         e.preventDefault()
         const escrowId = $(this).data('escrow')
         showEscrowDecisionModal(escrowId)

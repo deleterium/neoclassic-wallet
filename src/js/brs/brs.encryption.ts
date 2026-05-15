@@ -16,6 +16,7 @@ import {
 
 import {
     ByteArray,
+    GetAccountPublicKey,
     HexString,
     Transaction
 } from '../typings'
@@ -69,7 +70,7 @@ export function getAccountPublicKey (account: string) {
     // synchronous!
     sendRequest('getAccountPublicKey', {
         account
-    }, function (response: any, input: any) {
+    }, function (response: GetAccountPublicKey, input) {
         if (!response.publicKey) {
             throw {
                 brsErrorMessage: $.t('error_no_public_key')
@@ -337,7 +338,7 @@ export async function decryptAttachmentField (tx: Transaction, field: 'encrypted
         const decoded = await decryptNote(tx.attachment[field].data, options)
         addDecryptedTransactionToCache(tx.transaction, { [field]: decoded })
         return decoded
-    } catch (err: any) {
+    } catch (err) {
         if (err.brsErrorMessage) {
             if (throwOnError) {
                 throw err

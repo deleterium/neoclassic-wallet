@@ -313,7 +313,6 @@ export async function submitForm ($btn) {
     let successMessage = getSuccessMessage(requestTypeKey)
     let errorMessage = getErrorMessage(requestTypeKey)
 
-    let errorStr = ''
     const formFunction = BRS.forms[requestType]
     formErrorFunction = BRS.forms[requestType + 'Error']
 
@@ -331,7 +330,7 @@ export async function submitForm ($btn) {
         return
     }
 
-    errorStr = checkInvalidFormFields($form)
+    let errorStr = checkInvalidFormFields($form)
     if (errorStr) {
         endWithError(errorStr)
         return

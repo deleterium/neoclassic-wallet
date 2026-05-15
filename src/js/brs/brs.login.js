@@ -2,8 +2,6 @@
  * @depends {brs.js}
  */
 
-/* global PassPhraseGenerator */
-
 import { BRS } from '.'
 
 import {

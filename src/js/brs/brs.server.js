@@ -101,7 +101,6 @@ function addUnconfirmedProperty (response, requestType) {
         break
     case 'getUnconfirmedTransactions':
         if (response.unconfirmedTransactions) {
-            // eslint-disable-next-line no-return-assign
             response.unconfirmedTransactions.forEach(transaction => transaction.unconfirmed = true)
         }
         break
