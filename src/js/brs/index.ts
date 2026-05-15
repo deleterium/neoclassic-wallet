@@ -122,6 +122,7 @@ import { formsClearData } from './brs.modal.cleardata'
 import {
     BlockchainStatus,
     BrsSettings,
+    DecryptedTransactionsCache,
     GetAccountResponse,
     GetAssetResponse,
     GetBlockResponse,
@@ -303,7 +304,7 @@ export const BRS = {
     // from encryption
     _password: '',
     _decryptionPassword: '',
-    _decryptedTransactions: {} as { [key: string]: any},
+    _decryptedTransactions: {} as DecryptedTransactionsCache,
     _publicKeys: {} as { [key: string]: string},
 
     // from assetexchange

@@ -31,6 +31,14 @@ export type BrsSettings = {
     remember_account_account: string
 }
 
+export type DecryptedTransactionFields = "encryptedMessage" | "encryptToSelfMessage"
+export type DecryptedTransactionItem = {
+    [key in DecryptedTransactionFields]?: string
+}
+export type DecryptedTransactionsCache = {
+    [key: string]: DecryptedTransactionItem
+}
+
 // region signum types
 
 export interface Transaction {

@@ -16,6 +16,8 @@ import {
 
 import {
     ByteArray,
+    DecryptedTransactionFields,
+    DecryptedTransactionItem,
     GetAccountPublicKey,
     HexString,
     Transaction
@@ -270,12 +272,12 @@ export function getDecryptionPassword () : string | undefined {
 
 // region Decryption cache
 
-export function addDecryptedTransactionToCache (identifier: string, content: any) {
-    if (!BRS._decryptedTransactions[identifier]) {
-        BRS._decryptedTransactions[identifier] = content
+export function addDecryptedTransactionToCache (txid: string, content: DecryptedTransactionItem) {
+    if (!BRS._decryptedTransactions[txid]) {
+        BRS._decryptedTransactions[txid] = content
     } else {
         // Merge content
-        Object.assign(BRS._decryptedTransactions[identifier], content);
+        Object.assign(BRS._decryptedTransactions[txid], content);
     }
 }
 
@@ -283,7 +285,7 @@ export function addDecryptedTransactionToCache (identifier: string, content: any
  * @param {TransactionID} TransactionID from blockchain
  * @returns {string|undefined} Decoded message, or undefined if no decoded message found
  */
-export function getDecryptedMessageFromCache (txid: string, field: 'encryptedMessage' | 'encryptToSelfMessage') : string | undefined {
+export function getDecryptedMessageFromCache (txid: string, field: DecryptedTransactionFields) : string | undefined {
     if (!BRS._decryptedTransactions || !BRS._decryptedTransactions[txid] || !BRS._decryptedTransactions[txid][field]) {
         return undefined
     }
