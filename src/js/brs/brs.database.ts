@@ -60,12 +60,12 @@ export function createDatabase (callback: () => void): void {
  */
 export function dbGet <T extends string | number> (
     storeName: string,
-    query: Record<string, T> | ((error: any, result: any) => void) | null,
-    callback?: (error: any, result: any) => void
+    query: Record<string, T> | ((error: Error | null, result) => void) | null,
+    callback?: (error: Error | null, result) => void
 ): void {
     if (BRS.database === null) return
     if (typeof query === 'function') {
-        callback = query as (error: any, result: any) => void
+        callback = query as (error: Error | null, result) => void
         query = null
     }
     const transaction = BRS.database.transaction(storeName, 'readonly')
@@ -81,9 +81,13 @@ export function dbGet <T extends string | number> (
     request.onsuccess = function () {
         if (callback) callback(null, request.result)
     }
-    request.onerror = function (error) {
-        if (callback) callback(error, {})
-        else console.error('select() error: ', error)
+    request.onerror = function (error: Event) {
+        if (callback) {
+            const errorMessage = (error.target as IDBRequest).error?.message || 'An unknown error occurred'
+            callback(new Error(errorMessage), {})
+        } else {
+            console.error('select() error: ', error)
+        }
     }
 }
 
@@ -106,7 +110,7 @@ export function dbGet <T extends string | number> (
 export function dbPut <T extends object | Array<object>> (
     storeName: string,
     data: T,
-    callback?: (error: any, result: T) => void
+    callback?: (error: Error | null, result: T) => void
 ): void {
     if (BRS.database === null) return
     const transaction = BRS.database.transaction(storeName, 'readwrite')
@@ -128,8 +132,8 @@ export function dbPut <T extends object | Array<object>> (
     Promise.allSettled(requests)
         .then(results => {
             if (!callback) return
-            const errors = results.filter((r: any) => r.status === 'rejected')
-            const successfulResults = results.filter((r: any) => r.status === 'fulfilled').map((r: any) => r.value)
+            const errors = results.filter((r) => r.status === 'rejected')
+            const successfulResults = results.filter((r) => r.status === 'fulfilled').map((r) => r.value)
             if (errors.length > 0) {
                 callback(new Error('Some inserts failed'), results as T)
             } else {
@@ -138,8 +142,12 @@ export function dbPut <T extends object | Array<object>> (
             }
         })
         .catch(error => {
-            if (callback) callback(error, {} as T)
-            else console.error('insert() error: ', error)
+            if (callback) {
+                const errorMessage = (error.target as IDBRequest).error?.message || 'An unknown error occurred'
+                callback(new Error(errorMessage), {} as T)
+            } else {
+                console.error('insert() error: ', error)
+            }
         })
 }
 
@@ -152,7 +160,7 @@ export function dbPut <T extends object | Array<object>> (
 export function deleteRecord <T extends string | number> (
     storeName: string,
     query: Record<string, T>,
-    callback?: (error: any) => void
+    callback?: (error: Error | null) => void
 ): void {
     if (BRS.database === null) return
     const transaction = BRS.database.transaction(storeName, 'readwrite')
@@ -164,8 +172,12 @@ export function deleteRecord <T extends string | number> (
         if (callback) callback(null)
     }
     request.onerror = function (error) {
-        if (callback) callback(error)
-        else console.error('deleteRecord() error: ', error)
+        if (callback) {
+            const errorMessage = (error.target as IDBRequest).error?.message || 'An unknown error occurred'
+            callback(new Error(errorMessage))
+        } else {
+            console.error('deleteRecord() error: ', error)
+        }
     }
 }
 
@@ -174,7 +186,7 @@ export function deleteRecord <T extends string | number> (
  * @param {string} storeName - Name of the object store (table)
  * @param {function} callback - Callback function(error)
  */
-export function drop(storeName: string, callback?: (error: any) => void): void {
+export function drop(storeName: string, callback?: (error: Error | null) => void): void {
     if (BRS.database === null) return
     const transaction = BRS.database.transaction(storeName, 'readwrite')
     const store = transaction.objectStore(storeName)
@@ -183,7 +195,11 @@ export function drop(storeName: string, callback?: (error: any) => void): void {
         if (callback) callback(null)
     }
     request.onerror = function (error) {
-        if (callback) callback(error)
-        else console.error('drop() error: ', error)
+        if (callback) {
+            const errorMessage = (error.target as IDBRequest).error?.message || 'An unknown error occurred'
+            callback(new Error(errorMessage))
+        } else {
+            console.error('drop() error: ', error)
+        }
     }
 }
