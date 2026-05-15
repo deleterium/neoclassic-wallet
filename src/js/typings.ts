@@ -7,11 +7,6 @@ export type ByteArray = number[] | Uint8Array
 
 export type HexString = string
 
-export type WordArray = {
-    sigBytes: number,
-    words: Uint32Array
-}
-
 export type BrsSettings = {
     submit_on_enter: boolean,
     fee_warning: string,

@@ -1,5 +1,9 @@
 
-import { ByteArray, HexString, HexChar, WordArray } from "../typings"
+import {
+    ByteArray,
+    HexString,
+    HexChar
+} from "../typings"
 
 type BigInteger = {
     t: number
@@ -139,49 +143,6 @@ export default {
             value = temp2
         }
         return value
-    },
-    // create a wordArray that is Big-Endian
-    byteArrayToWordArray (byteArray: ByteArray) : WordArray {
-        let i = 0
-        let offset = 0
-        let word = 0
-        const len = byteArray.length
-        const words = new Uint32Array(((len / 4) | 0) + (len % 4 === 0 ? 0 : 1))
-        while (i < (len - (len % 4))) {
-            words[offset++] = (byteArray[i++] << 24) | (byteArray[i++] << 16) | (byteArray[i++] << 8) | (byteArray[i++])
-        }
-        if (len % 4 !== 0) {
-            word = byteArray[i++] << 24
-            if (len % 4 > 1) {
-                word = word | byteArray[i++] << 16
-            }
-            if (len % 4 > 2) {
-                word = word | byteArray[i++] << 8
-            }
-            words[offset] = word
-        }
-        return {
-            sigBytes: len,
-            words
-        }
-    },
-    // assumes wordArray is Big-Endian
-    wordArrayToByteArray (wordArray: WordArray) : ByteArray{
-        const len = wordArray.words.length
-        if (len === 0) {
-            return new Array(0)
-        }
-        const byteArray = new Array(wordArray.words.length * 4)
-        let offset = 0
-        let word: number; let i: number
-        for (i = 0; i < len; i++) {
-            word = wordArray.words[i]
-            byteArray[offset++] = word >> 24
-            byteArray[offset++] = (word >> 16) & 0xff
-            byteArray[offset++] = (word >> 8) & 0xff
-            byteArray[offset++] = word & 0xff
-        }
-        return byteArray.slice(0, wordArray.sigBytes)
     },
     byteArrayToString (bytes: ByteArray, opt_startIndex?: number, length?: number) : string {
         if (length === 0) {
