@@ -1520,7 +1520,7 @@ function myAssetsPageLoaded (result) {
                 return
             }
 
-            if (response.errorCode || !response.askOrders[0]) {
+            if (response.errorCode || !response.askOrders || response.askOrders.length === 0) {
                 updateAskOrderCell(input.asset, null)
                 return
             }
@@ -1539,7 +1539,7 @@ function myAssetsPageLoaded (result) {
                 return
             }
 
-            if (response.errorCode || !response.bidOrders[0]) {
+            if (response.errorCode || !response.bidOrders || response.bidOrders.length === 0) {
                 updateBidOrderCell(input.asset, null)
                 return
             }

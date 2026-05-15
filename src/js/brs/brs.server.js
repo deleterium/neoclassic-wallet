@@ -304,6 +304,9 @@ export function processAjaxRequest (requestType, data, callback, async) {
             if (!verifyBytes(signature, response.unsignedTransactionBytes, publicKey)) {
                 const errorMessage = $.t('error_signature_verification_client')
                 if (callback) {
+                    if (extra) {
+                        data._extra = extra
+                    }
                     callback({
                         errorCode: 1,
                         errorDescription: errorMessage
@@ -317,6 +320,9 @@ export function processAjaxRequest (requestType, data, callback, async) {
             if (payload.length === 0) {
                 const errorMessage = $.t('error_signature_verification_server')
                 if (callback) {
+                    if (extra) {
+                        data._extra = extra
+                    }
                     callback({
                         errorCode: 1,
                         errorDescription: errorMessage
@@ -376,10 +382,13 @@ export function processAjaxRequest (requestType, data, callback, async) {
             if (error === 'timeout') {
                 error = $.t('error_request_timeout')
             }
+            if (extra) {
+                data._extra = extra
+            }
             callback({
                 errorCode: -1,
                 errorDescription: error
-            }, {})
+            }, data)
         }
     })
 }
