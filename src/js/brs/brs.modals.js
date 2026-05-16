@@ -13,7 +13,7 @@ import {
 import {
     convertToNQT,
     formatAmount
-} from './brs.util'
+} from './brs.numbers'
 
 import {
     evSpanRecipientSelectorClickButton,

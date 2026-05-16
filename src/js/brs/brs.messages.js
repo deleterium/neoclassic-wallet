@@ -25,8 +25,9 @@ import {
     decryptAttachmentField
 } from './brs.encryption'
 
+import { formatTimestamp } from './brs.numbers'
+
 import {
-    formatTimestamp,
     convertFromHex16,
     convertFromHex8,
     getAccountTitle,

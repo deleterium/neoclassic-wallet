@@ -15,7 +15,10 @@ import { getAccountIdFromPublicKey } from './brs.encryption'
 import {
     convertToNQT,
     formatAmount,
-    formatTimestamp,
+    formatTimestamp
+} from './brs.numbers'
+
+import {
     convertRSAccountToNumeric,
     getAccountFormatted,
     convertPublicKeyFromBase36ToBase16

@@ -7,8 +7,9 @@ import { BRS } from '.'
 
 import { sendRequest } from './brs.server'
 
+import { formatAmount } from './brs.numbers'
+
 import {
-    formatAmount,
     createInfoTable
 } from './brs.util'
 

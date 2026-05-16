@@ -8,8 +8,9 @@ import { reloadCurrentPage } from './brs'
 
 import { sendRequest } from './brs.server'
 
+import { formatVolume } from './brs.numbers'
+
 import {
-    formatVolume,
     dataLoaded
 } from './brs.util'
 

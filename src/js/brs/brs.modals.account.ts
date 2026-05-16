@@ -13,7 +13,10 @@ import {
     calculatePercentage,
     formatQuantity,
     formatAmount,
-    formatTimestamp,
+    formatTimestamp
+} from './brs.numbers'
+
+import {
     convertRSAccountToNumeric,
     getAccountTitle,
     dataLoadFinished

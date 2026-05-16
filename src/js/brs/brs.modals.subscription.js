@@ -10,7 +10,7 @@ import { sendRequest } from './brs.server'
 import {
     formatAmount,
     formatTimestamp
-} from './brs.util'
+} from './brs.numbers'
 
 export function showSubscriptionCancelModal (subscription) {
     if (BRS.fetchingModalData) {

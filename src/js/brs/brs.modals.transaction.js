@@ -22,7 +22,10 @@ import {
     format,
     formatQuantity,
     formatAmount,
-    formatTimestamp,
+    formatTimestamp
+} from './brs.numbers'
+
+import {
     convertNumericToRSAccountFormat,
     getAssetLink,
     fullHashToId,

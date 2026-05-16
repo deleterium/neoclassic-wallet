@@ -5,7 +5,8 @@ import { showAccountModal } from './brs.modals.account';
 import { showBlockModal } from './brs.modals.block';
 import { showTransactionModal } from './brs.modals.transaction';
 import { sendRequest } from './brs.server';
-import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle, formatAmount } from './brs.util';
+import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from './brs.util';
+import { formatAmount } from './brs.numbers';
 
 /**
  * Draws the search results if found many accounts.

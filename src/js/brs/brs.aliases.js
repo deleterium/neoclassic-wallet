@@ -18,7 +18,10 @@ import {
 import {
     convertToNXT,
     formatAmount,
-    formatTimestamp,
+    formatTimestamp
+} from './brs.numbers'
+
+import {
     getAccountFormatted,
     dataLoadFinished,
     createInfoTable,

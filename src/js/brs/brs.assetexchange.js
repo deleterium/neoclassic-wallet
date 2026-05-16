@@ -33,7 +33,10 @@ import {
     convertToQNT,
     formatQuantity,
     formatAmount,
-    formatTimestamp,
+    formatTimestamp
+} from './brs.numbers'
+
+import {
     getAccountTitle,
     getAccountFormatted,
     dataLoaded,

@@ -7,7 +7,10 @@ import { sendRequest } from './brs.server'
 
 import {
     formatAmount,
-    formatTimestamp,
+    formatTimestamp
+} from './brs.numbers'
+
+import {
     dataLoaded
 } from './brs.util'
 

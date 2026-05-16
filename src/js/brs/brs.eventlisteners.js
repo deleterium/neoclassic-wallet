@@ -54,9 +54,12 @@ import {
 } from './brs.forms'
 
 import {
-    convertNumericToRSAccountFormat,
     convertToNQT,
-    formatAmount,
+    formatAmount
+} from './brs.numbers'
+
+import {
+    convertNumericToRSAccountFormat,
     treeViewHandler
 } from './brs.util'
 

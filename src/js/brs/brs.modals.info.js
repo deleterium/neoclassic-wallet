@@ -11,7 +11,7 @@ import {
     formatVolume,
     formatAmount,
     formatTimestamp
-} from './brs.util'
+} from './brs.numbers'
 
 export function evBrsModalOnShowBsModal () {
     if (BRS.fetchingModalData) {

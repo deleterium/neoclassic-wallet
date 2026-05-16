@@ -13,9 +13,10 @@ import {
     verifyBytes
 } from './brs.encryption'
 
+import { convertToNQT } from './brs.numbers'
+
 import {
     convertPublicKeyFromBase36ToBase16,
-    convertToNQT,
     translateServerError
 } from './brs.util'
 

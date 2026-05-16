@@ -21,7 +21,10 @@ import {
     formatVolume,
     convertToNQT,
     formatAmount,
-    formatTimestamp,
+    formatTimestamp
+} from './brs.numbers'
+
+import {
     getAccountTitle,
     getAccountFormatted,
     dataLoaded,

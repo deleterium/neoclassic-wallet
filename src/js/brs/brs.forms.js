@@ -16,7 +16,10 @@ import {
 
 import {
     convertToNQT,
-    formatAmount,
+    formatAmount
+} from './brs.numbers'
+
+import {
     getTranslatedFieldName
 } from './brs.util'
 

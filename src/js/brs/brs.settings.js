@@ -10,9 +10,7 @@ import { submitForm } from './brs.forms'
 
 import { dbGet, dbPut } from './brs.database'
 
-import {
-    convertToNXT
-} from './brs.util'
+import { convertToNXT } from './brs.numbers'
 
 export function pagesSettings () {
     $('#settings_language').val(BRS.settings.language)

@@ -28,9 +28,9 @@ import {
     handleNewBlocks
 } from './brs.blocks'
 
+import { formatQuantity } from './brs.numbers'
 
 import {
-    formatQuantity,
     formatStyledAmount
 } from './brs.util'
 

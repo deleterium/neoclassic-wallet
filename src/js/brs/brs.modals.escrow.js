@@ -7,7 +7,7 @@ import { BRS } from '.'
 
 import { sendRequest } from './brs.server'
 
-import { formatTimestamp } from './brs.util'
+import { formatTimestamp } from './brs.numbers'
 
 export function showEscrowDecisionModal (escrow) {
     if (BRS.fetchingModalData) {

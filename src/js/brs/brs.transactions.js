@@ -17,7 +17,10 @@ import { getContactByName } from './brs.contacts'
 import {
     formatQuantity,
     formatAmount,
-    formatTimestamp,
+    formatTimestamp
+} from './brs.numbers'
+
+import {
     convertRSAccountToNumeric,
     getAccountLink,
     getAccountTitle,
