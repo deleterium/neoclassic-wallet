@@ -65,9 +65,7 @@ export function getAccountPublicKey (account: string) {
         account
     }, function (response: GetAccountPublicKey, input) {
         if (!response.publicKey) {
-            throw {
-                brsErrorMessage: $.t('error_no_public_key')
-            }
+            throw new Error($.t('error_no_public_key'))
         } else {
             publicKey = response.publicKey
             setAccountPublicKeyToCache(input.account, response.publicKey)
@@ -80,10 +78,7 @@ export function getAccountPublicKey (account: string) {
  * @param {String} secretphrase in hexString format
  * @returns publicKey in hexString format
  */
-export function getPublicKeyFromPassphrase (secretphrase?: string) : HexString {
-    if (!secretphrase) {
-        throw $.t('error_generate_public_key_no_password')
-    }
+export function getPublicKeyFromPassphrase (secretphrase: string) : HexString {
     const secretPhraseBytes = converters.stringToByteArray(secretphrase)
     const digest = sha256.digest(secretPhraseBytes)
     return converters.byteArrayToHexString(curve25519.keygen(digest).p)
@@ -94,7 +89,7 @@ export function getPublicKeyFromPassphrase (secretphrase?: string) : HexString {
 async function getPrivateKey (secretPhrase: string) : Promise<HexString> {
     const encoder = new TextEncoder();
     const secretPhraseBytes = encoder.encode(secretPhrase);
-    const pk = new Uint8Array(await crypto.subtle.digest('SHA-256', secretPhraseBytes))
+    const pk = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', secretPhraseBytes)))
     curve25519.clamp(pk)
     return converters.byteArrayToHexString(pk)
 }
@@ -124,9 +119,7 @@ async function createCryptoOptions (otherUser: string, nonce: HexString, isText:
     const publicKey = getAccountPublicKey(otherUser)
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
-        throw {
-            brsErrorMessage: $.t('error_decryption_passphrase_required')
-        }
+        throw new Error($.t('error_decryption_passphrase_required'))
     }
     const privateKey = await getPrivateKey(password)
     return {
@@ -145,15 +138,11 @@ export async function createEncryptionToOtherOptions (
 ) : Promise<CryptoOptions> {
     const publicKey = otherPublicKey || getAccountPublicKey(otherAccount)
     if (publicKey.length !== 64) {
-        throw {
-            message: $.t('error_public_key_not_specified'),
-        }
+        throw new Error($.t('error_public_key_not_specified'))
     }
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
-        throw {
-            message: $.t('error_decryption_passphrase_required')
-        }
+        throw new Error($.t('error_decryption_passphrase_required'))
     }
     const privateKey = await getPrivateKey(password)
     const nonce = new Uint8Array(32)
@@ -169,9 +158,7 @@ export async function createEncryptionToOtherOptions (
 export async function createEncryptionToSelfOptions (isText: boolean, secretPhrase?: string) : Promise<CryptoOptions> {
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
-        throw {
-            message: $.t('error_decryption_passphrase_required')
-        }
+        throw new Error($.t('error_decryption_passphrase_required'))
     }
     const privateKey = await getPrivateKey(password)
     const publicKey = getPublicKeyFromPassphrase(password)
@@ -217,10 +204,8 @@ export function signBytes (message: HexString, secretPhrase: string) : HexString
     const h = doubleHash(m, y)
     const v = curve25519.sign(h, x, s)
     if (!v) {
-        throw {
-            // TODO add translation
-            message: 'error_on_signature_process'
-        }
+        // TODO add translation
+        throw new Error('error_on_signature_process')
     }
     return converters.byteArrayToHexString(v.concat(h))
 }
@@ -307,13 +292,13 @@ export async function decryptAttachmentField (tx: Transaction, field: 'encrypted
     const accountId = getAccountId(password)
     if (accountId !== BRS.account) {
         if (throwOnError) {
-            throw { brsError: $.t('error_incorrect_passphrase') }
+            throw new Error($.t('error_incorrect_passphrase'))
         }
         return $.t('error_incorrect_passphrase')
     }
     if (!tx.attachment[field]) {
         if (throwOnError) {
-            throw { brsError: $.t('message_empty') }
+            throw new Error($.t('message_empty'))
         }
         return ''
     }
@@ -332,17 +317,17 @@ export async function decryptAttachmentField (tx: Transaction, field: 'encrypted
         addDecryptedTransactionToCache(tx.transaction, { [field]: decoded })
         return decoded
     } catch (err) {
-        if (err.brsErrorMessage) {
+        if (!err || !(err as Error).message) {
+            const errorMessage = $.t('error_decryption_unknown')
             if (throwOnError) {
-                throw err
+                throw new Error (errorMessage)
             }
-            return err.brsErrorMessage
+            return errorMessage
         }
-        console.error(err)
         if (throwOnError) {
-            throw { brsError: $.t('error_decryption_unknown') }
+            throw err
         }
-        return $.t('error_decryption_unknown')
+        return (err as Error).message
     }
 }
 
@@ -362,9 +347,7 @@ async function decryptData (data: ByteArray, options: CryptoOptions) : Promise<U
 
 async function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) : Promise<Uint8Array> {
     if (ivCiphertext.length < 16 || ivCiphertext.length % 16 !== 0) {
-        throw {
-            name: 'invalid ciphertext'
-        }
+        throw new Error('invalid_ciphertext')
     }
     const iv = new Uint8Array(ivCiphertext.slice(0, 16))
     const ciphertext = new Uint8Array(ivCiphertext.slice(16))
@@ -409,9 +392,7 @@ export async function encryptNote (message: HexString, options: CryptoOptions) {
             nonce: options.nonce
         }
     } catch {
-        throw {
-            message: $.t('error_message_encryption')
-        }
+        throw new Error($.t('error_message_encryption'))
     }
 }
 
