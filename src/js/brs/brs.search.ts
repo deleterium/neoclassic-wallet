@@ -127,7 +127,7 @@ export function pagesSearchResults() {
         try {
             // signed to unsigned conversion
             searchText = (BigInt(userInput) + (1n << 64n)).toString(10);
-        } catch (err) {
+        } catch {
             searchText = userInput;
         }
     }

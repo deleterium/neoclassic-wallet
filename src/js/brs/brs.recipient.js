@@ -91,7 +91,7 @@ export function formsSendMoneyMulti (data) {
         requestType = 'sendMoneyMultiSame'
         try {
             rowAmountNQT = convertToNQT(data.amount_multi_out_same)
-        } catch (err) {
+        } catch {
             return { error: 'Invalid amount' }
         }
         data.amountNXT = data.amount_multi_out_same
@@ -127,7 +127,7 @@ export function formsSendMoneyMulti (data) {
             }
             try {
                 rowAmountNQT = convertToNQT(data.amount_multi_out[i])
-            } catch (err) {
+            } catch {
                 return { error: 'Invalid amount' }
             }
             if (rowAmountNQT === '0') {

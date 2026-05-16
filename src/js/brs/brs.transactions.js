@@ -265,7 +265,7 @@ export function addUnconfirmedTransaction (transactionId, callback) {
                         }
                     })
                 }
-            } catch (err) {}
+            } catch {}
 
             if (!alreadyProcessed) {
                 BRS.unconfirmedTransactions.unshift(response)

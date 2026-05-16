@@ -417,7 +417,7 @@ export async function encryptNote (message: HexString, options: CryptoOptions) {
             message: converters.byteArrayToHexString(encrypted),
             nonce: options.nonce
         }
-    } catch (err) {
+    } catch {
         throw {
             message: $.t('error_message_encryption')
         }

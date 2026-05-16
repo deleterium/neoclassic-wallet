@@ -199,7 +199,7 @@ export function getMessageFromTX (transaction) {
         // Message version zero
         try {
             return converters.hexStringToString(transaction.attachment.message)
-        } catch (err) {
+        } catch {
             // legacy
             if (transaction.attachment.message.indexOf('feff') === 0) {
                 return convertFromHex16(transaction.attachment.message)

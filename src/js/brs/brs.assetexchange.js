@@ -869,14 +869,14 @@ export function evAssetExchangeOrdersTableClick (e) {
         $('#' + type + '_asset_price').val(calculateOrderPricePerWholeQNT(priceNQT, BRS.currentAsset.decimals))
         $('#' + type + '_asset_quantity').val(convertToQNTf(quantityQNT, BRS.currentAsset.decimals))
         $('#' + type + '_asset_total').val(convertToNXT(totalNQT))
-    } catch (err) {
+    } catch {
         return
     }
     let balanceNQT
     if (type === 'sell') {
         try {
             balanceNQT = new BigInteger(BRS.accountInfo.unconfirmedBalanceNQT)
-        } catch (err) {
+        } catch {
             return
         }
 
@@ -934,7 +934,7 @@ export function evSellBuyAutomaticPriceClick () {
             background: '',
             color: ''
         })
-    } catch (err) {}
+    } catch {}
 }
 
 function isControlKey (charCode) {
@@ -1036,7 +1036,7 @@ export function evCalculatePricePreviewKeyup () {
             const total = calculateOrderTotal(quantityQNT, priceNQT, BRS.currentAsset.decimals)
             $('#' + orderType + '_asset_total').val(total.toString())
         }
-    } catch (err) {
+    } catch {
         $('#' + orderType + '_asset_total').val('0')
     }
 }
@@ -1060,7 +1060,7 @@ export function evAssetOrderModalOnShowBsModal (e) {
         quantityQNT = new BigInteger(convertToQNT(quantity, BRS.currentAsset.decimals))
         priceNQT = new BigInteger(calculatePricePerWholeQNT(convertToNQT(String($('#' + orderType + '_asset_price').val())), BRS.currentAsset.decimals))
         totalNXT = formatAmount(calculateOrderTotalNQT(quantityQNT, priceNQT, BRS.currentAsset.decimals), false, true)
-    } catch (err) {
+    } catch {
         $.notify('Invalid input.', { type: 'danger' })
         return e.preventDefault()
     }
