@@ -1,11 +1,7 @@
 /**
  * @depends {3rdparty/bootstrap.min.js}
- * @depends {3rdparty/jsbn.js}
- * @depends {3rdparty/jsbn2.js}
  * @depends {3rdparty/notify.min.js}
  */
-
-/* global BigInteger */
 
 import {
     AssetBalance,
@@ -78,10 +74,10 @@ function loadAllDBValues () {
 
 export function init () : void {
     try {
-        if (window.localStorage) {
-            BRS.hasLocalStorage = true
-        }
-    } catch (err) {
+        window.localStorage.setItem('test', '1')
+        window.localStorage.removeItem('test')
+        BRS.hasLocalStorage = true
+    } catch {
         BRS.hasLocalStorage = false
     }
 
@@ -500,7 +496,7 @@ export function getAccountInfo (firstRun: boolean, callback?: () => void) {
             }
 
             $('#account_balance, #account_balance_sendmoney').html(formatStyledAmount(response.unconfirmedBalanceNQT))
-            $('#account_balance_locked, #account_balance_sendmoney').html(formatStyledAmount((new BigInteger(response.balanceNQT) - new BigInteger(response.unconfirmedBalanceNQT)).toString()))
+            $('#account_balance_locked, #account_balance_sendmoney').html(formatStyledAmount((BigInt(response.balanceNQT) - BigInt(response.unconfirmedBalanceNQT)).toString(10)))
             $('#account_committed_balance, #account_balance_sendmoney').html(formatStyledAmount(response.committedBalanceNQT))
 
             let nr_assets = 0
@@ -553,7 +549,7 @@ function checkAssetDifferences (current_balances: AssetBalance[], previous_balan
         if (!(k in current_balances_)) {
             diff[k] = '-' + previous_balances_[k]
         } else if (previous_balances_[k] !== current_balances_[k]) {
-            const change = (new BigInteger(current_balances_[k]).subtract(new BigInteger(previous_balances_[k]))).toString()
+            const change = (BigInt(current_balances_[k]) - BigInt(previous_balances_[k])).toString(10)
             diff[k] = change
         }
     }

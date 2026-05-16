@@ -253,7 +253,7 @@ export const BRS = {
     pendingTransactionHTML: '<i class="fas fa-spinner my-fa-spin"></i>',
     minimumFeeNumber: 0.01,
 
-    stateInterval: 0,
+    stateInterval: null as null | NodeJS.Timeout,
     stateIntervalSeconds: 30,
     isScanning: false,
 
