@@ -115,7 +115,9 @@ import {
     formsVerifyMessage
 } from './brs.modals.signmessage'
 
-import { init, pagesSearchResults, reloadCurrentPage } from './brs'
+import { init, reloadCurrentPage } from './brs'
+
+import { pagesSearchResults } from './brs.search'
 
 import { formsClearData } from './brs.modal.cleardata'
 
