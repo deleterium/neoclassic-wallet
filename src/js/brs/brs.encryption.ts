@@ -10,7 +10,6 @@ import curve25519 from '../crypto/curve25519'
 import converters from '../util/converters'
 
 import {
-    getSavedPassword,
     sendRequest
 } from './brs.server'
 
@@ -54,14 +53,6 @@ export function setAccountPublicKeyToCache(account: string, publicKey: HexString
 }
 
 // region Public Key
-
-export function generatePublicKey (secretPhrase?: string) {
-    const passphrase = secretPhrase ?? getSavedPassword()
-    if (!passphrase) {
-        throw $.t('error_generate_public_key_noBRS._password')
-    }
-    return getPublicKeyFromPassphrase(secretPhrase)
-}
 
 export function getAccountPublicKey (account: string) {
     const publicKeyInCache = getAccountPublicKeyFromCache(account)

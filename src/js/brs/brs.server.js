@@ -7,7 +7,7 @@ import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
 
 import {
-    generatePublicKey,
+    getPublicKeyFromPassphrase,
     getAccountId,
     signBytes,
     verifyBytes
@@ -250,7 +250,7 @@ export function processAjaxRequest (requestType, data, callback, async) {
         if (BRS.accountInfo && BRS.accountInfo.publicKey) {
             data.publicKey = BRS.accountInfo.publicKey
         } else {
-            data.publicKey = generatePublicKey(secretPhrase)
+            data.publicKey = getPublicKeyFromPassphrase(secretPhrase)
             BRS.accountInfo.publicKey = data.publicKey
         }
     }
@@ -299,7 +299,7 @@ export function processAjaxRequest (requestType, data, callback, async) {
         response = addUnconfirmedProperty(response, requestType)
 
         if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode && !response.error) {
-            const publicKey = generatePublicKey(secretPhrase)
+            const publicKey = getPublicKeyFromPassphrase(secretPhrase)
             const signature = signBytes(response.unsignedTransactionBytes, secretPhrase)
             if (!verifyBytes(signature, response.unsignedTransactionBytes, publicKey)) {
                 const errorMessage = $.t('error_signature_verification_client')
