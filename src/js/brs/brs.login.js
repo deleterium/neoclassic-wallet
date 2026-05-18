@@ -43,7 +43,7 @@ import {
 
 import {
     cacheUserAssets
-} from './brs.assetexchange'
+} from './brs.asset.tools'
 
 import {
     getInitialTransactions

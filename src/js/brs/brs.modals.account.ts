@@ -36,7 +36,7 @@ import {
     GetAssetsByIssuerResponse
 } from '../typings'
 
-import { cacheAsset } from './brs.assetexchange'
+import { cacheAsset } from './brs.asset.tools'
 
 /** Start the process of showing an "Account Modal". 
  * @param {string|GetAccountResponse} account - Account to be shown.

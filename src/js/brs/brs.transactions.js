@@ -30,7 +30,7 @@ import {
     getUnconfirmedTransactionsFromCache
 } from './brs.util'
 
-import { getAssetDetails } from './brs.assetexchange'
+import { getAssetDetails } from './brs.asset.tools'
 
 export function getInitialTransactions () {
     sendRequest('getAccountTransactions', {

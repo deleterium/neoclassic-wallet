@@ -38,7 +38,10 @@ import {
     loadClosedGroupsFromDB,
     loadAssetsFromDB,
     saveCachedAssets,
-    cacheUserAssets,
+    cacheUserAssets
+} from './brs.asset.tools'
+
+import {
     goToAsset
 } from './brs.assetexchange'
 

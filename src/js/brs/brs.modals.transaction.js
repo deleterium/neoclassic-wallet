@@ -34,7 +34,7 @@ import {
 
 import { removeDecryptionForm } from './brs.modals'
 
-import { getAssetDetails } from './brs.assetexchange'
+import { getAssetDetails } from './brs.asset.tools'
 
 import { getTransactionDetails } from './brs.transactions'
 
