@@ -54,9 +54,10 @@ import {
     pagesAssetExchange,
     formsAddAssetBookmark,
     incomingAssetExchange,
-    formsOrderAssetComplete,
-    pagesTransferHistory
+    formsOrderAssetComplete
 } from './brs.assetexchange'
+
+import { pagesTransferHistory } from './brs.asset.page.transferhistory'
 
 import {
     formsOrderAsset,
