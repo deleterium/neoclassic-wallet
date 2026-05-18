@@ -63,11 +63,14 @@ import {
     formsTransferAssetMulti,
     formsTransferAsset,
     formsTransferAssetComplete,
-    pagesOpenOrders,
-    incomingOpenOrders,
     formsCancelOrder,
     formsCancelOrderComplete
 } from './brs.assetexchange'
+
+import {
+    pagesOpenOrders,
+    incomingOpenOrders
+} from './brs.asset.page.openorders'
 
 import {
     pagesMyAssets,
