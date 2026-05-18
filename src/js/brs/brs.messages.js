@@ -25,7 +25,7 @@ import {
     decryptAttachmentField
 } from './brs.encryption'
 
-import { formatTimestamp } from './brs.numbers'
+import { formatTimestampAsDateTime } from './brs.numbers'
 
 import {
     convertFromHex16,
@@ -133,7 +133,7 @@ function displayMessageSidebar () {
             extra = " data-contact='" + getAccountTitle(sortedMessage, 'user') + "'"
         }
 
-        rows += "<a href='#' class='list-group-item no-wrap' data-account='" + getAccountFormatted(sortedMessage, 'user') + "' data-account-id='" + getAccountFormatted(sortedMessage.user) + "'" + extra + '>' + getAccountTitle(sortedMessage, 'user') + '<br><small>' + formatTimestamp(sortedMessage.timestamp) + '</small></a>'
+        rows += "<a href='#' class='list-group-item no-wrap' data-account='" + getAccountFormatted(sortedMessage, 'user') + "' data-account-id='" + getAccountFormatted(sortedMessage.user) + "'" + extra + '>' + getAccountTitle(sortedMessage, 'user') + '<br><small>' + formatTimestampAsDateTime(sortedMessage.timestamp) + '</small></a>'
     }
 
     $('#messages_sidebar').empty().append(rows)
@@ -338,7 +338,7 @@ function buildChatMessages (account_id) {
             }
         }
 
-        const day = formatTimestamp(message.timestamp)
+        const day = formatTimestampAsDateTime(message.timestamp)
 
         let pendingClass = ''
         if (message.unconfirmed === true) {

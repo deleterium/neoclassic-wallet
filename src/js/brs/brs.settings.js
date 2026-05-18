@@ -10,7 +10,7 @@ import { submitForm } from './brs.forms'
 
 import { dbGet, dbPut } from './brs.database'
 
-import { convertToNXT } from './brs.numbers'
+import { formatNQTAsAmount } from './brs.numbers'
 
 export function pagesSettings () {
     $('#settings_language').val(BRS.settings.language)
@@ -19,8 +19,8 @@ export function pagesSettings () {
     $('#settings_theme_dark').prop('checked', BRS.settings.theme_dark)
     $('#settings_small_text').prop('checked', BRS.settings.small_text)
 
-    $('#settings_amount_warning').val(convertToNXT(BRS.settings.amount_warning))
-    $('#settings_fee_warning').val(convertToNXT(BRS.settings.fee_warning))
+    $('#settings_amount_warning').val(formatNQTAsAmount(BRS.settings.amount_warning))
+    $('#settings_fee_warning').val(formatNQTAsAmount(BRS.settings.fee_warning))
     $('#settings_asset_transfer_warning').val(BRS.settings.asset_transfer_warning)
 
     pageLoaded()
@@ -60,6 +60,9 @@ function applySettings (key) {
                 version: BRS.settings.language
             }, '*')
         }
+        const parts = new Intl.NumberFormat(BRS.settings.language).formatToParts(1111.1)
+        BRS.decimalSign = parts.find(item => item.type === 'decimal')?.value || '.';
+        BRS.groupSeparator = parts.find(item => item.type === 'group')?.value || ','
     }
 
     if (!key || key === 'submit_on_enter') {

@@ -9,8 +9,8 @@ import { sendRequest } from './brs.server'
 
 import {
     formatVolume,
-    formatAmount,
-    formatTimestamp
+    formatNQTAsAmount,
+    formatTimestampAsDateTime
 } from './brs.numbers'
 
 export function evBrsModalOnShowBsModal () {
@@ -25,11 +25,11 @@ export function evBrsModalOnShowBsModal () {
             const el = $('#brs_node_state_' + key)
             if (el.length) {
                 if (key.indexOf('number') !== -1) {
-                    el.html(formatAmount(state[key]))
+                    el.html(formatNQTAsAmount(state[key]))
                 } else if (key.indexOf('Memory') !== -1) {
                     el.html(formatVolume(state[key]))
                 } else if (key === 'time') {
-                    el.html(formatTimestamp(state[key]))
+                    el.html(formatTimestampAsDateTime(state[key]))
                 } else {
                     el.html(String(state[key]).escapeHTML())
                 }

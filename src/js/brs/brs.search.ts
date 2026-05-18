@@ -6,7 +6,7 @@ import { showBlockModal } from './brs.modals.block';
 import { showTransactionModal } from './brs.modals.transaction';
 import { sendRequest } from './brs.server';
 import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from './brs.util';
-import { formatAmount } from './brs.numbers';
+import { formatNQTAsAmount } from './brs.numbers';
 
 /**
  * Draws the search results if found many accounts.
@@ -82,7 +82,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
         }
         let priceHTML = '';
         if (alias.priceNQT) {
-            priceHTML += formatAmount(alias.priceNQT);
+            priceHTML += formatNQTAsAmount(alias.priceNQT);
             if (alias.buyer === BRS.account || !alias.buyer) {
                 priceHTML += `<br /><a href="#" data-buy-alias="${alias.alias}" data-toggle="modal" data-target="#buy_alias_modal">${$.t('buy_it_q')}</a>`;
             }

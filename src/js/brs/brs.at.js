@@ -7,7 +7,7 @@ import {
     sendRequest
 } from './brs.server'
 
-import { formatAmount } from './brs.numbers'
+import { formatNQTAsAmount } from './brs.numbers'
 
 import {
     dataLoaded
@@ -20,7 +20,7 @@ export function pagesAt () {
         let rows = ''
         if (response.ats && response.ats.length) {
             for (const at of response.ats) {
-                rows += '<tr><td>' + String(at.atRS).escapeHTML() + '</td><td>' + String(at.name).escapeHTML() + '</td><td>' + String(at.description).escapeHTML() + '</td><td>' + formatAmount(at.balanceNQT) + '</td></tr>'
+                rows += '<tr><td>' + String(at.atRS).escapeHTML() + '</td><td>' + String(at.name).escapeHTML() + '</td><td>' + String(at.description).escapeHTML() + '</td><td>' + formatNQTAsAmount(at.balanceNQT) + '</td></tr>'
             }
         }
         dataLoaded(rows)

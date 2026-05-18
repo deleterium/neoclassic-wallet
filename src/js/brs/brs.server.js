@@ -13,7 +13,7 @@ import {
     verifyBytes
 } from './brs.encryption'
 
-import { convertToNQT } from './brs.numbers'
+import { parseAmountToNQT } from './brs.numbers'
 
 import {
     convertPublicKeyFromBase36ToBase16,
@@ -76,7 +76,7 @@ function convertNxtToNqt (data) {
             const nxtField = nxtFields[i]
             field = nxtField.replace('NXT', '')
             if (nxtField in data) {
-                data[field + 'NQT'] = convertToNQT(data[nxtField])
+                data[field + 'NQT'] = parseAmountToNQT(data[nxtField])
                 delete data[nxtField]
             }
         }

@@ -54,8 +54,8 @@ import {
 } from './brs.forms'
 
 import {
-    convertToNQT,
-    formatAmount
+    parseAmountToNQT,
+    formatNQTAsAmount
 } from './brs.numbers'
 
 import {
@@ -463,7 +463,7 @@ export function addEventListeners () {
         const key = $(this).attr('name')
         let value = $(this).val()
         if (/_warning/i.test(key) && key !== 'asset_transfer_warning') {
-            value = convertToNQT(value)
+            value = parseAmountToNQT(value)
         }
         updateSettings(key, value)
     })
@@ -532,7 +532,7 @@ export function addEventListeners () {
         const $modal = $(this).closest('.modal')
         const $feeInfo = $modal.find('.advanced_fee')
         if ($feeInfo.length) {
-            $feeInfo.html(formatAmount(convertToNQT($(this).val())) + ' ' + BRS.valueSuffix)
+            $feeInfo.html(formatNQTAsAmount(parseAmountToNQT($(this).val())) + ' ' + BRS.valueSuffix)
         }
     })
     $('.advanced_info a').on('click', evAdvancedInfoClick)

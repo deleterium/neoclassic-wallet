@@ -16,9 +16,8 @@ import {
 } from './brs.server'
 
 import {
-    convertToNXT,
-    formatAmount,
-    formatTimestamp
+    formatNQTAsAmount,
+    formatTimestampAsDateTime
 } from './brs.numbers'
 
 import {
@@ -504,7 +503,7 @@ export function evBuyAliasModalOnShowBsModal (e) {
                 $modal.find('.alias_id_display').html(response.alias.escapeHTML())
                 $modal.find('.alias_name_display').html(response.aliasName.escapeHTML())
                 $modal.find('.alias_tld_display').html(response.tldName.escapeHTML())
-                $modal.find('input[name=amountNXT]').val(convertToNXT(response.priceNQT)).prop('readonly', true)
+                $modal.find('input[name=amountNXT]').val(formatNQTAsAmount(response.priceNQT)).prop('readonly', true)
             }
         }
     })
@@ -700,12 +699,12 @@ export function formsSetAliasError (response, data) {
                 if ('priceNQT' in response) {
                     if (response.buyer === BRS.account) {
                         message = $.t('alias_sale_direct_offer', {
-                            burst: formatAmount(response.priceNQT),
+                            burst: formatNQTAsAmount(response.priceNQT),
                             valueSuffix: BRS.valueSuffix
                         }) + " <a href='#' data-alias='" + String(response.aliasName).escapeHTML() + "' data-toggle='modal' data-target='#buy_alias_modal'>" + $.t('buy_it_q') + '</a>'
                     } else if (typeof response.buyer === 'undefined') {
                         message = $.t('alias_sale_indirect_offer', {
-                            burst: formatAmount(response.priceNQT),
+                            burst: formatNQTAsAmount(response.priceNQT),
                             valueSuffix: BRS.valueSuffix
                         }) + " <a href='#' data-alias='" + String(response.aliasName).escapeHTML() + "' data-toggle='modal' data-target='#buy_alias_modal'>" + $.t('buy_it_q') + '</a>'
                     } else {
@@ -835,13 +834,13 @@ function aliasModalDataReady(response) {
         let aliasCallout
         if (response.buyer === BRS.account) {
             aliasCallout = $.t('alias_sale_direct_offer', {
-                burst: formatAmount(response.priceNQT),
+                burst: formatNQTAsAmount(response.priceNQT),
                 valueSuffix: BRS.valueSuffix
             })
             aliasCallout += `<a href='#' data-buy-alias='${response.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
         } else if (typeof response.buyer === 'undefined') {
             aliasCallout = $.t('alias_sale_indirect_offer', {
-                burst: formatAmount(response.priceNQT),
+                burst: formatNQTAsAmount(response.priceNQT),
                 valueSuffix: BRS.valueSuffix
             })
             aliasCallout += ` <a href='#' data-buy-alias='${response.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
@@ -856,7 +855,7 @@ function aliasModalDataReady(response) {
     $('#alias_info_modal_alias').html(String(response.aliasName).escapeHTML())
     const data = {
         account: response.accountRS,
-        last_updated: formatTimestamp(response.timestamp),
+        last_updated: formatTimestampAsDateTime(response.timestamp),
         data_formatted_html: String(response.aliasURI)
     }
     const aliasCallout = getCalloutHTML()

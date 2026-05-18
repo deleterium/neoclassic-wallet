@@ -9,7 +9,7 @@ import { NxtAddress } from '../util/nxtaddress'
 
 import { pageLoaded } from './brs'
 
-import { formatQuantity, formatAmount } from './brs.numbers'
+import { formatQNTAsQuantity, formatNQTAsAmount } from './brs.numbers'
 
 import { sendRequest } from './brs.server'
 
@@ -283,12 +283,12 @@ export function createInfoTable (data) {
             value = String(value).escapeHTML()
         } else if (key === 'quantity' && $.isArray(value)) {
             if ($.isArray(value)) {
-                value = formatQuantity(value[0], value[1])
+                value = formatQNTAsQuantity(value[0], value[1])
             } else {
-                value = formatQuantity(value, 0)
+                value = formatQNTAsQuantity(value, 0)
             }
         } else if (key === 'price' || key === 'total' || key === 'amount' || key === 'fee' || key === 'refund' || key === 'discount') {
-            value = formatAmount(new BigInteger(String(value))) + ' ' + BRS.valueSuffix
+            value = formatNQTAsAmount(value) + ' ' + BRS.valueSuffix
         } else if (key === 'sender' || key === 'recipient' || key === 'account' || key === 'seller' || key === 'buyer') {
             value = "<a href='#' data-user='" + String(value).escapeHTML() + "'>" + getAccountTitle(value) + '</a>'
         } else {
@@ -313,17 +313,12 @@ export function getSelectedText () {
     return t
 }
 
-export function formatStyledAmount (amount, round) {
-    amount = formatAmount(amount, round)
-
-    amount = amount.split('.')
-    if (amount.length === 2) {
-        amount = amount[0] + "<span style='font-size:12px'>." + amount[1] + '</span>'
-    } else {
-        amount = amount[0]
+export function formatStyledAmount (amount) {
+    const parts = formatNQTAsAmount(amount).split(BRS.decimalSign)
+    if (parts.length === 2) {
+        return `${parts[0]}<span style='font-size:12px'>${BRS.decimalSign}${parts[1]}</span>`
     }
-
-    return amount
+    return parts[0]
 }
 
 export function getUnconfirmedTransactionsFromCache (type, subtype, fields, single) {

@@ -8,7 +8,7 @@ import {
     sendRequest
 } from './brs.server'
 
-import { formatAmount } from './brs.numbers'
+import { formatNQTAsAmount } from './brs.numbers'
 
 import {
     dataLoaded
@@ -25,7 +25,7 @@ export function pagesEscrow () {
                 rows += `<td><a href='#' data-escrow='${escrow.id}'>${escrow.id}</a></td>`
                 rows += `<td>${escrow.senderRS}</td>`
                 rows += `<td>${escrow.recipientRS}</td>`
-                rows += `<td>${formatAmount(escrow.amountNQT)}</td>`
+                rows += `<td>${formatNQTAsAmount(escrow.amountNQT)}</td>`
                 rows += '</tr>'
             }
         }

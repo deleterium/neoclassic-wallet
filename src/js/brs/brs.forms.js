@@ -15,8 +15,8 @@ import {
 } from './brs.encryption'
 
 import {
-    convertToNQT,
-    formatAmount
+    parseAmountToNQT,
+    formatNQTAsAmount
 } from './brs.numbers'
 
 import {
@@ -26,8 +26,6 @@ import {
 import {
     addUnconfirmedTransaction
 } from './brs.transactions'
-
-/* global BigInteger */
 
 function getSuccessMessage (requestType) {
     const ignore = ['asset_exchange_change_group_name', 'asset_exchange_group', 'add_contact', 'update_contact', 'delete_contact',
@@ -421,10 +419,10 @@ export async function submitForm ($btn) {
 
     if (!BRS.showedFormWarning) {
         if ('amountNXT' in data && BRS.settings.amount_warning && BRS.settings.amount_warning !== '0') {
-            if (new BigInteger(convertToNQT(data.amountNXT)).compareTo(new BigInteger(BRS.settings.amount_warning)) > 0) {
+            if (BigInt(parseAmountToNQT(data.amountNXT)) > BigInt(BRS.settings.amount_warning)) {
                 BRS.showedFormWarning = true
                 endWithError($.t('error_max_amount_warning', {
-                    burst: formatAmount(BRS.settings.amount_warning),
+                    burst: formatNQTAsAmount(BRS.settings.amount_warning),
                     valueSuffix: BRS.valueSuffix
                 }))
                 return
@@ -432,10 +430,10 @@ export async function submitForm ($btn) {
         }
 
         if ('feeNXT' in data && BRS.settings.fee_warning && BRS.settings.fee_warning !== '0') {
-            if (new BigInteger(convertToNQT(data.feeNXT)).compareTo(new BigInteger(BRS.settings.fee_warning)) > 0) {
+            if (BigInt(parseAmountToNQT(data.feeNXT)) > BigInt(BRS.settings.fee_warning)) {
                 BRS.showedFormWarning = true
                 endWithError($.t('error_max_fee_warning', {
-                    burst: formatAmount(BRS.settings.fee_warning),
+                    burst: formatNQTAsAmount(BRS.settings.fee_warning),
                     valueSuffix: BRS.valueSuffix
                 }))
                 return

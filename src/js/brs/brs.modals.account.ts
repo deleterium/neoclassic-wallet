@@ -11,9 +11,9 @@ import {
 
 import {
     calculatePercentage,
-    formatQuantity,
-    formatAmount,
-    formatTimestamp
+    formatQNTAsQuantity,
+    formatNQTAsAmount,
+    formatTimestampAsDateTime
 } from './brs.numbers'
 
 import {
@@ -105,7 +105,7 @@ function accountModalDataReady () {
     if (accountInfo.unconfirmedBalanceNQT === '0') {
         $('#user_info_modal_account_balance').html('0')
     } else {
-        $('#user_info_modal_account_balance').html(formatAmount(accountInfo.unconfirmedBalanceNQT) + ' ' + BRS.valueSuffix)
+        $('#user_info_modal_account_balance').html(formatNQTAsAmount(accountInfo.unconfirmedBalanceNQT) + ' ' + BRS.valueSuffix)
     }
     if (accountInfo.name) {
         $('#user_info_modal_account_name').html(String(accountInfo.name).escapeHTML())
@@ -172,13 +172,13 @@ function userInfoModalTransactions () {
                         data-transaction='${String(transaction.transaction).escapeHTML()}'
                         data-timestamp='${String(transaction.timestamp).escapeHTML()}'
                     >
-                    ${formatTimestamp(transaction.timestamp)}
+                    ${formatTimestampAsDateTime(transaction.timestamp)}
                     </a>
                   </td>
                   <td>${details.nameOfTransaction}</td>
                   <td>${details.circleText}</td>
                   <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
-                  <td>${formatAmount(transaction.feeNQT)}</td>
+                  <td>${formatNQTAsAmount(transaction.feeNQT)}</td>
                   <td>${details.accountTitle}</td>
                 </tr>`
         }
@@ -258,19 +258,19 @@ function userInfoModalDetails () {
     tbodyHTML += `
             <tr>
               <td>${$.t('total_balance')}</td>
-              <td>${formatAmount(accountInfo.balanceNQT)} ${BRS.valueSuffix}</td>
+              <td>${formatNQTAsAmount(accountInfo.balanceNQT)} ${BRS.valueSuffix}</td>
             </tr>
             <tr>
               <td>${$.t('available_balance')}</td>
-              <td>${formatAmount(accountInfo.unconfirmedBalanceNQT)} ${BRS.valueSuffix}</td>
+              <td>${formatNQTAsAmount(accountInfo.unconfirmedBalanceNQT)} ${BRS.valueSuffix}</td>
             </tr>
             <tr>
               <td>${$.t('committed_balance')}</td>
-              <td>${formatAmount(accountInfo.committedBalanceNQT)} ${BRS.valueSuffix}</td>
+              <td>${formatNQTAsAmount(accountInfo.committedBalanceNQT)} ${BRS.valueSuffix}</td>
             </tr>
             <tr>
               <td>${$.t('forged_balance')}</td>
-              <td>${formatAmount(accountInfo.forgedBalanceNQT)} ${BRS.valueSuffix}</td>
+              <td>${formatNQTAsAmount(accountInfo.forgedBalanceNQT)} ${BRS.valueSuffix}</td>
             </tr>`
     if (accountInfo.accountRSExtended) {
         tbodyHTML += `
@@ -320,7 +320,7 @@ function userInfoModalSmartcontract () {
             let codeHTML = ''
             switch (row) {
             case 'minActivation':
-                codeHTML = formatAmount(response[row]) + ' ' + BRS.valueSuffix
+                codeHTML = formatNQTAsAmount(response[row]) + ' ' + BRS.valueSuffix
                 break
             case 'creatorRS':
                 codeHTML = getAccountTitle(response[row])
@@ -484,8 +484,8 @@ function userInfoModalAssetsLoaded() {
                    ${assetName}
                 </a>
               </td>
-              <td class='quantity'>${formatQuantity(asset.balanceQNT, asset.decimals)}</td>
-              <td>${formatQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>
+              <td class='quantity'>${formatQNTAsQuantity(asset.balanceQNT, asset.decimals)}</td>
+              <td>${formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>
               <td>${percentageAsset}%</td>
             </tr>`
     }

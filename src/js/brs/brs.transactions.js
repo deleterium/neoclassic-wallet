@@ -15,9 +15,10 @@ import { sendRequest } from './brs.server'
 import { getContactByName } from './brs.contacts'
 
 import {
-    formatQuantity,
-    formatAmount,
-    formatTimestamp
+    formatQNTAsQuantity,
+    formatNQTAsAmount,
+    formatTimestampAsDateTime,
+    formatNumber
 } from './brs.numbers'
 
 import {
@@ -385,7 +386,7 @@ export function getTransactionDetails (transaction, viewingAccount) {
         senderOrRecipientOrMultiple = 'recipient'
     }
     let amountToFromViewer = transaction.amountNQT
-    let amountToFromViewerHTML = formatAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
+    let amountToFromViewerHTML = formatNQTAsAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
     let foundAsset, newAmountText
     let hasAssets = false
 
@@ -410,13 +411,13 @@ export function getTransactionDetails (transaction, viewingAccount) {
             for (const recipient of transaction.attachment.recipients) {
                 const nxtAddress = new NxtAddress(recipient[0])
                 const RSAddress = nxtAddress.getAccountRS(BRS.prefix)
-                const amountEach = formatAmount(recipient[1]) + ' ' + BRS.valueSuffix
+                const amountEach = formatNQTAsAmount(recipient[1]) + ' ' + BRS.valueSuffix
                 if (recipient[0] === viewingAccount) {
                     recipientHTML += `<strong class="mono-font">${RSAddress}: ${amountEach}</strong>`
                     toFromViewer = true
                     senderOrRecipientOrMultiple = 'sender'
                     amountToFromViewer = recipient[1]
-                    amountToFromViewerHTML = formatAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
+                    amountToFromViewerHTML = formatNQTAsAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
                 } else {
                     recipientHTML += `<span class="mono-font">${RSAddress}</span>: ${amountEach}`
                 }
@@ -440,7 +441,7 @@ export function getTransactionDetails (transaction, viewingAccount) {
                     toFromViewer = true
                     senderOrRecipientOrMultiple = 'sender'
                     amountToFromViewer = amountEach
-                    amountToFromViewerHTML = formatAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
+                    amountToFromViewerHTML = formatNQTAsAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
                 } else {
                     recipientHTML += `<span class="mono-font">${address}</span>`
                 }
@@ -483,7 +484,7 @@ export function getTransactionDetails (transaction, viewingAccount) {
         case 0:
             nameOfTransaction = $.t('asset_issuance')
             senderOrRecipientOrMultiple = 'sender'
-            amountToFromViewerHTML = `${formatQuantity(transaction.attachment.quantityQNT, transaction.attachment.decimals)} ${transaction.attachment.name}`
+            amountToFromViewerHTML = `${formatQNTAsQuantity(transaction.attachment.quantityQNT, transaction.attachment.decimals)} ${transaction.attachment.name}`
             if (transaction.attachment.quantityQNT !== '0') {
                 hasAssets = true
             }
@@ -499,7 +500,7 @@ export function getTransactionDetails (transaction, viewingAccount) {
             foundAsset = getAssetDetails(transaction.attachment.asset)
             newAmountText = ''
             if (foundAsset) {
-                newAmountText = `${formatQuantity(transaction.attachment.quantityQNT, foundAsset.decimals)} ${foundAsset.name}`
+                newAmountText = `${formatQNTAsQuantity(transaction.attachment.quantityQNT, foundAsset.decimals)} ${foundAsset.name}`
             } else {
                 newAmountText = `${transaction.attachment.quantityQNT} [QNT]`
             }
@@ -552,7 +553,7 @@ export function getTransactionDetails (transaction, viewingAccount) {
                 }
                 foundAsset = getAssetDetails(transaction.attachment.assetIds[i])
                 if (foundAsset) {
-                    amountToFromViewerHTML += `${formatQuantity(transaction.attachment.quantitiesQNT[i], foundAsset.decimals)} ${foundAsset.name}`
+                    amountToFromViewerHTML += `${formatQNTAsQuantity(transaction.attachment.quantitiesQNT[i], foundAsset.decimals)} ${foundAsset.name}`
                 } else {
                     amountToFromViewerHTML += `${transaction.attachment.quantityQNT} [QNT]`
                 }
@@ -605,13 +606,13 @@ export function getTransactionDetails (transaction, viewingAccount) {
             nameOfTransaction = $.t('add_commitment')
             senderOrRecipientOrMultiple = 'recipient'
             amountToFromViewer = transaction.attachment.amountNQT.toString()
-            amountToFromViewerHTML = formatAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
+            amountToFromViewerHTML = formatNQTAsAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
             break
         case 2: // "Remove Commitment"
             nameOfTransaction = $.t('remove_commitment')
             senderOrRecipientOrMultiple = 'sender'
             amountToFromViewer = transaction.attachment.amountNQT.toString()
-            amountToFromViewerHTML = formatAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
+            amountToFromViewerHTML = formatNQTAsAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
             break
         }
         break
@@ -620,7 +621,7 @@ export function getTransactionDetails (transaction, viewingAccount) {
         case 0:
             nameOfTransaction = 'Escrow Creation'
             amountToFromViewer = transaction.attachment.amountNQT.toString()
-            amountToFromViewerHTML = formatAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
+            amountToFromViewerHTML = formatNQTAsAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
             break
         case 1:
             nameOfTransaction = 'Escrow Signing'
@@ -701,7 +702,7 @@ function getTransactionRowDashboardHTML (transaction) {
 
     let rowStr = ''
     rowStr += "<tr class='" + (transaction.unconfirmed ? 'tentative' : 'confirmed') + "'>"
-    rowStr += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "' data-timestamp='" + String(transaction.timestamp).escapeHTML() + "'>" + formatTimestamp(transaction.timestamp) + '</a></td>'
+    rowStr += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "' data-timestamp='" + String(transaction.timestamp).escapeHTML() + "'>" + formatTimestampAsDateTime(transaction.timestamp) + '</a></td>'
     rowStr += '<td>' + details.nameOfTransaction + (details.hasMessage ? " + <i class='far fa-envelope-open'></i>&nbsp;" : '') + '</td>'
     rowStr += '<td>' + details.circleText + '</td>'
     rowStr += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
@@ -715,7 +716,7 @@ function getTransactionRowDashboardHTML (transaction) {
 function getTransactionRowHTML (transaction, viewAccount) {
     const details = getTransactionDetails(transaction, viewAccount)
 
-    let confirmationHTML = formatAmount(transaction.confirmations)
+    let confirmationHTML = formatNumber(transaction.confirmations)
     if (transaction.unconfirmed) {
         confirmationHTML = BRS.pendingTransactionHTML
     }
@@ -723,11 +724,11 @@ function getTransactionRowHTML (transaction, viewAccount) {
     rowStr += '<tr ' + ((transaction.unconfirmed && details.toFromViewer) ? " class='tentative'" : '') + '>'
     rowStr += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "'>" + String(transaction.transaction).escapeHTML() + '</a></td>'
     rowStr += '<td>' + (details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '') + '</td>'
-    rowStr += '<td>' + formatTimestamp(transaction.timestamp) + '</td>'
+    rowStr += '<td>' + formatTimestampAsDateTime(transaction.timestamp) + '</td>'
     rowStr += '<td>' + details.nameOfTransaction + '</td>'
     rowStr += '<td>' + details.circleText + '</td>'
     rowStr += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
-    rowStr += '<td>' + formatAmount(transaction.feeNQT) + '</td>'
+    rowStr += '<td>' + formatNQTAsAmount(transaction.feeNQT) + '</td>'
     rowStr += `<td>${details.accountLink}</td>`
     rowStr += '<td>' + confirmationHTML + '</td>'
     rowStr += '</tr>'

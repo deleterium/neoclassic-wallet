@@ -28,7 +28,7 @@ import {
     handleNewBlocks
 } from './brs.blocks'
 
-import { formatQuantity } from './brs.numbers'
+import { formatQNTAsQuantity } from './brs.numbers'
 
 import {
     formatStyledAmount
@@ -199,7 +199,7 @@ export function autoSelectServer () : void {
 }
 
 function setHeaderClock () : void {
-    const lastBlockDate = new Date(Date.UTC(2014, 7, 11, 2, 0, 0, 0) + BRS.state.lastBlockTimestamp * 1000)
+    const lastBlockDate = new Date((BRS.genesisSeconds + BRS.state.lastBlockTimestamp) * 1000)
     const diffSeconds = Math.floor((Date.now() - lastBlockDate.getTime()) / 1000)
     const minutes = (diffSeconds / 60) < 10 ? '0' + Math.floor(diffSeconds / 60).toString() : Math.floor(diffSeconds / 60).toString()
     const seconds = (diffSeconds % 60) < 10 ? '0' + (diffSeconds % 60).toString() : (diffSeconds % 60).toString()
@@ -581,7 +581,7 @@ function checkAssetDifferences (current_balances: AssetBalance[], previous_balan
                 asset.asset = input._extra.asset
                 let quantity
                 if (asset.difference.charAt(0) !== '-') {
-                    quantity = formatQuantity(asset.difference, asset.decimals)
+                    quantity = formatQNTAsQuantity(asset.difference, asset.decimals)
 
                     if (quantity !== '0') {
                         $.notify($.t('you_received_assets', {
@@ -593,7 +593,7 @@ function checkAssetDifferences (current_balances: AssetBalance[], previous_balan
                 } else {
                     asset.difference = asset.difference.substring(1)
 
-                    quantity = formatQuantity(asset.difference, asset.decimals)
+                    quantity = formatQNTAsQuantity(asset.difference, asset.decimals)
 
                     if (quantity !== '0') {
                         $.notify($.t('you_sold_assets', {

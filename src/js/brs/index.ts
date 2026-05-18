@@ -138,6 +138,7 @@ export const BRS = {
     blocks: [] as GetBlockResponse[],
     genesis: '0',
     genesisRS: 'S-2222-2222-2222-22222',
+    genesisSeconds: Date.UTC(2014, 7, 11, 2, 0, 0, 0) / 1000,
     minimumFee: 0.01,
 
     // must match js/util/nxtaddress.js,
@@ -158,6 +159,10 @@ export const BRS = {
     isTestNet: false,
     prefix: 'S-',
     valueSuffix: 'SIGNA',
+
+    // Number formatting in chose locale.
+    decimalSign: '.',
+    groupSeparator: ',',
 
     lastBlockHeight: 0,
     downloadingBlockchain: false,

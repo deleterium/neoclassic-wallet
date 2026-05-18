@@ -13,9 +13,9 @@ import { getContactByName } from './brs.contacts'
 import { getAccountIdFromPublicKey } from './brs.encryption'
 
 import {
-    convertToNQT,
-    formatAmount,
-    formatTimestamp
+    parseAmountToNQT,
+    formatNQTAsAmount,
+    formatTimestampAsDateTime
 } from './brs.numbers'
 
 import {
@@ -52,7 +52,7 @@ export function sendMoneyCalculateTotal (element) {
 
     $('#send_money_fee').val(fee)
 
-    $(element).closest('.modal').find('.total_amount_ordinary').html(formatAmount(convertToNQT(amount + fee)) + ' ' + BRS.valueSuffix)
+    $(element).closest('.modal').find('.total_amount_ordinary').html(formatNQTAsAmount(parseAmountToNQT(amount + fee)) + ' ' + BRS.valueSuffix)
 }
 
 export function formsSendMoneyComplete (response, data) {
@@ -93,7 +93,7 @@ export function formsSendMoneyMulti (data) {
     if (data.same_out_checkbox === '1') {
         requestType = 'sendMoneyMultiSame'
         try {
-            rowAmountNQT = convertToNQT(data.amount_multi_out_same)
+            rowAmountNQT = parseAmountToNQT(data.amount_multi_out_same)
         } catch {
             return { error: 'Invalid amount' }
         }
@@ -129,7 +129,7 @@ export function formsSendMoneyMulti (data) {
                 }
             }
             try {
-                rowAmountNQT = convertToNQT(data.amount_multi_out[i])
+                rowAmountNQT = parseAmountToNQT(data.amount_multi_out[i])
             } catch {
                 return { error: 'Invalid amount' }
             }
@@ -162,7 +162,7 @@ export function formsSendMoneyMulti (data) {
         BRS.showedFormWarning = true
         return {
             error: $.t('error_max_amount_warning', {
-                burst: formatAmount(BRS.settings.amount_warning),
+                burst: formatNQTAsAmount(BRS.settings.amount_warning),
                 valueSuffix: BRS.valueSuffix
             })
         }
@@ -230,7 +230,7 @@ function getAccountTypeAndMessage (accountId, callback) {
             callback({
                 type: 'info',
                 message: $.t('recipient_smart_contract', {
-                    burst: formatAmount(newResponse.balanceNQT, false, true),
+                    burst: formatNQTAsAmount(newResponse.balanceNQT),
                     valueSuffix: BRS.valueSuffix
                 }),
                 account: newResponse,
@@ -276,7 +276,7 @@ function getAccountTypeAndMessage (accountId, callback) {
                 callback({
                     type: 'warning',
                     message: $.t('recipient_no_public_key', {
-                        burst: formatAmount(response.unconfirmedBalanceNQT, false, true),
+                        burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
                         valueSuffix: BRS.valueSuffix
                     }),
                     account: response,
@@ -287,7 +287,7 @@ function getAccountTypeAndMessage (accountId, callback) {
             callback({
                 type: 'info',
                 message: $.t('recipient_info', {
-                    burst: formatAmount(response.unconfirmedBalanceNQT, false, true),
+                    burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
                     valueSuffix: BRS.valueSuffix
                 }),
                 account: response,
@@ -459,7 +459,7 @@ function checkRecipientAlias (account, modal) {
                         callout.html($.t('alias_account_link', {
                             account_id: address.getAccountRS(BRS.prefix)
                         }) + '.<br>' + $.t('alias_last_adjusted', {
-                            timestamp: formatTimestamp(timestamp)
+                            timestamp: formatTimestampAsDateTime(timestamp)
                         }) + '<br>' + response.message).removeClass(classes).addClass('alert-' + response.type).show()
                     })
                 } else {

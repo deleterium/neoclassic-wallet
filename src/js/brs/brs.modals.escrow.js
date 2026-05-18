@@ -7,7 +7,7 @@ import { BRS } from '.'
 
 import { sendRequest } from './brs.server'
 
-import { formatTimestamp } from './brs.numbers'
+import { formatTimestampAsDateTime } from './brs.numbers'
 
 export function showEscrowDecisionModal (escrow) {
     if (BRS.fetchingModalData) {
@@ -36,7 +36,7 @@ export function processEscrowDecisionModalData (escrow) {
     }
     $('#escrow_decision_decisions').html(decisions)
     $('#escrow_decision_required').html(escrow.requiredSigners + ' signers required')
-    $('#escrow_decision_deadline').html('Defaults to ' + escrow.deadlineAction + ' at ' + formatTimestamp(escrow.deadline))
+    $('#escrow_decision_deadline').html('Defaults to ' + escrow.deadlineAction + ' at ' + formatTimestampAsDateTime(escrow.deadline))
 
     $('#escrow_decision_modal').modal('show')
     BRS.fetchingModalData = false

@@ -7,7 +7,7 @@ import { BRS } from '.'
 
 import { sendRequest } from './brs.server'
 
-import { formatAmount } from './brs.numbers'
+import { formatNQTAsAmount } from './brs.numbers'
 
 import {
     createInfoTable
@@ -61,7 +61,7 @@ export function showBlockModal (block) {
         rows += '<td>' + details.senderHTML + '</td>'
         rows += '<td>' + details.recipientHTML + '</td>'
         rows += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
-        rows += '<td>' + formatAmount(transaction.feeNQT) + '</td>'
+        rows += '<td>' + formatNQTAsAmount(transaction.feeNQT) + '</td>'
         rows += '</tr>'
     }
     $('#block_info_transactions_table tbody').empty().append(rows)

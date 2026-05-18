@@ -11,8 +11,8 @@ import {
 } from './brs.forms'
 
 import {
-    convertToNQT,
-    formatAmount
+    parseAmountToNQT,
+    formatNQTAsAmount
 } from './brs.numbers'
 
 import {
@@ -103,7 +103,7 @@ export function evMultiOutAmountChange () {
     // $("#multi_out_fee").val(fee.toFixed(8));
     amount_total += fee
 
-    $('#total_amount_multi_out').html(formatAmount(convertToNQT(amount_total)) + ' ' + BRS.valueSuffix)
+    $('#total_amount_multi_out').html(formatNQTAsAmount(parseAmountToNQT(amount_total)) + ' ' + BRS.valueSuffix)
 }
 
 export function evMultiOutSameAmountChange () {
@@ -120,7 +120,7 @@ export function evMultiOutSameAmountChange () {
     })
     amount_total += fee
 
-    $('#total_amount_multi_out').html(formatAmount(convertToNQT(amount_total)) + ' ' + BRS.valueSuffix)
+    $('#total_amount_multi_out').html(formatNQTAsAmount(parseAmountToNQT(amount_total)) + ' ' + BRS.valueSuffix)
 }
 
 export function evSameOutCheckboxChange () {
@@ -265,7 +265,7 @@ export function evModalOnHiddenBsModal () {
             defaultFee = 1
         }
 
-        $(this).find('.advanced_fee').html(formatAmount(convertToNQT(defaultFee)) + ' ' + BRS.valueSuffix)
+        $(this).find('.advanced_fee').html(formatNQTAsAmount(parseAmountToNQT(defaultFee)) + ' ' + BRS.valueSuffix)
     }
 
     BRS.showedFormWarning = false

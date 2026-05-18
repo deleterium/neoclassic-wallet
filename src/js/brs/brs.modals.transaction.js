@@ -3,32 +3,30 @@
  * @depends {brs.modals.js}
  */
 
-/* global BigInteger */
-
 import converters from '../util/converters'
 import { BRS } from '.'
 
 import { sendRequest } from './brs.server'
 
 import {
+    fullHashToId,
     getDecryptedMessageFromCache,
     getDecryptionPassword
 } from './brs.encryption'
 
 import {
-    formatOrderPricePerWholeQNT,
+    formatPriceNQTAsPriceQuantity,
     calculateOrderTotalNQT,
-    convertToQNTf,
-    format,
-    formatQuantity,
-    formatAmount,
-    formatTimestamp
+    formatQNTAsQuantity,
+    formatNQTAsAmount,
+    formatTimestampAsDateTime,
+    formatOrderTotal,
+    formatNumber
 } from './brs.numbers'
 
 import {
     convertNumericToRSAccountFormat,
     getAssetLink,
-    fullHashToId,
     getAccountTitle,
     getAccountFormatted,
     createInfoTable
@@ -118,10 +116,10 @@ function processTransactionModalData (transaction) {
 
     function processDefaultProperties () {
         details = getTransactionDetails(transaction)
-        const amount_formatted = formatAmount(new BigInteger(String(transaction.amountNQT))) + ' ' + BRS.valueSuffix
+        const amount_formatted = formatNQTAsAmount(transaction.amountNQT) + ' ' + BRS.valueSuffix
         data = {
             type: details.nameOfTransaction,
-            timestamp: formatTimestamp(transaction.timestamp),
+            timestamp: formatTimestampAsDateTime(transaction.timestamp),
             amount_formatted,
             fee: transaction.feeNQT,
             sender_formatted_html: details.senderHTML,
@@ -184,7 +182,7 @@ function processTransactionModalData (transaction) {
             recipientHTML = ''
             for (let i = 0; i < transaction.attachment.recipients.length; i++) {
                 const rsAddress = convertNumericToRSAccountFormat(transaction.attachment.recipients[i][0])
-                const amount = formatAmount(transaction.attachment.recipients[i][1]) + ' ' + BRS.valueSuffix
+                const amount = formatNQTAsAmount(transaction.attachment.recipients[i][1]) + ' ' + BRS.valueSuffix
                 if (i !== 0) {
                     recipientHTML += '<br />'
                 }
@@ -219,7 +217,7 @@ function processTransactionModalData (transaction) {
             }
             delete data.recipient_formatted_html
             data.you_received = youReceived ? $.t('yes') : $.t('no')
-            data.amount_each_formatted_html = formatAmount(amountEach.toString()) + ' ' + BRS.valueSuffix
+            data.amount_each_formatted_html = formatNQTAsAmount(amountEach.toString()) + ' ' + BRS.valueSuffix
             data.recipient_formatted_html = recipientHTML
         }
     }
@@ -261,11 +259,11 @@ function processTransactionModalData (transaction) {
                     messageStyle = 'danger'
                 } else if (transaction.recipient === BRS.account) {
                     message = $.t('alias_sale_direct_offer', {
-                        burst: formatAmount(transaction.attachment.priceNQT)
+                        burst: formatNQTAsAmount(transaction.attachment.priceNQT)
                     }) + " <a href='#' data-alias='" + String(transaction.attachment.alias).escapeHTML() + "' data-toggle='modal' data-target='#buy_alias_modal'>" + $.t('buy_it_q') + '</a>'
                 } else if (typeof transaction.recipient === 'undefined') {
                     message = $.t('alias_sale_indirect_offer', {
-                        burst: formatAmount(transaction.attachment.priceNQT)
+                        burst: formatNQTAsAmount(transaction.attachment.priceNQT)
                     }) + " <a href='#' data-alias='" + String(transaction.attachment.alias).escapeHTML() + "' data-toggle='modal' data-target='#buy_alias_modal'>" + $.t('buy_it_q') + '</a>'
                 } else if (transaction.senderRS === BRS.accountRS) {
                     if (transaction.attachment.priceNQT !== '0') {
@@ -315,8 +313,8 @@ function processTransactionModalData (transaction) {
             }
             data.asset_name_formatted_html = getAssetLink(assetDetails)
             data.quantity = [transaction.attachment.quantityQNT, assetDetails.decimals]
-            data.price_formatted_html = formatOrderPricePerWholeQNT(transaction.attachment.priceNQT, assetDetails.decimals) + ' ' + BRS.valueSuffix
-            data.total_formatted_html = formatAmount(calculateOrderTotalNQT(transaction.attachment.quantityQNT, transaction.attachment.priceNQT)) + ' ' + BRS.valueSuffix
+            data.price_formatted_html = formatPriceNQTAsPriceQuantity(transaction.attachment.priceNQT, assetDetails.decimals) + ' ' + BRS.valueSuffix
+            data.total_formatted_html = formatOrderTotal(transaction.attachment.quantityQNT, transaction.attachment.priceNQT) + ' ' + BRS.valueSuffix
             break
         case 3:
             // bid order placement
@@ -326,8 +324,8 @@ function processTransactionModalData (transaction) {
             }
             data.asset_name_formatted_html = getAssetLink(assetDetails)
             data.quantity = [transaction.attachment.quantityQNT, assetDetails.decimals]
-            data.price_formatted_html = formatOrderPricePerWholeQNT(transaction.attachment.priceNQT, assetDetails.decimals) + ' ' + BRS.valueSuffix
-            data.total_formatted_html = formatAmount(calculateOrderTotalNQT(transaction.attachment.quantityQNT, transaction.attachment.priceNQT)) + ' ' + BRS.valueSuffix
+            data.price_formatted_html = formatPriceNQTAsPriceQuantity(transaction.attachment.priceNQT, assetDetails.decimals) + ' ' + BRS.valueSuffix
+            data.total_formatted_html = formatOrderTotal(transaction.attachment.quantityQNT, transaction.attachment.priceNQT) + ' ' + BRS.valueSuffix
             break
         case 4:
         case 5:
@@ -346,8 +344,8 @@ function processTransactionModalData (transaction) {
                 }
                 data.asset_name_formatted_html = getAssetLink(assetDetails)
                 data.quantity = [transactionII.attachment.quantityQNT, asset.decimals]
-                data.price_formatted_html = formatOrderPricePerWholeQNT(transactionII.attachment.priceNQT, asset.decimals) + ' ' + BRS.valueSuffix
-                data.total_formatted_html = formatAmount(calculateOrderTotalNQT(transactionII.attachment.quantityQNT, transactionII.attachment.priceNQT)) + ' ' + BRS.valueSuffix
+                data.price_formatted_html = formatPriceNQTAsPriceQuantity(transactionII.attachment.priceNQT, asset.decimals) + ' ' + BRS.valueSuffix
+                data.total_formatted_html = formatNQTAsAmount(calculateOrderTotalNQT(transactionII.attachment.quantityQNT, transactionII.attachment.priceNQT)) + ' ' + BRS.valueSuffix
                 transactionEndLoad()
             })
             break
@@ -377,7 +375,7 @@ function processTransactionModalData (transaction) {
                 }
                 const foundAsset = getAssetDetails(transaction.attachment.assetIds[i])
                 if (foundAsset) {
-                    helperStr += `${formatQuantity(transaction.attachment.quantitiesQNT[i], foundAsset.decimals)} ${getAssetLink(foundAsset)}`
+                    helperStr += `${formatQNTAsQuantity(transaction.attachment.quantitiesQNT[i], foundAsset.decimals)} ${getAssetLink(foundAsset)}`
                 } else {
                     helperStr += `${transaction.attachment.quantityQNT} [QNT]`
                 }
@@ -409,7 +407,7 @@ function processTransactionModalData (transaction) {
                 data.toHoldersOf_formatted_html = getAssetLink(foundAsset)
             }
             if (userAmount !== '0') {
-                data.amountToYou = formatAmount(userAmount) + ' ' + BRS.valueSuffix
+                data.amountToYou = formatNQTAsAmount(userAmount) + ' ' + BRS.valueSuffix
             }
             if (transaction.attachment.assetToDistribute === '0') {
                 data.distributingAsset_formatted_html = $.t('no')
@@ -418,13 +416,13 @@ function processTransactionModalData (transaction) {
                 const foundAsset2 = getAssetDetails(transaction.attachment.assetToDistribute)
                 if (foundAsset2) {
                     data.distributingAsset_formatted_html = getAssetLink(foundAsset2)
-                    data.distributingQuantity = convertToQNTf(data.distributingQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
+                    data.distributingQuantity = formatQNTAsQuantity(data.distributingQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
                     if (userQuantity !== '0') {
-                        data.quantityToYou = convertToQNTf(userQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
+                        data.quantityToYou = formatQNTAsQuantity(userQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
                     }
                 } else {
                     if (userQuantity !== '0') {
-                        data.quantityToYou = convertToQNTf(userQuantity, '0') + ' [QNT]'
+                        data.quantityToYou = formatQNTAsQuantity(userQuantity, 0) + ' [QNT]'
                     }
                 }
             }
@@ -441,7 +439,7 @@ function processTransactionModalData (transaction) {
             data.name = transaction.attachment.name
             data.description = transaction.attachment.description
             data.price = transaction.attachment.priceNQT
-            data.quantity_formatted_html = format(transaction.attachment.quantity)
+            data.quantity_formatted_html = formatNumber(transaction.attachment.quantity)
             break
         case 1:
             // marketplace removal
@@ -464,7 +462,7 @@ function processTransactionModalData (transaction) {
             }, function (goods) {
                 data.seller = getAccountFormatted(goods, 'seller')
                 data.item_name = goods.name
-                data.new_price_formatted_html = formatAmount(transaction.attachment.priceNQT) + ' ' + BRS.valueSuffix
+                data.new_price_formatted_html = formatNQTAsAmount(transaction.attachment.priceNQT) + ' ' + BRS.valueSuffix
                 transactionEndLoad()
             })
             break
@@ -503,8 +501,7 @@ function processTransactionModalData (transaction) {
                     goods: purchase.goods
                 }, function (goods) {
                     data.item_name = goods.name
-                    const orderTotal = new BigInteger(String(purchase.quantity)).multiply(new BigInteger(String(purchase.priceNQT)))
-                    data.order_total_formatted_html = formatAmount(orderTotal) + ' ' + BRS.valueSuffix
+                    data.order_total_formatted_html = formatOrderTotal(purchase.quantity, purchase.priceNQT) + ' ' + BRS.valueSuffix
                     data.refund = transaction.attachment.refundNQT
                     transactionEndLoad()
                 })
@@ -525,7 +522,7 @@ function processTransactionModalData (transaction) {
             data.seller = getAccountFormatted(goods, 'seller')
             data.item_name = goods.name
             data.price = transaction.attachment.priceNQT
-            data.quantity_formatted_html = format(transaction.attachment.quantity)
+            data.quantity_formatted_html = formatNumber(transaction.attachment.quantity)
             sendRequest('getDGSPurchase', {
                 purchase: transaction.transaction
             }, function (purchase) {
@@ -618,10 +615,9 @@ function processTransactionModalData (transaction) {
             }, function (goods) {
                 data.item_name = goods.name
                 data.price = purchase.priceNQT
-                data.quantity_formatted_html = format(purchase.quantity)
+                data.quantity_formatted_html = formatNumber(purchase.quantity)
                 if (purchase.quantity !== 1) {
-                    const orderTotal = formatAmount(new BigInteger(String(purchase.quantity)).multiply(new BigInteger(String(purchase.priceNQT))))
-                    data.total_formatted_html = orderTotal + ' ' + BRS.valueSuffix
+                    data.total_formatted_html = formatOrderTotal(purchase.quantity, purchase.priceNQT) + ' ' + BRS.valueSuffix
                 }
                 if (transaction.attachment.discountNQT) {
                     data.discount = transaction.attachment.discountNQT
@@ -653,7 +649,7 @@ function processTransactionModalData (transaction) {
         case 1:
         case 2:
             // add / remove commitment
-            data.amount_formatted = formatAmount(new BigInteger(String(transaction.attachment.amountNQT))) + ' ' + BRS.valueSuffix
+            data.amount_formatted = formatNQTAsAmount(transaction.attachment.amountNQT) + ' ' + BRS.valueSuffix
         }
     }
 
@@ -662,7 +658,7 @@ function processTransactionModalData (transaction) {
         switch (transaction.subtype) {
         case 0:
             // TODO add languages / human readable format
-            data.amount_formatted = formatAmount(new BigInteger(String(transaction.attachment.amountNQT))) + ' ' + BRS.valueSuffix
+            data.amount_formatted = formatNQTAsAmount(transaction.attachment.amountNQT) + ' ' + BRS.valueSuffix
             data.deadline = transaction.attachment.deadline + ' seconds'
             data.deadlineAction = $.t(transaction.attachment.deadlineAction)
             data.requiredSigners = transaction.attachment.requiredSigners

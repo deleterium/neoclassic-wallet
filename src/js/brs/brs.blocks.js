@@ -19,9 +19,10 @@ import {
 
 import {
     formatVolume,
-    convertToNQT,
-    formatAmount,
-    formatTimestamp
+    parseAmountToNQT,
+    formatNQTAsAmount,
+    formatTimestampAsDateTime,
+    formatNumber
 } from './brs.numbers'
 
 import {
@@ -97,7 +98,7 @@ export function handleInitialBlocks (response) {
         for (let i = 0; i < BRS.blocks.length; i++) {
             const block = BRS.blocks[i]
 
-            rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + "</a></td><td data-timestamp='" + String(block.timestamp).escapeHTML() + "'>" + formatTimestamp(block.timestamp) + '</td><td>' + formatAmount(block.totalAmountNQT) + ' + ' + formatAmount(block.totalFeeNQT) + '</td><td>' + formatAmount(block.numberOfTransactions) + '</td></tr>'
+            rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + "</a></td><td data-timestamp='" + String(block.timestamp).escapeHTML() + "'>" + formatTimestampAsDateTime(block.timestamp) + '</td><td>' + formatNQTAsAmount(block.totalAmountNQT) + ' + ' + formatNQTAsAmount(block.totalFeeNQT) + '</td><td>' + formatNumber(block.numberOfTransactions) + '</td></tr>'
         }
 
         $('#dashboard_blocks_table tbody').empty().append(rows)
@@ -206,7 +207,7 @@ export function incomingUpdateDashboardBlocks (newBlocks) {
     for (let i = 0; i < newBlockCount; i++) {
         const block = newBlocks[i]
 
-        rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + "</a></td><td data-timestamp='" + String(block.timestamp).escapeHTML() + "'>" + formatTimestamp(block.timestamp) + '</td><td>' + formatAmount(block.totalAmountNQT) + ' + ' + formatAmount(block.totalFeeNQT) + '</td><td>' + formatAmount(block.numberOfTransactions) + '</td></tr>'
+        rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + "</a></td><td data-timestamp='" + String(block.timestamp).escapeHTML() + "'>" + formatTimestampAsDateTime(block.timestamp) + '</td><td>' + formatNQTAsAmount(block.totalAmountNQT) + ' + ' + formatNQTAsAmount(block.totalFeeNQT) + '</td><td>' + formatNumber(block.numberOfTransactions) + '</td></tr>'
     }
 
     if (newBlockCount === 1) {
@@ -233,7 +234,7 @@ export function incomingUpdateDashboardBlocks (newBlocks) {
         if (confirmations <= 10) {
             $(this).data('confirmations', nrConfirmations)
             $(this).attr('data-content', $.t('x_confirmations', {
-                x: formatAmount(nrConfirmations, false, true)
+                x: formatNumber(nrConfirmations)
             }))
 
             if (nrConfirmations > 10) {
@@ -242,7 +243,7 @@ export function incomingUpdateDashboardBlocks (newBlocks) {
             $(this).html(nrConfirmations)
         } else {
             $(this).attr('data-content', $.t('x_confirmations', {
-                x: formatAmount(nrConfirmations, false, true)
+                x: formatNumber(nrConfirmations)
             }))
         }
     })
@@ -321,13 +322,13 @@ function getTransactionInBlocksRowHTML (transaction) {
     rowStr += '<tr>'
     rowStr += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "'>" + String(transaction.transaction).escapeHTML() + '</a></td>'
     rowStr += '<td>' + (details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '') + '</td>'
-    rowStr += '<td>' + formatTimestamp(transaction.timestamp) + '</td>'
+    rowStr += '<td>' + formatTimestampAsDateTime(transaction.timestamp) + '</td>'
     rowStr += '<td>' + details.nameOfTransaction + '</td>'
     rowStr += '<td>' + details.senderHTML + '</td>'
     rowStr += '<td>' + details.recipientHTML + '</td>'
     rowStr += '<td>' + details.circleText + '</td>'
     rowStr += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
-    rowStr += '<td>' + formatAmount(transaction.feeNQT) + '</td>'
+    rowStr += '<td>' + formatNQTAsAmount(transaction.feeNQT) + '</td>'
     rowStr += '</tr>'
 
     return rowStr
@@ -384,7 +385,7 @@ export function blocksPageLoaded (blocks) {
 
         totalTransactions += block.numberOfTransactions
 
-        rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + '</a></td><td>' + formatTimestamp(block.timestamp) + '</td><td>' + formatAmount(block.totalAmountNQT) + '</td><td>' + formatAmount(block.totalFeeNQT) + '</td><td>' + formatAmount(block.numberOfTransactions) + '</td><td>' + (block.generator !== BRS.genesis ? "<a href='#' data-user='" + getAccountFormatted(block, 'generator') + "' class='user_info'>" + getAccountTitle(block, 'generator') + '</a>' : $.t('genesis')) + '</td><td>' + formatVolume(block.payloadLength) + '</td><td>' + Math.round(block.baseTarget / 153722867 * 100).toString().padStart(4, '0') + ' %</td></tr>'
+        rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + '</a></td><td>' + formatTimestampAsDateTime(block.timestamp) + '</td><td>' + formatNQTAsAmount(block.totalAmountNQT) + '</td><td>' + formatNQTAsAmount(block.totalFeeNQT) + '</td><td>' + formatNumber(block.numberOfTransactions) + '</td><td>' + (block.generator !== BRS.genesis ? "<a href='#' data-user='" + getAccountFormatted(block, 'generator') + "' class='user_info'>" + getAccountTitle(block, 'generator') + '</a>' : $.t('genesis')) + '</td><td>' + formatVolume(block.payloadLength) + '</td><td>' + Math.round(block.baseTarget / 153722867 * 100).toString().padStart(4, '0') + ' %</td></tr>'
     }
 
     if (blocks.length) {
@@ -398,15 +399,15 @@ export function blocksPageLoaded (blocks) {
     let averageAmount
     let blockCount
     if (blocks.length) {
-        averageFee = formatAmount(totalFees.divide(new BigInteger((String(blocks.length)))))
-        averageAmount = formatAmount(totalAmount.divide(new BigInteger((String(blocks.length)))))
+        averageFee = formatNQTAsAmount(totalFees.divide(new BigInteger((String(blocks.length)))))
+        averageAmount = formatNQTAsAmount(totalAmount.divide(new BigInteger((String(blocks.length)))))
     } else {
         averageFee = 0
         averageAmount = 0
     }
 
-    averageFee = convertToNQT(averageFee)
-    averageAmount = convertToNQT(averageAmount)
+    averageFee = parseAmountToNQT(averageFee)
+    averageAmount = parseAmountToNQT(averageAmount)
 
     if (BRS.currentPage === 'blocks_forged') {
         if (blocks.length === 100) {
