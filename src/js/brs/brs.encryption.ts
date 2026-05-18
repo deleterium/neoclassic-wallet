@@ -96,6 +96,22 @@ async function getPrivateKey (secretPhrase: string) : Promise<HexString> {
 
 // region Accound ID
 
+export function fullHashToId (fullHash: HexString) {
+    if (fullHash.length < 16) {
+        fullHash = fullHash.padEnd(16, '0')
+    }
+    let ret = 0n
+    let base = 1n
+    for (let i = 0; i < 16; i += 2) {
+        if (i !== 0) {
+            base *= 256n
+        }
+        const d1 = BigInt(`0x${fullHash.slice(i, i + 2)}`)
+        ret += base * d1
+    }
+    return ret.toString(10)
+}
+
 export function getAccountId (secretPhrase: string) {
     const publicKey = getPublicKeyFromPassphrase(secretPhrase)
     const accountId = getAccountIdFromPublicKey(publicKey, false)
@@ -104,7 +120,7 @@ export function getAccountId (secretPhrase: string) {
 
 export function getAccountIdFromPublicKey (publicKey: HexString, isRSFormat: boolean) {
     const accountBA = sha256.digest(converters.hexStringToByteArray(publicKey))
-    const accountId = converters.byteArrayToBigInteger(accountBA.slice(0, 8)).toString()
+    const accountId = fullHashToId(converters.byteArrayToHexString(accountBA))
     if (isRSFormat) {
         const address = new NxtAddress(accountId)
         return address.getAccountRS(BRS.prefix)
