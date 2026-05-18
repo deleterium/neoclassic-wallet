@@ -73,12 +73,15 @@ import {
     evSellBuyAutomaticPriceClick,
     evAssetExchangeQuantityPriceKeydown,
     evCalculatePricePreviewKeyup,
-    evAssetOrderModalOnShowBsModal,
     evAssetExchangeSidebarContextClick,
-    evTransferAssetModalOnShowBsModal,
-    goToAsset,
-    evAssetSelectorButtonClick
+    goToAsset
 } from './brs.assetexchange'
+
+import {
+    evTransferAssetModalOnShowBsModal,
+    evAssetOrderModalOnShowBsModal,
+    evAssetSelectorButtonClick
+} from './brs.modals.assets'
 
 import {
     evTransactionsPageTypeClick

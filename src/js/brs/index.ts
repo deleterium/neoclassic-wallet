@@ -54,18 +54,21 @@ import {
     pagesAssetExchange,
     formsAddAssetBookmark,
     incomingAssetExchange,
-    formsOrderAsset,
     formsOrderAssetComplete,
+    pagesTransferHistory
+} from './brs.assetexchange'
+
+import {
+    formsOrderAsset,
     formsIssueAsset,
     formsAssetExchangeChangeGroupName,
     formsAssetExchangeGroup,
-    pagesTransferHistory,
     formsTransferAssetMulti,
     formsTransferAsset,
     formsTransferAssetComplete,
     formsCancelOrder,
     formsCancelOrderComplete
-} from './brs.assetexchange'
+} from './brs.modals.assets'
 
 import {
     pagesOpenOrders,
