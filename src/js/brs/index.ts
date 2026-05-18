@@ -60,8 +60,6 @@ import {
     formsAssetExchangeChangeGroupName,
     formsAssetExchangeGroup,
     pagesTransferHistory,
-    pagesMyAssets,
-    incomingMyAssets,
     formsTransferAssetMulti,
     formsTransferAsset,
     formsTransferAssetComplete,
@@ -70,6 +68,11 @@ import {
     formsCancelOrder,
     formsCancelOrderComplete
 } from './brs.assetexchange'
+
+import {
+    pagesMyAssets,
+    incomingMyAssets
+} from './brs.asset.page.myassets'
 
 import {
     incomingUpdateDashboardTransactions,
