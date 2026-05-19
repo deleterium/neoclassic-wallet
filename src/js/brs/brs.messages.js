@@ -475,9 +475,10 @@ export async function formsDecryptMessages (data) {
             }
         }
     } catch (err) {
-        if (err.brsError) {
+        const errorMessage = err.message
+        if (errorMessage) {
             return {
-                error: err.brsError
+                error: errorMessage
             }
         }
         return {

@@ -81,7 +81,7 @@ function convertNxtToNqt (data) {
         return { data }
     } catch (err) {
         return {
-            errorDescription: err + ' (Field: ' + field + ')'
+            errorDescription: err.message + ' (Field: ' + field + ')'
         }
     }
 }

@@ -83,7 +83,7 @@ export function formsTransferAssetMulti(data) {
         } catch (e) {
             return {
                 error: $.t('error_incorrect_quantity_plus', {
-                    err: e.escapeHTML()
+                    err: e.message.escapeHTML()
                 })
             };
         }
@@ -141,7 +141,7 @@ export function formsTransferAsset(data) {
     } catch (e) {
         return {
             error: $.t('error_incorrect_quantity_plus', {
-                err: e.escapeHTML()
+                err: e.message.escapeHTML()
             })
         };
     }
