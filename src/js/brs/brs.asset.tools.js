@@ -65,7 +65,7 @@ export function saveCachedAssets() {
 
 /** Try to fetch details from cache. If not found, send a sync request.
  * @param assetId {String}
- * @returns {assetDetails}
+ * @returns {AssetDetails}
  * @error returns undefined
  */
 export function getAssetDetails(assetId) {

@@ -155,7 +155,7 @@ export interface GetBlockResponse {
     errorDescription?: string;
 }
 
-export interface GetAssetResponse {
+export interface AssetDetails {
     account: string;
     accountRS: string;
     issuer: string;
@@ -177,6 +177,9 @@ export interface GetAssetResponse {
     priceLow?: string;
     priceOpen?: string;
     priceClose?: string;
+}
+
+export interface GetAssetResponse extends AssetDetails {
     requestProcessingTime?: number;
     errorCode?: number;
     errorDescription?: string;
@@ -191,6 +194,16 @@ export interface GetAssetsByResponse {
 }
 export type GetAssetsByNameResponse = GetAssetsByResponse
 export type GetAssetsByIssuerResponse = GetAssetsByResponse
+
+export interface GetIndirectIncomingResponse {
+    amountNQT: string,
+    quantityQNT: string,
+    height: number,
+    confirmations: number,
+    requestProcessingTime: number
+    errorCode?: number;
+    errorDescription?: string;
+}
 
 export interface Alias {
     account: string;

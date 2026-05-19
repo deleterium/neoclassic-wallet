@@ -43,7 +43,9 @@ import {
     getMessageFromTX
 } from './brs.messages'
 
-export function showTransactionModal (transaction) {
+import { AssetDetails, GetIndirectIncomingResponse, Transaction } from '../typings'
+
+export function showTransactionModal (transaction: Transaction | string) {
     if (BRS.fetchingModalData) {
         return
     }
@@ -57,8 +59,7 @@ export function showTransactionModal (transaction) {
     if (typeof transaction !== 'object') {
         sendRequest('getTransaction', {
             transaction
-        }, function (response, input) {
-            response.transaction = input.transaction
+        }, function (response: Transaction) {
             processTransactionModalData(response)
         })
     } else {
@@ -66,11 +67,84 @@ export function showTransactionModal (transaction) {
     }
 }
 
-function processTransactionModalData (transaction) {
-    let data
+interface DataTable {
+    type: string,
+    timestamp: string,
+    fee: string,
+    amount_formatted?: string,
+    sender_formatted_html?: string,
+    recipient_formatted_html?: string
+    // balance leasing
+    period?: number
+    // Multi out payment
+    amount_to_you?: string
+    you_received?: string
+    amount_each_formatted_html?: string
+    // Aliases
+    alias?: string
+    alias_name?: string
+    data_formatted_html?: string
+    price?: string
+    // assets
+    asset_name_formatted_html?: string
+    description?: string
+    quantity?: [string, number][]
+    decimals?: number
+    mintable?: string
+    total_formatted_html?: string
+    price_formatted_html?: string
+    assets_transferred_formatted_html?: string
+    // assets -> distribution to holders
+    quantity_to_you?: string
+    distributing_quantity?: string
+    distributing_asset_formatted_html?: string
+    to_holders_of_formatted_html?: string
+    // Digital goods
+    quantity_formatted_html?: string
+    name?: string
+    item_name?: string
+    seller?: string
+    buyer?: string
+    delta_quantity?: string
+    new_price_formatted_html?: string
+    discount?: string
+    refund?: string
+    order_total_formatted_html?: string
+    data?: string
+    // Subscription/Escrow payment
+    subscription_id?: string
+    deadline_action?: string
+    deadline?: string
+    escrow_id?: string
+    frequency?: string
+    decision?: string
+    signers_formatted_html?: string
+    required_signers?: string
+    // AT
+    at_created_formatted_html?: string
+
+}
+
+interface fnGetTransactionDetails {
+    nameOfTransaction: string
+    accountLink: string
+    accountTitle: string
+    recipientHTML: string
+    senderHTML: string
+    toFromViewer: boolean
+    amountToFromViewerHTML: string
+    foundAsset: AssetDetails
+    hasMessage: boolean
+    circleText: string
+    colorClass: string
+}
+
+function processTransactionModalData (transaction: Transaction) {
+    let data: DataTable
     let async = false
-    let assetDetails, helperStr
-    let details
+    let assetDetails: AssetDetails
+    let helperStr: string
+    let details: fnGetTransactionDetails
 
     function processTransactionModalDataMain () {
         processInfoDetails()
@@ -86,10 +160,6 @@ function processTransactionModalData (transaction) {
     function processInfoDetails () {
         const transactionDetails = $.extend({}, transaction)
         delete transactionDetails.attachment
-        if (/^0+$/.test(transactionDetails.referencedTransaction)) {
-            delete transactionDetails.referencedTransaction
-        }
-        delete transactionDetails.transaction
 
         $('#transaction_info_modal_transaction').html(String(transaction.transaction).escapeHTML())
         $('#transaction_info_tab_link').tab('show')
@@ -98,7 +168,7 @@ function processTransactionModalData (transaction) {
     }
 
     function processButtons () {
-        let accountButton
+        let accountButton: string
         if (transaction.senderRS === BRS.accountRS) {
             $('#transaction_info_actions').hide()
         } else {
@@ -172,10 +242,10 @@ function processTransactionModalData (transaction) {
     }
 
     function pePayment () {
-        let recipientHTML
+        let recipientHTML: string
         let youReceived = false
-        let amountToYou
-        let amountEach
+        let amountToYou = ''
+        let amountEach: bigint
         switch (transaction.subtype) {
         case 1:
             // Multi-out Payment
@@ -201,7 +271,7 @@ function processTransactionModalData (transaction) {
             return
         case 2:
             // Multi-out same
-            amountEach = parseInt(transaction.amountNQT) / transaction.attachment.recipients.length
+            amountEach = BigInt(transaction.amountNQT) / BigInt(transaction.attachment.recipients.length)
             recipientHTML = ''
             for (let i = 0; i < transaction.attachment.recipients.length; i++) {
                 const rsAddress = convertNumericToRSAccountFormat(transaction.attachment.recipients[i])
@@ -286,7 +356,7 @@ function processTransactionModalData (transaction) {
         case 0:
             // asset issuance
             assetDetails = getAssetDetails(fullHashToId(transaction.fullHash))
-            data.name_formatted_html = getAssetLink(assetDetails)
+            data.asset_name_formatted_html = getAssetLink(assetDetails)
             data.description = transaction.attachment.description.escapeHTML()
             data.quantity = [transaction.attachment.quantityQNT, transaction.attachment.decimals]
             data.decimals = transaction.attachment.decimals
@@ -358,7 +428,7 @@ function processTransactionModalData (transaction) {
             data.quantity = [transaction.attachment.quantityQNT, assetDetails.decimals]
             break
         case 7:
-            assetDetails = getAssetDetails(fullHashToId(transaction.referencedTransactionFullHash))
+            assetDetails = getAssetDetails(fullHashToId(transaction.referencedTransactionFullHash || ''))
             if (!assetDetails) {
                 break
             }
@@ -387,42 +457,42 @@ function processTransactionModalData (transaction) {
 
     function peColoredCoinsDistributeToHolders () {
         async = true
-        data.toHoldersOf_formatted_html = transaction.attachment.asset
-        data.distributingAsset_formatted_html = transaction.attachment.assetToDistribute
-        data.distributingQuantity = transaction.attachment.quantityQNT
-        data.youReceived = $.t('no')
+        data.to_holders_of_formatted_html = transaction.attachment.asset
+        data.distributing_asset_formatted_html = transaction.attachment.assetToDistribute
+        data.distributing_quantity = transaction.attachment.quantityQNT
+        data.you_received = $.t('no')
         sendRequest('getIndirectIncoming', {
             transaction: transaction.transaction,
             account: BRS.account
-        }, function (transactionII) {
+        }, function (transactionII: GetIndirectIncomingResponse) {
             let userQuantity = '0'
             let userAmount = '0'
             if (transactionII.errorCode === undefined) {
                 userQuantity = transactionII.quantityQNT
                 userAmount = transactionII.amountNQT
-                data.youReceived = $.t('yes')
+                data.you_received = $.t('yes')
             }
             const foundAsset = getAssetDetails(transaction.attachment.asset)
             if (foundAsset) {
-                data.toHoldersOf_formatted_html = getAssetLink(foundAsset)
+                data.to_holders_of_formatted_html = getAssetLink(foundAsset)
             }
             if (userAmount !== '0') {
-                data.amountToYou = formatNQTAsAmount(userAmount) + ' ' + BRS.valueSuffix
+                data.amount_to_you = formatNQTAsAmount(userAmount) + ' ' + BRS.valueSuffix
             }
             if (transaction.attachment.assetToDistribute === '0') {
-                data.distributingAsset_formatted_html = $.t('no')
-                delete data.distributingQuantity
+                data.distributing_asset_formatted_html = $.t('no')
+                delete data.distributing_quantity
             } else {
                 const foundAsset2 = getAssetDetails(transaction.attachment.assetToDistribute)
                 if (foundAsset2) {
-                    data.distributingAsset_formatted_html = getAssetLink(foundAsset2)
-                    data.distributingQuantity = formatQNTAsQuantity(data.distributingQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
+                    data.distributing_asset_formatted_html = getAssetLink(foundAsset2)
+                    data.distributing_quantity = formatQNTAsQuantity(String(data.distributing_quantity), foundAsset2.decimals) + ' ' + foundAsset2.name
                     if (userQuantity !== '0') {
-                        data.quantityToYou = formatQNTAsQuantity(userQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
+                        data.quantity_to_you = formatQNTAsQuantity(userQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
                     }
                 } else {
                     if (userQuantity !== '0') {
-                        data.quantityToYou = formatQNTAsQuantity(userQuantity, 0) + ' [QNT]'
+                        data.quantity_to_you = formatQNTAsQuantity(userQuantity, 0) + ' [QNT]'
                     }
                 }
             }
@@ -660,8 +730,8 @@ function processTransactionModalData (transaction) {
             // TODO add languages / human readable format
             data.amount_formatted = formatNQTAsAmount(transaction.attachment.amountNQT) + ' ' + BRS.valueSuffix
             data.deadline = transaction.attachment.deadline + ' seconds'
-            data.deadlineAction = $.t(transaction.attachment.deadlineAction)
-            data.requiredSigners = transaction.attachment.requiredSigners
+            data.deadline_action = $.t(transaction.attachment.deadlineAction)
+            data.required_signers = transaction.attachment.requiredSigners
             for (let i = 0; i < transaction.attachment.signers.length; i++) {
                 if (i !== 0) {
                     signers += '<br />'
@@ -674,7 +744,7 @@ function processTransactionModalData (transaction) {
         case 2:
             // TODO get details from escrow creation
             data.decision = $.t(transaction.attachment.decision)
-            data.escrowId = transaction.attachment.escrowId
+            data.escrow_id = transaction.attachment.escrowId
             return
         case 3:
             // TODO add languages / human readable format
@@ -683,18 +753,18 @@ function processTransactionModalData (transaction) {
         case 4:
         case 5:
             // TODO get details from subscription
-            data.subscriptionId = transaction.attachment.subscriptionId
+            data.subscription_id = transaction.attachment.subscriptionId
         }
     }
 
     function peAutomatedTransactions () {
-        let contractAddress
+        let contractAddress: string
         switch (transaction.subtype) {
         case 0:
             contractAddress = convertNumericToRSAccountFormat(transaction.transaction)
             data.at_created_formatted_html = `<a href='#' data-user='${contractAddress}"' class='user-info'>${getAccountTitle(contractAddress)}</a>`
             data.name = transaction.attachment.name
-            data.description_formatted_html = transaction.attachment.description.escapeHTML()
+            data.description = transaction.attachment.description
         }
     }
 
@@ -725,7 +795,7 @@ function processTransactionModalData (transaction) {
  * @param {String} providedPassphrase - Optional passphrase provided by the user for decryption purposes.
  * @returns {boolean} - Returns true if a decryption form needs to be shown, false otherwise.
  */
-export function drawAttachmentMessages (transaction, $output, providedPassphrase) {
+export function drawAttachmentMessages (transaction: Transaction, $output:  JQuery<HTMLElement>, providedPassphrase?: string): boolean {
     removeDecryptionForm()
     $output.html('')
     let showMessage = false

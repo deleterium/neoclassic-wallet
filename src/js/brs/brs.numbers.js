@@ -365,7 +365,7 @@ export function formatNQTAsAmount(amountNQT) {
  * @param {boolean} date_only - If true, returns only the date; otherwise, includes time.
  * @returns {string} Formatted date or datetime string (e.g., "2023-10-01" or "2023-10-01 14:30").
  */
-export function formatTimestampAsDateTime(timestamp, date_only) {
+export function formatTimestampAsDateTime(timestamp, date_only = false) {
     let date
     if (typeof timestamp !== 'number') {
         console.error("Verify here")

@@ -371,10 +371,7 @@ function displayUnconfirmedTransactions (viewAccount) {
      * @param viewingAccount Use this account as point of view. Default to current user
      * @returns Object with many transaction details to be shown.
     */
-export function getTransactionDetails (transaction, viewingAccount) {
-    if (!viewingAccount) {
-        viewingAccount = BRS.account
-    }
+export function getTransactionDetails (transaction, viewingAccount = BRS.account) {
     if (BRS.rsRegEx.test(viewingAccount)) {
         viewingAccount = convertRSAccountToNumeric(viewingAccount)
     }
