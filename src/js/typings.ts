@@ -86,6 +86,11 @@ export interface BlockchainStatus {
     version: string;
 }
 
+export interface GetBlochainStatusResponse extends BlockchainStatus {
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 export interface AssetBalance {
     asset: string;
     balanceQNT: string;
@@ -207,7 +212,7 @@ export interface GetAliasesResponse {
     errorDescription?: string;
 };
 
-export interface GetAccountPublicKey {
+export interface GetAccountPublicKeyResponse {
     publicKey?: string;
     requestProcessingTime?: number;
     errorCode?: number;

@@ -32,7 +32,6 @@ import {
     getPublicKeyFromPassphrase,
     getAccountId,
     setEncryptionPassword,
-    getEncryptionPassword,
     setDecryptionPassword
 } from './brs.encryption'
 
@@ -50,6 +49,7 @@ import {
 } from './brs.transactions'
 
 import PassPhraseGenerator from './brs.passphrase.generator'
+import { GetAccountPublicKeyResponse, GetAccountResponse, GetBlochainStatusResponse } from '../typings'
 
 export function showLoginOrWelcomeScreen () {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
@@ -80,7 +80,7 @@ export function registerUserDefinedAccount () {
     $('#account_phrase_custom_panel :input:not(:button):not([type=submit])').val('')
     $('#account_phrase_generator_panel :input:not(:button):not([type=submit])').val('')
     $('#account_phrase_custom_panel').show()
-    $('#registration_password').focus()
+    $('#registration_password').trigger('focus')
 }
 
 export function registerAccount () {
@@ -93,7 +93,7 @@ export function registerAccount () {
 }
 
 export function verifyGeneratedPassphrase () {
-    const password = $.trim($('#account_phrase_generator_panel .step_3 textarea').val())
+    const password = String($('#account_phrase_generator_panel .step_3 textarea').val()).trim()
 
     if (password !== PassPhraseGenerator.passPhrase) {
         $('#account_phrase_generator_panel .step_3 .callout').show()
@@ -109,7 +109,7 @@ export function verifyGeneratedPassphrase () {
 export function evAccountPhraseCustomPanelSubmit (event) {
     event.preventDefault()
 
-    const password = $('#registration_password').val()
+    const password = $('#registration_password').val() as string
     const repeat = $('#registration_password_repeat').val()
 
     let error = ''
@@ -124,21 +124,17 @@ export function evAccountPhraseCustomPanelSubmit (event) {
 
     if (error) {
         $('#account_phrase_custom_panel .callout').first().removeClass('callout-info').addClass('callout-danger').html(error)
-    } else {
-        $('#registration_password, #registration_password_repeat').val('')
-        loginWithPassphrase(password)
+        return
     }
+    $('#registration_password, #registration_password_repeat').val('')
+    loginWithPassphrase(password)
 }
 
 export function loginCommon () {
     if (!BRS.settings.automatic_node_selection) {
         updateSettings('prefered_node', BRS.server)
     }
-
-    const $valueSufix = document.querySelectorAll('[data-value-suffix]')
-    for (const $each of $valueSufix) {
-        $each.innerText = BRS.valueSuffix
-    }
+    $('[data-value-suffix]').text(BRS.valueSuffix)
 
     if (BRS.state) {
         checkBlockHeight()
@@ -161,7 +157,7 @@ export function loginCommon () {
     getInitialTransactions()
 }
 
-function loginWithAccount (account) {
+function loginWithAccount (account: string) {
     account = account.trim()
     if (!account.length) {
         $.notify($.t('error_account_required_login'), { type: 'danger' })
@@ -170,7 +166,7 @@ function loginWithAccount (account) {
 
     checkSelectedNode()
 
-    sendRequest('getBlockchainStatus', function (response) {
+    sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse) {
         if (response.errorCode) {
             $.notify($.t('error_server_connect'), { type: 'danger' })
             return
@@ -178,7 +174,7 @@ function loginWithAccount (account) {
 
         BRS.state = response
 
-        let login
+        let login: string | undefined
         if (BRS.rsRegEx.test(account) || BRS.idRegEx.test(account)) {
             login = account
         } else {
@@ -196,7 +192,7 @@ function loginWithAccount (account) {
         // Get the account information for the given address
         sendRequest('getAccount', {
             account: login
-        }, function (response) {
+        }, function (response: GetAccountResponse) {
             if (response.errorCode) {
                 if (BRS.rsRegEx.test(login) || BRS.idRegEx.test(login)) {
                     $.notify($.t('error_account_unknow_watch_only'), { type: 'danger' })
@@ -228,7 +224,7 @@ function loginWithAccount (account) {
     })
 }
 
-function loginWithPassphrase (passphrase) {
+function loginWithPassphrase (passphrase: string) {
     if (!passphrase.length) {
         $.notify($.t('error_passphrase_required_login'), { type: 'danger' })
         return
@@ -245,7 +241,7 @@ function loginWithPassphrase (passphrase) {
 
     updateSettings('remember_passphrase', $('#remember_password').is(':checked'))
 
-    sendRequest('getBlockchainStatus', function (response) {
+    sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse) {
         if (response.errorCode) {
             $.notify($.t('error_server_connect'), { type: 'danger' })
             return
@@ -260,7 +256,7 @@ function loginWithPassphrase (passphrase) {
 
         sendRequest('getAccountPublicKey', {
             account: BRS.account
-        }, function (response) {
+        }, function (response: GetAccountPublicKeyResponse) {
             if (response && response.publicKey && response.publicKey !== BRS.publicKey) {
                 $.notify($.t('error_account_taken'), { type: 'danger' })
                 return
@@ -295,22 +291,22 @@ function loginWithPassphrase (passphrase) {
     })
 }
 
-export function evLoginButtonClick (e) {
+export function evLoginButtonClick (e: Event) {
     e.preventDefault()
 
-    const passwd = $('#login_password').val()
+    const passwd = $('#login_password').val() as string
     if (passwd !== '') {
         loginWithPassphrase(passwd)
         return
     }
-    const account = $('#login_account').val()
+    const account = $('#login_account').val() as string
     loginWithAccount(account)
 }
 
 export function showLockscreen () {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
         setTimeout(function () {
-            $('#login_password').focus()
+            $('#login_password').trigger('focus')
         }, 10)
     } else {
         showWelcomeScreen()
@@ -322,7 +318,7 @@ export function showLockscreen () {
 
 function unlock () {
     if (BRS.hasLocalStorage && !localStorage.getItem('logged_in')) {
-        localStorage.setItem('logged_in', true)
+        localStorage.setItem('logged_in', 'true')
     }
 
     $('#lockscreen').hide()

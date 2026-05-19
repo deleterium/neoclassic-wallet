@@ -157,6 +157,7 @@ export const BRS = {
 
     account: '',
     accountRS: '',
+    accountRSExtended: '',
     publicKey: '',
     accountInfo: {} as GetAccountResponse,
 

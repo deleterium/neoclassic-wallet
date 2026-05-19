@@ -17,7 +17,7 @@ import {
     ByteArray,
     DecryptedTransactionFields,
     DecryptedTransactionItem,
-    GetAccountPublicKey,
+    GetAccountPublicKeyResponse,
     HexString,
     Transaction
 } from '../typings'
@@ -63,7 +63,7 @@ export function getAccountPublicKey (account: string) {
     // synchronous!
     sendRequest('getAccountPublicKey', {
         account
-    }, function (response: GetAccountPublicKey, input) {
+    }, function (response: GetAccountPublicKeyResponse, input) {
         if (!response.publicKey) {
             throw new Error($.t('error_no_public_key'))
         } else {
