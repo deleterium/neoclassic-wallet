@@ -207,7 +207,7 @@ function loginWithAccount (account: string) {
             }
 
             updateSettings('remember_account', $('#remember_account').is(':checked'))
-            updateSettings('remember_account_account', account)
+            updateSettings('last_remembered_account', account)
 
             BRS.account = response.account
             BRS.accountRS = response.accountRS

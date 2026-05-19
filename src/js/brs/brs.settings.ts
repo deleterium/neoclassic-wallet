@@ -1,6 +1,4 @@
-/**
- * @depends {brs.js}
- */
+import i18next from 'i18next'
 
 import { BRS } from '.'
 
@@ -29,7 +27,7 @@ export function pagesSettings () {
 export function loadSettingsFromDB () {
     if (!BRS.databaseSupport) {
         BRS.settings = BRS.defaultSettings
-        applySettings()
+        applySettings('all')
         return
     }
     dbGet('data', {
@@ -44,13 +42,16 @@ export function loadSettingsFromDB () {
             })
             BRS.settings = BRS.defaultSettings
         }
-        applySettings()
+        applySettings('all')
     })
 }
 
-function applySettings (key) {
-    if (!key || key === 'language') {
-        $.i18n.changeLanguage(BRS.settings.language, function (err) {
+function applySettings (key: string) {
+    let applyAll = false
+    if (key === 'all') applyAll = true
+
+    if (applyAll || key === 'language') {
+        i18next.changeLanguage(BRS.settings.language, function (err) {
             if (err) return console.log('i18next changeLanguage error loading ', err)
             $('[data-i18n]').localize()
         })
@@ -65,7 +66,7 @@ function applySettings (key) {
         BRS.groupSeparator = parts.find(item => item.type === 'group')?.value || ','
     }
 
-    if (!key || key === 'submit_on_enter') {
+    if (applyAll || key === 'submit_on_enter') {
         if (BRS.settings.submit_on_enter) {
             $(".modal form:not('#decrypt_note_form_container')").on('submit.onEnter', function (e) {
                 e.preventDefault()
@@ -78,7 +79,7 @@ function applySettings (key) {
         }
     }
 
-    if (!key || key === 'automatic_node_selection') {
+    if (applyAll || key === 'automatic_node_selection') {
         if (BRS.settings.automatic_node_selection) {
             $('#automatic_node_selection').prop('checked', true)
             $('#prefered_node').val(BRS.server)
@@ -90,23 +91,23 @@ function applySettings (key) {
         }
     }
 
-    if (!key || key === 'page_size') {
+    if (applyAll || key === 'page_size') {
         BRS.pageSize = Number(BRS.settings.page_size)
     }
 
-    if (!key || key === 'theme_dark') {
-        if (BRS.settings.theme_dark ^ $('body').hasClass('dark-mode')) {
+    if (applyAll || key === 'theme_dark') {
+        if (BRS.settings.theme_dark !== $('body').hasClass('dark-mode')) {
             $('body').toggleClass('dark-mode')
         }
     }
 
-    if (!key || key === 'small_text') {
-        if (BRS.settings.small_text ^ $('body').hasClass('text-sm')) {
+    if (applyAll || key === 'small_text') {
+        if (BRS.settings.small_text !== $('body').hasClass('text-sm')) {
             $('body').toggleClass('text-sm')
         }
     }
 
-    if (!key || key === 'remember_passphrase') {
+    if (applyAll || key === 'remember_passphrase') {
         if (BRS.settings.remember_passphrase) {
             $('#remember_password').prop('checked', true)
         } else {
@@ -114,10 +115,10 @@ function applySettings (key) {
         }
     }
 
-    if (!key || key === 'remember_account') {
+    if (applyAll || key === 'remember_account') {
         if (BRS.settings.remember_account) {
             $('#remember_account').prop('checked', true)
-            $('#login_account').val(BRS.settings.remember_account_account)
+            $('#login_account').val(BRS.settings.last_remembered_account)
         } else {
             $('#remember_account').prop('checked', false)
             $('#login_account').val('')
@@ -125,17 +126,22 @@ function applySettings (key) {
     }
 }
 
-export function updateSettings (key, value) {
-    if (key) {
-        BRS.settings[key] = value
-    }
-
+/**
+ * Updates a specific setting in the BRS settings object and persists it to the database if supported.
+ *
+ * @param {string} key - The key of the setting to update. This should correspond to a property in BRS.settings.
+ * @param {string | number | boolean} value - The new value for the specified setting.
+ *
+ * @example
+ * updateSettings('language', 'en');
+ */
+export function updateSettings (key: string, value: string| number | boolean) {
+    BRS.settings[key] = value
     if (BRS.databaseSupport) {
         dbPut('data', {
             id: 'settings',
             contents: JSON.stringify(BRS.settings)
         })
     }
-
     applySettings(key)
 }

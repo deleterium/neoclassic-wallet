@@ -297,13 +297,14 @@ export const BRS = {
         asset_transfer_warning: '10000',
         theme_dark: false,
         small_text: false,
-        remember_passphrase: 0,
-        remember_account: 0,
-        automatic_node_selection: 1,
+        remember_passphrase: false,
+        remember_account: false,
+        automatic_node_selection: true,
         page_size: 25,
         prefered_node: '',
-        language: 'en'
-    },
+        language: 'en',
+        last_remembered_account: ''
+    } as BrsSettings,
 
     // from brs.server
     multiQueue: null,
