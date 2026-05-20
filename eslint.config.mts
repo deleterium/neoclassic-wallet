@@ -36,7 +36,7 @@ export default defineConfig([
         ],
         rules: {
             "@typescript-eslint/no-unused-vars": "warn",
-            "@typescript-eslint/no-explicit-any": "warn",
+            "@typescript-eslint/no-explicit-any": "off",
             "brace-style": ["warn", "1tbs", { allowSingleLine: false }],
         }
     }
