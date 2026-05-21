@@ -240,3 +240,36 @@ export interface GetAccountPublicKeyResponse {
     errorCode?: number;
     errorDescription?: string;
 };
+
+// region AT
+
+export interface AT {
+  at: string;
+  machineData: string;
+  balanceNQT: string;
+  prevBalanceNQT: string;
+  nextBlock: number;
+  frozen: boolean;
+  running: boolean;
+  stopped: boolean;
+  finished: boolean;
+  dead: boolean;
+  machineCodeHashId: string;
+  atVersion: number;
+  atRS: string;
+  name: string;
+  description: string;
+  creator: string;
+  creatorRS: string;
+  minActivation: string;
+  creationBlock: number;
+  machineCode?: string;
+  creationMachineData?: string;
+};
+
+export interface GetAccountATsResponse {
+    ats: AT[];
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+};
