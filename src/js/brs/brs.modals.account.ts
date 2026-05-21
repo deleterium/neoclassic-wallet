@@ -228,8 +228,6 @@ function userInfoModalAliases () {
 
 /**
  * Third part of "Account Modal" when all info about is available.
- * @param {import('../typings').GetAccountResponse} account 
- * @returns 
  */
 function userInfoModalDetails () {
     if (!BRS.userInfoModal) return
@@ -263,11 +261,15 @@ function userInfoModalDetails () {
             <tr>
               <td>${$.t('available_balance')}</td>
               <td>${formatNQTAsAmount(accountInfo.unconfirmedBalanceNQT)} ${BRS.valueSuffix}</td>
-            </tr>
+            </tr>`
+    if (accountInfo.committedBalanceNQT) {
+        tbodyHTML += `
             <tr>
               <td>${$.t('committed_balance')}</td>
               <td>${formatNQTAsAmount(accountInfo.committedBalanceNQT)} ${BRS.valueSuffix}</td>
-            </tr>
+            </tr>`
+    }
+    tbodyHTML += `
             <tr>
               <td>${$.t('forged_balance')}</td>
               <td>${formatNQTAsAmount(accountInfo.forgedBalanceNQT)} ${BRS.valueSuffix}</td>
