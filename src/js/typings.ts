@@ -1,3 +1,4 @@
+// region BRS types
 
 export type HexChar = 
     '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' |
@@ -31,7 +32,7 @@ export type DecryptedTransactionsCache = {
     [key: string]: DecryptedTransactionItem
 }
 
-// region signum types
+// region Transaction
 
 export interface Transaction {
     amountNQT: string;
@@ -62,31 +63,17 @@ export interface Transaction {
     version: number;
 }
 
-export interface GetAccountTransactionsResponse {
-    transactions: Transaction[];
-    nextIndex?: number;
-    requestProcessingTime?: number;
+export interface GetIndirectIncomingResponse {
+    amountNQT: string,
+    quantityQNT: string,
+    height: number,
+    confirmations: number,
+    requestProcessingTime: number
     errorCode?: number;
     errorDescription?: string;
 }
 
-export interface BlockchainStatus {
-    application: string;
-    cumulativeDifficulty: string;
-    isScanning: boolean;
-    lastBlock: string;
-    lastBlockchainFeeder: string;
-    lastBlockchainFeederHeight: number;
-    numberOfBlocks: number;
-    time: number;
-    lastBlockTimestamp: number;
-    version: string;
-}
-
-export interface GetBlochainStatusResponse extends BlockchainStatus {
-    errorCode?: number;
-    errorDescription?: string;
-}
+// region Account
 
 export interface AssetBalance {
     asset: string;
@@ -119,6 +106,43 @@ export interface GetAccountResponse {
     errorDescription?: string;
 }
 
+export interface GetAccountTransactionsResponse {
+    transactions: Transaction[];
+    nextIndex?: number;
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
+export interface GetAccountPublicKeyResponse {
+    publicKey?: string;
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+};
+
+// region Blockchain
+
+export interface BlockchainStatus {
+    application: string;
+    cumulativeDifficulty: string;
+    isScanning: boolean;
+    lastBlock: string;
+    lastBlockchainFeeder: string;
+    lastBlockchainFeederHeight: number;
+    numberOfBlocks: number;
+    time: number;
+    lastBlockTimestamp: number;
+    version: string;
+}
+
+export interface GetBlochainStatusResponse extends BlockchainStatus {
+    errorCode?: number;
+    errorDescription?: string;
+}
+
+// region Block
+
 export interface BlockDetails {
     block: string;
     height: number;
@@ -146,6 +170,8 @@ export interface BlockDetails {
     generationSignature: string;
     previousBlockHash: string;
     blockSignature: string;
+    // if request had 'includeTransactions = true', type is Transaction[]
+    // if 'includeTransactions = false' or not given, type is string[] with only the transactions IDs.
     transactions: string[] | Transaction[];
 }
 
@@ -163,6 +189,7 @@ export interface GetBlocksResponse {
 }
 export type GetAccountBlocksResponse = GetBlocksResponse
 
+// region Asset
 
 export interface AssetDetails {
     account: string;
@@ -204,15 +231,7 @@ export interface GetAssetsByResponse {
 export type GetAssetsByNameResponse = GetAssetsByResponse
 export type GetAssetsByIssuerResponse = GetAssetsByResponse
 
-export interface GetIndirectIncomingResponse {
-    amountNQT: string,
-    quantityQNT: string,
-    height: number,
-    confirmations: number,
-    requestProcessingTime: number
-    errorCode?: number;
-    errorDescription?: string;
-}
+// region Alias
 
 export interface Alias {
     account: string;
@@ -229,13 +248,6 @@ export interface Alias {
 
 export interface GetAliasesResponse {
     aliases: Alias[];
-    requestProcessingTime?: number;
-    errorCode?: number;
-    errorDescription?: string;
-};
-
-export interface GetAccountPublicKeyResponse {
-    publicKey?: string;
     requestProcessingTime?: number;
     errorCode?: number;
     errorDescription?: string;
