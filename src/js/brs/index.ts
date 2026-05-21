@@ -14,7 +14,6 @@ import {
 } from './brs.settings'
 
 import {
-    incomingUpdateDashboardBlocks,
     pagesBlocksForged,
     pagesBlockInfo,
     pagesBlocks,
@@ -144,7 +143,7 @@ import {
 export const BRS = {
     version: '1.0.0',
     server: '',
-    state: {} as BlockchainStatus,
+    blockchainStatus: {} as BlockchainStatus,
     blocks: [] as GetBlockResponse[],
     genesis: '0',
     genesisRS: 'S-2222-2222-2222-22222',
@@ -175,8 +174,8 @@ export const BRS = {
     decimalSign: '.',
     groupSeparator: ',',
 
-    lastBlockHeight: 0,
-    downloadingBlockchain: false,
+    downloadingBlockchain: false, // More than 4 days from last block
+    rescaningBlockchain: false, // More than 1 hour from last block
 
     rememberPassword: false,
     selectedContext: null,
@@ -209,7 +208,6 @@ export const BRS = {
         messages: pagesMessages
     },
     incoming: {
-        updateDashboardBlocks: incomingUpdateDashboardBlocks,
         blocks: incomingBlocks,
         aliases: incomingAliases,
         asset_exchange: incomingAssetExchange,
@@ -271,7 +269,6 @@ export const BRS = {
 
     stateInterval: null as null | NodeJS.Timeout,
     stateIntervalSeconds: 30,
-    isScanning: false,
 
     nodes: [
         // First must be localhost mainnet!
@@ -311,10 +308,6 @@ export const BRS = {
 
     // from login
     newlyCreatedAccount: false,
-
-    // from blocks
-    tempBlocks: [],
-    trackBlockchain: false,
 
     // from brs.aliases
     alias_page_elements: 500,

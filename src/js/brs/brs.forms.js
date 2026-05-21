@@ -326,7 +326,7 @@ export async function submitForm ($btn) {
     if (BRS.downloadingBlockchain) {
         endWithError($.t('error_blockchain_downloading'))
         return
-    } else if (BRS.state.isScanning) {
+    } else if (BRS.rescaningBlockchain) {
         endWithError($.t('error_form_blockchain_rescanning'))
         return
     }

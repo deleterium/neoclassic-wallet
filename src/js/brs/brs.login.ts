@@ -8,7 +8,6 @@ import {
     checkSelectedNode,
     getAccountInfo,
     checkLocationHash,
-    checkIfOnAFork
 } from './brs'
 
 import {
@@ -19,10 +18,6 @@ import {
     setSavedPassword,
     sendRequest
 } from './brs.server'
-
-import {
-    checkBlockHeight
-} from './brs.blocks'
 
 import {
     getContactByName
@@ -136,17 +131,9 @@ export function loginCommon () {
     }
     $('[data-value-suffix]').text(BRS.valueSuffix)
 
-    if (BRS.state) {
-        checkBlockHeight()
-    }
-
     getAccountInfo(true, cacheUserAssets)
 
     unlock()
-
-    if (!BRS.downloadingBlockchain) {
-        checkIfOnAFork()
-    }
 
     setupClipboardFunctionality()
 
@@ -172,7 +159,7 @@ function loginWithAccount (account: string) {
             return
         }
 
-        BRS.state = response
+        BRS.blockchainStatus = response
 
         let login: string | undefined
         if (BRS.rsRegEx.test(account) || BRS.idRegEx.test(account)) {
@@ -247,7 +234,7 @@ function loginWithPassphrase (passphrase: string) {
             return
         }
 
-        BRS.state = response
+        BRS.blockchainStatus = response
 
         BRS.account = getAccountId(passphrase)
         BRS.accountRS = convertNumericToRSAccountFormat(BRS.account)

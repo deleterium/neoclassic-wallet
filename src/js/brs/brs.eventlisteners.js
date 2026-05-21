@@ -644,7 +644,7 @@ export function addEventListeners () {
     // from brs.blocks.js
     $('#block_info_latest_block').on('click', function (e) {
         e.preventDefault()
-        blocksInfoLoad(BRS.blocks[0].height.toString())
+        blocksInfoLoad('')
     })
     $('#block_info_search').on('click', function () {
         const userInput = $('#block_info_input_block').val()
@@ -652,7 +652,7 @@ export function addEventListeners () {
         if (isNaN(currentBlock) || currentBlock < 0) {
             $.notify($.t('invalid_blockheight'), { type: 'danger' })
         }
-        blocksInfoLoad($('#block_info_input_block').val())
+        blocksInfoLoad(currentBlock)
     })
     $('#block_info_previous_block').on('click', function () {
         const userInput = $('#block_info_input_block').val()

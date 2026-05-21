@@ -343,7 +343,7 @@ export function formatQNTAsQuantity(quantityQNT, decimals) {
 /**
  * Converts an amount from NQT format to Amount (Signa) format and formats it for display.
  *
- * @param {string|number} amountNQT - Amount in NQT format.
+ * @param {string|number|bigint} amountNQT - Amount in NQT format.
  * @returns {string} Formatted Amount string (e.g., "1,234.56" in en-US).
  */
 export function formatNQTAsAmount(amountNQT) {

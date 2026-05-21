@@ -704,7 +704,7 @@ function getTransactionRowDashboardHTML (transaction) {
     rowStr += '<td>' + details.circleText + '</td>'
     rowStr += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
     rowStr += `<td>${details.accountLink}</td>`
-    rowStr += `<td>${confirmationHTML}</td>`
+    rowStr += `<td class='confirmations'>${confirmationHTML}</td>`
     rowStr += '</tr>'
 
     return rowStr

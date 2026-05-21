@@ -119,7 +119,7 @@ export interface GetAccountResponse {
     errorDescription?: string;
 }
 
-export interface GetBlockResponse {
+export interface BlockDetails {
     block: string;
     height: number;
     generator: string;
@@ -146,11 +146,23 @@ export interface GetBlockResponse {
     generationSignature: string;
     previousBlockHash: string;
     blockSignature: string;
-    transactions: string[];
+    transactions: string[] | Transaction[];
+}
+
+export interface GetBlockResponse extends BlockDetails {
     requestProcessingTime?: number;
     errorCode?: number;
     errorDescription?: string;
 }
+
+export interface GetBlocksResponse {
+    blocks: BlockDetails[];
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
+export type GetAccountBlocksResponse = GetBlocksResponse
+
 
 export interface AssetDetails {
     account: string;

@@ -1,16 +1,8 @@
-/**
- * @depends {brs.js}
- */
-
-/* global BigInteger */
-
 import { BRS } from '.'
 
 import {
     setStateInterval,
     reloadCurrentPage,
-    updateBlockchainDownloadProgress,
-    checkIfOnAFork
 } from './brs'
 
 import {
@@ -29,7 +21,6 @@ import {
     getAccountTitle,
     getAccountFormatted,
     dataLoaded,
-    dataLoadFinished,
     formatStyledAmount
 } from './brs.util'
 
@@ -37,355 +28,267 @@ import {
     getTransactionDetails
 } from './brs.transactions'
 
-export function getBlock (blockID, callback, pageRequest) {
-    sendRequest('getBlock' + (pageRequest ? '+' : ''), {
-        block: blockID
-    }, function (response) {
-        if (response.errorCode && response.errorCode === -1) {
-            getBlock(blockID, callback, pageRequest)
-        } else {
-            if (callback) {
-                response.block = blockID
-                callback(response)
-            }
-        }
-    }, true)
-}
+import { BlockDetails, GetAccountBlocksResponse, GetBlockResponse, GetBlocksResponse, Transaction } from '../typings'
 
-export function handleInitialBlocks (response) {
-    if (response.errorCode) {
-        dataLoadFinished($('#dashboard_blocks_table'))
-        return
-    }
-
-    BRS.blocks.push(response)
-
-    if (BRS.blocks.length < 10 && response.previousBlock) {
-        getBlock(response.previousBlock, handleInitialBlocks)
-    } else {
-        checkBlockHeight(BRS.blocks[0].height)
-
-        if (BRS.state) {
-            // if no new blocks in 6 hours, show blockchain download progress..
-            const timeDiff = BRS.state.time - BRS.blocks[0].timestamp
-            if (timeDiff > 60 * 60 * 18) {
-                if (timeDiff > 60 * 60 * 24 * 14) {
-                    setStateInterval(30)
-                } else if (timeDiff > 60 * 60 * 24 * 7) {
-                    // second to last week
-                    setStateInterval(15)
-                } else {
-                    // last week
-                    setStateInterval(10)
-                }
-                BRS.downloadingBlockchain = true
-                $('#downloading_blockchain').show()
-                updateBlockchainDownloadProgress()
-            } else {
-                // continue with faster state intervals if we still haven't reached current block from within 1 hour
-                if (timeDiff < 60 * 60) {
-                    setStateInterval(30)
-                    BRS.trackBlockchain = false
-                } else {
-                    setStateInterval(10)
-                    BRS.trackBlockchain = true
-                }
-            }
-        }
-
-        let rows = ''
-
-        for (let i = 0; i < BRS.blocks.length; i++) {
-            const block = BRS.blocks[i]
-
-            rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + "</a></td><td data-timestamp='" + String(block.timestamp).escapeHTML() + "'>" + formatTimestampAsDateTime(block.timestamp) + '</td><td>' + formatNQTAsAmount(block.totalAmountNQT) + ' + ' + formatNQTAsAmount(block.totalFeeNQT) + '</td><td>' + formatNumber(block.numberOfTransactions) + '</td></tr>'
-        }
-
-        $('#dashboard_blocks_table tbody').empty().append(rows)
-        dataLoadFinished($('#dashboard_blocks_table'))
-    }
-}
-
-export function handleNewBlocks (response) {
-    if (BRS.downloadingBlockchain) {
-        // new round started...
-        if (BRS.tempBlocks.length === 0 && BRS.state.lastBlock !== response.block) {
+/**
+ * Called when it is detected a new block on blockchain. Checks sync progress and update dashboard information.
+ */
+export function handleNewBlocks () {
+    sendRequest('getBlocks', {
+        firstIndex: 0,
+        lastIndex: 10
+    }, function (response: GetBlocksResponse) {
+        if (response.errorCode) {
             return
         }
-    }
-
-    // we have all blocks
-    if (response.height - 1 === BRS.lastBlockHeight || BRS.tempBlocks.length === 99) {
-        let newBlocks = []
-
-        // there was only 1 new block (response)
-        if (BRS.tempBlocks.length === 0) {
-            // remove oldest block, add newest block
-            BRS.blocks.unshift(response)
-            newBlocks.push(response)
-        } else {
-            BRS.tempBlocks.push(response);
-            // remove oldest blocks, add newest blocks
-            [].unshift.apply(BRS.blocks, BRS.tempBlocks)
-            newBlocks = BRS.tempBlocks
-            BRS.tempBlocks = []
+        if (!BRS.blocks || BRS.blocks.length === 0) {
+            // If first time, or if changed network type
+            BRS.blocks = response.blocks
         }
-
-        if (BRS.blocks.length > 100) {
-            BRS.blocks = BRS.blocks.slice(0, 100)
-        }
-
-        checkBlockHeight(BRS.blocks[0].height)
-
-        BRS.incoming.updateDashboardBlocks(newBlocks)
-    } else {
-        BRS.tempBlocks.push(response)
-        getBlock(response.previousBlock, handleNewBlocks)
-    }
-}
-
-export function checkBlockHeight (blockHeight) {
-    if (blockHeight) {
-        BRS.lastBlockHeight = blockHeight
-    }
-
-    // no checks needed at the moment
-}
-
-// we always update the dashboard page..
-export function incomingUpdateDashboardBlocks (newBlocks) {
-    let newBlockCount = newBlocks.length
-
-    if (newBlockCount > 10) {
-        newBlocks = newBlocks.slice(0, 10)
-        newBlockCount = newBlocks.length
-    }
-    let timeDiff
-    if (BRS.downloadingBlockchain) {
-        if (BRS.state) {
-            timeDiff = BRS.state.time - BRS.blocks[0].timestamp
-            if (timeDiff < 60 * 60 * 18) {
-                if (timeDiff < 60 * 60) {
-                    setStateInterval(30)
-                } else {
-                    setStateInterval(10)
-                    BRS.trackBlockchain = true
-                }
-                BRS.downloadingBlockchain = false
-                $('#dashboard_message').hide()
-                $('#downloading_blockchain').hide()
-                $.notify($.t('success_blockchain_up_to_date'), { type: 'success' })
-                checkIfOnAFork()
-            } else {
-                if (timeDiff > 60 * 60 * 24 * 14) {
-                    setStateInterval(30)
-                } else if (timeDiff > 60 * 60 * 24 * 7) {
-                    // second to last week
-                    setStateInterval(15)
-                } else {
-                    // last week
-                    setStateInterval(10)
-                }
-
-                updateBlockchainDownloadProgress()
-            }
-        }
-    } else if (BRS.trackBlockchain) {
-        timeDiff = BRS.state.time - BRS.blocks[0].timestamp
-
-        // continue with faster state intervals if we still haven't reached current block from within 1 hour
-        if (timeDiff < 60 * 60) {
-            setStateInterval(30)
-            BRS.trackBlockchain = false
-        } else {
-            setStateInterval(10)
-        }
-    }
-
-    let rows = ''
-
-    for (let i = 0; i < newBlockCount; i++) {
-        const block = newBlocks[i]
-
-        rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + "</a></td><td data-timestamp='" + String(block.timestamp).escapeHTML() + "'>" + formatTimestampAsDateTime(block.timestamp) + '</td><td>' + formatNQTAsAmount(block.totalAmountNQT) + ' + ' + formatNQTAsAmount(block.totalFeeNQT) + '</td><td>' + formatNumber(block.numberOfTransactions) + '</td></tr>'
-    }
-
-    if (newBlockCount === 1) {
-        $('#dashboard_blocks_table tbody tr:last').remove()
-    } else if (newBlockCount === 10) {
-        $('#dashboard_blocks_table tbody').empty()
-    } else {
-        $('#dashboard_blocks_table tbody tr').slice(10 - newBlockCount).remove()
-    }
-
-    $('#dashboard_blocks_table tbody').prepend(rows)
-
-    // update number of confirmations... perhaps we should also update it in tne BRS.transactions array
-    $('#dashboard_transactions_table tr.confirmed td.confirmations').each(function () {
-        if ($(this).data('incoming')) {
-            $(this).removeData('incoming')
-            return true
-        }
-
-        const confirmations = parseInt($(this).data('confirmations'), 10)
-
-        let nrConfirmations = confirmations + newBlocks.length
-
-        if (confirmations <= 10) {
-            $(this).data('confirmations', nrConfirmations)
-            $(this).attr('data-content', $.t('x_confirmations', {
-                x: formatNumber(nrConfirmations)
-            }))
-
-            if (nrConfirmations > 10) {
-                nrConfirmations = '10+'
-            }
-            $(this).html(nrConfirmations)
-        } else {
-            $(this).attr('data-content', $.t('x_confirmations', {
-                x: formatNumber(nrConfirmations)
-            }))
-        }
+        const blockheightDiff = response.blocks[0].height - BRS.blocks[0].height
+        BRS.blocks = response.blocks
+        checkSyncProcess()
+        updateDashboardBlocks()
+        updateDashboardTransactions(blockheightDiff)
     })
 }
 
+/**
+ * Execute verifications for sync process, showing warnings and managing the interval to check it again.
+ * @returns 
+ */
+function checkSyncProcess() {
+    const secondsBehind = BRS.blockchainStatus.time - BRS.blocks[0].timestamp
+
+    if (secondsBehind > 60 * 60 * 24  * 4) {
+        // RESYNC! Estimated that it is more than 1440 blocks behind
+        setStateInterval(30)
+        BRS.downloadingBlockchain = true
+        $('#downloading_blockchain').show()
+        updateBlockchainDownloadProgress()
+        return
+    }
+
+    BRS.downloadingBlockchain = false
+    $('#downloading_blockchain').hide()
+
+    if (secondsBehind > 60 * 60) {
+        // Rescanning!
+        setStateInterval(10)
+        BRS.rescaningBlockchain = true
+        return
+    }
+
+    // Sync seems to be ok (less than one hour behind)
+    setStateInterval(30)
+    BRS.rescaningBlockchain = false
+
+    // Check if it is on a fork
+    const onAFork = BRS.blocks.every(block => block.generator === BRS.blocks[0].generator)
+    if (onAFork) {
+        $.notify($.t('fork_warning'), { type: 'danger' })
+    }
+}
+
+function updateBlockchainDownloadProgress () : void {
+    let percentage = 0
+    if (BRS.blockchainStatus.numberOfBlocks && BRS.blockchainStatus.lastBlockchainFeederHeight) {
+        percentage = Math.trunc((BRS.blockchainStatus.numberOfBlocks / BRS.blockchainStatus.lastBlockchainFeederHeight) * 100)
+    }
+    $('#downloading_blockchain .progress-bar').css('width', percentage + '%')
+}
+
+/**
+ * Update the blocks table in dashboard with the blocks available at `BRS.blocks`
+ */
+function updateDashboardBlocks () {
+    let rows = ''
+    for (const block of BRS.blocks) {
+        const isBold = block.numberOfTransactions > 0 ? "style='font-weight:bold'" : ''
+        const height = String(block.height).escapeHTML()
+        const blockId = String(block.block).escapeHTML()
+        const timestamp = String(block.timestamp).escapeHTML()
+        const formattedTimestamp = formatTimestampAsDateTime(block.timestamp)
+        const totalAmount = formatNQTAsAmount(block.totalAmountNQT)
+        const totalFee = formatNQTAsAmount(block.totalFeeNQT)
+        const transactionCount = formatNumber(block.numberOfTransactions)
+
+        rows += `
+            <tr>
+              <td>
+                <a href='#' data-block='${height}' data-blockid='${blockId}' class='block' ${isBold}>
+                  ${height}
+                </a>
+              </td>
+              <td data-timestamp='${timestamp}'>${formattedTimestamp}</td>
+              <td>${totalAmount} + ${totalFee}</td>
+              <td>${transactionCount}</td>
+            </tr>`
+    }
+    $('#dashboard_blocks_table tbody').html(rows)
+}
+
+function updateDashboardTransactions(numberToAdd: number) {
+    $('#dashboard_transactions_table tr.confirmed td.confirmations').each(function () {
+        if ($(this).data('incoming')) {
+            $(this).removeData('incoming')
+            return
+        }
+
+        const confirmations = parseInt($(this).text(), 10)
+
+        const nrConfirmations = confirmations + numberToAdd
+
+        if (confirmations <= 10) {
+            if (nrConfirmations > 10) {
+                $(this).text('10+')
+                return
+            }
+            $(this).text(nrConfirmations)
+            return
+        }
+        $(this).text('10+')
+    })
+}
+
+/**
+ * Draws the page 'Mining' -> 'Forged block'.
+ */
 export function pagesBlocksForged () {
-    sendRequest('getAccountBlockIds+', {
+    sendRequest('getAccountBlocks+', {
         account: BRS.account,
+        firstIndex: 0,
+        lastIndex: BRS.pageSize,
         timestamp: 0
-    }, function (response) {
-        if (!response.blockIds || response.blockIds.length === 0) {
+    }, function (response: GetAccountBlocksResponse) {
+        if (!response.blocks || response.blocks.length === 0) {
             blocksPageLoaded([])
             return
         }
         // We have blocks!
-        let blocks = []
-        let nrBlocks = 0
-
-        const blockIds = response.blockIds.slice(0, 100)
-
-        if (response.blockIds.length > 100) {
-            $('#blocks_page_forged_warning').show()
-        }
-
-        for (let i = 0; i < blockIds.length; i++) {
-            sendRequest('getBlock+', {
-                block: blockIds[i],
-                _extra: {
-                    nr: i
-                }
-            }, function (block, input) {
-                if (BRS.currentPage !== 'blocks_forged') {
-                    blocks = {}
-                    return
-                }
-
-                block.block = input.block
-                blocks[input._extra.nr] = block
-                nrBlocks++
-
-                if (nrBlocks === blockIds.length) {
-                    blocksPageLoaded(blocks)
-                }
-            })
-        }
+        blocksPageLoaded(response.blocks)
     })
 }
 
+/**
+ * Draws the page 'Blockchain' -> 'Blocks Info' with latest block available.
+ * @param blockheight Block to show
+ */
 export function pagesBlockInfo () {
     blocksInfoLoad('')
 }
 
-export function blocksInfoLoad (blockheight) {
+/**
+ * Draws the page 'Blockchain' -> 'Blocks Info'
+ * @param blockheight Block to show
+ */
+export function blocksInfoLoad (blockheight: number | '') {
     if (blockheight === '') {
-        blockheight = BRS.blocks[0].height.toString()
+        blockheight = BRS.blocks[0].height
     }
+
     sendRequest('getBlock+', {
         height: blockheight,
         includeTransactions: true
-    }, function (response) {
+    }, function (response: GetBlockResponse) {
         if (response.errorCode) {
             $.notify($.t('invalid_blockheight'), { type: 'danger' })
             dataLoaded('')
             return
         }
         $('#block_info_input_block').val(blockheight)
-        const rows = response.transactions.reduce((prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr), '')
+        const rows = response.transactions.reduce((prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr as Transaction), '')
         dataLoaded(rows)
     })
 }
 
-function getTransactionInBlocksRowHTML (transaction) {
+function getTransactionInBlocksRowHTML (transaction: Transaction) {
     const details = getTransactionDetails(transaction)
+    const transactionId = String(transaction.transaction).escapeHTML()
+    const hasMessage = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : ''
+    const timestamp = formatTimestampAsDateTime(transaction.timestamp)
+    const fee = formatNQTAsAmount(transaction.feeNQT)
 
-    let rowStr = ''
-    rowStr += '<tr>'
-    rowStr += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "'>" + String(transaction.transaction).escapeHTML() + '</a></td>'
-    rowStr += '<td>' + (details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '') + '</td>'
-    rowStr += '<td>' + formatTimestampAsDateTime(transaction.timestamp) + '</td>'
-    rowStr += '<td>' + details.nameOfTransaction + '</td>'
-    rowStr += '<td>' + details.senderHTML + '</td>'
-    rowStr += '<td>' + details.recipientHTML + '</td>'
-    rowStr += '<td>' + details.circleText + '</td>'
-    rowStr += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
-    rowStr += '<td>' + formatNQTAsAmount(transaction.feeNQT) + '</td>'
-    rowStr += '</tr>'
+    return `
+        <tr>
+          <td><a href='#' data-transaction='${transactionId}'>${transactionId}</a></td>
+          <td>${hasMessage}</td>
+          <td>${timestamp}</td>
+          <td>${details.nameOfTransaction}</td>
+          <td>${details.senderHTML}</td>
+          <td>${details.recipientHTML}</td>
+          <td>${details.circleText}</td>
+          <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
+          <td>${fee}</td>
+        </tr>`
+}
 
-    return rowStr
-};
-
+/**
+ * Draws the page 'Blockchain' -> 'Latest blocks'
+ * @param blockheight Block to show
+ */
 export function pagesBlocks () {
-    if (BRS.blocks.length >= 100 || BRS.downloadingBlockchain) {
-        // Just show what we have
-        blocksPageLoaded(BRS.blocks)
-        return
-    }
-    if (BRS.blocks.length < 2) {
-        // should never happens because dashboard already loaded 10 of them
-        // buuut then show nothing
-        blocksPageLoaded([])
-        return
-    }
-    // partial blocks only, fetch 100 of them
-    const previousBlock = BRS.blocks[BRS.blocks.length - 1].previousBlock
-    // if previous block is undefined, dont try add it
-    if (typeof previousBlock !== 'undefined') {
-        getBlock(previousBlock, finish100Blocks, true)
-    }
+    sendRequest('getBlocks', {
+        firstIndex: 0,
+        lastIndex: BRS.pageSize
+    }, function (response: GetBlocksResponse) {
+        if (response.errorCode) {
+            blocksPageLoaded([])
+            return
+        }
+        blocksPageLoaded(response.blocks)
+    })
 }
 
 export function incomingBlocks () {
     reloadCurrentPage()
 }
 
-export function finish100Blocks (response) {
-    BRS.blocks.push(response)
-    if (BRS.blocks.length < 100 && typeof response.previousBlock !== 'undefined') {
-        getBlock(response.previousBlock, finish100Blocks, true)
-    } else {
-        blocksPageLoaded(BRS.blocks)
-    }
-}
-
-export function blocksPageLoaded (blocks) {
+/**
+ * Draws the page 'Blockchain' -> 'Latest blocks' or the page 'Mining' -> 'Forged blocks'
+ * @param blockheight Blocks to show in current page.
+ */
+function blocksPageLoaded (blocks: BlockDetails[]) {
     let rows = ''
-    let totalAmount = new BigInteger('0')
-    let totalFees = new BigInteger('0')
+    let totalAmount = 0n
+    let totalFees = 0n
     let totalTransactions = 0
-    let time
-    let endingTime
-    let startingTime
+    let time: number
+    let endingTime: number
+    let startingTime: number
 
-    for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i]
-
-        totalAmount = totalAmount.add(new BigInteger(block.totalAmountNQT))
-
-        totalFees = totalFees.add(new BigInteger(block.totalFeeNQT))
-
+    for (const block of blocks) {
+        // Update totals
+        totalAmount += BigInt(block.totalAmountNQT)
+        totalFees += BigInt(block.totalFeeNQT)
         totalTransactions += block.numberOfTransactions
 
-        rows += "<tr><td><a href='#' data-block='" + String(block.height).escapeHTML() + "' data-blockid='" + String(block.block).escapeHTML() + "' class='block'" + (block.numberOfTransactions > 0 ? " style='font-weight:bold'" : '') + '>' + String(block.height).escapeHTML() + '</a></td><td>' + formatTimestampAsDateTime(block.timestamp) + '</td><td>' + formatNQTAsAmount(block.totalAmountNQT) + '</td><td>' + formatNQTAsAmount(block.totalFeeNQT) + '</td><td>' + formatNumber(block.numberOfTransactions) + '</td><td>' + (block.generator !== BRS.genesis ? "<a href='#' data-user='" + getAccountFormatted(block, 'generator') + "' class='user_info'>" + getAccountTitle(block, 'generator') + '</a>' : $.t('genesis')) + '</td><td>' + formatVolume(block.payloadLength) + '</td><td>' + Math.round(block.baseTarget / 153722867 * 100).toString().padStart(4, '0') + ' %</td></tr>'
+        // Format values for display
+        const height = String(block.height).escapeHTML()
+        const blockId = String(block.block).escapeHTML()
+        const isBold = block.numberOfTransactions > 0 ? " style='font-weight:bold'" : ''
+        const timestamp = formatTimestampAsDateTime(block.timestamp)
+        const amount = formatNQTAsAmount(block.totalAmountNQT)
+        const fee = formatNQTAsAmount(block.totalFeeNQT)
+        const transactions = formatNumber(block.numberOfTransactions)
+        const generatorDisplay = block.generator !== BRS.genesis
+            ? `<a href='#' data-user='${getAccountFormatted(block, 'generator')}' class='user_info'>${getAccountTitle(block, 'generator')}</a>`
+            : $.t('genesis')
+        const volume = formatVolume(block.payloadLength)
+        const percentage = Math.round(Number(block.baseTarget) / 153722867 * 100).toString().padStart(4, '0') + ' %'
+
+        // Build row
+        rows += `
+            <tr>
+                <td><a href='#' data-block='${height}' data-blockid='${blockId}' class='block'${isBold}>${height}</a></td>
+                <td>${timestamp}</td>
+                <td>${amount}</td>
+                <td>${fee}</td>
+                <td>${transactions}</td>
+                <td>${generatorDisplay}</td>
+                <td>${volume}</td>
+                <td>${percentage}</td>
+            </tr>`
     }
 
     if (blocks.length) {
@@ -395,25 +298,25 @@ export function blocksPageLoaded (blocks) {
     } else {
         startingTime = endingTime = time = 0
     }
-    let averageFee
-    let averageAmount
-    let blockCount
+    let averageFee: string
+    let averageAmount: string
+    let blockCount: string
     if (blocks.length) {
-        averageFee = formatNQTAsAmount(totalFees.divide(new BigInteger((String(blocks.length)))))
-        averageAmount = formatNQTAsAmount(totalAmount.divide(new BigInteger((String(blocks.length)))))
+        averageFee = formatNQTAsAmount(totalFees / BigInt(blocks.length))
+        averageAmount = formatNQTAsAmount(totalAmount / BigInt(blocks.length))
     } else {
-        averageFee = 0
-        averageAmount = 0
+        averageFee = '0'
+        averageAmount = '0'
     }
 
     averageFee = parseAmountToNQT(averageFee)
     averageAmount = parseAmountToNQT(averageAmount)
 
     if (BRS.currentPage === 'blocks_forged') {
-        if (blocks.length === 100) {
-            blockCount = blocks.length + '+'
+        if (blocks.length >= BRS.pageSize) {
+            blockCount = BRS.pageSize + '+'
         } else {
-            blockCount = blocks.length
+            blockCount = blocks.length.toString()
         }
         $('#blocks_forged_average_fee').html(formatStyledAmount(averageFee)).removeClass('loading_dots')
         $('#blocks_forged_average_amount').html(formatStyledAmount(averageAmount)).removeClass('loading_dots')
@@ -423,7 +326,7 @@ export function blocksPageLoaded (blocks) {
         if (time === 0) {
             $('#blocks_transactions_per_hour').html('0').removeClass('loading_dots')
         } else {
-            $('#blocks_transactions_per_hour').html(Math.round(totalTransactions / (time / 60) * 60)).removeClass('loading_dots')
+            $('#blocks_transactions_per_hour').html((Math.round(totalTransactions / (time / 60) * 60)).toString()).removeClass('loading_dots')
         }
         $('#blocks_average_fee').html(formatStyledAmount(averageFee)).removeClass('loading_dots')
         $('#blocks_average_amount').html(formatStyledAmount(averageAmount)).removeClass('loading_dots')

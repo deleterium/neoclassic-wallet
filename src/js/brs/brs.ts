@@ -5,7 +5,8 @@
 
 import {
     AssetBalance,
-    GetAccountResponse
+    GetAccountResponse,
+    GetBlochainStatusResponse
 } from '../typings'
 
 import hashicon from 'hashicon'
@@ -23,8 +24,6 @@ import {
 } from './brs.login'
 
 import {
-    getBlock,
-    handleInitialBlocks,
     handleNewBlocks
 } from './brs.blocks'
 
@@ -46,7 +45,6 @@ import {
 } from './brs.assetexchange'
 
 import {
-    getInitialTransactions,
     getNewTransactions,
     getUnconfirmedTransactions,
     handleIncomingTransactions
@@ -140,11 +138,16 @@ export function setStateInterval (seconds: number) : void {
     }, 1000 * seconds)
 }
 
+/**
+ * Checks prefered node string in login panel. If changed, update BRS with blockchain details.
+ */
 export function checkSelectedNode () : void {
     const preferedNode = $('#prefered_node').val() as string
     if (preferedNode !== BRS.server) {
-        // Server changed, get new network details
+        // Update Variables
         BRS.server = preferedNode
+        BRS.blocks = []
+        // Server changed, get new network details
         sendRequest('getConstants', function (response) {
             if (response.errorCode) {
                 return
@@ -202,17 +205,21 @@ export function autoSelectServer () : void {
 }
 
 function setHeaderClock () : void {
-    const lastBlockDate = new Date((BRS.genesisSeconds + BRS.state.lastBlockTimestamp) * 1000)
+    const lastBlockDate = new Date((BRS.genesisSeconds + BRS.blockchainStatus.lastBlockTimestamp) * 1000)
     const diffSeconds = Math.floor((Date.now() - lastBlockDate.getTime()) / 1000)
     const minutes = (diffSeconds / 60) < 10 ? '0' + Math.floor(diffSeconds / 60).toString() : Math.floor(diffSeconds / 60).toString()
     const seconds = (diffSeconds % 60) < 10 ? '0' + (diffSeconds % 60).toString() : (diffSeconds % 60).toString()
     $('#header_block_time').html(minutes + ':' + seconds)
 }
 
+/**
+ * Runs constantly to check blockchain details, conections 
+ * @param callback 
+ */
 export function getState (callback?: () => void) : void {
     checkSelectedNode()
 
-    sendRequest('getBlockchainStatus', function (response) {
+    sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse) {
         if (response.errorCode) {
             if (response.errorCode === -1) {
                 if (BRS.settings.automatic_node_selection) {
@@ -225,53 +232,26 @@ export function getState (callback?: () => void) : void {
             return
         }
         $('#node_alert').hide()
-        const firstTime = !('lastBlock' in BRS.state)
-        const previousLastBlock = (firstTime ? '0' : BRS.state.lastBlock)
+        const previousLastBlock = BRS.blockchainStatus.lastBlock ||  '0'
 
-        BRS.state = response
+        BRS.blockchainStatus = response
 
-        $('#brs_version').html(BRS.state.version + ' on ' + BRS.server).removeClass('loading_dots')
-        $('#brs_version_dashboard').html(BRS.state.version).removeClass('loading_dots')
-        $('#header_current_block').html('#' + BRS.state.numberOfBlocks)
-        setHeaderClock()
-        switch (true) {
-        case firstTime:
-            getBlock(BRS.state.lastBlock, handleInitialBlocks)
-            break
-        case BRS.state.isScanning:
-            // do nothing but reset BRS.state so that when isScanning is done, everything is reset.
-            BRS.isScanning = true
-            break
-        case BRS.isScanning:
-            // rescan is done, now we must reset everything...
-            BRS.isScanning = false
-            BRS.blocks = []
-            BRS.tempBlocks = []
-            getBlock(BRS.state.lastBlock, handleInitialBlocks)
-            if (BRS.account) {
-                getInitialTransactions()
-                getAccountInfo(false)
-            }
-            break
-        case (previousLastBlock !== BRS.state.lastBlock):
-            BRS.tempBlocks = []
+        $('#brs_version').html(BRS.blockchainStatus.version + ' on ' + BRS.server).removeClass('loading_dots')
+        $('#brs_version_dashboard').html(BRS.blockchainStatus.version).removeClass('loading_dots')
+        $('#header_current_block').html('#' + BRS.blockchainStatus.numberOfBlocks)
+
+        if (previousLastBlock !== BRS.blockchainStatus.lastBlock) {
+            // New block in chain!
+            handleNewBlocks()
             if (BRS.account) {
                 getAccountInfo(false, cacheUserAssets)
-            }
-            getBlock(BRS.state.lastBlock, handleNewBlocks)
-            if (BRS.account) {
                 getNewTransactions()
             }
-            break
-        default:
+        } else {
             if (BRS.account) {
                 getUnconfirmedTransactions(function (unconfirmedTransactions) {
                     handleIncomingTransactions(unconfirmedTransactions, false)
                 })
-            }
-            // only done so that download progress meter updates correctly based on lastFeederHeight
-            if (BRS.downloadingBlockchain) {
-                updateBlockchainDownloadProgress()
             }
         }
 
@@ -402,6 +382,11 @@ export function goToPageNumber (pageNumber: number) {
     BRS.pages[BRS.currentPage]()
 }
 
+/**
+ * Not only getAccountInfo, but checks and update coins and assets values. Called every new block was detected.
+ * @param firstRun 
+ * @param callback 
+ */
 export function getAccountInfo (firstRun: boolean, callback?: () => void) {
     sendRequest('getAccount', {
         account: BRS.account,
@@ -425,7 +410,7 @@ export function getAccountInfo (firstRun: boolean, callback?: () => void) {
                     } else {
                         $('#dashboard_message').addClass('alert-success').removeClass('alert-danger').html($.t('status_blockchain_downloading')).show()
                     }
-                } else if (BRS.state && BRS.state.isScanning) {
+                } else if (BRS.rescaningBlockchain) {
                     $('#dashboard_message').addClass('alert-danger').removeClass('alert-success').html($.t('status_blockchain_rescanning')).show()
                 } else {
                     $('#dashboard_message').addClass('alert-success').removeClass('alert-danger').html($.t('status_new_account', {
@@ -444,7 +429,7 @@ export function getAccountInfo (firstRun: boolean, callback?: () => void) {
 
             if (BRS.downloadingBlockchain) {
                 $('#dashboard_message').addClass('alert-success').removeClass('alert-danger').html($.t('status_blockchain_downloading')).show()
-            } else if (BRS.state && BRS.state.isScanning) {
+            } else if (BRS.rescaningBlockchain) {
                 $('#dashboard_message').addClass('alert-danger').removeClass('alert-success').html($.t('status_blockchain_rescanning')).show()
             } else if (!BRS.accountInfo.publicKey) {
                 $('#dashboard_message').addClass('alert-danger').removeClass('alert-success').html($.t('no_public_key_warning') + ' ' + $.t('public_key_actions')).show()
@@ -453,7 +438,7 @@ export function getAccountInfo (firstRun: boolean, callback?: () => void) {
             }
 
             // only show if happened within last week
-            const showAssetDifference = (!BRS.downloadingBlockchain || (BRS.blocks.length > 0 && BRS.state && BRS.state.time - BRS.blocks[0].timestamp < 60 * 60 * 24 * 7))
+            const showAssetDifference = (!BRS.downloadingBlockchain || (BRS.blocks.length > 0 && BRS.blockchainStatus && BRS.blockchainStatus.time - BRS.blocks[0].timestamp < 60 * 60 * 24 * 7))
 
             if (BRS.databaseSupport) {
                 dbGet('data', {
@@ -640,42 +625,6 @@ export function checkLocationHash () : void {
         $modal.modal('show')
     }
     window.location.hash = '#'
-}
-
-export function updateBlockchainDownloadProgress () : void {
-    let percentage: number
-    if (BRS.state.lastBlockchainFeederHeight && BRS.state.numberOfBlocks < BRS.state.lastBlockchainFeederHeight) {
-        percentage = Math.round((BRS.state.numberOfBlocks / BRS.state.lastBlockchainFeederHeight) * 100)
-    } else {
-        percentage = 100
-    }
-    if (percentage === 100) {
-        $('#downloading_blockchain .progress').hide()
-    } else {
-        $('#downloading_blockchain .progress').show()
-        $('#downloading_blockchain .progress-bar').css('width', percentage + '%')
-        $('#downloading_blockchain .sr-only').html($.t('percent_complete', { percent: percentage }))
-    }
-}
-
-export function checkIfOnAFork () : void {
-    if (BRS.downloadingBlockchain) {
-        return
-    }
-    let onAFork = true
-    if (BRS.blocks.length >= 10) {
-        for (let i = 0; i < 10; i++) {
-            if (BRS.blocks[i].generator !== BRS.account) {
-                onAFork = false
-                break
-            }
-        }
-    } else {
-        onAFork = false
-    }
-    if (onAFork) {
-        $.notify($.t('fork_warning'), { type: 'danger' })
-    }
 }
 
 /** Checks if a Number is valid and greater than minimum fee. If not, return minimum fee */

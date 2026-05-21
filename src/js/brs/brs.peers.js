@@ -59,7 +59,7 @@ export function pagesPeers () {
                                 connected++
                             }
 
-                            const versionToCompare = BRS.state.version
+                            const versionToCompare = BRS.blockchainStatus.version
 
                             if (versionCompare(peer.version, versionToCompare)) {
                                 upToDate++
