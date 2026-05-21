@@ -173,6 +173,7 @@ export const BRS = {
     // Number formatting in chose locale.
     decimalSign: '.',
     groupSeparator: ',',
+    durationFormatter: undefined as undefined | Intl.DurationFormat,
 
     downloadingBlockchain: false, // More than 4 days from last block
     rescaningBlockchain: false, // More than 1 hour from last block

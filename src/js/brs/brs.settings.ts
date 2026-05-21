@@ -64,6 +64,7 @@ function applySettings (key: string) {
         const parts = new Intl.NumberFormat(BRS.settings.language).formatToParts(1111.1)
         BRS.decimalSign = parts.find(item => item.type === 'decimal')?.value || '.';
         BRS.groupSeparator = parts.find(item => item.type === 'group')?.value || ','
+        BRS.durationFormatter = new Intl.DurationFormat(BRS.settings.language, { style: "short" });
     }
 
     if (applyAll || key === 'submit_on_enter') {
