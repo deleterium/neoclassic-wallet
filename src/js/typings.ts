@@ -85,6 +85,12 @@ export interface Subscription {
   timestamp: number;
 }
 
+export interface GetSubscriptionResponse extends Subscription {
+    requestProcessingTime: number
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 // region Account
 
 export interface AssetBalance {
@@ -140,6 +146,7 @@ export interface GetAccountSubscriptionsResponse {
     errorDescription?: string;
 
 }
+
 // region Blockchain
 
 export interface BlockchainStatus {
