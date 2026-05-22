@@ -45,6 +45,8 @@ import {
 
 import { AssetDetails, GetIndirectIncomingResponse, Transaction } from '../typings'
 
+import { secondsToDuration } from './brs'
+
 export function showTransactionModal (transaction: Transaction | string) {
     if (BRS.fetchingModalData) {
         return
@@ -747,8 +749,9 @@ function processTransactionModalData (transaction: Transaction) {
             data.escrow_id = transaction.attachment.escrowId
             return
         case 3:
-            // TODO add languages / human readable format
-            data.frequency = transaction.attachment.frequency + ' seconds'
+            data.frequency = BRS.durationFormatter.format({seconds: transaction.attachment.frequency})
+                + ' - '
+                + BRS.durationFormatter.format(secondsToDuration(transaction.attachment.frequency))
             return
         case 4:
         case 5:
