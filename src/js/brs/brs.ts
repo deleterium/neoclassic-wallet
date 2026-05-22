@@ -204,16 +204,9 @@ export function autoSelectServer () : void {
     }
 }
 
-function setHeaderClock () : void {
-    if (!BRS.durationFormatter || !BRS.blockchainStatus.lastBlockTimestamp) {
-        return
-    }
-    const lastBlockDate = new Date((BRS.genesisSeconds + BRS.blockchainStatus.lastBlockTimestamp) * 1000)
-    const diffSeconds = Math.floor((Date.now() - lastBlockDate.getTime()) / 1000)
-
-    // Calculate days
-    const days = Math.floor(diffSeconds / (24 * 60 * 60))
-    const remainingSecondsAfterDays = diffSeconds % (24 * 60 * 60)
+export function secondsToDuration(durationInSeconds: number) {
+    const days = Math.floor(durationInSeconds / (24 * 60 * 60))
+    const remainingSecondsAfterDays = durationInSeconds % (24 * 60 * 60)
 
     // Calculate hours
     const hours = Math.floor(remainingSecondsAfterDays / (60 * 60))
@@ -223,23 +216,30 @@ function setHeaderClock () : void {
     const minutes = Math.floor(remainingSecondsAfterHours / 60)
     const seconds = remainingSecondsAfterHours % 60
 
-    const duration = {
-        days: 0,
-        hours: 0,
-        minutes: 0,
-        seconds: 0,
-    };
-    if (days > 7) {
-        duration.days = days
-    } else if (days > 0) {
-        duration.days = days
-        duration.hours = hours
-    } else if (hours > 0) {
-        duration.hours = hours
-        duration.minutes = minutes
-    } else {
-        duration.minutes = minutes
-        duration.seconds = seconds
+    return  {
+        days: days,
+        hours: hours,
+        minutes: minutes,
+        seconds: seconds,
+    }
+}
+
+function setHeaderClock () : void {
+    if (!BRS.durationFormatter || !BRS.blockchainStatus.lastBlockTimestamp) {
+        return
+    }
+    const lastBlockDate = new Date((BRS.genesisSeconds + BRS.blockchainStatus.lastBlockTimestamp) * 1000)
+    const diffSeconds = Math.floor((Date.now() - lastBlockDate.getTime()) / 1000)
+
+    const duration = secondsToDuration(diffSeconds)
+
+    // Simplify display.
+    if (duration.days > 7) {
+        duration.hours = duration.minutes = duration.seconds = 0
+    } else if (duration.days > 0) {
+        duration.minutes = duration.seconds = 0
+    } else if (duration.hours > 0) {
+        duration.seconds = 0
     }
     $('#header_block_time').text(BRS.durationFormatter.format(duration))
 }

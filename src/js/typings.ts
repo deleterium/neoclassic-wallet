@@ -73,6 +73,18 @@ export interface GetIndirectIncomingResponse {
     errorDescription?: string;
 }
 
+export interface Subscription {
+  id: string;
+  sender: string;
+  senderRS: string;
+  recipient: string;
+  recipientRS: string;
+  amountNQT: string;
+  frequency: number;
+  timeNext: number;
+  timestamp: number;
+}
+
 // region Account
 
 export interface AssetBalance {
@@ -121,6 +133,13 @@ export interface GetAccountPublicKeyResponse {
     errorDescription?: string;
 };
 
+export interface GetAccountSubscriptionsResponse {
+    subscriptions: Subscription[];
+    requestProcessingTime: number;
+    errorCode?: number;
+    errorDescription?: string;
+
+}
 // region Blockchain
 
 export interface BlockchainStatus {
