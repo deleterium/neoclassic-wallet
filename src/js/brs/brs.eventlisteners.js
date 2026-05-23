@@ -131,8 +131,8 @@ import {
 } from './brs.modals.escrow'
 
 import {
-    evBrsModalOnShowBsModal
-} from './brs.modals.info'
+    evBrsModalServerInfoOnShowBsModal
+} from './brs.modals.serverinfo'
 
 import {
     evGenerateQrButtonClick
@@ -573,8 +573,8 @@ export function addEventListeners () {
         showEscrowDecisionModal(escrowId)
     })
 
-    // from brs.modals.info.js
-    $('#brs_modal').on('show.bs.modal', evBrsModalOnShowBsModal)
+    // from brs.modals.serverinfo.js
+    $('#brs_modal_server_info').on('show.bs.modal', evBrsModalServerInfoOnShowBsModal)
 
     // from brs.modals.request.js
     $('#request_burst_qr_modal').on('show.bs.modal', function () {

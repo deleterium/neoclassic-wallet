@@ -312,6 +312,45 @@ export interface GetAccountATsResponse {
     errorDescription?: string;
 };
 
+// region Server info
+
+export interface GetStateResponse {
+    application: string;
+    version: string;
+    time: number;
+    lastBlock: string;
+    cumulativeDifficulty: string;
+    totalMinedNQT: number;
+    totalBurntNQT: number;
+    circulatingSupplyNQT: number;
+    numberOfBlocks: number;
+    numberOfTransactions: number;
+    numberOfATs: number;
+    numberOfAssets: number;
+    numberOfOrders: number;
+    numberOfAskOrders: number;
+    numberOfBidOrders: number;
+    numberOfTrades: number;
+    numberOfTransfers: number;
+    numberOfAliases: number;
+    numberOfSubscriptions: number;
+    numberOfSubscriptionPayments: number;
+    numberOfPeers: number;
+    numberOfUnlockedAccounts: number;
+    lastBlockchainFeeder: string;
+    lastBlockchainFeederHeight: number;
+    isScanning: boolean;
+    availableProcessors: number;
+    maxMemory: number;
+    totalMemory: number;
+    freeMemory: number;
+    indirectIncomingServiceEnabled: boolean;
+    databaseTrimmingEnabled: boolean;
+    requestProcessingTime: number;
+}
+
+// region POST Response
+
 export interface PostResponse {
     broadcasted: boolean;
     unsignedTransactionBytes: string;

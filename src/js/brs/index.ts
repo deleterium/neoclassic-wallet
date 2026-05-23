@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
         { location: 'body', path: 'html/modals/alias.html' },
         { location: 'body', path: 'html/modals/asset.html' },
         { location: 'body', path: 'html/modals/block_info.html' },
-        { location: 'body', path: 'html/modals/brs.html' },
+        { location: 'body', path: 'html/modals/server_info.html' },
         { location: 'body', path: 'html/modals/contact.html' },
         { location: 'body', path: 'html/modals/escrow.html' },
         { location: 'body', path: 'html/modals/raw_transaction.html' },

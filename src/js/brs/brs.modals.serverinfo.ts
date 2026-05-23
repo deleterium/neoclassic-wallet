@@ -13,14 +13,18 @@ import {
     formatTimestampAsDateTime
 } from './brs.numbers'
 
-export function evBrsModalOnShowBsModal () {
+import { GetStateResponse } from '../typings'
+
+export function evBrsModalServerInfoOnShowBsModal () {
     if (BRS.fetchingModalData) {
         return
     }
 
     BRS.fetchingModalData = true
 
-    sendRequest('getState', function (state) {
+    sendRequest('getState', function (state: GetStateResponse) {
+        BRS.fetchingModalData = false
+
         for (const key in state) {
             const el = $('#brs_node_state_' + key)
             if (el.length) {
@@ -36,6 +40,5 @@ export function evBrsModalOnShowBsModal () {
             }
         }
 
-        BRS.fetchingModalData = false
     })
 }
