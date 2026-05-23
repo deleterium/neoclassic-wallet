@@ -193,26 +193,6 @@
 /* Left: asset-sidebar; Right: orders */
 .asset-content {
     display: flex;
-    flex-direction: row;
-    gap: .5em;
-    align-items: stretch;
-    align-content: stretch;
-    padding-right: .5em;
-}
-.secondary-sidebar-context {
-    width: min-content;
-    min-width: 12rem;
-}
-.secondary-sidebar-context a {
-    color: inherit;
-}
-.secondary-sidebar-context .right {
-	position: absolute;
-	right: 1rem;
-	top: 1rem;
-}
-.secondary-sidebar-content {
-    flex-grow: 1;
 }
 .list-group-item-heading {
     margin-right: 1rem;

@@ -129,8 +129,8 @@
     </div>
   </section>
   <section class="content asset-content">
-    <div class="list-group unselectable secondary-sidebar-context" id="asset_exchange_sidebar">
-      <div id="asset_exchange_sidebar_search">
+    <div class="col-2 col-sm-2">
+      <div id="asset_exchange_vtab_search">
         <form action="#" method="get" class="form" id="asset_exchange_search" autocomplete="off">
           <div class="input-group">
             <input type="text" name="q" class="form-control" placeholder="Search Assets..." data-i18n="[placeholder]search_assets" />
@@ -140,9 +140,10 @@
           </div>
         </form>
       </div>
-      <div id="asset_exchange_sidebar_content"></div>
+      <div class="nav flex-column nav-tabs" id="asset_exchange_vtab" role="tablist" aria-orientation="vertical">
+      </div>
     </div>
-    <div class="secondary-sidebar-content">
+    <div class="col-10 col-sm-10">
       <div id="no_assets_available" style="padding-top: 150px; text-align: center; display: none" data-i18n="no_assets_available">
         You don't have any assets in your bookmark list yet. Click on "Add Asset" in the top right corner to add one.
       </div>

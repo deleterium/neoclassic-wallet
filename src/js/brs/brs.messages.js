@@ -38,7 +38,7 @@ import {
 
 import {
     closeContextMenu
-} from './brs.sidebar'
+} from './brs.contextmenu'
 
 import {
     showAccountModal
@@ -57,7 +57,7 @@ export function pagesMessages (callback) {
         pageLoaded(callback)
         return
     }
-    $('#messages_sidebar').empty()
+    $('#messages_vtab').empty()
     $('#no_message_selected').show()
     $('#no_messages_available').hide()
     $('#messages_card').hide()
@@ -133,13 +133,13 @@ function displayMessageSidebar () {
             extra = " data-contact='" + getAccountTitle(sortedMessage, 'user') + "'"
         }
 
-        rows += "<a href='#' class='list-group-item no-wrap' data-account='" + getAccountFormatted(sortedMessage, 'user') + "' data-account-id='" + getAccountFormatted(sortedMessage.user) + "'" + extra + '>' + getAccountTitle(sortedMessage, 'user') + '<br><small>' + formatTimestampAsDateTime(sortedMessage.timestamp) + '</small></a>'
+        rows += "<a href='#' class='nav-link' data-account='" + getAccountFormatted(sortedMessage, 'user') + "' data-account-id='" + getAccountFormatted(sortedMessage.user) + "'" + extra + ' data-context="messages_vtab_context">' + getAccountTitle(sortedMessage, 'user') + '<br><small>' + formatTimestampAsDateTime(sortedMessage.timestamp) + '</small></a>'
     }
 
-    $('#messages_sidebar').empty().append(rows)
+    $('#messages_vtab').empty().append(rows)
 
     if (BRS.currentSubPage) {
-        $('#messages_sidebar a[data-account-id=' + BRS.currentSubPage + ']').addClass('active')
+        $('#messages_vtab a[data-account-id=' + BRS.currentSubPage + ']').addClass('active')
     }
 }
 
@@ -366,17 +366,18 @@ function buildChatMessages (account_id) {
 
 export function evMessagesSidebarClick (e) {
     e.preventDefault()
+    const clickedElement = $(e.currentTarget)
 
-    $('#messages_sidebar a.active').removeClass('active')
-    $(this).addClass('active')
+    $('#messages_vtab a.active').removeClass('active')
+    clickedElement.addClass('active')
 
-    const otherUser = $(this).data('account-id')
+    const otherUser = clickedElement.data('account-id')
     BRS.currentSubPage = otherUser
 
-    const contactName = $(this).data('contact')
-    const rsAddress = $(this).data('account')
+    const contactName = clickedElement.data('contact')
+    const rsAddress = clickedElement.data('account')
     const friendlyName = contactName ?? rsAddress
-    $('#chatbox_title').html(friendlyName.escapeHTML())
+    $('#chatbox_title').text(friendlyName)
 
     $('#no_message_selected, #no_messages_available').hide()
     $('#messages_card').hide()

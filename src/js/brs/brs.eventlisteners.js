@@ -90,7 +90,7 @@ import {
 import {
     evSidebarContextOnContextmenu,
     closeContextMenu
-} from './brs.sidebar'
+} from './brs.contextmenu'
 
 import {
     evMessagesSidebarClick,
@@ -309,7 +309,7 @@ export function addEventListeners () {
         bookmarkAllUserAssets()
     })
 
-    $('#asset_exchange_sidebar').on('click', 'a', evAssetExchangeSidebarClick)
+    $('#asset_exchange_vtab').on('click', 'a', evAssetExchangeSidebarClick)
     $('#ae_show_my_trades_only').on('change', updateMiniTradeHistory)
     $('#asset_exchange_search').on('submit', function (e) {
         e.preventDefault()
@@ -339,7 +339,7 @@ export function addEventListeners () {
     $('#buy_asset_quantity, #buy_asset_price, #sell_asset_quantity, #sell_asset_price').keydown(evAssetExchangeQuantityPriceKeydown)
     $('#sell_asset_quantity, #sell_asset_price, #buy_asset_quantity, #buy_asset_price').keyup(evCalculatePricePreviewKeyup)
     $('#asset_order_modal').on('show.bs.modal', evAssetOrderModalOnShowBsModal)
-    $('#asset_exchange_sidebar_group_context').on('click', 'a', function (e) {
+    $('#asset_exchange_vtab_group_context').on('click', 'a', function (e) {
         e.preventDefault()
         const groupName = BRS.selectedContext.data('groupname')
         const option = $(this).data('option')
@@ -350,7 +350,7 @@ export function addEventListeners () {
             $('#asset_exchange_change_group_name_modal').modal('show')
         }
     })
-    $('#asset_exchange_sidebar_context').on('click', 'a', evAssetExchangeSidebarContextClick)
+    $('#asset_exchange_vtab_context').on('click', 'a', evAssetExchangeSidebarContextClick)
     $('#asset_exchange_group_group').on('change', function () {
         const value = $(this).val()
         if (value === '-1') {
@@ -396,9 +396,9 @@ export function addEventListeners () {
             }
         }
     })
-    $('#messages_sidebar').on('click', 'a', evMessagesSidebarClick)
-    $('#messages_sidebar_context').on('click', 'a', evMessagesSidebarContextClick)
-    $('#messages_sidebar_update_context').on('click', 'a', function (e) {
+    $('#messages_vtab').on('click', 'a', evMessagesSidebarClick)
+    $('#messages_vtab_context').on('click', 'a', evMessagesSidebarContextClick)
+    $('#messages_vtab_update_context').on('click', 'a', function (e) {
         e.preventDefault()
         const option = $(this).data('option')
         closeContextMenu()
@@ -476,8 +476,8 @@ export function addEventListeners () {
         updateSettings(key, value)
     })
 
-    // from brs.sidebar.js
-    $('.secondary-sidebar-context').on('contextmenu', 'a', evSidebarContextOnContextmenu)
+    // from brs.contextmenu.ts
+    $('#asset_exchange_vtab, #messages_vtab').on('contextmenu', 'a', evSidebarContextOnContextmenu)
     $('.open_my_account_modal').on('click', function () {
         showAccountModal(BRS.accountInfo.accountRS)
     })

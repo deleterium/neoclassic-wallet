@@ -1,73 +1,40 @@
-/**
- * @depends {brs.js}
- * Reverted from BRS version 2.0.4
- */
-
 import { BRS } from '.'
 
-export function evSidebarContextOnContextmenu (e) {
+export function evSidebarContextOnContextmenu (e: JQuery.ContextMenuEvent<HTMLElement>) {
     e.preventDefault()
-
-    if (!BRS.databaseSupport) {
-        return
-    }
-
     closeContextMenu()
-
-    if ($(this).hasClass('no-context')) {
+    const clickedElement = $(e.currentTarget as HTMLElement)
+    if (clickedElement.hasClass('no-context')) {
         return
     }
-
-    BRS.selectedContext = $(this)
-
-    BRS.selectedContext.addClass('context')
-
+    BRS.selectedContext = clickedElement
     $(document).on('click.contextmenu', closeContextMenu)
-
-    let contextMenu = $(this).data('context')
-
-    if (!contextMenu) {
-        contextMenu = $(this).closest('.list-group').attr('id') + '_context'
-    }
-
+    const contextMenu = clickedElement.data('context')
     const $contextMenu = $('#' + contextMenu)
-
     if ($contextMenu.length) {
         const $options = $contextMenu.find('ul.dropdown-menu a')
-
         $.each($options, function () {
             const requiredClass = $(this).data('class')
-
             if (!requiredClass) {
                 $(this).show()
-            } else if (BRS.selectedContext.hasClass(requiredClass)) {
+            } else if (clickedElement.hasClass(requiredClass)) {
                 $(this).show()
             } else {
                 $(this).hide()
             }
         })
-
         $contextMenu.css({
             display: 'block',
             left: e.pageX,
             top: e.pageY
         })
     }
-
-    return false
 }
 
-export function closeContextMenu (e) {
-    if (e && e.which === 3) {
-        return
-    }
-
+export function closeContextMenu () {
     $('.context_menu').hide()
-
     if (BRS.selectedContext) {
-        BRS.selectedContext.removeClass('context')
-        // BRS.selectedContext = null;
+        BRS.selectedContext = null;
     }
-
     $(document).off('click.contextmenu')
 }

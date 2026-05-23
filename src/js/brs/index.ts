@@ -179,7 +179,7 @@ export const BRS = {
     rescaningBlockchain: false, // More than 1 hour from last block
 
     rememberPassword: false,
-    selectedContext: null,
+    selectedContext: null as null | JQuery<HTMLElement>,
 
     currentPage: 'dashboard',
     // TODO: currentSubPage is not implemented. Implement or just remove?
