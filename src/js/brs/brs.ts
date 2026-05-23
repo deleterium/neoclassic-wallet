@@ -532,7 +532,7 @@ export function getAccountInfo (firstRun: boolean, callback?: () => void) {
             $('#account_nr_assets').html(nr_assets.toString())
 
             if (response.name) {
-                $('#account_name').html(response.name.escapeHTML()).removeAttr('data-i18n')
+                $('#account_name').text(response.name).removeAttr('data-i18n')
             }
         }
 

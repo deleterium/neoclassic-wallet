@@ -311,3 +311,16 @@ export interface GetAccountATsResponse {
     errorCode?: number;
     errorDescription?: string;
 };
+
+export interface PostResponse {
+    broadcasted: boolean;
+    unsignedTransactionBytes: string;
+    transactionJSON: Transaction;
+    unconfirmed: boolean;
+    transaction: string;
+    fullHash: string;
+    alreadyProcessed: boolean; // TODO Simplify this 
+    requestProcessingTime: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
