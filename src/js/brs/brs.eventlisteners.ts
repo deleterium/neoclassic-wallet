@@ -60,7 +60,6 @@ import {
 
 import {
     convertNumericToRSAccountFormat,
-    treeViewHandler
 } from './brs.util'
 
 import {
@@ -146,30 +145,21 @@ import {
     showTransactionModal
 } from './brs.modals.transaction'
 
+import { ShowBootstrapModalEvent } from '../typings'
+
 export function addEventListeners () {
-    // fix adminlte (for some reason no event listener was attached on sidebar-overlay)
-    $('#sidebar-overlay').on('click', function () {
-        $('body').removeClass('sidebar-open')
-        $('body').addClass('sidebar-closed sidebar-collapse')
-    })
-    // fix adminlte (for some reason there is bug hiding sidebar on start)
-    if (document.body.clientWidth > 991.98) {
-        $('[data-widget="pushmenu"]').PushMenu('expand')
-    } else {
-        $('[data-widget="pushmenu"]').PushMenu('collapse')
-    }
 
     // from brs.js
     $('#prefered_node').on('blur', function () {
-        getState(null)
+        getState()
     })
-    $('#automatic_node_selection').change(function () {
-        if (this.checked) {
+    $('#automatic_node_selection').on('change', function () {
+        if ((this as HTMLInputElement).checked) {
             autoSelectServer()
-            updateSettings('automatic_node_selection', 1)
+            updateSettings('automatic_node_selection', true)
         } else {
-            updateSettings('automatic_node_selection', 0)
-            getState(null)
+            updateSettings('automatic_node_selection', false)
+            getState()
         }
     })
     $('span.node_selector button').on('click', function () {
@@ -194,14 +184,14 @@ export function addEventListeners () {
     })
     $('#start_settings_language').on('change', function (e) {
         e.preventDefault()
-        const value = $(this).val()
+        const value = $(this).val() as string
         updateSettings('language', value)
     })
 
     // allowLoginViaEnter
     $('#login_password, #login_account').on('keypress', function (e) {
         if (e.key === 'Enter') {
-            evLoginButtonClick(e)
+            evLoginButtonClick()
         }
     })
     $('input[name=q]').on('keypress', function (e) {
@@ -232,17 +222,18 @@ export function addEventListeners () {
     $('#login_button').on('click', evLoginButtonClick)
 
     // from brs.forms.js
-    $('.modal form input').on('keydown', function (e) {
-        if (e.key === 'Enter') {
-            e.preventDefault()
-            if (BRS.settings.submit_on_enter && e.target.type !== 'textarea') {
-                $(this).trigger('submit')
-            } else {
-                return false
-            }
+    $('.modal form input').on('keydown', function (e: JQuery.KeyDownEvent) {
+        if (e.key !== 'Enter') {
+            return
+        }
+        e.preventDefault()
+        if (BRS.settings.submit_on_enter && e.target.type !== 'textarea') {
+            $(this).trigger('submit')
+        } else {
+            return false
         }
     })
-    $('.modal button.btn-primary:not([data-dismiss=modal]):not([data-ignore=true])').click(function () {
+    $('.modal button.btn-primary:not([data-dismiss=modal]):not([data-ignore=true])').on('click', function () {
         submitForm($(this))
     })
 
@@ -272,7 +263,7 @@ export function addEventListeners () {
 
     // from brs.recipient.js
     $('#send_message_modal, #send_money_modal, #add_contact_modal').on('show.bs.modal', function (e) {
-        const $invoker = $(e.relatedTarget)
+        const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
         let account = $invoker.data('account')
         if (!account) {
             account = $invoker.data('contact')
@@ -341,6 +332,7 @@ export function addEventListeners () {
     $('#asset_order_modal').on('show.bs.modal', evAssetOrderModalOnShowBsModal)
     $('#asset_exchange_vtab_group_context').on('click', 'a', function (e) {
         e.preventDefault()
+        if (!BRS.selectedContext) return
         const groupName = BRS.selectedContext.data('groupname')
         const option = $(this).data('option')
         if (option === 'change_group_name') {
@@ -372,7 +364,7 @@ export function addEventListeners () {
         goToAsset($(this).data('goto-asset'))
     })
     $('#cancel_order_modal').on('show.bs.modal', function (e) {
-        const $invoker = $(e.relatedTarget)
+        const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
         const orderType = $invoker.data('type')
         const orderId = $invoker.data('order')
         if (orderType === 'bid') {
@@ -387,7 +379,7 @@ export function addEventListeners () {
     $('#send_message_modal').on('show.bs.modal', function () {
         if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
             const recipientAddress = convertNumericToRSAccountFormat(BRS.currentSubPage)
-            $('#send_message_message').val($('#message_in_chatbox').val())
+            $('#send_message_message').val($('#message_in_chatbox').val() as string)
             $('#message_in_chatbox').val('')
             if (BRS.contacts[recipientAddress]) {
                 $('#send_message_recipient').val(BRS.contacts[recipientAddress].name).trigger('checkRecipient')
@@ -400,6 +392,7 @@ export function addEventListeners () {
     $('#messages_vtab_context').on('click', 'a', evMessagesSidebarContextClick)
     $('#messages_vtab_update_context').on('click', 'a', function (e) {
         e.preventDefault()
+        if (!BRS.selectedContext) return
         const option = $(this).data('option')
         closeContextMenu()
         if (option === 'update_contact') {
@@ -442,11 +435,20 @@ export function addEventListeners () {
     $('#import_contacts_button_field').css({ display: 'none' })
     $('#import_contacts_button_field').on('change', function (button_event) {
         button_event.preventDefault()
-        const file = $('#import_contacts_button_field')[0].files[0]
+        const input = $('#import_contacts_button_field')[0] as HTMLInputElement
+        if (!input.files || input.files.length === 0) return false
+        const file = input.files[0]
         const reader = new FileReader()
         reader.onload = function (read_event) {
-            const imported_contacts = JSON.parse(read_event.target.result)
-            importContacts(imported_contacts)
+            const result = read_event.target?.result
+            if (typeof result !== 'string') return false
+            try {
+                const imported_contacts = JSON.parse(result)
+                importContacts(imported_contacts)
+            } catch {
+                importContacts(null)
+                return false
+            }
         }
         reader.readAsText(file)
         return false
@@ -460,11 +462,14 @@ export function addEventListeners () {
         e.preventDefault()
         const key = $(this).attr('name')
         const value = $(this).val()
-        updateSettings(key, value)
+        if (!key || !value) return
+        updateSettings(key, String(value))
     })
     $('#settings_box input[type=text]').on('input', function () {
         const key = $(this).attr('name')
         let value = $(this).val()
+        if (!key || !value) return
+        value = String(value)
         if (/_warning/i.test(key) && key !== 'asset_transfer_warning') {
             value = parseAmountToNQT(value)
         }
@@ -472,7 +477,8 @@ export function addEventListeners () {
     })
     $('#settings_box input[type=checkbox]').on('change', function () {
         const key = $(this).attr('name')
-        const value = this.checked
+        const value = (this as HTMLInputElement).checked
+        if (!key) return
         updateSettings(key, value)
     })
 
@@ -496,6 +502,7 @@ export function addEventListeners () {
     // Reset scroll position of tab when shown.
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         const target = $(e.target).attr('href')
+        if (!target) return
         $(target).scrollTop(0)
     })
     resetModalMultiOut()
@@ -528,14 +535,14 @@ export function addEventListeners () {
     $('.modal').on('shown.bs.modal', function () {
         $(this).find('input[autofocus]').trigger('focus')
         $(this).find('input[name=converted_account_id]').val('')
-        BRS.showedFormWarning = false // maybe not the best place... we assume forms are only in modals?
+        BRS.showedFormWarning = false
     })
     $('.modal').on('hidden.bs.modal', evModalOnHiddenBsModal)
     $('input[name=feeNXT]').on('change', function () {
         const $modal = $(this).closest('.modal')
         const $feeInfo = $modal.find('.advanced_fee')
         if ($feeInfo.length) {
-            $feeInfo.html(formatNQTAsAmount(parseAmountToNQT($(this).val())) + ' ' + BRS.valueSuffix)
+            $feeInfo.html(formatNQTAsAmount(parseAmountToNQT($(this).val() as string)) + ' ' + BRS.valueSuffix)
         }
     })
     $('.advanced_info a').on('click', evAdvancedInfoClick)
@@ -633,13 +640,9 @@ export function addEventListeners () {
     $('#transaction_info_modal_info_tab').tab('show')
     $('#transaction_info_modal').on('hide.bs.modal', function () {
         $('#transaction_info_modal_info_tab').tab('show')
-        removeDecryptionForm($(this))
+        removeDecryptionForm()
         $('#transaction_info_output_bottom, #transaction_info_bottom').html('').hide()
     })
-
-    // from brs.utils.js
-    $.fn.tree = treeViewHandler
-    $('.sidebar-menu .treeview').tree()
 
     // from brs.blocks.js
     $('#block_info_latest_block').on('click', function (e) {

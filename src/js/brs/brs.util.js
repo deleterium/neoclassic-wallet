@@ -376,35 +376,39 @@ export function hasTransactionUpdates (transactions) {
     return ((transactions && transactions.length) || BRS.unconfirmedTransactionsChange)
 }
 
-/** Handles treeview menu logic (called once on initialization) */
-export function treeViewHandler () {
-    return this.each(function () {
-        const btn = $(this).children('a').first()
-        const menu = $(this).children('.treeview-menu').first()
-        const isActive = $(this).hasClass('is-open')
+/**
+ * Using custom tree view for the sidebar instead of using adminLTE `data-widget="treeview"`
+ * */
+export function initializeTreeViewMenus() {
+  $('.sidebar-menu .treeview').each(function () {
+    const btn = $(this).children('a').first()
+    const menu = $(this).children('.treeview-menu').first()
+    const isActive = $(this).hasClass('is-open')
 
-        // initialize already active menus
-        if (isActive) {
-            menu.show()
-            btn.find('.fa-angle-right').first().removeClass('fa-angle-right').addClass('fa-angle-down')
-        }
-        // Slide open or close the menu on link click
-        btn.on('click', function (e) {
-            e.preventDefault()
-            const active = $(this.parentNode).hasClass('is-open')
-            if (active) {
-                // Slide up to close menu
-                menu.slideUp()
-                btn.find('.fa-angle-down').first().removeClass('fa-angle-down').addClass('fa-angle-right')
-                btn.parent('li').removeClass('is-open')
-            } else {
-                // Slide down to open menu
-                menu.slideDown()
-                btn.find('.fa-angle-right').first().removeClass('fa-angle-right').addClass('fa-angle-down')
-                btn.parent('li').addClass('is-open')
-            }
-        })
+    // Initialize already active menus
+    if (isActive) {
+      menu.show()
+      btn.find('.fa-angle-right').first().removeClass('fa-angle-right').addClass('fa-angle-down')
+    }
+
+    // Slide open or close the menu on link click
+    btn.on('click', function(e) {
+      e.preventDefault()
+      const active = $(this.parentNode).hasClass('is-open')
+
+      if (active) {
+        // Slide up to close menu
+        menu.slideUp()
+        btn.find('.fa-angle-down').first().removeClass('fa-angle-down').addClass('fa-angle-right')
+        btn.parent('li').removeClass('is-open')
+      } else {
+        // Slide down to open menu
+        menu.slideDown()
+        btn.find('.fa-angle-right').first().removeClass('fa-angle-right').addClass('fa-angle-down')
+        btn.parent('li').addClass('is-open')
+      }
     })
+  })
 }
 
 export function translateServerError (response) {

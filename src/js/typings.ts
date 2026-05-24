@@ -32,6 +32,10 @@ export type DecryptedTransactionsCache = {
     [key: string]: DecryptedTransactionItem
 }
 
+export interface ShowBootstrapModalEvent extends JQuery.TriggeredEvent {
+    relatedTarget: HTMLElement;
+}
+
 // region Transaction
 
 export interface Transaction {

@@ -131,6 +131,7 @@ import { pagesSearchResults } from './brs.search'
 import { formsClearData } from './brs.modal.cleardata'
 
 import {
+    AssetDetails,
     BlockchainStatus,
     BrsSettings,
     DecryptedTransactionsCache,
@@ -139,6 +140,8 @@ import {
     GetBlockResponse,
     Transaction
 } from '../typings'
+
+import { initializeTreeViewMenus } from './brs.util'
 
 export const BRS = {
     version: '1.0.0',
@@ -324,7 +327,7 @@ export const BRS = {
     assets: [] as GetAssetResponse[],
     closedGroups: [],
     assetSearch: false,
-    currentAsset: {},
+    currentAsset: {} as AssetDetails,
     currentAssetID: 'undefined',
 
     // from transactions
@@ -340,6 +343,7 @@ export const BRS = {
     // from modals
     fetchingModalData: false,
     _encryptedNote: null as null | Transaction,
+    showedFormWarning: false,
 
     // from modals.account
     userInfoModal: null as null | {
@@ -420,6 +424,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
             })
             addEventListeners()
+            initializeTreeViewMenus()
             $('#loading_bar').val(100)
             init()
         })

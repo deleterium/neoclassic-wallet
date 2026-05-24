@@ -278,8 +278,10 @@ function loginWithPassphrase (passphrase: string) {
     })
 }
 
-export function evLoginButtonClick (e: Event) {
-    e.preventDefault()
+export function evLoginButtonClick (e?: JQuery.ClickEvent) {
+    if (e) {
+        e.preventDefault()
+    }
 
     const passwd = $('#login_password').val() as string
     if (passwd !== '') {
