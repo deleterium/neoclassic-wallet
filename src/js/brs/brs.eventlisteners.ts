@@ -200,7 +200,7 @@ export function addEventListeners () {
         }
     })
 
-    $('.sidebar-menu a').on('click', evSidebarClick)
+    $('[data-widget="treeview"] a').on('click', evSidebarClick)
     $('button.goto-page, a.goto-page').on('click', function (event) {
         event.preventDefault()
 

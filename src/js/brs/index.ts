@@ -141,8 +141,6 @@ import {
     Transaction
 } from '../typings'
 
-import { initializeTreeViewMenus } from './brs.util'
-
 export const BRS = {
     version: '1.0.0',
     server: '',
@@ -377,7 +375,6 @@ document.addEventListener('DOMContentLoaded', function () {
         { location: 'body', path: 'html/modals/user_info.html' },
         { location: 'body', path: 'html/modals/sign_message.html' },
         { location: '#header_nav', path: 'html/header.html' },
-        { location: '#sidebar', path: 'html/sidebar.html' },
         { location: '#content', path: 'html/pages/dashboard.html' },
         { location: '#content', path: 'html/pages/transactions.html' },
         { location: '#content', path: 'html/pages/aliases.html' },
@@ -424,7 +421,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
             })
             addEventListeners()
-            initializeTreeViewMenus()
             $('#loading_bar').val(100)
             init()
         })

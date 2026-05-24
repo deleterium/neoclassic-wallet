@@ -338,7 +338,7 @@ export function reloadCurrentPage () : void {
 
 /** Go to a page, updating sidebar menu */
 export function goToPage (page: string) : void {
-    let $link = $('ul.sidebar-menu a[data-page=' + page + ']')
+    let $link = $('[data-widget="treeview"] a[data-page=' + page + ']')
 
     if ($link.length > 1) {
         // if there are many pages in menubar
@@ -355,7 +355,7 @@ export function goToPage (page: string) : void {
         return
     }
     // Handle hidden pages like "search_results"
-    $('ul.sidebar-menu a.active').removeClass('active')
+    $('[data-widget="treeview"] a.active').removeClass('active')
     $('.page').hide()
     $('#' + page + '_page').show()
     loadPage(page)
