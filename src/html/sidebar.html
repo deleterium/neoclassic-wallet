@@ -25,40 +25,40 @@
   </div>
 
   <nav class="mt-2">
-    <ul class="sidebar-menu nav nav-sidebar nav-flat">
+    <ul class="nav nav-sidebar nav-flat" data-widget="treeview" role="menu" data-accordion="false">
       <li class="nav-item active" id="dashboard_link">
         <a class="nav-link active" href="#" data-page="dashboard">
-          <i class="fas fa-tachometer-alt"></i>
+          <i class="nav-icon fas fa-tachometer-alt"></i>
           <p data-i18n="dashboard">Dashboard</p>
         </a>
       </li>
       <li class="treeview nav-item" id="sidebar_account">
         <a class="nav-link" href="#" data-page="keep">
-          <i class="fas fa-user-circle"></i>
-          <p><i class="right fa pull-right fa-angle-right"></i><span data-i18n="account">account</span></p>
+          <i class="nav-icon fas fa-user-circle"></i>
+          <p><i class="right fa pull-right fa-angle-left"></i><span data-i18n="account">account</span></p>
         </a>
-        <ul class="treeview-menu nav nav-sidebar nav-treeview">
+        <ul class="nav nav-treeview">
           <li class="nav-item">
             <a class="nav-link" href="#" data-toggle="modal" data-target="#account_info_modal">
-              <i class="fas fa-edit"></i>
+              <i class="nav-icon fas fa-edit"></i>
               <p data-i18n="set_account_info">set_account_info</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="#" class="nav-link copy_link" data-page="keep" data-type="account_rs">
-              <i class="fas fa-copy"></i>
+              <i class="nav-icon fas fa-copy"></i>
               <p data-i18n="copy_account_rs">copy_account_rs</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="#" class="nav-link copy_link" data-page="keep" data-type="account_id">
-              <i class="fas fa-copy"></i>
+              <i class="nav-icon fas fa-copy"></i>
               <p data-i18n="copy_account_id">copy_account_id</p>
             </a>
           </li>
           <li class="nav-item">
             <a href="#" class="nav-link open_my_account_modal" data-page="keep">
-              <i class="fas fa-user-circle"></i>
+              <i class="nav-icon fas fa-user-circle"></i>
               <p data-i18n="view_my_account">view_my_account</p>
             </a>
           </li>
@@ -66,43 +66,43 @@
       </li>
       <li class="treeview nav-item" id="sidebar_transactions">
         <a class="nav-link" href="#" data-toggle="collapse" data-page="transactions">
-          <i class="fas fa-briefcase"></i>
-          <p><i class="right fa pull-right fa-angle-right"></i><span data-i18n="transactions">Transactions</span></p>
+          <i class="nav-icon fas fa-briefcase"></i>
+          <p><i class="right fa pull-right fa-angle-left"></i><span data-i18n="transactions">Transactions</span></p>
         </a>
-        <ul class="treeview-menu nav nav-sidebar nav-treeview">
+        <ul class="nav nav-treeview">
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="transactions">
-              <i class="fas fa-exchange-alt"></i>
+              <i class="nav-icon fas fa-exchange-alt"></i>
               <p data-i18n="transactions">Transactions</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-toggle="modal" data-target="#send_money_modal">
-              <i class="fas fa-paper-plane"></i>
+              <i class="nav-icon fas fa-paper-plane"></i>
               <p data-i18n="send_burst">send_burst</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-toggle="modal" data-target="#request_burst_qr_modal">
-              <i class="fas fa-qrcode"></i>
+              <i class="nav-icon fas fa-qrcode"></i>
               <p data-i18n="request_burst_qr">request_burst_qr</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="escrow">
-              <i class="fas fa-check-circle"></i>
+              <i class="nav-icon fas fa-check-circle"></i>
               <p data-i18n="escrows">Escrow</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="subscription">
-              <i class="far fa-handshake"></i>
+              <i class="nav-icon far fa-handshake"></i>
               <p data-i18n="subscriptions">Subscriptions</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="at">
-              <i class="fas fa-laptop"></i>
+              <i class="nav-icon fas fa-laptop"></i>
               <p data-i18n="ats">ATs (Smart Contracts)</p>
             </a>
           </li>
@@ -110,50 +110,50 @@
       </li>
       <li class="treeview nav-item" id="sidebar_asset_exchange">
         <a class="nav-link" href="#" data-page="keep">
-          <i class="fas fa-tag"></i>
-          <p><i class="right fa pull-right fa-angle-right"></i><span data-i18n="assets">assets</span></p>
+          <i class="nav-icon fas fa-tag"></i>
+          <p><i class="right fa pull-right fa-angle-left"></i><span data-i18n="assets">assets</span></p>
         </a>
-        <ul class="treeview-menu nav nav-sidebar nav-treeview">
+        <ul class="nav nav-treeview">
           <li class="nav-item">
             <a class="nav-link" href="#" data-toggle="modal" data-target="#transfer_asset_modal">
-              <i class="fas fa-location-arrow"></i>
+              <i class="nav-icon fas fa-location-arrow"></i>
               <p data-i18n="transfer_asset">transfer_asset</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="asset_exchange">
-              <i class="fas fa-chart-area"></i>
+              <i class="nav-icon fas fa-chart-area"></i>
               <p data-i18n="asset_exchange">Asset Exchange</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="transfer_history">
-              <i class="fas fa-exchange-alt"></i>
+              <i class="nav-icon fas fa-exchange-alt"></i>
               <p data-i18n="transfer_history">Transfer History</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="my_assets">
-              <i class="fas fa-chart-pie"></i>
+              <i class="nav-icon fas fa-chart-pie"></i>
               <p data-i18n="my_assets">My Assets</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="open_orders">
-              <i class="fas fa-pause"></i>
+              <i class="nav-icon fas fa-pause"></i>
               <p data-i18n="open_orders">Open Orders</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-toggle="modal" data-target="#issue_asset_modal">
-              <i class="fas fa-chart-line"></i>
+              <i class="nav-icon fas fa-chart-line"></i>
               <p data-i18n="issue_asset">Issue Asset</p>
             </a>
           </li>
           <!-- TODO Page for token administration
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="nsv_dividends" id="nsv_div_start">
-              <i class="fas fa-users"></i>
+              <i class="nav-icon fas fa-users"></i>
               <p>Payout Dividends</p>
             </a>
           </li>
@@ -162,25 +162,25 @@
       </li>
       <li class="treeview nav-item" id="sidebar_mining">
         <a class="nav-link" href="#" data-page="keep">
-          <i class="fas fa-hdd"></i>
-          <p><i class="right fa pull-right fa-angle-right"></i><span data-i18n="mining">Mining</span></p>
+          <i class="nav-icon fas fa-hdd"></i>
+          <p><i class="right fa pull-right fa-angle-left"></i><span data-i18n="mining">Mining</span></p>
         </a>
-        <ul class="treeview-menu nav nav-sidebar nav-treeview">
+        <ul class="nav nav-treeview">
           <li class="nav-item">
             <a class="nav-link" href="#" data-toggle="modal" data-target="#reward_assignment_modal">
-              <i class="fas fa-arrow-circle-right"></i>
+              <i class="nav-icon fas fa-arrow-circle-right"></i>
               <p data-i18n="reward_assignment">Reward</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-toggle="modal" data-target="#commitment_modal">
-              <i class="fas fa-hand-holding-usd"></i>
+              <i class="nav-icon fas fa-hand-holding-usd"></i>
               <p data-i18n="commitment">Commitment</p>
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="blocks_forged">
-              <i class="fas fa-crosshairs"></i>
+              <i class="nav-icon fas fa-crosshairs"></i>
               <p data-i18n="forged_blocks">forged_blocks</p>
             </a>
           </li>
@@ -188,28 +188,28 @@
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#" data-page="contacts">
-          <i class="fas fa-address-book"></i>
+          <i class="nav-icon fas fa-address-book"></i>
           <p data-i18n="contacts">Contacts</p>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#" data-page="messages">
-          <i class="fas fa-inbox"></i>
+          <i class="nav-icon fas fa-inbox"></i>
           <p data-i18n="messages">Messages</p>
         </a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#" data-page="aliases">
-          <i class="fas fa-address-card"></i>
+          <i class="nav-icon fas fa-address-card"></i>
           <p data-i18n="aliases">Aliases</p>
         </a>
       </li>
       <li class="treeview nav-item" id="sidebar_blockchain">
         <a class="nav-link" href="#" data-page="keep">
-          <i class="fas fa-link"></i>
-          <p><i class="right fa pull-right fa-angle-right"></i><span data-i18n="blockchain">blockchain</span></p>
+          <i class="nav-icon fas fa-link"></i>
+          <p><i class="right fa pull-right fa-angle-left"></i><span data-i18n="blockchain">blockchain</span></p>
         </a>
-        <ul class="treeview-menu nav nav-sidebar nav-treeview">
+        <ul class="nav nav-treeview">
           <li class="nav-item">
             <a class="nav-link" href="#" data-page="blocks"><p data-i18n="latest_blocks">latest_blocks</p></a>
           </li>
@@ -220,7 +220,7 @@
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#" data-page="peers"
-          ><i class="fab fa-connectdevelop"></i>
+          ><i class="nav-icon fab fa-connectdevelop"></i>
           <p data-i18n="peers">Peers</p>
         </a>
       </li>
