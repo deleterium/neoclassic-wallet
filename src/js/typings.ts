@@ -36,6 +36,17 @@ export interface ShowBootstrapModalEvent extends JQuery.TriggeredEvent {
     relatedTarget: HTMLElement;
 }
 
+// region Database
+
+export interface DBContact {
+    id: number;
+    name: string;
+    email: string;
+    account: string;
+    accountRS: string;
+    description: string;
+}
+
 // region Transaction
 
 export interface Transaction {
