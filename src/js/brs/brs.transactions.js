@@ -193,10 +193,8 @@ export function handleIncomingTransactions (transactions, confirmedTransactionId
         BRS.incoming.updateDashboardTransactions(transactions, confirmedTransactionIds.length === 0)
     }
 
-    // always refresh peers and unconfirmed transactions..
-    if (BRS.currentPage === 'peers') {
-        BRS.incoming.peers()
-    } else if (BRS.currentPage === 'transactions' && BRS.transactionsPageType === 'unconfirmed') {
+    // always unconfirmed transactions..
+    if (BRS.currentPage === 'transactions' && BRS.transactionsPageType === 'unconfirmed') {
         BRS.incoming.transactions()
     } else {
         if (BRS.currentPage !== 'messages' && (!oldBlock || BRS.unconfirmedTransactionsChange)) {

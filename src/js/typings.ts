@@ -363,6 +363,28 @@ export interface GetStateResponse {
     requestProcessingTime: number;
 }
 
+export interface GetPeersResponse {
+    peers: string[];
+    requestProcessingTime: number;
+}
+
+export interface GetPeerResponse {
+    state: number;
+    announcedAddress: string;
+    shareAddress: boolean;
+    downloadedVolume: number;
+    uploadedVolume: number;
+    application: string;
+    version: string;
+    platform: string;
+    networkName: string;
+    blacklisted: boolean;
+    lastUpdated: number;
+    requestProcessingTime: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 // region POST Response
 
 export interface PostResponse {
