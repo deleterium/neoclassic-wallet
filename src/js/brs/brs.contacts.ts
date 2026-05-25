@@ -87,7 +87,7 @@ export function pagesContacts () {
                 <a href='#'
                     data-toggle='modal'
                     data-target='#update_contact_modal'
-                    data-contact='${contact.id}'>
+                    data-contact='${cName}'>
                     ${cName}
                 </a>
                 </td>
@@ -120,7 +120,7 @@ export function pagesContacts () {
                     href='#'
                     data-toggle='modal'
                     data-target='#delete_contact_modal'
-                    data-contact='${contact.id}'>
+                    data-contact='${cName}'>
                     <i class="fas fa-trash"></i>
                     </a>
                 </div>
@@ -228,24 +228,17 @@ function addContactToDatabase (data: DBContact) {
 export function evUpdateContactModalOnShowBsModal (e: JQuery.Event) {
     const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
 
-    const contactId = parseInt($invoker.data('contact'), 10)
-
-    if (!contactId && BRS.selectedContext) {
+    const contactName = $invoker.data('contact')
+    if (!contactName) {
         console.error("Wrong use")
         return
     }
 
-    let contact: DBContact | undefined = undefined
-    for (const Contact in BRS.contacts) {
-        if (BRS.contacts[Contact].id === contactId) {
-            contact = BRS.contacts[Contact]
-            break
-        }
-    }
+    const contact = getContactByName(contactName)
     if (!contact) {
+        console.error("Wrong use")
         return
     }
-    $('#update_contact_id').val(contactId)
     $('#update_contact_name').val(contact.name)
     $('#update_contact_email').val(contact.email)
     $('#update_contact_account_id').val(contact.accountRS)
@@ -266,7 +259,7 @@ export function formsUpdateContact (data: any) {
             }
         }
     }
-    if (!data.contact_id) {
+    if (!data.account_id) {
         return {
             error: $.t('error_contact')
         }
@@ -281,7 +274,6 @@ export function formsUpdateContact (data: any) {
         }
     }
 
-    data.id = Number(data.contact_id)
     updateContactToDatabase(data)
 
     return { stop: true, hide: true }
@@ -300,7 +292,6 @@ function updateContactToDatabase (data: DBContact) {
         return
     }
     dbPut('contacts', {
-        id: data.id,
         name: data.name,
         email: data.email,
         account: data.account,
@@ -318,27 +309,19 @@ function updateContactToDatabase (data: DBContact) {
 export function evDeleteContactModalOnShowBsModal (e: JQuery.TriggeredEvent) {
     const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
 
-    const contactId = $invoker.data('contact')
+    const contactName = $invoker.data('contact')
 
-    let contact: DBContact | undefined = undefined
-    for (const Contact in BRS.contacts) {
-        if (BRS.contacts[Contact].id === contactId) {
-            contact = BRS.contacts[Contact]
-            break
-        }
-    }
+    const contact = getContactByName(contactName)
     if (!contact) {
         return
     }
 
-    $('#delete_contact_id').val(contact.id)
     $('#delete_contact_name').text(contact.name)
     $('#delete_contact_account_rs').text(contact.accountRS)
     $('#delete_contact_account_id').text(contact.account)
 }
 
 export function formsDeleteContact () {
-    const id = parseInt($('#delete_contact_id').val() as string, 10)
     const accountRs = $('#delete_contact_account_rs').text()
 
     if (!accountRs || !BRS.contacts[String(accountRs)]) {
@@ -351,7 +334,7 @@ export function formsDeleteContact () {
         return
     }
 
-    deleteRecord('contacts', { id }, function (error) {
+    deleteRecord('contacts', { accountRs }, function (error) {
         if (error) {
             setTimeout(notifyContactOperationSuccess, 50, $.t('error_save_db'))
             return
@@ -411,9 +394,6 @@ function isValidImport (jsonObj: any): boolean {
 }
 
 export function importContacts (imported_contacts: any) {
-    console.log('Import contacts called')
-    console.log(imported_contacts)
-
     if (!isValidImport(imported_contacts)) {
         // TODO TRANSLATION
         $.notify("File does not match 'contacts' requirements.", { type: 'danger' })

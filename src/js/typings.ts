@@ -39,7 +39,6 @@ export interface ShowBootstrapModalEvent extends JQuery.TriggeredEvent {
 // region Database
 
 export interface DBContact {
-    id: number;
     name: string;
     email: string;
     account: string;

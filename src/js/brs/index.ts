@@ -134,6 +134,7 @@ import {
     AssetDetails,
     BlockchainStatus,
     BrsSettings,
+    DBContact,
     DecryptedTransactionsCache,
     GetAccountResponse,
     GetAssetResponse,
@@ -165,7 +166,7 @@ export const BRS = {
     databaseSupport: false,
 
     settings: {} as BrsSettings,
-    contacts: {},
+    contacts: {} as Record<string, DBContact>,
 
     isTestNet: false,
     prefix: 'S-',

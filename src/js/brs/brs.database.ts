@@ -9,13 +9,42 @@ import { BRS } from '.'
  */
 
 /**
+ * Migrates the 'contacts' object store from an auto-increment `id` primary key
+ * to a `accountRS` keyPath. Extracts the database and transaction from the
+ * version‑change event.
+ *
+ * @param event The IDBVersionChangeEvent from the `onupgradeneeded` handler.
+ */
+export function contactsMigration(event: IDBVersionChangeEvent): void {
+    const db = (event.target as IDBOpenDBRequest).result
+    const transaction = (event.target as IDBOpenDBRequest).transaction!
+    const oldStore = transaction.objectStore('contacts')
+    const getAllRequest = oldStore.getAll()
+
+    getAllRequest.onsuccess = () => {
+        const contacts: any[] = getAllRequest.result
+        db.deleteObjectStore('contacts')
+        const newStore = db.createObjectStore('contacts', { keyPath: 'accountRS' })
+        for (const contact of contacts) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { id, ...contactData } = contact
+            newStore.add(contactData)
+        }
+    }
+
+    getAllRequest.onerror = (e) => {
+        console.error('contactsMigration: failed to read old contacts', e);
+    }
+}
+
+/**
  * Creates an IndexedDB database for storing user data such as contacts, assets, and settings.
  * Sets up database schema and loads existing data into memory.
- * @param {function} [callback] - Optional callback function to execute after database is created succesfully.
+ * @param {function} [callback] - Optional callback function to execute after database is created successfully.
  */
 export function createDatabase (callback: () => void): void {
     const dbName = 'BRS_USER_DB'
-    const dbVersion = 2
+    const dbVersion = 3
     const request = indexedDB.open(dbName, dbVersion)
     request.onerror = function (error) {
         console.error('createDatabase() error: ', error)
@@ -28,9 +57,15 @@ export function createDatabase (callback: () => void): void {
         callback()
     }
     request.onupgradeneeded = function (event) {
-        const db: IDBDatabase = (event.target as IDBRequest).result
+        const db: IDBDatabase = (event.target as IDBOpenDBRequest).result
+
+        // Migrations
+        if (event.oldVersion < 3 && db.objectStoreNames.contains('contacts')) {
+            contactsMigration(event)
+        }
+
         if (!db.objectStoreNames.contains('contacts')) {
-            db.createObjectStore('contacts', { keyPath: 'id', autoIncrement: true })
+            db.createObjectStore('contacts', { keyPath: 'accountRS' })
         }
         if (!db.objectStoreNames.contains('assets')) {
             db.createObjectStore('assets', { keyPath: 'asset' })
