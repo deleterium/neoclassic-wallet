@@ -147,6 +147,8 @@ import {
 
 import { ShowBootstrapModalEvent } from '../typings'
 
+import { evVerifyMessageDataIsTransactionClick } from './brs.modals.signmessage'
+
 export function addEventListeners () {
 
     // from brs.js
@@ -620,6 +622,7 @@ export function addEventListeners () {
         $('#verify_message_output').text('')
         $('#verify_message_output').hide()
     })
+    $('#verify_message_data_is_transaction').on('click', evVerifyMessageDataIsTransactionClick)
 
     // from brs.modals.subscription.js
     $('#subscription_table').on('click', 'a[data-subscription]', function (e) {

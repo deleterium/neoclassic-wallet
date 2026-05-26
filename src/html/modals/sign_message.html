@@ -44,19 +44,19 @@
               <div class="callout callout-warning" data-i18n="warning_raw_transaction">warning_raw_transaction</div>
               <div class="form-group">
                 <label for="sign_message_data" data-i18n="message">message</label>
-                <textarea class="form-control" name="message" id="sign_message_data" rows="10"></textarea>
+                <textarea class="form-control" name="message" id="sign_message_data" rows="5"></textarea>
                 <input type="checkbox" name="messageIsHex" id="sign_message_data_is_hex" />
                 <label for="sign_message_data_is_hex" data-i18n="hex_encoded">hex_encoded</label>
               </div>
               <div class="form-group">
-                <label for="sign_message_passphrase" data-i18n="passphrase">Passphrase</label>
-                <input
-                  type="password"
-                  name="secretPhrase"
-                  id="sign_message_passphrase"
-                  class="form-control"
-                  placeholder=""
-                  autocomplete="" />
+                <label for="sign_message_parsed_transaction_or_signed_message" data-i18n="parsed_transaction_or_signed_message">parsed_transaction_or_signed_message</label>
+                <textarea class="form-control" name="parsed_transaction_or_signed_message" id="sign_message_parsed_transaction_or_signed_message" rows="5" readonly placeholder="If data is a hex string containing a transaction, the parsed transaction will be shown here. If not, the signed message will be shown."></textarea>
+              </div>
+
+              <!-- Passphrase template -->
+              <div class="form-group secret_phrase">
+                <label data-i18n="passphrase">PASSPHRASE</label>
+                <input type="password" name="secretPhrase" id="sign_message_password" class="form-control" placeholder="" autocomplete="" />
               </div>
 
               <div class="callout callout-info" id="sign_message_output" style="display: none">
@@ -92,10 +92,13 @@
               <div class="form-group">
                 <label for="verify_message_data" data-i18n="message">message</label>
                 <textarea class="form-control" name="website" id="verify_message_data" rows="10"></textarea>
+                <input type="checkbox" name="messageIsTransaction" id="verify_message_data_is_transaction" />
+                <label for="verify_message_data_is_transaction" data-i18n="is_transaction">is_transaction</label>
+                &nbsp;&nbsp;&nbsp;&nbsp;
                 <input type="checkbox" name="messageIsHex" id="verify_message_data_is_hex" />
                 <label for="verify_message_data_is_hex" data-i18n="hex_encoded">hex_encoded</label>
               </div>
-              <div class="form-group">
+              <div class="form-group" style="display: none;">
                 <label for="verify_message_public_key" data-i18n="signer_public_key"></label>
                 <input
                   type="text"
@@ -106,7 +109,7 @@
                   placeholder="hex_encoded"
                   value="" />
               </div>
-              <div class="form-group">
+              <div class="form-group" style="display: none;">
                 <label for="verify_message_signature" data-i18n="signature">signature</label>
                 <input
                   type="text"

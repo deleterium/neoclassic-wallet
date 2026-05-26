@@ -51,6 +51,7 @@ export interface DBContact {
 export interface Transaction {
     amountNQT: string;
     attachment?: any;
+    attachmentBytes?: string;
     block: string;
     blockTimestamp: number;
     cashBackId: string;
@@ -75,6 +76,13 @@ export interface Transaction {
     transaction: string;
     type: number;
     version: number;
+}
+
+export interface ParseTransactionResponse extends Transaction {
+    verify: boolean;
+    requestProcessingTime: number;
+    errorCode?: number;
+    errorDescription?: string;
 }
 
 export interface GetIndirectIncomingResponse {
