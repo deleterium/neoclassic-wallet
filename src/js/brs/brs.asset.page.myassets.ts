@@ -3,17 +3,14 @@ import { reloadCurrentPage } from './brs';
 import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from './brs.numbers';
 import { sendRequest } from './brs.server';
 import { dataLoaded } from './brs.util';
+import { GetAskOrdersResponse, GetAssetResponse, GetBidOrdersResponse, MyAssetDetails } from '../typings';
 
 export function pagesMyAssets() {
     if (!BRS.accountInfo.assetBalances || !BRS.accountInfo.assetBalances.length) {
         dataLoaded();
         return;
     }
-    const result = {
-        assets: [],
-        bid_orders: {},
-        ask_orders: {}
-    };
+    const myAssets: MyAssetDetails[] = []
     const count = {
         total_assets: BRS.accountInfo.assetBalances.length,
         cachedAssets: 0,
@@ -22,123 +19,106 @@ export function pagesMyAssets() {
     };
 
     // First, fetch and display all asset details
-    for (let i = 0; i < BRS.accountInfo.assetBalances.length; i++) {
-        if (BRS.accountInfo.assetBalances[i].balanceQNT === '0') {
+    for (const myAsset of BRS.accountInfo.assetBalances) {
+        if (myAsset.balanceQNT === '0') {
             count.ignored_assets++;
             continue;
         }
 
-        const foundAsset = BRS.assets.find(asset => asset.asset === BRS.accountInfo.assetBalances[i].asset);
+        const foundAsset = BRS.assets.find(asset => asset.asset === myAsset.asset);
         if (foundAsset) {
-            result.assets.push({
-                asset: foundAsset.asset,
-                name: foundAsset.name,
-                quantityCirculatingQNT: foundAsset.quantityCirculatingQNT,
-                balanceQNT: new BigInteger(BRS.accountInfo.assetBalances[i].balanceQNT),
-                quantityQNT: new BigInteger(foundAsset.quantityQNT),
-                decimals: foundAsset.decimals
-            });
+            myAssets.push({ balanceQNT: myAsset.balanceQNT, ...foundAsset })
             count.cachedAssets++;
             continue;
         }
 
         sendRequest('getAsset+', {
-            asset: BRS.accountInfo.assetBalances[i].asset,
+            asset: myAsset.asset,
             _extra: {
-                balanceQNT: BRS.accountInfo.assetBalances[i].balanceQNT
+                balanceQNT: myAsset.balanceQNT
             }
-        }, function (asset, input) {
+        }, function (asset: GetAssetResponse, input: { asset: string, _extra: { balanceQNT: string }}) {
             if (BRS.currentPage !== 'my_assets') {
                 return;
             }
-
-            asset.asset = input.asset;
-            asset.balanceQNT = new BigInteger(input._extra.balanceQNT);
-            asset.quantityQNT = new BigInteger(asset.quantityQNT);
-
-            result.assets.push(asset);
+            myAssets.push({balanceQNT: input._extra.balanceQNT, ...asset});
             count.requestedAssets++;
-
-            if (checkMyAssetsPageLoaded(count)) {
-                myAssetsPageLoaded(result);
+            if (checkMyAssetsPageLoaded()) {
+                myAssetsPageLoaded(myAssets);
             }
         });
     }
-    if (checkMyAssetsPageLoaded(count)) {
-        myAssetsPageLoaded(result);
+    if (checkMyAssetsPageLoaded()) {
+        myAssetsPageLoaded(myAssets);
+    }
+
+    function checkMyAssetsPageLoaded() {
+        return count.cachedAssets + count.requestedAssets + count.ignored_assets === count.total_assets;
     }
 }
 
-function checkMyAssetsPageLoaded(count) {
-    return count.cachedAssets + count.requestedAssets + count.ignored_assets === count.total_assets;
-}
 
-function myAssetsPageLoaded(result) {
+function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
     let rows = '';
 
-    result.assets.sort(function (a, b) {
-        if (a.name.toLowerCase() > b.name.toLowerCase()) {
-            return 1;
-        } else if (a.name.toLowerCase() < b.name.toLowerCase()) {
-            return -1;
-        } else {
-            return 0;
-        }
-    });
+    myAssets.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 
-    for (let i = 0; i < result.assets.length; i++) {
-        const asset = result.assets[i];
-
+    for (const asset of myAssets) {
         rows += `
             <tr data-asset="${String(asset.asset).escapeHTML()}">
-                <td><a href='#' data-goto-asset='${String(asset.asset).escapeHTML()}'>${String(asset.name).escapeHTML()}</a></td>
-                <td class="quantity">${formatQNTAsQuantity(asset.balanceQNT, asset.decimals)}</td>
-                <td>${formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>
-                <td id="ask-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</i></td>
-                <td id="bid-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</td>
-                <td id="value-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</td>
-                <td><a href='#' data-toggle='modal' data-target='#transfer_asset_modal' data-asset='${String(asset.asset).escapeHTML()}' data-name='${String(asset.name).escapeHTML()}' data-decimals='${String(asset.decimals).escapeHTML()}'>${$.t('transfer')}</a></td>
+              <td><a href='#' data-goto-asset='${String(asset.asset).escapeHTML()}'>
+                ${String(asset.name).escapeHTML()}</a>
+              </td>
+              <td class="quantity">${formatQNTAsQuantity(asset.balanceQNT, asset.decimals)}</td>
+              <td>${formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>
+              <td id="ask-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</i></td>
+              <td id="bid-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</td>
+              <td id="value-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</td>
+              <td>
+                <a href='#'
+                  data-toggle='modal'
+                  data-target='#transfer_asset_modal'
+                  data-asset='${String(asset.asset).escapeHTML()}'
+                  data-name='${String(asset.name).escapeHTML()}'
+                  data-decimals='${String(asset.decimals).escapeHTML()}'>
+                  ${$.t('transfer')}
+                </a>
+              </td>
             </tr>`;
     }
 
     // Initial page loaded, fetch order details asynchronously
-    for (let i = 0; i < BRS.accountInfo.assetBalances.length; i++) {
-        if (BRS.accountInfo.assetBalances[i].balanceQNT === '0') {
-            continue;
-        }
-
-        const assetId = BRS.accountInfo.assetBalances[i].asset;
-
+    for (const asset of myAssets) {
         sendRequest('getAskOrders+', {
-            asset: assetId,
+            asset: asset.asset,
             firstIndex: 0,
             lastIndex: 0
-        }, function (response, input) {
+        }, function (response: GetAskOrdersResponse, input: any) {
             if (BRS.currentPage !== 'my_assets') {
                 return;
             }
 
             if (response.errorCode || !response.askOrders || response.askOrders.length === 0) {
-                updateAskOrderCell(input.asset, null);
+                updateAskOrderCell(input.asset);
                 return;
             }
             updateAskOrderCell(response.askOrders[0].asset, response.askOrders[0].priceNQT, response.askOrders[0].decimals);
         });
 
         sendRequest('getBidOrders+', {
-            asset: assetId,
+            asset: asset.asset,
             firstIndex: 0,
             lastIndex: 0,
             _extra: {
-                balanceQNT: BRS.accountInfo.assetBalances[i].balanceQNT
+                balanceQNT: asset.balanceQNT
             }
-        }, function (response, input) {
+        }, function (response: GetBidOrdersResponse, input: any) {
             if (BRS.currentPage !== 'my_assets') {
                 return;
             }
 
             if (response.errorCode || !response.bidOrders || response.bidOrders.length === 0) {
-                updateBidOrderCell(input.asset, null);
+                updateBidOrderCell(input.asset);
                 return;
             }
             updateBidOrderCell(response.bidOrders[0].asset, response.bidOrders[0].priceNQT, response.bidOrders[0].decimals, input._extra.balanceQNT);
@@ -148,19 +128,19 @@ function myAssetsPageLoaded(result) {
     dataLoaded(rows);
 }
 
-function updateAskOrderCell(assetId, priceNQT, decimals) {
+function updateAskOrderCell(assetId: string, priceNQT?: string, decimals?: number) {
     const cellSelector = '#ask-order-' + assetId.escapeHTML();
-    if (priceNQT === null) {
+    if (!priceNQT || ! decimals) {
         $(cellSelector).text('--');
         return;
     }
     $(cellSelector).text(formatPriceNQTAsPriceQuantity(priceNQT, decimals));
 }
 
-function updateBidOrderCell(assetId, priceNQT, decimals, userBalanceQNT) {
+function updateBidOrderCell(assetId: string, priceNQT?: string, decimals?: number, userBalanceQNT?: string) {
     const orderSelector = '#bid-order-' + assetId.escapeHTML();
     const valueSelector = '#value-order-' + assetId.escapeHTML();
-    if (priceNQT === null) {
+    if (!priceNQT || ! decimals || !userBalanceQNT) {
         $(orderSelector).text('--');
         $(valueSelector).text('--');
         return;

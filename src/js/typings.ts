@@ -263,6 +263,10 @@ export interface AssetDetails {
     priceClose?: string;
 }
 
+export interface MyAssetDetails extends AssetDetails {
+    balanceQNT: string;
+}
+
 export interface GetAssetResponse extends AssetDetails {
     requestProcessingTime?: number;
     errorCode?: number;
@@ -278,6 +282,41 @@ export interface GetAssetsByResponse {
 }
 export type GetAssetsByNameResponse = GetAssetsByResponse
 export type GetAssetsByIssuerResponse = GetAssetsByResponse
+
+interface AssetOrder {
+    order: string;
+    asset: string;
+    account: string;
+    accountRS: string;
+    quantityQNT: string;
+    priceNQT: string;
+    height: number;
+    name: string;
+    decimals: number;
+    price: string;
+}
+
+export interface AskAssetOrder extends AssetOrder {
+    type: 'ask'
+}
+
+export interface BidAssetOrder extends AssetOrder {
+    type: 'bid'
+}
+
+export interface GetAskOrdersResponse {
+    askOrders: AskAssetOrder[];
+    nextIndex: number,
+    errorCode?: number;
+    errorDescription?: string;
+}
+
+export interface GetBidOrdersResponse {
+    bidOrders: BidAssetOrder[];
+    nextIndex: number,
+    errorCode?: number;
+    errorDescription?: string;
+}
 
 // region Alias
 
