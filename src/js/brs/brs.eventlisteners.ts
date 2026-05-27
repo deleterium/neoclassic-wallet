@@ -134,10 +134,6 @@ import {
 } from './brs.modals.serverinfo'
 
 import {
-    evGenerateQrButtonClick
-} from './brs.modals.request'
-
-import {
     showSubscriptionCancelModal
 } from './brs.modals.subscription'
 
@@ -592,7 +588,6 @@ export function addEventListeners () {
         $('#request_burst_account_id').val(String(BRS.accountRS).escapeHTML())
         $('#request_burst_response_div').hide()
     })
-    $('#generate_qr_button').on('click', evGenerateQrButtonClick)
     $('#request_burst_qr_modal').on('hide.bs.modal', function () {
         $('#request_burst_div').show()
         $('#request_burst_response_div').hide()

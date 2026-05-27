@@ -6,11 +6,9 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
       </div>
       <div class="modal-body">
-        <span id="response"></span>
-        <div class="ordinary">
           <!-- form -->
           <div id="request_burst_div">
-            <form role="form" autocomplete="off" name="request_burst_form">
+            <form role="form" autocomplete="off" name="form_request_burst">
               <div class="form-group">
                 <label for="request_burst_account_id" data-i18n="recipient">RECIPIENT</label>
                 <div class="input-group">
@@ -22,26 +20,32 @@
                     placeholder="Recipient Account"
                     data-i18n="[placeholder]recipient_account"
                     disabled />
-                  <span class="input-group-text">Your account ID</span>
+                  <span class="input-group-text" data-i18n="you">you</span>
                 </div>
               </div>
+
+              <!-- Amount template -->
               <div class="form-group">
-                <label for="request_burst_amount" data-i18n="amount">AMOUNT</label>
-                <div class="input-group" id="request_burst_amount_div">
+                <label for="request_burst_amount" data-i18n="amount">amount</label>
+                <div class="input-group">
                   <input
-                    type="text"
+                    type="number"
                     name="amountNXT"
                     id="request_burst_amount"
-                    step="any"
-                    min="0.00000001"
                     class="form-control"
+                    step="any"
+                    min="0"
                     placeholder="Amount"
                     data-i18n="[placeholder]amount" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
               </div>
+
+              <!-- Fee + deadline template -->
+          <div class="row">
+            <div class="col-8">
               <div class="form-group has-suggested-fee-group">
-                <label for="request_burst_fee" data-i18n="fee">FEE</label>
+                <label data-i18n="fee">FEE</label>
                 <div class="input-group">
                   <input
                     type="number"
@@ -52,8 +56,8 @@
                     min="0.01"
                     placeholder="Fee"
                     data-i18n="[placeholder]fee"
-                    data-default="0.1"
-                    value="0.1" />
+                    data-default="0.02"
+                    value="0.02" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>
@@ -66,15 +70,16 @@
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+
               <div class="form-group">
-                <label>
-                  <input type="checkbox" name="immutable" id="request_burst_immutable" checked />
-                  <span data-i18n="immutable;[title]immutable_title" data-toggle="tooltip" data-placement="top" data-html="true"
-                    >Immutable</span
-                  >
-                </label>
+                <input type="checkbox" name="immutable" id="request_burst_immutable" checked />
+                <label for="request_burst_immutable"> <span data-i18n="immutable;[title]immutable_title">immutable</span></label>
               </div>
               <div class="alert alert-danger error_message" style="display: none"></div>
+
+              <input type="hidden" name="request_type" value="requestBurst" />
             </form>
           </div>
           <!-- end form -->
@@ -111,12 +116,11 @@
             </div>
           </div>
           <!-- end response -->
-        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" id="new_qr_button" data-i18n="new_qr">New QR</button>
         <button type="button" class="btn btn-default" id="cancel_button" data-dismiss="modal" data-i18n="cancel">Cancel</button>
-        <button type="button" class="btn btn-primary" id="generate_qr_button" data-ignore="true" data-i18n="generate_qr">
+        <button type="button" class="btn btn-primary" id="generate_qr_button" data-i18n="generate_qr" data-form="form_request_burst">
           Generate QR
         </button>
       </div>

@@ -142,6 +142,8 @@ import {
     Transaction
 } from '../typings'
 
+import { formRequestBurst } from './brs.modals.request'
+
 export const BRS = {
     version: '1.0.0',
     server: '',
@@ -257,7 +259,8 @@ export const BRS = {
         calculateFullHashError: formsCalculateFullHashError,
         signModalButtonClicked: formsSignModalButtonClicked,
         signMessage: formsSignMessage,
-        verifyMessage: formsVerifyMessage
+        verifyMessage: formsVerifyMessage,
+        requestBurst: formRequestBurst
     },
 
     hasLocalStorage: true,
