@@ -332,8 +332,7 @@ export function processAjaxRequest (requestType, data, callback, async) {
                 return
             }
             if (data.broadcast === 'false') {
-                response.transactionBytes = payload
-                showRawTransactionModal(response)
+                showRawTransactionModal(response, payload)
                 return
             }
             if (callback) {
@@ -355,7 +354,7 @@ export function processAjaxRequest (requestType, data, callback, async) {
             }
         }
         if (response.broadcasted === false) {
-            showRawTransactionModal(response)
+            showRawTransactionModal(response, '')
         } else {
             if (callback) {
                 if (extra) {
