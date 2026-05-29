@@ -45,14 +45,13 @@ export function automaticallyCheckRecipient () {
 }
 
 export function sendMoneyCalculateTotal (element) {
-    const current_amount = parseFloat($('#send_money_amount').val(), 10)
-    const current_fee = parseFloat($('#send_money_fee').val(), 10)
-    const fee = isNaN(current_fee) ? BRS.minimumFee : (current_fee < BRS.minimumFee ? BRS.minimumFee : current_fee)
-    const amount = isNaN(current_amount) ? 0 : (current_amount < 0.00000001 ? 0 : current_amount)
-
-    $('#send_money_fee').val(fee)
-
-    $(element).closest('.modal').find('.total_amount_ordinary').html(formatNQTAsAmount(parseAmountToNQT(amount + fee)) + ' ' + BRS.valueSuffix)
+    try {
+        const current_amount = BigInt(parseAmountToNQT($('#send_money_amount').val()))
+        const current_fee = BigInt(parseAmountToNQT($('#send_money_fee').val()))
+        $(element).closest('.modal').find('.total_amount_ordinary').text(formatNQTAsAmount(current_amount + current_fee) + ' ' + BRS.valueSuffix)
+    } catch {
+        $(element).closest('.modal').find('.total_amount_ordinary').text('??? ' + BRS.valueSuffix)
+    }
 }
 
 export function formsSendMoneyComplete (response, data) {

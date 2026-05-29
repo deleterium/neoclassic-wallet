@@ -102,39 +102,39 @@ export function evDocumentOnClickRemoveRecipient (e) {
 
 export function evMultiOutAmountChange () {
     // get amount for each recipient
-    let amount_total = 0
-    $('#multi_out_recipients .row').each(function (index, row) {
-        const recipient = $(row).find('input[name=recipient_multi_out]').val()
-        const value = $(row).find('input[name=amount_multi_out]').val()
-        const current_amount = parseFloat(value, 10)
-        const amount = isNaN(current_amount) ? 0 : (current_amount < 0.00000001 ? 0 : current_amount)
-        if (recipient !== '') {
-            amount_total += amount
-        }
-    })
-    const current_fee = parseFloat($('#multi_out_fee').val(), 10)
-    const fee = checkMinimumFee(current_fee)
-    // $("#multi_out_fee").val(fee.toFixed(8));
-    amount_total += fee
-
-    $('#total_amount_multi_out').html(formatNQTAsAmount(parseAmountToNQT(amount_total)) + ' ' + BRS.valueSuffix)
+    try {
+        let amount_total = 0n
+        $('#multi_out_recipients .row').each(function (index, row) {
+            const recipient = $(row).find('input[name=recipient_multi_out]').val()
+            const value = $(row).find('input[name=amount_multi_out]').val()
+            const current_amount = BigInt(parseAmountToNQT(value))
+            if (recipient !== '') {
+                amount_total += current_amount
+            }
+        })
+        const current_fee = BigInt(parseAmountToNQT($('#multi_out_fee').val()))
+        amount_total += current_fee
+        $('#total_amount_multi_out').text(formatNQTAsAmount(amount_total) + ' ' + BRS.valueSuffix)
+    } catch {
+        $('#total_amount_multi_out').text('??? ' + BRS.valueSuffix)
+    }
 }
 
 export function evMultiOutSameAmountChange () {
-    let amount_total = 0
-    const current_amount = parseFloat($('#multi_out_same_amount').val(), 10)
-    const current_fee = parseFloat($('#multi_out_fee').val(), 10)
-    const amount = isNaN(current_amount) ? 0 : (current_amount < 0.00000001 ? 0 : current_amount)
-    const fee = checkMinimumFee(current_fee)
-
-    $('#multi_out_same_recipients input[name=recipient_multi_out_same]').each(function () {
-        if ($(this).val() !== '') {
-            amount_total += amount
-        }
-    })
-    amount_total += fee
-
-    $('#total_amount_multi_out').html(formatNQTAsAmount(parseAmountToNQT(amount_total)) + ' ' + BRS.valueSuffix)
+    try {
+        let amount_total = 0n
+        const current_amount = BigInt(parseAmountToNQT($('#multi_out_same_amount').val()))
+        const current_fee = BigInt(parseAmountToNQT($('#multi_out_fee').val()))
+        $('#multi_out_same_recipients input[name=recipient_multi_out_same]').each(function () {
+            if ($(this).val() !== '') {
+                amount_total += current_amount
+            }
+        })
+        amount_total += current_fee
+        $('#total_amount_multi_out').text(formatNQTAsAmount(amount_total) + ' ' + BRS.valueSuffix)
+    } catch {
+        $('#total_amount_multi_out').text('??? ' + BRS.valueSuffix)
+}
 }
 
 export function evSameOutCheckboxChange () {
