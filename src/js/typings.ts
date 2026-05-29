@@ -189,6 +189,15 @@ export interface GetBlochainStatusResponse extends BlockchainStatus {
     errorDescription?: string;
 }
 
+export interface SuggestFee {
+    cheap: number;
+    standard: number;
+    priority: number;
+    requestProcessingTime: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 // region Block
 
 export interface BlockDetails {
