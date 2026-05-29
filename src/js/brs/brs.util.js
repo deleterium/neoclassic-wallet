@@ -510,12 +510,21 @@ export function translateServerError (response) {
 
     case 4:
         match = response.errorDescription.match(/Incorrect "([^"]+)"/i)
-
         if (match && match[1]) {
             return $.t('error_incorrect_name', {
                 name: getTranslatedFieldName(match[1]).toLowerCase()
             }).capitalize()
         }
+        
+        match = response.errorDescription.match(/Transaction fee (\d+) less than minimum fee (\d+) at height (\d+)/)
+        if (match) {
+            return $.t('error_transaction_fee', {
+                currentFee: formatNQTAsAmount(match[1]),
+                minimumFee: formatNQTAsAmount(match[2]),
+                height: Number(match[3]).toLocaleString(BRS.settings.language)
+            }).capitalize();
+        }
+
         return response.errorDescription
     case 5:
         match = response.errorDescription.match(/Unknown (.*)/i)
