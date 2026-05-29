@@ -181,14 +181,31 @@ function convertNQTToNumberObject(amountNQT) {
 }
 
 /**
- * Parses a human-readable Amount (with group separators or other characters) into NQT format.
+ * Parses a human-readable Amount (with group separators and/or decimal sign) into NQT format.
  *
  * @param {string|number} amount - Human-readable Amount (e.g., "1,234.56" or 1234.56).
  * @returns {string} Amount in NQT format.
+ * @throws Error if invalid input is found
  */
 export function parseAmountToNQT(amount) {
     let parts
     if (typeof amount === 'string') {
+        amount = amount.trim()
+        if (amount === '') {
+            return '0'
+        }
+        // Check for invalid characters before cleaning
+        const allowedChars = new RegExp(
+            '^[0-9'
+            + BRS.decimalSign.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            + BRS.groupSeparator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']+$'
+        );
+        if (!allowedChars.test(amount)) {
+            // Find the first invalid character
+            const invalidChar = amount.split('').find(char => !allowedChars.test(char));
+            throw new Error($.t('error_invalid_char', { char: invalidChar }));
+        }
+
         const cleanedValue = amount.replace(
             new RegExp('[^0-9' + BRS.decimalSign.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']', 'g'),
             ''
@@ -208,7 +225,7 @@ export function parseAmountToNQT(amount) {
         if (parts[1].length <= 8) {
             fraction = parts[1].padEnd(8, '0')
         } else {
-            fraction = parts[1].substring(0, 8)
+            throw new Error($.t('error_invalid_input'))
         }
     } else {
         throw new Error($.t('error_invalid_input'))
