@@ -26,3 +26,10 @@ Used to interact with humans in forms.
 * **PriceNQT**: An asset price in blockchain format.
 Represents the price in NQT per QNT.
 Commonly used in the API as `priceNQT`.
+
+## Forms fields in HTML code
+Due to localization, all forms that will handle numbers must be `type="text"` and the property `min="0"` to be checked before submission.
+The 'min' property need to set in english, and it will be handled correctly internally.
+So, if minimum fee is 0.01, the field will be at least `<input type="text" min="0.01" />`.
+The user in Germany can enter "0,005" and the form submit will fail with the message that value is below minimum.
+To have the input checked and decorated during user input, use class `ev-check-number-input`.

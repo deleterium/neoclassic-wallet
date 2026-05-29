@@ -33,12 +33,53 @@
                 type="text"
                 name="amountNXT"
                 id="escrow_create_amount"
-                step="any"
                 min="0"
-                class="form-control"
+                class="form-control ev-check-number-input"
                 placeholder="Amount"
                 data-i18n="[placeholder]amount" />
               <span class="input-group-text" data-value-suffix=""></span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-8">
+              <div class="form-group has-suggested-fee-group">
+                <label for="escrow_create_fee" data-i18n="fee">FEE</label>
+                <div class="input-group">
+                  <!-- Minimum fee Issue /signum-node/issues/677 -->
+                  <input
+                    type="text"
+                    name="feeNXT"
+                    class="form-control ev-check-number-input"
+                    id="escrow_create_fee"
+                    min="1" />
+                  <span class="input-group-text" data-value-suffix=""></span>
+                </div>
+                <div>
+                  <span data-toggle="tooltip" data-placement="top" data-html="true" data-i18n="[title]suggested_fee_help">
+                    <i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp;&nbsp;
+                  </span>
+                  <span class="suggested_fee_response"></span>
+                  <span class="suggested_fee_spinner">
+                    <i class="fa fa-spinner fa-spin fa-fw text-danger"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label for="escrow_create_deadline" data-i18n="deadline">DEADLINE (HOURS)</label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    name="deadline"
+                    id="escrow_create_deadline"
+                    class="form-control ev-check-number-input"
+                    min="0.1"
+                    data-default="1"
+                    value="1" />
+                  <span class="input-group-text" data-i18n="hours"></span>
+                </div>
+              </div>
             </div>
           </div>
           <div class="form-group">
@@ -93,8 +134,6 @@
           <div class="alert alert-info account_info"></div>
           <div class="alert alert-danger error_message"></div>
           <input type="hidden" name="request_type" value="sendMoneyEscrow" />
-          <input type="hidden" name="deadline" value="1" />
-          <input type="hidden" name="feeNXT" value="1" />
           <input type="hidden" name="modal" value="escrow_create" disabled="disabled" />
           <input type="hidden" name="converted_account_id" value="" />
         </form>
@@ -148,48 +187,39 @@
           </div>
           <div class="row">
             <div class="col-8">
-              <!-- Issue /signum-node/issues/677
-              <div class="form-group">
+              <div class="form-group has-suggested-fee-group">
                 <label for="escrow_decision_fee" data-i18n="fee">FEE</label>
                 <div class="input-group">
+                  <!-- Minimum fee Issue /signum-node/issues/677 -->
                   <input
-                    type="number"
+                    type="text"
                     name="feeNXT"
-                    class="form-control"
+                    class="form-control ev-check-number-input"
                     id="escrow_decision_fee"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Fee"
-                    data-i18n="[placeholder]fee"
-                    data-default="0.01"
-                    value="0.01" />
+                    min="1" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>
                   <span data-toggle="tooltip" data-placement="top" data-html="true" data-i18n="[title]suggested_fee_help">
                     <i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp;&nbsp;
                   </span>
-                  <span id="suggested_fee_response_escrow_decision"></span>
-                  <span class="suggested_fee" name="suggested_fee_spinner">
+                  <span class="suggested_fee_response"></span>
+                  <span class="suggested_fee_spinner">
                     <i class="fa fa-spinner fa-spin fa-fw text-danger"></i>
                   </span>
                 </div>
               </div>
-              -->
             </div>
             <div class="col-4">
               <div class="form-group">
                 <label for="escrow_decision_deadline" data-i18n="deadline">DEADLINE (HOURS)</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="deadline"
                     id="escrow_decision_deadline"
-                    class="form-control"
-                    placeholder="deadline"
-                    data-i18n="[placeholder]deadline"
+                    class="form-control ev-check-number-input"
                     min="0.1"
-                    step="0.1"
                     data-default="1"
                     value="1" />
                   <span class="input-group-text" data-i18n="hours"></span>
@@ -208,7 +238,6 @@
           <div class="alert alert-info account_info"></div>
           <div class="alert alert-danger error_message"></div>
           <input type="hidden" name="request_type" value="escrowSign" />
-          <input type="hidden" name="feeNXT" value="1" />
           <input type="hidden" name="modal" value="escrow_decision" disabled="disabled" />
           <input type="hidden" name="converted_account_id" value="" />
         </form>

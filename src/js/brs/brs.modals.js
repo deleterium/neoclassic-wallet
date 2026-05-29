@@ -59,6 +59,19 @@ export function setupLockableModal () {
     })
 }
 
+/**
+ * @param {JQuery.TriggeredEvent} e
+ */
+export function evCheckNumberInput(e) {
+    const inputElement = e.target
+    try {
+        parseAmountToNQT(String($(inputElement).val()))
+        $(inputElement).removeClass('is-invalid')
+    } catch {
+        $(inputElement).addClass('is-invalid')
+    }
+}
+
 export function evAddRecipientsClick (e) {
     e.preventDefault()
     if ($('#send_money_same_out_checkbox').is(':checked')) {
@@ -69,6 +82,7 @@ export function evAddRecipientsClick (e) {
     $('input[name=recipient_multi_out_same]').off('blur').on('blur', evMultiOutSameAmountChange)
     $('input[name=recipient_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
     $('input[name=amount_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
+    $('#send_money_modal .ev-check-number-input').off('input').on('input', evCheckNumberInput)
     $('.remove_recipient .remove_recipient_button').off('click').on('click', evDocumentOnClickRemoveRecipient)
 
     $('span.recipient_selector').on('click', 'button', evSpanRecipientSelectorClickButton)
@@ -171,6 +185,7 @@ export function resetModalMultiOut () {
     $('#multi_out_recipients').append($('#additional_multi_out_recipient').html())
     $('#multi_out_same_recipients').append($('#additional_multi_out_same_recipient').html())
     $('#multi_out_same_recipients').append($('#additional_multi_out_same_recipient').html())
+    $('#send_money_modal .ev-check-number-input').off('input').on('input', evCheckNumberInput)
     $('#multi_out_same_recipients input[name=recipient_multi_out_same]').off('blur').on('blur', evMultiOutSameAmountChange)
     $('#multi_out_recipients input[name=recipient_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
     $('#multi_out_recipients input[name=amount_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
@@ -242,6 +257,8 @@ export function evModalOnHiddenBsModal () {
 
     // Hide/Reset any possible error messages
     $(this).find('.callout-danger:not(.never_hide), .error_message, .account_info').html('').hide()
+
+    $(this).find('.ev-check-number-input').removeClass('is-invalid')
 
     $(this).find('.advanced').hide()
 

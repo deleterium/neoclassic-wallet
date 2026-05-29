@@ -113,7 +113,8 @@ import {
     evModalOnHiddenBsModal,
     evAdvancedInfoClick,
     removeDecryptionForm,
-    decryptNoteFormSubmit
+    decryptNoteFormSubmit,
+    evCheckNumberInput
 } from './brs.modals'
 
 import {
@@ -234,6 +235,7 @@ export function addEventListeners () {
     $('.modal button.btn-primary:not([data-dismiss=modal]):not([data-ignore=true])').on('click', function () {
         submitForm($(this))
     })
+    $('.ev-check-number-input').on('input', evCheckNumberInput)
 
     // from brs.login.js
     $('#account_phrase_custom_panel form').on('submit', evAccountPhraseCustomPanelSubmit)
@@ -540,7 +542,11 @@ export function addEventListeners () {
         const $modal = $(this).closest('.modal')
         const $feeInfo = $modal.find('.advanced_fee')
         if ($feeInfo.length) {
-            $feeInfo.html(formatNQTAsAmount(parseAmountToNQT($(this).val() as string)) + ' ' + BRS.valueSuffix)
+            try {
+                $feeInfo.text(formatNQTAsAmount(parseAmountToNQT($(this).val() as string)) + ' ' + BRS.valueSuffix)
+            } catch {
+                $feeInfo.text('??? ' + BRS.valueSuffix)
+            }
         }
     })
     $('.advanced_info a').on('click', evAdvancedInfoClick)

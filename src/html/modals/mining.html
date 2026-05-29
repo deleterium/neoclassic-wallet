@@ -35,11 +35,10 @@
             <label data-i18n="amount">amount</label>
             <div class="input-group">
               <input
-                type="number"
+                type="text"
                 name="amountNXT"
                 id="commitment_amount"
-                class="form-control"
-                step="any"
+                class="form-control ev-check-number-input"
                 min="0"
                 placeholder="Amount"
                 data-i18n="[placeholder]amount" />
@@ -54,16 +53,11 @@
                 <label data-i18n="fee">FEE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="feeNXT"
                     id="commitment_fee"
-                    class="form-control"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Fee"
-                    data-i18n="[placeholder]fee"
-                    data-default="0.02"
-                    value="0.02" />
+                    class="form-control ev-check-number-input"
+                    min="0.01" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>
@@ -82,14 +76,11 @@
                 <label data-i18n="deadline">DEADLINE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="deadline"
                     id="commitment_deadline"
-                    class="form-control"
-                    placeholder="deadline"
-                    data-i18n="[placeholder]deadline"
+                    class="form-control ev-check-number-input"
                     min="0.1"
-                    step="0.1"
                     data-default="1"
                     value="1" />
                   <span class="input-group-text" data-i18n="hours"></span>
@@ -190,7 +181,7 @@
           <div class="alert alert-info account_info"></div>
           <div class="alert alert-danger error_message"></div>
 
-          <input type="hidden" name="request_type" value="addCommitment" data-default="addCommitment" />
+          <input type="hidden" name="request_type" value="addCommitment" />
           <input type="hidden" name="converted_account_id" value="" />
         </form>
       </div>
@@ -251,16 +242,11 @@
                 <label data-i18n="fee">FEE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="feeNXT"
                     id="reward_assignment_fee"
-                    class="form-control"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Fee"
-                    data-i18n="[placeholder]fee"
-                    data-default="0.02"
-                    value="0.02" />
+                    class="form-control ev-check-number-input"
+                    min="0.01" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>
@@ -279,14 +265,11 @@
                 <label data-i18n="deadline">DEADLINE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="deadline"
                     id="reward_assignment_deadline"
-                    class="form-control"
-                    placeholder="deadline"
-                    data-i18n="[placeholder]deadline"
+                    class="form-control ev-check-number-input"
                     min="0.1"
-                    step="0.1"
                     data-default="1"
                     value="1" />
                   <span class="input-group-text" data-i18n="hours"></span>
@@ -381,7 +364,7 @@
           <div class="alert alert-info account_info"></div>
           <div class="alert alert-danger error_message"></div>
 
-          <input type="hidden" name="request_type" value="setRewardRecipient" data-default="setRewardRecipient" />
+          <input type="hidden" name="request_type" value="setRewardRecipient" />
           <input type="hidden" name="converted_account_id" value="" />
         </form>
       </div>

@@ -33,9 +33,8 @@
                 type="text"
                 name="amountNXT"
                 id="subscription_create_amount"
-                step="any"
                 min="0"
-                class="form-control"
+                class="form-control ev-check-number-input"
                 placeholder="Amount"
                 data-i18n="[placeholder]amount" />
               <span class="input-group-text" data-value-suffix=""></span>
@@ -47,28 +46,22 @@
           </div>
           <div class="row">
             <div class="col-8">
-              <div class="form-group">
+              <div class="form-group has-suggested-fee-group">
                 <label for="subscription_create_fee" data-i18n="fee">FEE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="feeNXT"
                     id="subscription_create_fee"
-                    class="form-control"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Fee"
-                    data-i18n="[placeholder]fee"
-                    data-default="0.1"
-                    value="0.1" />
+                    class="form-control ev-check-number-input"
+                    min="0.01" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>
                   <span data-toggle="tooltip" data-placement="top" data-html="true" data-i18n="[title]suggested_fee_help">
                     <i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp;&nbsp;
                   </span>
-                  <span id="suggested_fee_response_subscription_create"></span>
-                  <span class="suggested_fee" name="suggested_fee_spinner">
+                  <span class="suggested_fee_spinner">
                     <i class="fa fa-spinner fa-spin fa-fw text-danger"></i>
                   </span>
                 </div>
@@ -79,14 +72,11 @@
                 <label for="subscription_create_deadline" data-i18n="deadline">DEADLINE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="deadline"
                     id="subscription_create_deadline"
-                    class="form-control"
-                    placeholder="deadline"
-                    data-i18n="[placeholder]deadline"
+                    class="form-control ev-check-number-input"
                     min="0.1"
-                    step="0.1"
                     data-default="1"
                     value="1" />
                   <span class="input-group-text" data-i18n="hours"></span>
@@ -220,20 +210,15 @@
           </div>
           <div class="row">
             <div class="col-8">
-              <div class="form-group">
+              <div class="form-group has-suggested-fee-group">
                 <label for="subscription_cancel_fee" data-i18n="fee">FEE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="feeNXT"
                     id="subscription_cancel_fee"
-                    class="form-control"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Fee"
-                    data-i18n="[placeholder]fee"
-                    data-default="0.1"
-                    value="0.1" />
+                    class="form-control ev-check-number-input"
+                    min="0.01" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>
@@ -252,14 +237,11 @@
                 <label for="subscription_cancel_deadline" data-i18n="deadline">DEADLINE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="deadline"
                     id="subscription_cancel_deadline"
-                    class="form-control"
-                    placeholder="deadline"
-                    data-i18n="[placeholder]deadline"
+                    class="form-control ev-check-number-input"
                     min="0.1"
-                    step="0.1"
                     data-default="1"
                     value="1" />
                   <span class="input-group-text" data-i18n="hours"></span>

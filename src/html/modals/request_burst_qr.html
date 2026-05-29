@@ -29,11 +29,10 @@
                 <label for="request_burst_amount" data-i18n="amount">amount</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="amountNXT"
                     id="request_burst_amount"
-                    class="form-control"
-                    step="any"
+                    class="form-control ev-check-number-input"
                     min="0"
                     placeholder="Amount"
                     data-i18n="[placeholder]amount" />
@@ -48,16 +47,11 @@
                 <label data-i18n="fee">FEE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="feeNXT"
                     id="request_burst_fee"
-                    class="form-control"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Fee"
-                    data-i18n="[placeholder]fee"
-                    data-default="0.02"
-                    value="0.02" />
+                    class="form-control ev-check-number-input"
+                    min="0.01" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>

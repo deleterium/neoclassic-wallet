@@ -143,6 +143,11 @@ async function addMessageData (data, requestType) {
     return data
 }
 
+/**
+ * Verify every input at the given form for custom rules.
+ * @param {*} $form 
+ * @returns 
+ */
 function checkInvalidFormFields ($form) {
     function hasAttr (DOM, name) {
         return DOM.attr(name) !== undefined
@@ -151,12 +156,10 @@ function checkInvalidFormFields ($form) {
     let errorMessage = ''
 
     $form.find(':input').each(function () {
-        if (!$(this).is(':invalid')) {
-            return
-        }
         const name = String($(this).attr('name')).replace('NXT', '').replace('NQT', '').capitalize()
         const value = $(this).val()
         if (hasAttr($(this), 'max')) {
+            // Only one case using max: Issue asset -> decimals
             if (!/^[-\d.]+$/.test(value)) {
                 errorMessage = $.t('error_not_a_number', {
                     field: getTranslatedFieldName(name).toLowerCase()
@@ -174,26 +177,23 @@ function checkInvalidFormFields ($form) {
             }
         }
         if (hasAttr($(this), 'min')) {
-            if (!/^[-\d.]+$/.test(value)) {
-                errorMessage = $.t('error_not_a_number', {
-                    field: getTranslatedFieldName(name).toLowerCase()
-                }).capitalize()
-                return
-            } else {
-                const min = $(this).attr('min')
-                if (value < min) {
+            try {
+                const inputNQT = BigInt(parseAmountToNQT(value))
+                const min = $(this).attr('min') || '0'
+                if (inputNQT < BigInt(Number(min) * 1E8)) {
                     errorMessage = $.t('error_min_value', {
                         field: getTranslatedFieldName(name).toLowerCase(),
                         min
                     }).capitalize()
                     return
                 }
+            } catch (e) {
+                errorMessage = $.t('error_at_field', {
+                    field: getTranslatedFieldName(name).toLowerCase(),
+                    errorMessage: e.message
+                }).capitalize()
+                return
             }
-        }
-        if (!errorMessage) {
-            errorMessage = $.t('error_invalid_field', {
-                field: getTranslatedFieldName(name).toLowerCase()
-            }).capitalize()
         }
     })
 

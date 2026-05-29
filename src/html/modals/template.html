@@ -42,8 +42,7 @@
                     type="text"
                     name="quantity"
                     id="EDITME_quantity"
-                    class="form-control"
-                    step="any"
+                    class="form-control ev-check-number-input"
                     min="0"
                     placeholder="quantity"
                     data-i18n="[placeholder]quantity" />
@@ -92,11 +91,10 @@
             <label data-i18n="amount">amount</label>
             <div class="input-group">
               <input
-                type="number"
+                type="text"
                 name="amountNXT"
                 id="EDITME_amount"
-                class="form-control"
-                step="any"
+                class="form-control ev-check-number-input"
                 min="0"
                 placeholder="Amount"
                 data-i18n="[placeholder]amount" />
@@ -110,17 +108,13 @@
               <div class="form-group has-suggested-fee-group">
                 <label data-i18n="fee">FEE</label>
                 <div class="input-group">
+                  <!-- Check mininum fee for this type of -->
                   <input
-                    type="number"
+                    type="text"
                     name="feeNXT"
                     id="EDITME_fee"
-                    class="form-control"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="Fee"
-                    data-i18n="[placeholder]fee"
-                    data-default="0.02"
-                    value="0.02" />
+                    class="form-control ev-check-number-input"
+                    min="0.01" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>
@@ -139,14 +133,11 @@
                 <label data-i18n="deadline">DEADLINE</label>
                 <div class="input-group">
                   <input
-                    type="number"
+                    type="text"
                     name="deadline"
                     id="EDITME_deadline"
-                    class="form-control"
-                    placeholder="deadline"
-                    data-i18n="[placeholder]deadline"
+                    class="form-control ev-check-number-input"
                     min="0.1"
-                    step="0.1"
                     data-default="1"
                     value="1" />
                   <span class="input-group-text" data-i18n="hours"></span>
