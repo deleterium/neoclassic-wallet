@@ -382,6 +382,35 @@ export interface GetAccountATsResponse {
     errorDescription?: string;
 };
 
+// region Escrow
+
+interface Escrow {
+    id: string;
+    sender: string;
+    senderRS: string;
+    recipient: string;
+    recipientRS: string;
+    amountNQT: string;
+    requiredSigners: number;
+    deadline: number;
+    deadlineAction: "release" | "refund" | "split";
+    signers: Signer[];
+}
+
+interface Signer {
+    id: string;
+    idRS: string;
+    decision: "undecided" | "release" | "refund" | "split";
+}
+
+export interface GetAccountEscrowTransactionsResponse {
+    escrows: Escrow[];
+    requestProcessingTime: number;
+    unconfirmed: boolean;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 // region Server info
 
 export interface GetStateResponse {
