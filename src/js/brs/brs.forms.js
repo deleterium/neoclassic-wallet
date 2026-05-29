@@ -27,6 +27,43 @@ import {
     addUnconfirmedTransaction
 } from './brs.transactions'
 
+/**
+ * There are the 'requestType' in forms that will check if node is in sync before proceed.
+ */
+const submitOnlyWhenInSync = {
+    addAssetBookmark: false,
+    addCommitment: true,
+    addContact: false,
+    assetExchangeChangeGroupName: false,
+    assetExchangeGroup: false,
+    broadcastTransaction: true,
+    buyAlias: true,
+    cancelOrder: true,
+    clearData: false,
+    decryptMessages: false,
+    deleteContact: false,
+    escrowSign: true,
+    issueAsset: true,
+    orderAsset: true,
+    requestBurst: false,
+    sellAlias: true,
+    sendMessage: true,
+    sendMoney: true,
+    sendMoneyEscrow: true,
+    sendMoneyMulti: true,
+    sendMoneySubscription: true,
+    setAccountInfo: true,
+    setAlias: true,
+    setRewardRecipient: true,
+    signMessage: false,
+    subscriptionCancel: true,
+    transferAsset: true,
+    transferAssetMulti: true,
+    updateContact: false,
+    verifyMessage: false
+}
+
+
 function getSuccessMessage (requestType) {
     const ignore = ['asset_exchange_change_group_name', 'asset_exchange_group', 'add_contact', 'update_contact', 'delete_contact',
         'send_message', 'decrypt_messages', 'generate_token', 'send_money', 'set_alias', 'add_asset_bookmark', 'sell_alias'
@@ -323,12 +360,20 @@ export async function submitForm ($btn) {
 
     const originalRequestType = requestType
 
-    if (BRS.downloadingBlockchain) {
-        endWithError($.t('error_blockchain_downloading'))
+    const checkSync = submitOnlyWhenInSync[requestType]
+    if (checkSync === undefined) {
+        console.error("Unknow request type")
         return
-    } else if (BRS.rescaningBlockchain) {
-        endWithError($.t('error_form_blockchain_rescanning'))
-        return
+    }
+    if (checkSync) {
+        if (BRS.downloadingBlockchain) {
+            endWithError($.t('error_blockchain_downloading'))
+            return
+        }
+        if (BRS.rescaningBlockchain) {
+            endWithError($.t('error_form_blockchain_rescanning'))
+            return
+        }
     }
 
     let errorStr = checkInvalidFormFields($form)
