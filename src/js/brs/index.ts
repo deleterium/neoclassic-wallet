@@ -113,9 +113,7 @@ import {
 import {
     formsBroadcastTransactionComplete,
     formsParseTransactionComplete,
-    formsParseTransactionError,
-    formsCalculateFullHashComplete,
-    formsCalculateFullHashError
+    formsParseTransactionError
 } from './brs.modals.advanced'
 
 import {
@@ -255,8 +253,6 @@ export const BRS = {
         broadcastTransactionComplete: formsBroadcastTransactionComplete,
         parseTransactionComplete: formsParseTransactionComplete,
         parseTransactionError: formsParseTransactionError,
-        calculateFullHashComplete: formsCalculateFullHashComplete,
-        calculateFullHashError: formsCalculateFullHashError,
         signModalButtonClicked: formsSignModalButtonClicked,
         signMessage: formsSignMessage,
         verifyMessage: formsVerifyMessage,
