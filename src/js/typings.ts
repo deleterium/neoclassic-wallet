@@ -292,6 +292,28 @@ export interface GetAssetsByResponse {
 export type GetAssetsByNameResponse = GetAssetsByResponse
 export type GetAssetsByIssuerResponse = GetAssetsByResponse
 
+export interface AssetTransfer {
+    assetTransfer: string;
+    asset: string;
+    sender: string;
+    senderRS: string;
+    recipient: string;
+    recipientRS: string;
+    quantityQNT: string;
+    height: number;
+    timestamp: number;
+    name: string;
+    decimals: number;
+}
+
+export interface GetAssetTransfersResponse {
+    transfers: AssetTransfer[];
+    requestProcessingTime?: number;
+    nextIndex?: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 interface AssetOrder {
     order: string;
     asset: string;
