@@ -59,7 +59,7 @@ export function getAccountLink (object, acc) {
     }
     if (typeof object[acc + 'RS'] === 'undefined') {
         if (object.type === 2 && object.subtype === 1) {
-            return 'Burn address'
+            return $.t('burn_address')
         }
         return '/'
     } else {
@@ -95,11 +95,14 @@ export function getAccountTitle (object, acc) {
 
     if (formattedAcc === BRS.accountRS) {
         return $.t('you')
-    } else if (formattedAcc in BRS.contacts) {
-        return BRS.contacts[formattedAcc].name.escapeHTML()
-    } else {
-        return String(formattedAcc).escapeHTML()
     }
+    if (formattedAcc in BRS.contacts) {
+        return BRS.contacts[formattedAcc].name.escapeHTML()
+    }
+    if (formattedAcc.endsWith('2222-2222-2222-22222')) {
+        return $.t('burn_address')
+    }
+    return String(formattedAcc).escapeHTML()
 }
 
 export function getAccountFormatted (object, acc) {

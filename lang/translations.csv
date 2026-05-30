@@ -5,6 +5,7 @@
 "mining","Mining","Mineração","Mineração",,,,,,,,,,,,,,,,,,,,,,,,,,,
 "account_extended","Account extended address","Endereço estendido","Endereço de conta estendido",,,,,,,,,,,,,,,,,,,,,,,,,,,
 "details","Details","Detalhes","Detalhes",,,,,,,,,,,,,,,,,,,,,,,,,,,
+"burn_address","Burn address","Carteira morta","Endereço de queima",,,,,,,,,,,,,,,,,,,,,,,,,,,
 "user_no_details","This account has no incoming or outgoing transactions.","Esta conta não recebeu e nem enviou transações.","Esta conta não tem transações de entrada ou saída.",,,,,,,,,,,,,,,,,,,,,,,,,,,
 "confirm_send_passphrase","You are about to send your passphrase over the internet. It is not recommend to proceed.\\n\\nDo you still want to send your passphrase?","Você está prestes a mandar sua frase secreta pela internet. Isso NÃO é recomendado.\\n\\nVocê ainda deseja enviar sua frase secreta?","Você está prestes a enviar sua senha por meio da internet. Não é recomendado prosseguir.\n\nDeseja continuar enviando sua senha?",,,,,,,,,,,,,,,,,,,,,,,,,,,
 "filled","Filled","Executada","Preenchido",,,,,,,,,,,,,,,,,,,,,,,,,,,
