@@ -13,18 +13,16 @@ import { getContactByName } from './brs.contacts'
 import { getAccountIdFromPublicKey } from './brs.encryption'
 
 import {
-    parseAmountToNQT,
     formatNQTAsAmount,
     formatTimestampAsDateTime
 } from './brs.numbers'
 
 import {
-    convertRSAccountToNumeric,
     getAccountFormatted,
     convertPublicKeyFromBase36ToBase16
 } from './brs.util'
 
-import { GetAccountResponse, GetAliasResponse, PostResponse } from '../typings'
+import { GetAccountResponse, GetAliasResponse } from '../typings'
 
 export function automaticallyCheckRecipient () {
     const $recipientFields = $('#add_contact_account_id, #update_contact_account_id, #buy_alias_recipient, #escrow_create_recipient, #inline_message_recipient, #reward_assignment_recipient, #sell_alias_recipient, #send_message_recipient, #send_money_recipient, #subscription_cancel_recipient, #subscription_create_recipient, #transfer_alias_recipient, #transfer_asset_recipient, #transfer_asset_multi_recipient')
@@ -42,155 +40,6 @@ export function automaticallyCheckRecipient () {
             form.find('.account_info').hide()
         }
     })
-}
-
-export function sendMoneyCalculateTotal (element: JQuery<HTMLElement>) {
-    try {
-        const current_amount = BigInt(parseAmountToNQT($('#send_money_amount').val()))
-        const current_fee = BigInt(parseAmountToNQT($('#send_money_fee').val()))
-        $(element).closest('.modal').find('.total_amount_ordinary').text(formatNQTAsAmount(current_amount + current_fee) + ' ' + BRS.valueSuffix)
-    } catch {
-        $(element).closest('.modal').find('.total_amount_ordinary').text('??? ' + BRS.valueSuffix)
-    }
-}
-
-export function formsSendMoneyComplete (_response: PostResponse, data: any) {
-    if (!(data._extra && data._extra.convertedAccount) && !(data.recipient in BRS.contacts)) {
-        $.notify(
-            `${$.t('success_send_money', { valueSuffix: BRS.valueSuffix })}
-            <a href='#'
-              data-account='${getAccountFormatted(data, 'recipient')}'
-              data-toggle='modal'
-              data-target='#add_contact_modal'
-              style='text-decoration:underline'>
-              ${$.t('add_recipient_to_contacts_q')}
-            </a>`,
-            {
-                type: 'success'
-            }
-        )
-        return
-    }
-    $.notify($.t('success_send_money', { valueSuffix: BRS.valueSuffix }), { type: 'success' })
-}
-
-/** converts a recipient to accountId.
- * On error, returns ''. It means invalid rsAddress, or name not found in contacts
- */
-function recipientToId (recipient: string) : string {
-    if (BRS.rsRegEx.test(recipient)) {
-        return convertRSAccountToNumeric(recipient)
-    }
-    if (BRS.idRegEx.test(recipient)) {
-        return recipient
-    }
-    const foundContact = getContactByName(recipient)
-    if (foundContact) {
-        return foundContact.account
-    }
-    return ''
-}
-
-/**
- * Adjusts data from 'Send Money Modal' form, returning it in a way good to be requested.
- * @param data Form from 
- * @returns Object with the adjusted fields 'data' and 'requestType', or object with fiel 'error' on error.
- */
-export function formsSendMoneyMulti (data: any) {
-    data.recipients = ''
-    let items = 0
-    let biTotalAmount = 0n
-    let rowAmountNQT: string
-
-    let requestType = 'sendMoneyMulti'
-    if (data.same_out_checkbox === '1') {
-        requestType = 'sendMoneyMultiSame'
-        try {
-            rowAmountNQT = parseAmountToNQT(data.amount_multi_out_same)
-        } catch {
-            return { error: 'Invalid amount' }
-        }
-        data.amountNXT = data.amount_multi_out_same
-        for (const recipient of data.recipient_multi_out_same) {
-            if (recipient === '') continue
-            const accountId = recipientToId(recipient)
-            if (accountId === '') {
-                return {
-                    error: $.t('name_not_in_contacts', { name: recipient })
-                }
-            }
-            if (items > 0) {
-                data.recipients += ';'
-            }
-            items++
-            if (items === 64) {
-                return { error: $.t('error_max_recipients', { max: items }) }
-            }
-            data.recipients += accountId
-            biTotalAmount += BigInt(rowAmountNQT)
-        }
-    } else {
-        for (let i = 0; i < data.recipient_multi_out.length; i++) {
-            if (data.recipient_multi_out[i] === '' ||
-                    data.amount_multi_out[i] === '') {
-                continue
-            }
-            const accountId = recipientToId(data.recipient_multi_out[i])
-            if (accountId === '') {
-                return {
-                    error: $.t('name_not_in_contacts', { name: data.recipient_multi_out[i] })
-                }
-            }
-            try {
-                rowAmountNQT = parseAmountToNQT(data.amount_multi_out[i])
-            } catch {
-                return { error: 'Invalid amount' }
-            }
-            if (rowAmountNQT === '0') {
-                return { error: 'Invalid amount' }
-            }
-            if (items > 0) {
-                data.recipients += ';'
-            }
-            items++
-            if (items === 128) {
-                return { error: $.t('error_max_recipients', { max: items }) }
-            }
-            data.recipients += accountId + ':' + rowAmountNQT
-            biTotalAmount += BigInt(rowAmountNQT)
-        }
-    }
-    if (items < 2) {
-        return { error: $.t('error_multi_out_minimum_recipients') }
-    }
-    const singleRecipients = new Set(data.recipients.split(';').map(item => item.split(':')[0]))
-    if (singleRecipients.size !== items) {
-        return { error: $.t('error_multi_out_duplicate_recipient') }
-    }
-    if (
-        !BRS.showedFormWarning &&
-            Number(BRS.settings.amount_warning) !== 0 &&
-            biTotalAmount >= BigInt(BRS.settings.amount_warning)
-    ) {
-        BRS.showedFormWarning = true
-        return {
-            error: $.t('error_max_amount_warning', {
-                burst: formatNQTAsAmount(BRS.settings.amount_warning),
-                valueSuffix: BRS.valueSuffix
-            })
-        }
-    }
-
-    delete data.same_out_checkbox
-    delete data.amount_multi_out
-    delete data.amount_multi_out_same
-    delete data.recipient_multi_out
-    delete data.recipient_multi_out_same
-
-    return {
-        requestType,
-        data
-    }
 }
 
 /**

@@ -96,8 +96,9 @@ import {
     evMessagesSidebarContextClick
 } from './brs.messages'
 
+import { sendMoneyCalculateTotal } from './brs.modal.sendmoney'
+
 import {
-    sendMoneyCalculateTotal,
     evSpanRecipientSelectorClickButton,
     evSpanRecipientSelectorClickUlLiA
 } from './brs.recipient'

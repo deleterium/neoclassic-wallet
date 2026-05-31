@@ -100,7 +100,7 @@ import {
 import {
     formsSendMoneyComplete,
     formsSendMoneyMulti
-} from './brs.recipient'
+} from './brs.modal.sendmoney'
 
 import {
     pagesSubscription
