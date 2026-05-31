@@ -270,7 +270,7 @@ export function addEventListeners () {
         }
         if (account) {
             const $inputField = $(this).find('input[name=recipient], input[name=account_id]').not('[type=hidden]')
-            $inputField.val(account).trigger('checkRecipient')
+            $inputField.val(account).trigger('checkRecipientEvent')
         }
         sendMoneyCalculateTotal($(this))
     })
@@ -382,9 +382,9 @@ export function addEventListeners () {
             $('#send_message_message').val($('#message_in_chatbox').val() as string)
             $('#message_in_chatbox').val('')
             if (BRS.contacts[recipientAddress]) {
-                $('#send_message_recipient').val(BRS.contacts[recipientAddress].name).trigger('checkRecipient')
+                $('#send_message_recipient').val(BRS.contacts[recipientAddress].name).trigger('checkRecipientEvent')
             } else {
-                $('#send_message_recipient').val(recipientAddress).trigger('checkRecipient')
+                $('#send_message_recipient').val(recipientAddress).trigger('checkRecipientEvent')
             }
         }
     })

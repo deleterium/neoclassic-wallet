@@ -24,27 +24,27 @@ import {
     convertPublicKeyFromBase36ToBase16
 } from './brs.util'
 
+import { GetAccountResponse, GetAliasResponse, PostResponse } from '../typings'
+
 export function automaticallyCheckRecipient () {
     const $recipientFields = $('#add_contact_account_id, #update_contact_account_id, #buy_alias_recipient, #escrow_create_recipient, #inline_message_recipient, #reward_assignment_recipient, #sell_alias_recipient, #send_message_recipient, #send_money_recipient, #subscription_cancel_recipient, #subscription_create_recipient, #transfer_alias_recipient, #transfer_asset_recipient, #transfer_asset_multi_recipient')
 
     $recipientFields.on('blur', function () {
-        $(this).trigger('checkRecipient')
+        $(this).trigger('checkRecipientEvent')
     })
 
-    $recipientFields.on('checkRecipient', function () {
+    $recipientFields.on('checkRecipientEvent', function () {
         const value = $(this).val()
         const form = $(this).closest('form')
         if (value) {
-            checkRecipient(value, form)
+            checkRecipient(String(value), form)
         } else {
             form.find('.account_info').hide()
         }
     })
-
-    $recipientFields.on('oldRecipientPaste', function () {})
 }
 
-export function sendMoneyCalculateTotal (element) {
+export function sendMoneyCalculateTotal (element: JQuery<HTMLElement>) {
     try {
         const current_amount = BigInt(parseAmountToNQT($('#send_money_amount').val()))
         const current_fee = BigInt(parseAmountToNQT($('#send_money_fee').val()))
@@ -54,39 +54,53 @@ export function sendMoneyCalculateTotal (element) {
     }
 }
 
-export function formsSendMoneyComplete (response, data) {
+export function formsSendMoneyComplete (_response: PostResponse, data: any) {
     if (!(data._extra && data._extra.convertedAccount) && !(data.recipient in BRS.contacts)) {
-        $.notify($.t('success_send_money', { valueSuffix: BRS.valueSuffix }) + " <a href='#' data-account='" + getAccountFormatted(data, 'recipient') + "' data-toggle='modal' data-target='#add_contact_modal' style='text-decoration:underline'>" + $.t('add_recipient_to_contacts_q') + '</a>', {
-            type: 'success'
-        })
-    } else {
-        $.notify($.t('success_send_money', { valueSuffix: BRS.valueSuffix }), { type: 'success' })
+        $.notify(
+            `${$.t('success_send_money', { valueSuffix: BRS.valueSuffix })}
+            <a href='#'
+              data-account='${getAccountFormatted(data, 'recipient')}'
+              data-toggle='modal'
+              data-target='#add_contact_modal'
+              style='text-decoration:underline'>
+              ${$.t('add_recipient_to_contacts_q')}
+            </a>`,
+            {
+                type: 'success'
+            }
+        )
+        return
     }
+    $.notify($.t('success_send_money', { valueSuffix: BRS.valueSuffix }), { type: 'success' })
 }
 
 /** converts a recipient to accountId.
  * On error, returns ''. It means invalid rsAddress, or name not found in contacts
  */
-function recipientToId (recipient) {
-    let accountId = ''
+function recipientToId (recipient: string) : string {
     if (BRS.rsRegEx.test(recipient)) {
-        accountId = convertRSAccountToNumeric(recipient)
-    } else if (BRS.idRegEx.test(recipient)) {
-        accountId = BigInt(recipient).toString(10)
-    } else {
-        const foundContact = getContactByName(recipient)
-        if (foundContact) {
-            accountId = foundContact.account
-        }
+        return convertRSAccountToNumeric(recipient)
     }
-    return accountId
+    if (BRS.idRegEx.test(recipient)) {
+        return recipient
+    }
+    const foundContact = getContactByName(recipient)
+    if (foundContact) {
+        return foundContact.account
+    }
+    return ''
 }
 
-export function formsSendMoneyMulti (data) {
+/**
+ * Adjusts data from 'Send Money Modal' form, returning it in a way good to be requested.
+ * @param data Form from 
+ * @returns Object with the adjusted fields 'data' and 'requestType', or object with fiel 'error' on error.
+ */
+export function formsSendMoneyMulti (data: any) {
     data.recipients = ''
     let items = 0
     let biTotalAmount = 0n
-    let rowAmountNQT
+    let rowAmountNQT: string
 
     let requestType = 'sendMoneyMulti'
     if (data.same_out_checkbox === '1') {
@@ -179,40 +193,22 @@ export function formsSendMoneyMulti (data) {
     }
 }
 
-// BRS.sendMoneyShowAccountInformation(accountId) {
-//     getAccountTypeAndMessage(accountId, function (response) {
-//         if (response.type === 'success') {
-//             $('#send_money_account_info').hide()
-//         } else {
-//             $('#send_money_account_info').html(response.message).show()
-//         }
-//     })
-// }
-
-/** Checks the type of a given account. Callback will receive as argument
- *  and object = {
- *     type: 'danger' | 'warning' | 'info',
- *     message: string,
- *     publicKeyNeeded: 'needed' | 'info' | 'hide',
- *     account: accountDetailsObject | null
- * }
+/**
+ * Checks the type of a given account. To be used when user enters an address and the modal shall be updated with the account info.
+ * 
+ * @param accountIdOrRs Account ID or RS.
+ * @param callback Function to be called async with the response
  */
-function getAccountTypeAndMessage (accountId, callback) {
-    // accountId sometimes comes with an RS-Address
-    let sureItIsId = accountId
-    if (BRS.rsRegEx.test(accountId)) {
-        sureItIsId = convertRSAccountToNumeric(accountId)
-        if (sureItIsId === '') {
-            callback({
-                type: 'danger',
-                message: $.t('recipient_malformed'),
-                account: null,
-                publicKeyNeeded: 'hide'
-            })
-            return
-        }
-    }
-    if (sureItIsId === '0') {
+function getAccountTypeAndMessage (
+    accountIdOrRs: string,
+    callback: (response: {
+        type: 'danger' | 'warning' | 'info';
+        message: string;
+        publicKeyNeeded: 'needed' | 'info' | 'hide';
+        account: GetAccountResponse | null;
+    }) => void
+) {
+    if (accountIdOrRs === '0' || accountIdOrRs.endsWith('2222-2222-2222-22222')) {
         callback({
             type: 'warning',
             message: $.t('recipient_burning_address'),
@@ -221,31 +217,12 @@ function getAccountTypeAndMessage (accountId, callback) {
         })
         return
     }
-    // first guess it is an AT
-    sendRequest('getAT', {
-        at: sureItIsId
-    }, function (newResponse) {
-        if (newResponse.errorCode === undefined) {
-            callback({
-                type: 'info',
-                message: $.t('recipient_smart_contract', {
-                    burst: formatNQTAsAmount(newResponse.balanceNQT),
-                    valueSuffix: BRS.valueSuffix
-                }),
-                account: newResponse,
-                publicKeyNeeded: 'hide'
-            })
-            return
-        }
 
-        // It is not an AT, get account
-        sendRequest('getAccount', {
-            account: sureItIsId
-        }, function (response) {
+    sendRequest('getAccount', {
+        account: accountIdOrRs
+    }, function (response: GetAccountResponse) {
+        if (response.errorCode) {
             switch (response.errorCode) {
-            case undefined:
-                // expected right
-                break
             case 4:
                 callback({
                     type: 'danger',
@@ -262,243 +239,295 @@ function getAccountTypeAndMessage (accountId, callback) {
                     publicKeyNeeded: 'needed'
                 })
                 return
-            default:
-                callback({
-                    type: 'danger',
-                    message: $.t('recipient_problem') + ' ' + String(response.errorDescription).escapeHTML(),
-                    account: null,
-                    publicKeyNeeded: 'hide'
-                })
-                return
-            }
-            if (response.publicKey === undefined) {
-                callback({
-                    type: 'warning',
-                    message: $.t('recipient_no_public_key', {
-                        burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
-                        valueSuffix: BRS.valueSuffix
-                    }),
-                    account: response,
-                    publicKeyNeeded: 'needed'
-                })
-                return
             }
             callback({
+                type: 'danger',
+                message: $.t('recipient_problem') + ' ' + String(response.errorDescription).escapeHTML(),
+                account: null,
+                publicKeyNeeded: 'hide'
+            })
+            return
+        }
+        if (response.isAT) {
+            callback({
                 type: 'info',
-                message: $.t('recipient_info', {
+                message: $.t('recipient_smart_contract', {
+                    burst: formatNQTAsAmount(response.balanceNQT),
+                    valueSuffix: BRS.valueSuffix
+                }),
+                account: response,
+                publicKeyNeeded: 'hide'
+            })
+            return
+        }
+        if (response.isSecured === false) {
+            callback({
+                type: 'warning',
+                message: $.t('recipient_no_public_key', {
                     burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
                     valueSuffix: BRS.valueSuffix
                 }),
                 account: response,
-                publicKeyNeeded: 'info'
+                publicKeyNeeded: 'needed'
             })
+            return
+        }
+        callback({
+            type: 'info',
+            message: $.t('recipient_info', {
+                burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
+                valueSuffix: BRS.valueSuffix
+            }),
+            account: response,
+            publicKeyNeeded: 'info'
         })
     })
 }
 
-export function correctAddressMistake (el) {
-    $(el.target).closest('form').find('input[name=recipient],input[name=account_id]').val($(el.target).data('address')).trigger('blur')
+export function evMalformedAddressClick (el: JQuery.ClickEvent) {
+    $(el.target)
+        .closest('form')
+        .find('input[name=recipient],input[name=account_id]')
+        .val(
+            $(el.target).data('address')
+        ).trigger('blur')
 }
 
-function formatRecipientPublicKey (toType, modal, value) {
+function formatRecipientPublicKey (
+    toType: 'needed' | 'info' | 'hide',
+    form: JQuery<HTMLFormElement>,
+    publicKey?: string
+) {
     switch (toType) {
     case 'needed':
-        modal.find('input[name=recipientPublicKey]').prop('disabled', false)
-        modal.find('.recipient_public_key').show()
+        form.find('input[name=recipientPublicKey]').val('').prop('disabled', false)
+        form.find('.recipient_public_key').show()
         break
     case 'hide':
-        modal.find('input[name=recipientPublicKey]').val('').prop('disabled', false)
-        modal.find('.recipient_public_key').hide()
+        form.find('input[name=recipientPublicKey]').val('').prop('disabled', false)
+        form.find('.recipient_public_key').hide()
         break
     default:
         // info
-        modal.find('input[name=recipientPublicKey]').val(value ?? '').prop('disabled', true)
-        modal.find('.recipient_public_key').show()
+        form.find('input[name=recipientPublicKey]').val(publicKey ?? '').prop('disabled', true)
+        form.find('.recipient_public_key').show()
     }
 }
 
-export function checkRecipient (account, modal) {
-    const classes = 'alert-info alert-danger alert-warning'
-
-    const callout = modal.find('.account_info').first()
-    const accountInputField = modal.find('input[name=converted_account_id]')
-    const merchantInfoField = modal.find('input[name=merchant_info]')
+function checkRecipient (account: string, form: JQuery<HTMLFormElement>) {
+    const callout = form.find('.account_info').first()
+    const accountInputField = form.find('input[name=converted_account_id]')
+    const merchantInfoField = form.find('input[name=merchant_info]')
 
     accountInputField.val('')
     merchantInfoField.val('')
-
-    account = $.trim(account)
+    account = account.trim()
 
     const accountParts = BRS.rsRegEx.exec(account)
     if (accountParts !== null) {
         // Account seems to be RS Address
         const address = new NxtAddress(accountParts[2])
         if (address.isOk()) {
-            // Account is RS Address
-            callout.html('')
+            // Account is a valid RS Address
             if (accountParts[3] !== undefined) {
                 // Account is extended RS Address. Verify the public key
                 const publicKey = convertPublicKeyFromBase36ToBase16(accountParts[3])
                 const checkRS = getAccountIdFromPublicKey(publicKey, true)
-
                 if (!checkRS.includes(accountParts[2])) {
                     // Public key does not match RS Address
-                    callout.removeClass(classes).addClass('alert-danger').html($.t('recipient_malformed')).show()
+                    formatRecipientPublicKey("hide", form)
+                    updateCallout(callout, 'alert-danger', $.t('recipient_malformed'))
                     return
                 }
-                // Address verified
-                callout.removeClass(classes).addClass('alert-info').html($.t('recipient_info_extended')).show()
-                modal.find('input[name=recipientPublicKey]').val(publicKey)
-                modal.find('.recipient_public_key').show()
+                // Address matches given public key!
+                getAccountTypeAndMessage(address.getAccountId(), (response) => {
+                    if (!response.account) {
+                        // Expected if first time sending funds to a new account
+                        formatRecipientPublicKey('info', form, publicKey)
+                        updateCallout(callout, 'alert-' + response.type, $.t('recipient_info_extended') + ' ' + response.message)
+                        return
+                    }
+                    if (response.account.publicKey && response.account.publicKey !== publicKey) {
+                        // Rare, same id but two different public keys
+                        formatRecipientPublicKey('hide', form)
+                        updateCallout(callout, 'alert-danger', $.t('error_public_key_different_account_id'))
+                        return
+                    }
+                    // Given public key matches the registered public key.
+                    checkForMerchant(response.account?.description, form)
+                    formatRecipientPublicKey('info', form, publicKey)
+                    updateCallout(callout, 'alert-' + response.type, $.t('recipient_info_extended') + ' ' + response.message)
+                })
+                return
             }
-            getAccountTypeAndMessage(address.getAccountId(), function (response) {
-                formatRecipientPublicKey(response.publicKeyNeeded, modal, response.account?.publicKey)
-                if (response.account && response.account.description) {
-                    checkForMerchant(response.account.description, modal)
-                }
-                callout.removeClass(classes).addClass('alert-' + response.type).append(response.message).show()
+
+            // Account has no extended address.
+            getAccountTypeAndMessage(address.getAccountId(), (response) => {
+                formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
+                checkForMerchant(response.account?.description, form)
+                updateCallout(callout, 'alert-' + response.type, response.message)
             })
             return
         }
-        const guessedAddresses = address.getGuesses(BRS.prefix)
+
         // Account seems to be RS Address but there is an error
+        const guessedAddresses = address.getGuesses(BRS.prefix)
         if (guessedAddresses.length > 0) {
+            // Error correction found suggestions
             let html = $.t('recipient_malformed_suggestion_plural') + '<ul>'
             for (const guess of guessedAddresses) {
-                html += `<li><span class='malformed_address pointer' data-address='${guess}'>${address.formatGuess(guess, account)}</span></li>`
+                html += `
+                    <li>
+                      <span
+                        class='malformed_address pointer'
+                        data-address='${guess}'>
+                        ${address.formatGuess(guess, account)}
+                      </span>
+                    </li>`
             }
             html += '</ul>'
-            callout.removeClass(classes).addClass('alert-danger').html(html).show()
-            callout.find('.malformed_address').on('click', correctAddressMistake)
+            updateCallout(callout, 'alert-danger', html)
+            callout.find('.malformed_address').on('click', evMalformedAddressClick)
             return
         }
-        // There is no error correction suggestion
-        callout.removeClass(classes).addClass('alert-danger').html($.t('recipient_malformed')).show()
+
+        // Account is too wrong that there are no error correction suggestion
+        updateCallout(callout, 'alert-danger', $.t('recipient_malformed'))
         return
     }
+
     if (BRS.idRegEx.test(account)) {
         // Account matches numeric ID
         getAccountTypeAndMessage(account, function (response) {
-            formatRecipientPublicKey(response.publicKeyNeeded, modal, response.account?.publicKey)
-            callout.removeClass(classes).addClass('alert-' + response.type).html(response.message.escapeHTML()).show()
+            formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
+            updateCallout(callout, 'alert-' + response.type, response.message.escapeHTML())
         })
         return
     }
+
     if (account.charAt(0) === '@') {
-        // Suposed to be an alias
-        checkRecipientAlias(account.substring(1), modal)
+        // Supposed to be an alias
+        checkRecipientAlias(account.substring(1), form)
         return
     }
-    let contact
-    for (const rsAddress in BRS.contacts) {
-        if (BRS.contacts[rsAddress].name === account) {
-            contact = BRS.contacts[rsAddress]
-            break
-        }
-    }
+
+    const contact = getContactByName(account)
     if (contact) {
+        // Account found in the contacts!
         getAccountTypeAndMessage(contact.account, function (response) {
-            formatRecipientPublicKey(response.publicKeyNeeded, modal, response.account?.publicKey)
-            if (response.account && response.account.description) {
-                checkForMerchant(response.account.description, modal)
-            }
-            callout.removeClass(classes).addClass('alert-' + response.type).html($.t('contact_account_link', {
-                account_id: getAccountFormatted(contact, 'account')
-            }) + ' ' + response.message.escapeHTML()).show()
+            formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
+            checkForMerchant(response.account?.description, form)
+            const message = $.t('contact_account_link', { account_id: getAccountFormatted(contact, 'account') })
+                + ' '
+                + response.message.escapeHTML()
+            updateCallout(callout, 'alert-' + response.type, message)
             if (response.type === 'info' || response.type === 'warning') {
                 accountInputField.val(contact.accountRS)
             }
         })
         return
     }
-    callout.removeClass(classes).addClass('alert-danger').html($.t('name_not_in_contacts', { name: account }) + ' ' + $.t('recipient_alias_suggestion')).show()
+
+    // No idea what the input is, guess that it's a contact wrongly typed. Strange because there are the contacts selector.
+    const msg = $.t('name_not_in_contacts', { name: account }) + ' ' + $.t('recipient_alias_suggestion')
+    updateCallout(callout, 'alert-danger', msg)
 }
 
-function checkRecipientAlias (account, modal) {
-    const classes = 'alert-info alert-danger alert-warning'
-    const callout = modal.find('.account_info').first()
-    const accountInputField = modal.find('input[name=converted_account_id]')
+function checkRecipientAlias(account: string, form: JQuery<HTMLFormElement>) {
+    const callout = form.find('.account_info').first()
+    const accountInputField = form.find('input[name=converted_account_id]')
 
     accountInputField.val('')
 
-    sendRequest('getAlias', {
-        aliasName: account
-    }, function (response) {
+    sendRequest('getAlias', { aliasName: account }, (response: GetAliasResponse) => {
         if (response.errorCode) {
-            callout.removeClass(classes).addClass('alert-danger').html($.t('error_invalid_alias_name')).show()
-        } else {
-            if (response.aliasURI) {
-                const alias = String(response.aliasURI)
-                const timestamp = response.timestamp
-
-                const regex_1 = /acct:(.*)@burst/
-                const regex_2 = /nacc:(.*)/
-
-                let match = alias.match(regex_1)
-
-                if (!match) {
-                    match = alias.match(regex_2)
-                }
-
-                if (match && match[1]) {
-                    const address = new NxtAddress(String(match[1]).toUpperCase())
-                    if (!address.isOk()) {
-                        accountInputField.val('')
-                        callout.html('Invalid account alias.')
-                        return
-                    }
-
-                    getAccountTypeAndMessage(address.getAccountId(), function (response) {
-                        formatRecipientPublicKey(response.publicKeyNeeded, modal, response.account?.publicKey)
-                        if (response.account && response.account.description) {
-                            checkForMerchant(response.account.description, modal)
-                        }
-
-                        accountInputField.val(address.getAccountRS(BRS.prefix))
-                        callout.html($.t('alias_account_link', {
-                            account_id: address.getAccountRS(BRS.prefix)
-                        }) + '.<br>' + $.t('alias_last_adjusted', {
-                            timestamp: formatTimestampAsDateTime(timestamp)
-                        }) + '<br>' + response.message).removeClass(classes).addClass('alert-' + response.type).show()
-                    })
-                } else {
-                    callout.removeClass(classes).addClass('alert-danger').html($.t('alias_account_no_link') + (!alias
-                        ? $.t('error_uri_empty')
-                        : $.t('uri_is', {
-                            uri: String(alias).escapeHTML()
-                        }))).show()
-                }
-            } else if (response.aliasName) {
-                callout.removeClass(classes).addClass('alert-danger').html($.t('error_alias_empty_uri')).show()
-            } else {
-                callout.removeClass(classes).addClass('alert-danger').html(response.errorDescription ? $.t('error') + ': ' + String(response.errorDescription).escapeHTML() : $.t('error_alias')).show()
-            }
+            updateCallout(callout, 'alert-danger', $.t('error_invalid_alias_name'))
+            return
         }
+
+        if (response.aliasURI) {
+            const alias = String(response.aliasURI)
+            const timestamp = response.timestamp
+
+            const regex_1 = /acct:(.*)@burst/
+            const regex_2 = /nacc:(.*)/
+            const match = alias.match(regex_1) || alias.match(regex_2)
+
+            if (match && match[1]) {
+                const address = new NxtAddress(String(match[1]).toUpperCase())
+                if (!address.isOk()) {
+                    updateCallout(callout, 'alert-danger', $.t('invalid_account_alias'))
+                    return
+                }
+
+                getAccountTypeAndMessage(address.getAccountId(), (response) => {
+                    formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
+                    checkForMerchant(response.account?.description, form)
+
+                    accountInputField.val(address.getAccountRS(BRS.prefix))
+                    let text = $.t('alias_account_link', { account_id: address.getAccountRS(BRS.prefix) })
+                    text += '.<br>'
+                    text += $.t('alias_last_adjusted', { timestamp: formatTimestampAsDateTime(timestamp) })
+                    text += `<br>${response.message}`
+                    updateCallout(callout, 'alert-' + response.type, text)
+                })
+                return
+            }
+
+            let msg = $.t('alias_account_no_link')
+            msg += !alias ? $.t('error_uri_empty') : $.t('uri_is', { uri: String(alias).escapeHTML() })
+            updateCallout(callout, 'alert-danger', msg)
+            return
+        }
+
+        if (response.aliasName) {
+            updateCallout(callout, 'alert-danger', $.t('error_alias_empty_uri'))
+            return
+        }
+
+        const msg = response.errorDescription ? $.t('error') + ': ' + response.errorDescription : $.t('error_alias')
+        updateCallout(callout, 'alert-danger', msg)
     })
 }
 
-function checkForMerchant (accountInfo, modal) {
-    const requestType = modal.find('input[name=request_type]').val()
-
-    if (requestType === 'sendMoney' || requestType === 'transferAsset') {
-        if (accountInfo.match(/merchant/i)) {
-            modal.find('input[name=merchant_info]').val(accountInfo)
-            const checkbox = modal.find('input[name=add_message]')
-            if (!checkbox.is(':checked')) {
-                checkbox.prop('checked', true).trigger('change')
-            }
-        }
+function updateCallout(callout: JQuery<HTMLElement>, alertClass: string, message: string) {
+    callout
+        .removeClass('alert-info alert-danger alert-warning')
+        .addClass(alertClass)
+        .html(message)
+        .show()
+    if (alertClass === 'alert-danger') {
+        callout.closest('form').find('input[name="recipient"]').addClass('is-invalid');
+    } else {
+        callout.closest('form').find('input[name="recipient"]').removeClass('is-invalid');
     }
 }
 
-export function evSpanRecipientSelectorClickButton () {
-    const $list = $(this).parent().find('ul')
+function checkForMerchant (accountInfo: string | undefined, form: JQuery<HTMLFormElement>) {
+    if (!accountInfo) return
+    const requestType = form.find('input[name=request_type]').val()
+    if (requestType !== 'sendMoney' && requestType !== 'transferAsset') {
+        return
+    }
+    if (!accountInfo.match(/merchant/i)) {
+        return
+    }
+    form.find('input[name=merchant_info]').val(accountInfo)
+    const checkbox = form.find('input[name=add_message]')
+    if (!checkbox.is(':checked')) {
+        checkbox.prop('checked', true).trigger('change')
+    }
+}
+
+export function evSpanRecipientSelectorClickButton (event: JQuery.ClickEvent) {
+    const element = event.target
+    const $list = $(element).parent().find('ul')
     if (!Object.keys(BRS.contacts).length) {
         $list.html(`<li><a class='dropdown-item' href='#' data-contact=''>${$.t('error_no_contacts_available')}</a></li>`)
         return
     }
     $list.empty()
-    const names = []
+    const names: string[] = []
     for (const accountId in BRS.contacts) {
         names.push(BRS.contacts[accountId].name)
     }
@@ -514,8 +543,17 @@ export function evSpanRecipientSelectorClickButton () {
     }
 }
 
-export function evSpanRecipientSelectorClickUlLiA (e) {
+export function evSpanRecipientSelectorClickUlLiA (e: JQuery.ClickEvent) {
+    const element = e.target
     e.preventDefault()
-    $(this).closest('form').find('input[name=converted_account_id]').val('')
-    $(this).closest('.input-group').find('input').not('[type=hidden]').val($(this).data('contact')).trigger('blur')
+    $(element)
+        .closest('form')
+        .find('input[name=converted_account_id]')
+        .val('')
+    $(element)
+        .closest('.input-group')
+        .find('input')
+        .not('[type=hidden]')
+        .val($(element).data('contact'))
+        .trigger('blur')
 }

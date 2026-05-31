@@ -364,6 +364,12 @@ export interface Alias {
     buyer?: string;    // Optional, only if direct sale to other account.
 };
 
+export interface GetAliasResponse extends Alias {
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+};
+
 export interface GetAliasesResponse {
     aliases: Alias[];
     requestProcessingTime?: number;
