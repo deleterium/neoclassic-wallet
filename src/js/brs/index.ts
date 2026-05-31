@@ -175,6 +175,7 @@ export const BRS = {
     // Number formatting in chose locale.
     decimalSign: '.',
     groupSeparator: ',',
+    durationFormatter: new Intl.DurationFormat('en', { style: "short" }),
     volumeFormatter: new Intl.NumberFormat('en', {
         maximumSignificantDigits: 3,
         minimumSignificantDigits: 1,
@@ -272,7 +273,7 @@ export const BRS = {
     pendingTransactionHTML: '<i class="fas fa-spinner my-fa-spin"></i>',
     minimumFeeNumber: 0.01,
 
-    stateInterval: null as null | NodeJS.Timeout,
+    stateInterval: null as null | number,
     stateIntervalSeconds: 30,
 
     nodes: [
