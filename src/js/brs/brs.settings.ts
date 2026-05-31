@@ -65,6 +65,10 @@ function applySettings (key: string) {
         BRS.decimalSign = parts.find(item => item.type === 'decimal')?.value || '.';
         BRS.groupSeparator = parts.find(item => item.type === 'group')?.value || ','
         BRS.durationFormatter = new Intl.DurationFormat(BRS.settings.language, { style: "short" });
+        BRS.volumeFormatter = new Intl.NumberFormat(BRS.settings.language, {
+            maximumSignificantDigits: 3,
+            minimumSignificantDigits: 1,
+        })
     }
 
     if (applyAll || key === 'submit_on_enter') {

@@ -4,8 +4,13 @@
 
 import { BRS } from ".";
 
+interface ParsedNumberObject {
+    integer: string;
+    fractional: string;
+}
+
 // Temporary until removal of BigInteger
-function anyToBigint(input) {
+function anyToBigint (input: any) {
     try {
         if (typeof input === 'object') {
             // BigInteger
@@ -32,7 +37,7 @@ function anyToBigint(input) {
  * @param {number} volume - Volume in bytes.
  * @returns {string} Formatted volume string (e.g., "1.23 KB").
  */
-export function formatVolume(volume) {
+export function formatVolume (volume: number) : string {
     const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
     if (volume === 0) return '0 B';
 
@@ -43,13 +48,7 @@ export function formatVolume(volume) {
     // Convert volume to the appropriate unit
     const scaledVolume = volume / Math.pow(1024, magnitude);
 
-    // Use Intl.NumberFormat for formatting with 3 significant digits
-    const formatter = new Intl.NumberFormat(BRS.settings.language, {
-        maximumSignificantDigits: 3,
-        minimumSignificantDigits: 1,
-    });
-
-    return `${formatter.format(scaledVolume)} ${size}`;
+    return `${BRS.volumeFormatter.format(scaledVolume)} ${size}`;
 }
 
 /**
@@ -58,7 +57,11 @@ export function formatVolume(volume) {
  * @param {number} num - The number to format.
  * @returns {string} Formatted number string (e.g., "1,234.56" in en-US or "1.234,56" in de-DE).
  */
-export function formatNumber(num) {
+export function formatNumber (num: number) : string {
+    if (typeof num !== 'number') {
+        console.error('Verify here')
+        return '-0'
+    }
     return num.toLocaleString(BRS.settings.language)
 }
 
@@ -69,8 +72,8 @@ export function formatNumber(num) {
  * @param {number} decimals - Number of decimals for the asset.
  * @returns {string} Formatted price string (e.g., "1,234.56" in en-US).
  */
-export function formatPriceNQTAsPriceQuantity(priceNQT, decimals) {
-    let biPrice = anyToBigint(priceNQT)
+export function formatPriceNQTAsPriceQuantity (priceNQT: string | number | bigint, decimals: number) : string {
+    const biPrice = anyToBigint(priceNQT)
     const power = BigInt(Math.pow(10, decimals))
     return format(convertNQTToNumberObject(biPrice * power))
 }
@@ -81,21 +84,18 @@ export function formatPriceNQTAsPriceQuantity(priceNQT, decimals) {
  * @param {string|number} priceQuantity - Human-friendly price in Amount per Quantity format. May be user input.
  * @param {number} decimals - Number of decimals for the asset.
  * @returns {string} Price in NQT per QNT format.
+ * @throws {Error} on invalid input
  */
-export function parsePriceQuantityToPriceNQT(priceQuantity, decimals) {
-    priceQuantity = String(priceQuantity)
+export function parsePriceQuantityToPriceNQT (priceQuantity: string | number, decimals: number) : string {
     const priceNQTperQuantity = parseAmountToNQT(priceQuantity)
-    let priceNQTperQNT
-    if (decimals) {
-        const toRemove = priceNQTperQuantity.slice(-decimals)
-        if (!/^[0]+$/.test(toRemove)) {
-            console.error('invalid input. Check here')
-        }
-        priceNQTperQNT = priceNQTperQuantity.slice(0, -decimals)
-    } else {
-        priceNQTperQNT = priceNQTperQuantity
+    if (decimals === 0) {
+        return priceNQTperQuantity
     }
-    return priceNQTperQNT
+    const toRemove = priceNQTperQuantity.slice(-decimals)
+    if (!/^[0]+$/.test(toRemove)) {
+        console.error('invalid input. Check here')
+    }
+    return priceNQTperQuantity.slice(0, -decimals)
 }
 
 /**
@@ -105,9 +105,13 @@ export function parsePriceQuantityToPriceNQT(priceQuantity, decimals) {
  * @param {string|number|bigint} priceNQT - Price in NQT format.
  * @returns {string} Total amount in NQT as a string.
  */
-export function calculateOrderTotalNQT(quantityQNT, priceNQT) {
+export function calculateOrderTotalNQT (
+    quantityQNT: string | number | bigint,
+    priceNQT: string | number | bigint
+) : string {
     const quantity = anyToBigint(quantityQNT)
     const price = anyToBigint(priceNQT)
+
     return (quantity * price).toString()
 }
 
@@ -119,7 +123,7 @@ export function calculateOrderTotalNQT(quantityQNT, priceNQT) {
  * @param {string|number|bigint} priceNQT - Price in NQT format.
  * @returns {string} Formatted total amount in Signa (e.g., "1,234.56" in en-US).
  */
-export function formatOrderTotal(quantityQNT, priceNQT) {
+export function formatOrderTotal (quantityQNT: string | number | bigint, priceNQT: string | number | bigint) : string {
     const quantity = anyToBigint(quantityQNT)
     const price = anyToBigint(priceNQT)
 
@@ -132,14 +136,14 @@ export function formatOrderTotal(quantityQNT, priceNQT) {
  * @param {number|string} b 
  * @returns The percentage `a` relative to `b` with two decimals.
  */
-export function calculatePercentage(a, b) {
+export function calculatePercentage(a: number | string, b: number | string) {
     try {
         a = Number(a) * 100
         b = Number(b)
         const result = a / b
         return result.toFixed(2)
     } catch (e) {
-        return e.message.escapeHTML()
+        return (e as Error).message.escapeHTML()
     }
 }
 
@@ -147,181 +151,101 @@ export function calculatePercentage(a, b) {
  * Converts an amount in NQT format into a NumberObject for internal formatting.
  *
  * @param {string|number|bigint} amountNQT - Amount in NQT format.
- * @returns {Object} NumberObject with properties:
- *   - `negative` (string): "-" if the amount is negative, otherwise empty.
- *   - `amount` (string): Integer part of the amount.
- *   - `afterComma` (string): Fractional part after the decimal separator.
+ * @returns {ParsedNumberObject}
  */
-function convertNQTToNumberObject(amountNQT) {
-    let negative = ''
-    let afterComma = ''
-
-    let biAmount = anyToBigint(amountNQT)
-
-    let fractionalPart = biAmount % 100000000n
-    let integerPart = biAmount / 100000000n
-
-    if (biAmount < 0) {
-        negative = '-'
-        fractionalPart = -fractionalPart
-        integerPart = -integerPart
-    }
-
-    if (fractionalPart !== 0n) {
-        afterComma = BRS.decimalSign
-        afterComma += fractionalPart.toString().padStart(8, '0')
-        afterComma = afterComma.replace(/0+$/, '')
-    }
-    const amountStr = integerPart.toString()
-    return {
-        negative,
-        amount: amountStr,
-        afterComma
-    }
+function convertNQTToNumberObject (amountNQT: string | number | bigint) : ParsedNumberObject {
+    return convertQNTToNumberObject(amountNQT, 8)
 }
-
 /**
  * Parses a human-readable Amount (with group separators and/or decimal sign) into NQT format.
  *
- * @param {string|number} amount - Human-readable Amount (e.g., "1,234.56" or 1234.56).
+ * @param {string|number|undefined|string[]} amount - Human-readable Amount (e.g., "1,234.56" or 1234.56).
  * @returns {string} Amount in NQT format.
  * @throws Error if invalid input is found
  */
-export function parseAmountToNQT(amount) {
-    let parts
-    if (typeof amount === 'string') {
-        amount = amount.trim()
-        if (amount === '') {
-            return '0'
-        }
-        // Check for invalid characters before cleaning
-        const allowedChars = new RegExp(
-            '^[0-9'
-            + BRS.decimalSign.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-            + BRS.groupSeparator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']+$'
-        );
-        if (!allowedChars.test(amount)) {
-            // Find the first invalid character
-            const invalidChar = amount.split('').find(char => !allowedChars.test(char));
-            throw new Error($.t('error_invalid_char', { char: invalidChar }));
-        }
-
-        const cleanedValue = amount.replace(
-            new RegExp('[^0-9' + BRS.decimalSign.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']', 'g'),
-            ''
-        );
-        parts = cleanedValue.split(BRS.decimalSign)
-    } else {
-        const jsString = amount.toFixed(8)
-        parts = jsString.split('.')
-
-    }
-    const integer = parts[0]
-    let fraction
-    if (parts.length === 1) {
-        // no fractional part
-        fraction = '00000000'
-    } else if (parts.length === 2) {
-        if (parts[1].length <= 8) {
-            fraction = parts[1].padEnd(8, '0')
-        } else {
-            throw new Error($.t('error_invalid_input'))
-        }
-    } else {
-        throw new Error($.t('error_invalid_input'))
-    }
-    // Combine and remove leading zeros
-    const result = (integer + fraction).replace(/^0+/, '')
-    if (result === '') {
-        return '0'
-    }
-    return result
+export function parseAmountToNQT(amount: string | number | undefined | string[]): string {
+    return parseQuantityToQNT(amount, 8)
 }
+
 
 /**
  * Converts an asset quantity in QNT format into a NumberObject for internal formatting.
  *
- * @param {string|number} quantityQNT - Quantity in QNT format.
- * @param {number} decimals - Number of decimals for the asset.
- * @returns {Object} NumberObject with properties:
- *   - `negative` (string): "-" if the amount is negative, otherwise empty.
- *   - `amount` (string): Integer part of the quantity.
- *   - `afterComma` (string): Fractional part after the decimal separator.
+ * @param quantityQNT - Quantity in QNT format.
+ * @param decimals - Number of decimals for the asset.
+ * @returns {ParsedNumberObject}
  */
-function convertQNTToNumberObject(quantityQNT, decimals) {
-    quantityQNT = String(quantityQNT)
-
-    if (quantityQNT.length < decimals) {
-        for (let i = quantityQNT.length; i < decimals; i++) {
-            quantityQNT = '0' + quantityQNT
-        }
+function convertQNTToNumberObject (quantityQNT: string | number | bigint, decimals: number) : ParsedNumberObject {
+    let biQNT = anyToBigint(quantityQNT)
+    if (biQNT < 0) {
+        console.error('Negative amount should not be used!')
+        biQNT = -biQNT
     }
 
+    const base = BigInt(Math.pow(10, decimals))
+    const fractionalPart = biQNT % base
+    const integerPart = biQNT / base
+
     let afterComma = ''
-
-    if (decimals) {
-        afterComma = BRS.decimalSign + quantityQNT.substring(quantityQNT.length - decimals)
-        quantityQNT = quantityQNT.substring(0, quantityQNT.length - decimals)
-
-        if (!quantityQNT) {
-            quantityQNT = '0'
-        }
-
+    if (fractionalPart !== 0n) {
+        afterComma = fractionalPart.toString()
+        afterComma = afterComma.padStart(decimals, '0')
         afterComma = afterComma.replace(/0+$/, '')
-
-        if (afterComma === BRS.decimalSign) {
-            afterComma = ''
-        }
     }
 
     return {
-        negative: '',
-        amount: quantityQNT,
-        afterComma
+        integer: integerPart.toString(),
+        fractional: afterComma
     }
 }
 
 /**
  * Parses a human-readable asset Quantity (with group separators) into QNT format.
  *
- * @param {string|number} quantity - Human-readable Quantity (e.g., "1,234.56" or 1234.56).
+ * @param {string|number|undefined|string[]} quantity - Human-readable Amount (e.g., "1,234.56" or 1234.56).
  * @param {number} decimals - Number of decimals for the asset.
  * @returns {string} Quantity in QNT format.
+ * @throws {Error} if invalid input is found
  */
-export function parseQuantityToQNT(quantity, decimals) {
-    quantity = String(quantity)
-    const cleanedValue = quantity.replace(
-        new RegExp('[^0-9' + BRS.decimalSign.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']', 'g'),
-        ''
-    );
-    const parts = cleanedValue.split(BRS.decimalSign)
-
-    let qnt = parts[0]
-
-    // no fractional part
-    if (parts.length === 1) {
-        if (decimals) {
-            for (let i = 0; i < decimals; i++) {
-                qnt += '0'
-            }
-        }
-    } else if (parts.length === 2) {
-        let fraction = parts[1]
-        if (fraction.length > decimals) {
-            throw new Error($.t('error_fraction_decimals', {
-                decimals
-            }))
-        } else if (fraction.length < decimals) {
-            for (let i = fraction.length; i < decimals; i++) {
-                fraction += '0'
-            }
-        }
-        qnt += fraction
-    } else {
+export function parseQuantityToQNT(quantity: string | number | undefined | string[], decimals: number): string {
+    // decimals validation
+    if (typeof decimals !== 'number') {
+        console.error('Wrong decimal type')
+        decimals = Number(decimals)
+    }
+    if (!Number.isInteger(decimals) || decimals < 0 || decimals > 8) {
+        console.error('Decimals must be integers between 0 and 8')
         throw new Error($.t('error_invalid_input'))
     }
-    // remove leading zeroes
-    const retQNT = qnt.replace(/^0+/, '')
+
+    // quantity validation
+    let numberObj: ParsedNumberObject
+    switch (typeof quantity) {
+    case 'string': {
+        numberObj = extractPartsFromString(quantity.trim())
+        break
+    }
+    case 'number': {
+        const jsString = quantity.toFixed(8)
+        const parts = jsString.split('.')
+        numberObj = {
+            integer: parts[0],
+            fractional: parts[1]
+        }
+        break
+    }
+    default:
+        // Should happen only for devs
+        console.error('Invalid argument value.')
+        // Fail silently
+        return '0'
+    }
+    if (numberObj.fractional.length > decimals) {
+        throw new Error($.t('error_fraction_decimals', {
+            decimals
+        }))
+    }
+    const retQNT = (numberObj.integer + numberObj.fractional.padEnd(decimals, '0')).replace(/^0+/, '')
     if (retQNT === '') {
         return '0'
     }
@@ -331,16 +255,15 @@ export function parseQuantityToQNT(quantity, decimals) {
 /**
  * Formats a NumberObject into a localized string for display.
  *
- * @param {Object} params - NumberObject with properties:
- *   - `negative` (string): "-" if negative, otherwise empty.
- *   - `amount` (string): Integer part of the number.
- *   - `afterComma` (string): Fractional part after the decimal separator.
+ * @param {ParsedNumberObject} params
  * @returns {string} Formatted number string (e.g., "1,234.56" in en-US).
  */
-function format (params) {
-    const formattedAmount = BigInt(params.amount).toLocaleString(BRS.settings.language)
-    let output = params.negative + formattedAmount + params.afterComma
-    return output
+function format (params: ParsedNumberObject) : string {
+    const formattedAmount = BigInt(params.integer).toLocaleString(BRS.settings.language)
+    if (params.fractional.length) {
+        return formattedAmount + BRS.decimalSign + params.fractional
+    }
+    return formattedAmount
 }
 
 /**
@@ -350,7 +273,7 @@ function format (params) {
  * @param {number} decimals - Number of decimals for the asset.
  * @returns {string} Formatted Quantity string (e.g., "1,234.56" in en-US).
  */
-export function formatQNTAsQuantity(quantityQNT, decimals) {
+export function formatQNTAsQuantity(quantityQNT: string | number, decimals: number): string {
     if (typeof quantityQNT !== 'string') {
         console.error("Verify here")
     }
@@ -363,7 +286,7 @@ export function formatQNTAsQuantity(quantityQNT, decimals) {
  * @param {string|number|bigint} amountNQT - Amount in NQT format.
  * @returns {string} Formatted Amount string (e.g., "1,234.56" in en-US).
  */
-export function formatNQTAsAmount(amountNQT) {
+export function formatNQTAsAmount(amountNQT: string | number | bigint): string {
     if (typeof amountNQT === 'number') {
         console.error("Do not use number here")
         amountNQT *= 1E8
@@ -382,16 +305,50 @@ export function formatNQTAsAmount(amountNQT) {
  * @param {boolean} date_only - If true, returns only the date; otherwise, includes time.
  * @returns {string} Formatted date or datetime string (e.g., "2023-10-01" or "2023-10-01 14:30").
  */
-export function formatTimestampAsDateTime(timestamp, date_only = false) {
-    let date
-    if (typeof timestamp !== 'number') {
-        console.error("Verify here")
-        date = timestamp
-    } else {
-        date = new Date((BRS.genesisSeconds + timestamp) * 1000)
-    }
+export function formatTimestampAsDateTime(timestamp: number, date_only: boolean = false): string {
+    const date = new Date((BRS.genesisSeconds + timestamp) * 1000)
     if (date_only) {
         return date.toLocaleDateString(BRS.settings.language)
     }
     return date.toLocaleString(BRS.settings.language)
+}
+
+/**
+ * Checks an user input amount and returns its integer and fractional parts.
+ * @param amount String that is supposed to be a localized number.
+ * @returns string[] with integer part, and fractional part, if any.
+ * @throws {Error} if invalid input is found.
+ */
+function extractPartsFromString (amount: string) : ParsedNumberObject{
+    if (amount === '') {
+        return {
+            integer: '0',
+            fractional: ''
+        }
+    }
+    // Check for invalid characters before cleaning
+    const allowedChars = new RegExp(
+        '^[0-9'
+        + BRS.decimalSign.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        + BRS.groupSeparator.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']+$'
+    );
+    if (!allowedChars.test(amount)) {
+        // Find the first invalid character
+        const invalidChar = amount.split('').find(char => !allowedChars.test(char));
+        throw new Error($.t('error_invalid_char', { char: invalidChar }));
+    }
+
+    const cleanedValue = amount.replace(
+        new RegExp('[^0-9' + BRS.decimalSign.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']', 'g'),
+        ''
+    );
+    const parts = cleanedValue.split(BRS.decimalSign)
+    if (parts.length > 2) {
+        // More than one decimal sign found
+        throw new Error($.t('error_invalid_input'))
+    }
+    return {
+        integer: parts[0],
+        fractional: parts[1] || ''
+    }
 }
