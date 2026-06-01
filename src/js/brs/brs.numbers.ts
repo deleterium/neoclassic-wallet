@@ -352,3 +352,29 @@ function extractPartsFromString (amount: string) : ParsedNumberObject{
         fractional: parts[1] || ''
     }
 }
+
+/**
+ * Converts a human-readable number (localized) to Number.
+ *
+ * @param {string|number} userNumber - Human-friendly number. May be user input.
+ * @returns {number} a javascript number.
+ * @throws {Error} on invalid input
+ */
+export function parseAmountToNumber (userNumber: string | number | undefined | string[]) : number {
+    let numberObj: ParsedNumberObject
+    switch (typeof userNumber) {
+    case 'string': {
+        numberObj = extractPartsFromString(userNumber.trim())
+        break
+    }
+    case 'number': {
+        return userNumber
+    }
+    default:
+        // Should happen only for devs
+        console.error('Invalid argument value.')
+        // Fail silently
+        return 0
+    }
+    return Number(numberObj.integer + '.' + numberObj.fractional)
+}
