@@ -8,7 +8,7 @@ import {
     sendRequest
 } from './brs.server'
 
-import { formatNQTAsAmount } from './brs.numbers'
+import { formatNQTAsAmount, parseAmountToNumber } from './brs.numbers'
 
 import {
     dataLoaded,
@@ -16,6 +16,8 @@ import {
 } from './brs.util'
 
 import { GetAccountEscrowTransactionsResponse } from '../typings'
+
+import { recipientToId } from './brs.modal.sendmoney'
 
 export function pagesEscrow () {
     sendRequest('getAccountEscrowTransactions', {
@@ -44,4 +46,42 @@ export function pagesEscrow () {
         }
         dataLoaded(rows)
     })
+}
+
+export function formsSendMoneyEscrow(data: any) {
+    // Calculate deadline in seconds from the inputs
+    let totalSeconds = 0
+    try {
+        totalSeconds += parseAmountToNumber(data.deadlineSeconds)
+        totalSeconds += 60 * parseAmountToNumber(data.deadlineMinutes)
+        totalSeconds += 60 * 60 * parseAmountToNumber(data.deadlineHours)
+        totalSeconds += 24 * 60 * 60 * parseAmountToNumber(data.deadlineDays)
+    } catch {
+        return {
+            error: $.t('invalid_deadline_number')
+        }
+    }
+    delete data.deadlineSeconds
+    delete data.deadlineMinutes
+    delete data.deadlineHours
+    delete data.deadlineDays
+    data.escrowDeadline = totalSeconds
+
+    // Parse the signers, maybe RS or contact name. Must be ID only.
+    const inputSigners = data.signers.split(';')
+    const outputSigners: string[] = []
+    for (const inSigner of inputSigners) {
+        const accountId = recipientToId(inSigner.trim())
+        if (accountId === '') {
+            return {
+                error: $.t('name_not_in_contacts', { name: inSigner })
+            }
+        }
+        outputSigners.push(accountId)
+    }
+    data.signers = outputSigners.join(';')
+
+    return {
+        data
+    }
 }

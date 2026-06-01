@@ -41,7 +41,7 @@ import {
     formsDeleteContact
 } from './brs.contacts'
 
-import { pagesEscrow } from './brs.escrow'
+import { formsSendMoneyEscrow, pagesEscrow } from './brs.escrow'
 
 import {
     formsAddCommitment
@@ -180,6 +180,12 @@ export const BRS = {
         maximumSignificantDigits: 3,
         minimumSignificantDigits: 1,
     }),
+    timeUnits: {
+        day: 'd',
+        hour: 'h',
+        minute: 'm',
+        second: 's'
+    },
 
     downloadingBlockchain: false, // More than 4 days from last block
     rescaningBlockchain: false, // More than 1 hour from last block
@@ -250,6 +256,7 @@ export const BRS = {
         cancelOrderComplete: formsCancelOrderComplete,
         sendMoneyComplete: formsSendMoneyComplete,
         sendMoneyMulti: formsSendMoneyMulti,
+        sendMoneyEscrow: formsSendMoneyEscrow,
         sendMessageComplete: formsSendMessageComplete,
         decryptMessages: formsDecryptMessages,
         setAccountInfoComplete: formsSetAccountInfoComplete,

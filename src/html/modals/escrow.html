@@ -82,9 +82,60 @@
               </div>
             </div>
           </div>
-          <div class="form-group">
-            <label data-i18n="escrow_deadline_seconds">escrow_deadline_seconds</label>
-            <input type="text" name="escrowDeadline" class="form-control" id="escrow_create_escrow" />
+          <label data-i18n="escrow_deadline_seconds">escrow_deadline_seconds</label>
+          <div class="row">
+            <div class="col-3">
+              <div class="form-group">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    name="deadlineDays"
+                    class="form-control ev-check-number-input"
+                    id="escrow_create_deadline_days"
+                    min="0" />
+                  <span class="input-group-text" data-i18n="day_abbr">day_abbr</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    name="deadlineHours"
+                    class="form-control ev-check-number-input"
+                    id="escrow_create_deadline_hours"
+                    min="0" />
+                  <span class="input-group-text" data-i18n="hour_abbr">hour_abbr</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    name="deadlineMinutes"
+                    class="form-control ev-check-number-input"
+                    id="escrow_create_deadline_minutes"
+                    min="0" />
+                  <span class="input-group-text" data-i18n="minute_abbr">minute_abbr</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="form-group">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    name="deadlineSeconds"
+                    class="form-control ev-check-number-input"
+                    id="escrow_create_deadline_seconds"
+                    min="0" />
+                  <span class="input-group-text" data-i18n="second_abbr">second_abbr</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label data-i18n="escrow_deadline_action">escrow_deadline_action</label>

@@ -61,7 +61,7 @@ function applySettings (key: string) {
                 version: BRS.settings.language
             }, '*')
         }
-        const parts = new Intl.NumberFormat(BRS.settings.language).formatToParts(1111.1)
+        let parts = new Intl.NumberFormat(BRS.settings.language).formatToParts(1111.1)
         BRS.decimalSign = parts.find(item => item.type === 'decimal')?.value || '.';
         BRS.groupSeparator = parts.find(item => item.type === 'group')?.value || ','
         BRS.durationFormatter = new Intl.DurationFormat(BRS.settings.language, { style: "short" });
@@ -69,6 +69,28 @@ function applySettings (key: string) {
             maximumSignificantDigits: 3,
             minimumSignificantDigits: 1,
         })
+        parts = BRS.durationFormatter.formatToParts({ days: 1, hours: 1, minutes: 1, seconds: 1 });
+        parts.forEach(part => {
+            if (part.type !== 'unit') return
+            switch (part.unit) {
+            case 'day':
+                BRS.timeUnits.day = part.value
+                break;
+            case 'hour':
+                BRS.timeUnits.hour = part.value
+                break;
+            case 'minute':
+                BRS.timeUnits.minute = part.value
+                break;
+            case 'second':
+                BRS.timeUnits.second = part.value
+                break;
+            }
+        });
+        $('[data-i18n="day_abbr"]').text(BRS.timeUnits.day);
+        $('[data-i18n="hour_abbr"]').text(BRS.timeUnits.hour);
+        $('[data-i18n="minute_abbr"]').text(BRS.timeUnits.minute);
+        $('[data-i18n="second_abbr"]').text(BRS.timeUnits.second);
     }
 
     if (applyAll || key === 'submit_on_enter') {

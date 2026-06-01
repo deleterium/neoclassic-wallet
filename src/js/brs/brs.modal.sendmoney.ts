@@ -28,7 +28,7 @@ export function formsSendMoneyComplete(_response: PostResponse, data: any) {
  * Converts a recipient to accountId, looking for the name in contacts too
  * On error, returns ''. It means invalid rsAddress, or name not found in contacts
  */
-function recipientToId(recipient: string): string {
+export function recipientToId(recipient: string): string {
     if (BRS.rsRegEx.test(recipient)) {
         return convertRSAccountToNumeric(recipient)
     }
