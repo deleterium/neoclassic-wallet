@@ -9,10 +9,12 @@ import { submitForm } from './brs.forms'
 import { dbGet, dbPut } from './brs.database'
 
 import { formatNQTAsAmount } from './brs.numbers'
+import { RequestController } from './brs.requestcontroller'
 
 export function pagesSettings () {
     $('#settings_language').val(BRS.settings.language)
     $('#settings_page_size').val(String(BRS.settings.page_size))
+    $('#settings_rate_limiter').val(String(BRS.settings.rate_limiter))
     $('#settings_submit_on_enter').prop('checked', BRS.settings.submit_on_enter)
     $('#settings_theme_dark').prop('checked', BRS.settings.theme_dark)
     $('#settings_small_text').prop('checked', BRS.settings.small_text)
@@ -120,6 +122,10 @@ function applySettings (key: string) {
 
     if (applyAll || key === 'page_size') {
         BRS.pageSize = Number(BRS.settings.page_size)
+    }
+
+    if (applyAll || key === 'rate_limiter') {
+        BRS.requestController = new RequestController(4, Number(BRS.settings.rate_limiter))
     }
 
     if (applyAll || key === 'theme_dark') {

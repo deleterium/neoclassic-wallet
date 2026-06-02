@@ -88,6 +88,16 @@
                   <p class="help-block" data-i18n="page_size_help">Use lower for faster response or higher if running node locally.</p>
                 </div>
                 <div class="form-group">
+                  <label for="settings_rate_limiter" data-i18n="rate_limiter">rate_limiter</label>
+                  <select name="rate_limiter" id="settings_rate_limiter" class="form-control">
+                    <option value="0" data-i18n="disabled">disabled</option>
+                    <option value="4">4</option>
+                    <option value="9">9</option>
+                    <option value="15">15</option>
+                  </select>
+                  <p class="help-block" data-i18n="rate_limiter_help">rate_limiter_help</p>
+                </div>
+                <div class="form-group">
                   <div class="custom-control custom-switch">
                     <input type="checkbox" name="submit_on_enter" class="custom-control-input" id="settings_submit_on_enter" />
                     <label class="custom-control-label" for="settings_submit_on_enter" data-i18n="submit_forms_on_enter"

@@ -65,8 +65,6 @@ import { loadContactsFromDB } from './brs.contacts'
 
 import { BRS } from '.'
 
-import { RequestController } from './brs.requestcontroller'
-
 function loadAllDBValues () {
     loadContactsFromDB()
     loadClosedGroupsFromDB()
@@ -96,8 +94,6 @@ export function init () : void {
         $.notify($.t('error_encryption_browser_support'))
         return
     }
-
-    BRS.requestController = new RequestController(4, 10)
 
     createDatabase(loadAllDBValues)
 

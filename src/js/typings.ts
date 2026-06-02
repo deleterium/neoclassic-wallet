@@ -18,10 +18,11 @@ export type BrsSettings = {
     remember_passphrase: boolean,
     remember_account: boolean,
     automatic_node_selection: boolean,
-    page_size: number,
+    page_size: string,
     prefered_node: string,
     language: string,
     last_remembered_account: string
+    rate_limiter: string
 }
 
 export type DecryptedTransactionFields = "encryptedMessage" | "encryptToSelfMessage"

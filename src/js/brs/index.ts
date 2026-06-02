@@ -304,18 +304,19 @@ export const BRS = {
     // from brs.settings
     defaultSettings: {
         submit_on_enter: false,
-        fee_warning: '100000000000',
-        amount_warning: '10000000000000',
+        fee_warning: '200000000',
+        amount_warning: '100000000000',
         asset_transfer_warning: '10000',
         theme_dark: false,
         small_text: false,
         remember_passphrase: false,
         remember_account: false,
         automatic_node_selection: true,
-        page_size: 25,
+        page_size: '25',
         prefered_node: '',
         language: 'en',
-        last_remembered_account: ''
+        last_remembered_account: '',
+        rate_limiter: '9'
     } as BrsSettings,
 
     // from brs.server
