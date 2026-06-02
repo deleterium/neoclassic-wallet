@@ -186,17 +186,12 @@ export function processAjaxRequest (requestType, data, callback, async) {
         extra = null
     }
 
-    let currentPage = null
-    let currentSubPage = null
+    let currentPageAndSubPage
 
-    // means it is a page request, not a global request.. Page requests can be aborted.
+    // means it is a page request, not a global request.. Page requests can be aborted if user changes the page.
     if (requestType.slice(-1) === '+') {
         requestType = requestType.slice(0, -1)
-        currentPage = BRS.currentPage
-    }
-
-    if (currentPage && BRS.currentSubPage) {
-        currentSubPage = BRS.currentSubPage
+        currentPageAndSubPage = BRS.currentPage + BRS.currentSubPage
     }
 
     let type = (('secretPhrase' in data) || (data.broadcast === 'false')) ? 'POST' : 'GET'
@@ -260,11 +255,11 @@ export function processAjaxRequest (requestType, data, callback, async) {
         }
     }
 
-    $.support.cors = true
-
-    let ajaxCall = $.ajax
-    if (type === 'GET') {
-        ajaxCall = BRS.multiQueue.queue
+    let ajaxCall
+    if (type === 'GET' && BRS.requestController) {
+        ajaxCall = BRS.requestController.queue
+    } else {
+        ajaxCall = $.ajax
     }
 
     if (requestType === 'broadcastTransaction') {
@@ -276,7 +271,6 @@ export function processAjaxRequest (requestType, data, callback, async) {
         const client = new XMLHttpRequest()
         client.open('GET', url + '&' + $.param(data), false)
         client.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8')
-        client.data = data
         client.send()
         let response = JSON.parse(client.responseText)
         response = addUnconfirmedProperty(response, requestType)
@@ -290,9 +284,8 @@ export function processAjaxRequest (requestType, data, callback, async) {
         type,
         timeout: 30000,
         async: true,
-        currentPage,
-        currentSubPage,
-        shouldRetry: (type === 'GET' ? 2 : undefined),
+        currentPageAndSubPage,
+        maxRetries: (type === 'GET' ? 2 : 0),
         data
     }).done(function (response) {
         response = addUnconfirmedProperty(response, requestType)

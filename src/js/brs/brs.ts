@@ -65,7 +65,7 @@ import { loadContactsFromDB } from './brs.contacts'
 
 import { BRS } from '.'
 
-import { fnAjaxMultiQueue } from './brs.ajaxmultiqueue'
+import { RequestController } from './brs.ajaxmultiqueue'
 
 function loadAllDBValues () {
     loadContactsFromDB()
@@ -97,7 +97,7 @@ export function init () : void {
         return
     }
 
-    BRS.multiQueue = fnAjaxMultiQueue(4)
+    BRS.requestController = new RequestController(4, 10)
 
     createDatabase(loadAllDBValues)
 
@@ -169,7 +169,6 @@ export function checkSelectedNode () : void {
 }
 
 export function autoSelectServer () : void {
-    const ajaxCall = fnAjaxMultiQueue(8).queue
     // shuffleArray but keep localhost as first one
     const mainnetServers = BRS.nodes.filter(obj => obj.testnet === false).slice(1)
     for (let i = mainnetServers.length - 1; i > 0; i--) {
@@ -185,7 +184,7 @@ export function autoSelectServer () : void {
         getState()
     }, 2100)
     for (const server of mainnetServers) {
-        ajaxCall({
+        $.ajax({
             url: `${server.address}/burst?requestType=getBlock`,
             crossDomain: true,
             dataType: 'json',

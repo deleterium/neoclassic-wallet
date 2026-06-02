@@ -142,6 +142,8 @@ import {
 
 import { formRequestBurst } from './brs.modals.request'
 
+import { RequestController } from './brs.ajaxmultiqueue'
+
 export const BRS = {
     version: '1.0.0',
     server: '',
@@ -193,8 +195,8 @@ export const BRS = {
     rememberPassword: false,
     selectedContext: null as null | JQuery<HTMLElement>,
 
+    // Used by 'pages' logic and RequestController
     currentPage: 'dashboard',
-    // TODO: currentSubPage is not implemented. Implement or just remove?
     currentSubPage: '',
     pageNumber: 1,
     pageSize: 25,
@@ -317,7 +319,7 @@ export const BRS = {
     } as BrsSettings,
 
     // from brs.server
-    multiQueue: null,
+    requestController: null as null | RequestController,
 
     // from login
     newlyCreatedAccount: false,
