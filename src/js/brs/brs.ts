@@ -65,7 +65,7 @@ import { loadContactsFromDB } from './brs.contacts'
 
 import { BRS } from '.'
 
-import { RequestController } from './brs.ajaxmultiqueue'
+import { RequestController } from './brs.requestcontroller'
 
 function loadAllDBValues () {
     loadContactsFromDB()

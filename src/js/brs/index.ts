@@ -142,7 +142,7 @@ import {
 
 import { formRequestBurst } from './brs.modals.request'
 
-import { RequestController } from './brs.ajaxmultiqueue'
+import { RequestController } from './brs.requestcontroller'
 
 export const BRS = {
     version: '1.0.0',
