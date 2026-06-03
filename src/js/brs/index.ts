@@ -132,6 +132,7 @@ import {
     AssetDetails,
     BlockchainStatus,
     BrsSettings,
+    DBAsset,
     DBContact,
     DecryptedTransactionsCache,
     GetAccountResponse,
@@ -336,8 +337,8 @@ export const BRS = {
     _publicKeys: {} as { [key: string]: string},
 
     // from assetexchange
-    assets: [] as GetAssetResponse[],
-    closedGroups: [],
+    assets: [] as DBAsset[],
+    closedGroups: [] as string[],
     assetSearch: false,
     currentAsset: {} as AssetDetails,
     currentAssetID: 'undefined',

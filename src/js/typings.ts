@@ -47,6 +47,11 @@ export interface DBContact {
     description: string;
 }
 
+export interface DBAsset extends AssetDetails {
+    groupName: string;
+    bookmarked: boolean;
+}
+
 // region Transaction
 
 export interface Transaction {

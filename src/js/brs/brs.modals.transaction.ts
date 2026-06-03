@@ -43,7 +43,7 @@ import {
     getMessageFromTX
 } from './brs.messages'
 
-import { AssetDetails, GetIndirectIncomingResponse, Transaction } from '../typings'
+import { DBAsset, GetIndirectIncomingResponse, Transaction } from '../typings'
 
 import { secondsToDuration } from './brs'
 
@@ -135,7 +135,7 @@ interface fnGetTransactionDetails {
     senderHTML: string
     toFromViewer: boolean
     amountToFromViewerHTML: string
-    foundAsset: AssetDetails
+    foundAsset: DBAsset | undefined
     hasMessage: boolean
     circleText: string
     colorClass: string
@@ -144,7 +144,7 @@ interface fnGetTransactionDetails {
 function processTransactionModalData (transaction: Transaction) {
     let data: DataTable
     let async = false
-    let assetDetails: AssetDetails
+    let assetDetails: DBAsset | undefined
     let helperStr: string
     let details: fnGetTransactionDetails
 

@@ -1,11 +1,12 @@
 import { BRS } from '.';
+import { DBAsset, GetAssetResponse } from '../typings';
 import { dbGet, dbPut } from './brs.database';
 import { sendRequest } from './brs.server';
 
 export function loadClosedGroupsFromDB() {
     if (!BRS.databaseSupport) return;
 
-    dbGet('data', { id: 'closed_groups' }, function (error, result) {
+    dbGet('data', { id: 'closed_groups' }, function (error, result: { id: string; contents: string }) {
         if (error) {
             console.error('Error loading closed groups:', error);
             return;
@@ -24,8 +25,8 @@ export function loadClosedGroupsFromDB() {
 export function loadAssetsFromDB() {
     if (!BRS.databaseSupport) return
 
-    dbGet('assets', function (error, assets) {
-        if (error === null) {
+    dbGet('assets', function (error: Error | null, assets: DBAsset[]) {
+        if (!error) {
             BRS.assets = assets
         }
     })
@@ -34,8 +35,8 @@ export function loadAssetsFromDB() {
 export function saveCachedAssets() {
     if (!BRS.databaseSupport) return
 
-    const assetsToUpdate = []
-    dbGet('assets', function (error, dbAssets) {
+    const assetsToUpdate: DBAsset[] = []
+    dbGet('assets', function (error: Error | null, dbAssets: DBAsset[]) {
         if (error) {
             $.notify($.t('error_assets_save_db'), { type: 'danger' })
             return
@@ -68,13 +69,13 @@ export function saveCachedAssets() {
  * @returns {AssetDetails}
  * @error returns undefined
  */
-export function getAssetDetails(assetId) {
+export function getAssetDetails(assetId: string): DBAsset | undefined {
     const async = false
     const asset = BRS.assets.find((tkn) => tkn.asset === assetId)
     if (asset) return asset
     sendRequest('getAsset', {
         asset: assetId
-    }, function (response) {
+    }, function (response: GetAssetResponse) {
         if (!response.errorCode) {
             cacheAsset(response)
         }
@@ -91,7 +92,7 @@ export function cacheUserAssets() {
         if (!foundAsset) {
             sendRequest('getAsset', {
                 asset: userAssetTuple.asset
-            }, function (response) {
+            }, function (response: GetAssetResponse) {
                 if (!response.errorCode) {
                     cacheAsset(response)
                 }
@@ -107,7 +108,7 @@ export function cacheUserAssets() {
  *
  * @param {Object} asset - The asset object from the server response.
  */
-export function cacheAsset(asset) {
+export function cacheAsset(asset: GetAssetResponse) {
     const foundAsset = BRS.assets.find((tkn) => tkn.asset === asset.asset)
     if (foundAsset) {
         // update info
@@ -117,18 +118,11 @@ export function cacheAsset(asset) {
     }
 
     // insert new asset
-    asset = {
-        asset: String(asset.asset),
-        name: String(asset.name),
-        description: String(asset.description),
-        groupName: '',
-        account: String(asset.account),
-        accountRS: String(asset.accountRS),
-        quantityQNT: String(asset.quantityQNT),
-        quantityCirculatingQNT: String(asset.quantityCirculatingQNT),
-        decimals: parseInt(asset.decimals, 10),
-        bookmarked: false
+    const assetToCache: DBAsset = {
+        ...asset,
+        bookmarked: false,
+        groupName: ''
     }
 
-    BRS.assets.push(asset)
+    BRS.assets.push(assetToCache)
 }
