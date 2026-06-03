@@ -112,12 +112,6 @@ export function init () : void {
 
     automaticallyCheckRecipient()
 
-    $('.show_popover').popover({
-        trigger: 'hover'
-    })
-
-    $("[data-toggle='tooltip']").tooltip()
-
     setInterval(setHeaderClock, 1000)
 
 }
