@@ -249,3 +249,8 @@
 .dark-mode a {
     color: #00a8fc
 }
+
+.locked {
+    pointer-events: none;
+    filter: brightness(0.8);
+}

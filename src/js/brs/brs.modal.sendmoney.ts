@@ -1,8 +1,14 @@
 import { BRS } from '.';
 import { PostResponse } from '../typings';
 import { getContactByName } from './brs.contacts';
+import { evCheckNumberInput } from './brs.modals';
 import { parseAmountToNQT, formatNQTAsAmount } from './brs.numbers';
 import { convertRSAccountToNumeric, getAccountFormatted } from './brs.util';
+
+import {
+    evSpanRecipientSelectorClickButton,
+    evSpanRecipientSelectorClickUlLiA
+} from './brs.recipient';
 
 export function formsSendMoneyComplete(_response: PostResponse, data: any) {
     if (!(data._extra && data._extra.convertedAccount) && !(data.recipient in BRS.contacts)) {
@@ -152,3 +158,89 @@ export function sendMoneyCalculateTotal(element: JQuery<HTMLElement>) {
         $(element).closest('.modal').find('.total_amount_ordinary').text('??? ' + BRS.valueSuffix);
     }
 }
+
+export function evMultiOutAmountChange() {
+    // get amount for each recipient
+    try {
+        let amount_total = 0n
+        $('#multi_out_recipients .row').each(function (index, row) {
+            const recipient = $(row).find('input[name=recipient_multi_out]').val()
+            const value = $(row).find('input[name=amount_multi_out]').val()
+            const current_amount = BigInt(parseAmountToNQT(value))
+            if (recipient !== '') {
+                amount_total += current_amount
+            }
+        })
+        const current_fee = BigInt(parseAmountToNQT($('#multi_out_fee').val()))
+        amount_total += current_fee
+        $('#total_amount_multi_out').text(formatNQTAsAmount(amount_total) + ' ' + BRS.valueSuffix)
+    } catch {
+        $('#total_amount_multi_out').text('??? ' + BRS.valueSuffix)
+    }
+}
+
+export function evMultiOutSameAmountChange() {
+    try {
+        let amount_total = 0n
+        const current_amount = BigInt(parseAmountToNQT($('#multi_out_same_amount').val()))
+        const current_fee = BigInt(parseAmountToNQT($('#multi_out_fee').val()))
+        $('#multi_out_same_recipients input[name=recipient_multi_out_same]').each(function () {
+            if ($(this).val() !== '') {
+                amount_total += current_amount
+            }
+        })
+        amount_total += current_fee
+        $('#total_amount_multi_out').text(formatNQTAsAmount(amount_total) + ' ' + BRS.valueSuffix)
+    } catch {
+        $('#total_amount_multi_out').text('??? ' + BRS.valueSuffix)
+    }
+}
+
+export function evSameOutCheckboxChange(event: JQuery.ChangeEvent) {
+    const element = event.target
+    $('#total_amount_multi_out').html('?')
+    if ($(element).is(':checked')) {
+        $('#multi_out_same_recipients').fadeIn()
+        $('#row_multi_out_same_amount').fadeIn()
+        $('#multi_out_recipients').hide()
+        evMultiOutSameAmountChange()
+    } else {
+        $('#multi_out_same_recipients').hide()
+        $('#row_multi_out_same_amount').hide()
+        $('#multi_out_recipients').fadeIn()
+        evMultiOutAmountChange()
+    }
+}
+
+export function evMultiOutFeeChange() {
+    if ($('#send_money_same_out_checkbox').is(':checked')) {
+        evMultiOutSameAmountChange()
+    } else {
+        evMultiOutAmountChange()
+    }
+}
+
+export function resetModalMultiOut() {
+    $('#multi_out_recipients').empty()
+    $('#multi_out_same_recipients').empty()
+    $('#multi_out_same_recipients').hide()
+    $('#row_multi_out_same_amount').hide()
+    $('#multi_out_recipients').fadeIn()
+    $('#multi_out_recipients').append($('#additional_multi_out_recipient').html())
+    $('#multi_out_recipients').append($('#additional_multi_out_recipient').html())
+    $('#multi_out_same_recipients').append($('#additional_multi_out_same_recipient').html())
+    $('#multi_out_same_recipients').append($('#additional_multi_out_same_recipient').html())
+    $('#send_money_modal .ev-check-number-input').off('input').on('input', evCheckNumberInput)
+    $('#multi_out_same_recipients input[name=recipient_multi_out_same]').off('blur').on('blur', evMultiOutSameAmountChange)
+    $('#multi_out_recipients input[name=recipient_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
+    $('#multi_out_recipients input[name=amount_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
+    $('span.recipient_selector').on('click', 'button', evSpanRecipientSelectorClickButton)
+    $('span.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
+    $('#send_multi_out .remove_recipient').each(function () {
+        $(this).remove()
+    })
+    $('#send_money_same_out_checkbox').prop('checked', false)
+    $('#multi_out_same_amount').val('')
+    $('#send_ordinary_tab').tab('show')
+}
+

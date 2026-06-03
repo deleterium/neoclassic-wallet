@@ -24,6 +24,10 @@ import {
 
 import { GetAccountResponse, GetAliasResponse } from '../typings'
 
+import { evMultiOutSameAmountChange, evMultiOutAmountChange } from './brs.modal.sendmoney'
+
+import { evCheckNumberInput } from './brs.modals'
+
 export function automaticallyCheckRecipient () {
     const $recipientFields = $('#add_contact_account_id, #update_contact_account_id, #buy_alias_recipient, #escrow_create_recipient, #inline_message_recipient, #reward_assignment_recipient, #sell_alias_recipient, #send_message_recipient, #send_money_recipient, #subscription_cancel_recipient, #subscription_create_recipient, #transfer_alias_recipient, #transfer_asset_recipient, #transfer_asset_multi_recipient')
 
@@ -405,4 +409,33 @@ export function evSpanRecipientSelectorClickUlLiA (e: JQuery.ClickEvent) {
         .not('[type=hidden]')
         .val($(element).data('contact'))
         .trigger('blur')
+}
+
+export function evAddRecipientsClick(e) {
+    e.preventDefault()
+    if ($('#send_money_same_out_checkbox').is(':checked')) {
+        $('#multi_out_same_recipients').append($('#additional_multi_out_same_recipient').html()) // add input box
+    } else {
+        $('#multi_out_recipients').append($('#additional_multi_out_recipient').html()) // add input box
+    }
+    $('input[name=recipient_multi_out_same]').off('blur').on('blur', evMultiOutSameAmountChange)
+    $('input[name=recipient_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
+    $('input[name=amount_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
+    $('#send_money_modal .ev-check-number-input').off('input').on('input', evCheckNumberInput)
+    $('.remove_recipient .remove_recipient_button').off('click').on('click', evDocumentOnClickRemoveRecipient)
+
+    $('span.recipient_selector').on('click', 'button', evSpanRecipientSelectorClickButton)
+    $('span.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
+}
+
+export function evDocumentOnClickRemoveRecipient(e: JQuery.ClickEvent) {
+    const element = e.target
+    e.preventDefault()
+    $(element).parent().parent('div').remove()
+
+    if ($('#send_money_same_out_checkbox').is(':checked')) {
+        evMultiOutSameAmountChange()
+    } else {
+        evMultiOutAmountChange()
+    }
 }

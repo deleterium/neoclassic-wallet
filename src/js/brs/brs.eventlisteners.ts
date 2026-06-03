@@ -96,21 +96,22 @@ import {
     evMessagesSidebarContextClick
 } from './brs.messages'
 
-import { sendMoneyCalculateTotal } from './brs.modal.sendmoney'
+import {
+    sendMoneyCalculateTotal,
+    resetModalMultiOut,
+    evMultiOutSameAmountChange,
+    evSameOutCheckboxChange,
+    evMultiOutFeeChange
+ } from './brs.modal.sendmoney'
 
 import {
+    evAddRecipientsClick,
     evSpanRecipientSelectorClickButton,
     evSpanRecipientSelectorClickUlLiA
 } from './brs.recipient'
 
 import {
-    setupLockableModal,
-    evAddRecipientsClick,
-    evMultiOutSameAmountChange,
-    evSameOutCheckboxChange,
-    evMultiOutFeeChange,
     evModalOnShowBsModal,
-    resetModalMultiOut,
     evModalOnHiddenBsModal,
     evAdvancedInfoClick,
     removeDecryptionForm,
@@ -499,7 +500,6 @@ export function addEventListeners () {
     })
 
     // from brs.modals.js
-    setupLockableModal()
     // Reset scroll position of tab when shown.
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
         const target = $(e.target).attr('href')

@@ -27,6 +27,8 @@ import {
     addUnconfirmedTransaction
 } from './brs.transactions'
 
+import { lockModal, unlockModal } from './brs.modal.lockablemodal'
+
 /**
  * There are the 'requestType' in forms that will check if node is in sync before proceed.
  */
@@ -324,7 +326,7 @@ export async function submitForm ($btn) {
     let data
     const $modal = $btn.closest('.modal')
 
-    lockForm($modal, $btn)
+    lockModal($modal, $btn)
 
     if ($btn.data('form')) {
         $form = $modal.find('form#' + $btn.data('form'))
@@ -340,7 +342,7 @@ export async function submitForm ($btn) {
         if (formErrorFunction) {
             formErrorFunction(false, data)
         }
-        unlockForm($modal, $btn)
+        unlockModal($modal, $btn, false)
     }
 
     let requestType = $form.find('input[name=request_type]').val()
@@ -403,7 +405,7 @@ export async function submitForm ($btn) {
             errorMessage = output.errorMessage
         }
         if (output.stop) {
-            unlockForm($modal, $btn, output.hide)
+            unlockModal($modal, $btn, output.hide)
             return
         }
     }
@@ -494,7 +496,7 @@ export async function submitForm ($btn) {
         // todo check again.. response.error
         let formCompleteFunction
         if (response.fullHash) {
-            unlockForm($modal, $btn)
+            unlockModal($modal, $btn, false)
 
             if (!$modal.hasClass('modal-no-hide')) {
                 $modal.modal('hide')
@@ -539,7 +541,7 @@ export async function submitForm ($btn) {
                 formErrorFunction(response, data)
             }
 
-            unlockForm($modal, $btn)
+            unlockModal($modal, $btn, false)
         } else {
             let sentToFunction = false
 
@@ -550,7 +552,7 @@ export async function submitForm ($btn) {
                     sentToFunction = true
                     data.requestType = requestType
 
-                    unlockForm($modal, $btn)
+                    unlockModal($modal, $btn, false)
 
                     if (!$modal.hasClass('modal-no-hide')) {
                         $modal.modal('hide')
@@ -562,7 +564,7 @@ export async function submitForm ($btn) {
             }
 
             if (!sentToFunction) {
-                unlockForm($modal, $btn, true)
+                unlockModal($modal, $btn, true)
 
                 $.notify(errorMessage.escapeHTML(), { type: 'danger' })
             }
@@ -582,12 +584,6 @@ export function formsAddCommitment (data) {
     }
 }
 
-function lockForm ($modal, $btn) {
-    $modal.modal('lock')
-    $modal.find('button').prop('disabled', true)
-    $btn.button('loading')
-}
-
 function getFormData ($form) {
     const serialized = $form.serializeArray()
     const data = {}
@@ -601,15 +597,4 @@ function getFormData ($form) {
         }
     }
     return data
-}
-
-export function unlockForm ($modal, $btn, hide) {
-    $modal.find('button').prop('disabled', false)
-    if ($btn) {
-        $btn.button('reset')
-    }
-    $modal.modal('unlock')
-    if (hide) {
-        $modal.modal('hide')
-    }
 }
