@@ -254,3 +254,7 @@
     pointer-events: none;
     filter: brightness(0.8);
 }
+
+.text-line-through {
+    text-decoration: line-through;  
+}

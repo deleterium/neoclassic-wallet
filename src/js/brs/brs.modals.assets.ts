@@ -1,11 +1,12 @@
 import { BRS } from '.';
+import { PostResponse, ShowBootstrapModalEvent } from '../typings';
 import { reloadCurrentPage } from './brs';
 import { loadAssetExchangeSidebar } from './brs.assetexchange';
 import { dbPut } from './brs.database';
 import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from './brs.numbers';
 import { getTranslatedFieldName } from './brs.util';
 
-export function evTransferAssetModalOnShowBsModal(e) {
+export function evTransferAssetModalOnShowBsModal(e: ShowBootstrapModalEvent) {
     let $invoker = $(e.relatedTarget);
     if (e.relatedTarget === null) {
         $invoker = $(e.currentTarget);
@@ -61,7 +62,7 @@ export function evTransferAssetModalOnShowBsModal(e) {
     $formGroup.find('span[name=transfer_asset_available]').html(availableAssetsMessage);
 }
 
-export function formsTransferAssetMulti(data) {
+export function formsTransferAssetMulti(data: any) {
     data.assetIdsAndQuantities = '';
     let items = 0;
     let showWarning = false;
@@ -73,8 +74,8 @@ export function formsTransferAssetMulti(data) {
             data.assetIdsAndQuantities += ';';
         }
         items++;
-        if (Number(data.quantity[i]) > BRS.settings.asset_transfer_warning &&
-            BRS.settings.asset_transfer_warning !== 0) {
+        if (Number(data.quantity[i]) > Number(BRS.settings.asset_transfer_warning) &&
+            BRS.settings.asset_transfer_warning !== '0') {
             showWarning = true;
         }
         try {
@@ -83,7 +84,7 @@ export function formsTransferAssetMulti(data) {
         } catch (e) {
             return {
                 error: $.t('error_incorrect_quantity_plus', {
-                    err: e.message.escapeHTML()
+                    err: (e  as Error).message.escapeHTML()
                 })
             };
         }
@@ -111,7 +112,7 @@ export function formsTransferAssetMulti(data) {
     };
 }
 
-export function formsTransferAsset(data) {
+export function formsTransferAsset(data: any) {
     if (!data.quantity) {
         return {
             error: $.t('error_not_specified', {
@@ -123,17 +124,16 @@ export function formsTransferAsset(data) {
         data.amountNXT = '0';
     }
 
-    if (!BRS.showedFormWarning) {
-        if (BRS.settings.asset_transfer_warning && BRS.settings.asset_transfer_warning !== 0) {
-            if (Number(data.quantity) > Number(BRS.settings.asset_transfer_warning)) {
-                BRS.showedFormWarning = true;
-                return {
-                    error: $.t('error_max_asset_transfer_warning', {
-                        qty: String(BRS.settings.asset_transfer_warning).escapeHTML()
-                    })
-                };
-            }
-        }
+    if (!BRS.showedFormWarning &&
+        BRS.settings.asset_transfer_warning !== '0' &&
+        Number(data.quantity) > Number(BRS.settings.asset_transfer_warning)
+    ) {
+        BRS.showedFormWarning = true;
+        return {
+            error: $.t('error_max_asset_transfer_warning', {
+                qty: String(BRS.settings.asset_transfer_warning).escapeHTML()
+            })
+        };
     }
 
     try {
@@ -141,7 +141,7 @@ export function formsTransferAsset(data) {
     } catch (e) {
         return {
             error: $.t('error_incorrect_quantity_plus', {
-                err: e.message.escapeHTML()
+                err: (e as Error).message.escapeHTML()
             })
         };
     }
@@ -161,7 +161,7 @@ export function formsTransferAssetComplete() {
     }
 }
 
-export function formsCancelOrder(data) {
+export function formsCancelOrder(data: any) {
     const requestType = data.cancel_order_type
     delete data.cancel_order_type
     return {
@@ -170,7 +170,7 @@ export function formsCancelOrder(data) {
     }
 }
 
-export function formsCancelOrderComplete(response, data) {
+export function formsCancelOrderComplete(response: PostResponse, data: any) {
     if (data.requestType === 'cancelAskOrder') {
         $.notify($.t('success_cancel_sell_order'), { type: 'success' })
     } else {
@@ -181,37 +181,49 @@ export function formsCancelOrderComplete(response, data) {
         return
     }
 
-    $('#open_orders_page tr[data-order=' + String(data.order).escapeHTML() + ']').addClass('tentative tentative-crossed').find('td.cancel').html('/')
+    $('#open_orders_page tr[data-order=' + String(data.order).escapeHTML() + ']').addClass('text-muted text-line-through').find('td.cancel').html(BRS.pendingTransactionHTML)
 }
 
-export function formsAssetExchangeGroup() {
-    const assetId = $('#asset_exchange_group_asset').val()
-    let groupName = $('#asset_exchange_group_group').val()
-
-    if (groupName === '0') {
-        groupName = ''
-    } else if (groupName === '-1') {
-        groupName = $('#asset_exchange_group_new_group').val()
-    }
-
-    dbPut('assets', {
-        asset: assetId,
-        groupName
-    }, function (error, item) {
-        if (error) return
-        const foundAsset = BRS.assets.find((tkn) => tkn.asset === item.asset)
-        if (foundAsset) {
-            foundAsset.groupName = groupName
-        }
+export function formsAssetExchangeGroup(data: any) {
+    function successMessageAndReloadSidebar() {
         setTimeout(function () {
             loadAssetExchangeSidebar()
-            // reloadCurrentPage()
             if (!groupName) {
                 $.notify($.t('success_asset_group_removal'), { type: 'success' })
             } else {
                 $.notify($.t('success_asset_group_add'), { type: 'success' })
             }
         }, 50)
+    }
+
+    const assetId: string = data.asset_exchange_group_asset
+    let groupName: string = data.asset_exchange_group_group
+
+    if (groupName === '0') {
+        groupName = ''
+    } else if (groupName === '-1') {
+        groupName = data.asset_exchange_group_new_group
+    }
+
+    const foundAsset = BRS.assets.find((tkn) => tkn.asset === assetId)
+    if (foundAsset) {
+        foundAsset.groupName = groupName
+    }
+
+    if (!BRS.databaseSupport) {
+        successMessageAndReloadSidebar()
+        return {
+            stop: true,
+            hide: true
+        }
+    }
+
+    dbPut('assets', {
+        asset: assetId,
+        groupName
+    }, function (error) {
+        if (error) return
+        successMessageAndReloadSidebar()
     })
 
     return {
@@ -220,41 +232,44 @@ export function formsAssetExchangeGroup() {
     }
 }
 
-export function formsIssueAsset(data) {
-    data.description = $.trim(data.description)
-    if (!data.description) {
+export function formsIssueAsset(data: any) {
+    const description: string = data.description.trim() 
+    if (!description) {
         return {
             error: $.t('error_description_required')
         }
     }
-    if (!/^[a-zA-Z0-9]{3,10}$/.test(data.name)) {
+    data.description = description
+
+    if (!/^[a-zA-Z0-9]{1,10}$/.test(data.name)) {
         return {
             error: $.t('error_incorrect_name', { name: 'name' })
         }
     }
-    if (!/^\d+$/.test(data.quantity)) {
-        return {
-            error: $.t('error_whole_quantity')
-        }
-    }
+
     if (data.mintable) {
         data.mintable = true
     }
-    data.quantityQNT = String(data.quantity)
-    if (data.decimals > 0) {
-        for (let i = 0; i < data.decimals; i++) {
-            data.quantityQNT += '0'
+
+    try {
+        const decimals = Number(data.decimals)
+        data.quantityQNT = parseQuantityToQNT(data.quantity, decimals)
+        data.decimals = decimals
+    } catch (e) {
+        return {
+            error: (e as Error).message
         }
     }
     delete data.quantity
+
     return {
         data
     }
 }
 
-export function formsAssetExchangeChangeGroupName() {
-    const oldGroupName = $('#asset_exchange_change_group_name_old').val()
-    const newGroupName = $('#asset_exchange_change_group_name_new').val()
+export function formsAssetExchangeChangeGroupName(data: any) {
+    const oldGroupName = data.asset_exchange_change_group_name_old
+    const newGroupName = data.asset_exchange_change_group_name_new
 
     if (!newGroupName.match(/^[a-z0-9 ]+$/i)) {
         return {
@@ -262,7 +277,7 @@ export function formsAssetExchangeChangeGroupName() {
         }
     }
 
-    const itemsToUpdate = []
+    const itemsToUpdate: { asset: string, groupName: string }[] = []
     BRS.assets.forEach(asset => {
         if (!asset.bookmarked) return
         if (asset.groupName === oldGroupName) {
@@ -270,12 +285,22 @@ export function formsAssetExchangeChangeGroupName() {
             itemsToUpdate.push({ asset: asset.asset, groupName: newGroupName })
         }
     })
+
+    if (!BRS.databaseSupport) {
+        $.notify($.t('success_group_name_update'), { type: 'success' })
+        loadAssetExchangeSidebar()
+        return {
+            stop: true,
+            hide: true
+        }
+    }
+
     dbPut('assets', itemsToUpdate, function (error) {
         if (error) {
             $.notify($.t('error_save_db'), { type: 'danger' })
             return
         }
-        reloadCurrentPage()
+        loadAssetExchangeSidebar()
         $.notify($.t('success_group_name_update'), { type: 'success' })
     })
 
@@ -285,21 +310,18 @@ export function formsAssetExchangeChangeGroupName() {
     }
 }
 
-export function evAssetOrderModalOnShowBsModal(e) {
+export function evAssetOrderModalOnShowBsModal(e: ShowBootstrapModalEvent) {
     const $invoker = $(e.relatedTarget)
 
-    let orderType = $invoker.data('type')
-    const assetId = $invoker.data('asset')
-    let quantityQNT
-    let priceNQT
-    let totalNXT
-    let quantity
-    $('#asset_order_modal_button').html(orderType + ' Asset').data('resetText', orderType + ' Asset')
-
-    orderType = orderType.toLowerCase()
+    const orderType: string = String($invoker.data('type')).toLowerCase()
+    const assetId: string = $invoker.data('asset')
+    let quantityQNT: string
+    let priceNQT: string
+    let totalNXT: string
+    let quantity: string
 
     try {
-        // TODO
+        // Get info from form inside asset exchange page
         quantity = String($('#' + orderType + '_asset_quantity').val())
         quantityQNT = parseQuantityToQNT(quantity, BRS.currentAsset.decimals)
         priceNQT = parsePriceQuantityToPriceNQT(String($('#' + orderType + '_asset_price').val()), BRS.currentAsset.decimals)
@@ -309,14 +331,14 @@ export function evAssetOrderModalOnShowBsModal(e) {
         return e.preventDefault()
     }
 
-    if (priceNQT.toString() === '0' || quantityQNT.toString() === '0') {
+    if (priceNQT === '0' || quantityQNT === '0') {
         $.notify($.t('error_amount_price_required'), { type: 'danger' })
         return e.preventDefault()
     }
 
-    const priceNQTPerWholeQNT = priceNQT.multiply(new BigInteger('' + Math.pow(10, BRS.currentAsset.decimals)))
-    let description
-    let tooltipTitle
+    const priceNQTPerWholeQNT = BigInt(priceNQT) * (BigInt(Math.pow(10, BRS.currentAsset.decimals)))
+    let description: string
+    let tooltipTitle: string
     if (orderType === 'buy') {
         description = $.t('buy_order_description', {
             quantity: formatQNTAsQuantity(quantityQNT, BRS.currentAsset.decimals),
@@ -343,9 +365,12 @@ export function evAssetOrderModalOnShowBsModal(e) {
         })
     }
 
+    // Set modal text
     $('#asset_order_description').html(description)
     $('#asset_order_total').html(totalNXT + ' ' + BRS.valueSuffix)
+    $('#asset_order_modal_button').text($.t(`${orderType}_asset`))
 
+    // Prepare the tooltip
     if (quantity !== '1') {
         $('#asset_order_total_tooltip').show()
         $('#asset_order_total_tooltip').popover('hide')
@@ -358,13 +383,14 @@ export function evAssetOrderModalOnShowBsModal(e) {
         $('#asset_order_total_tooltip').hide()
     }
 
+    // Set modal form values ()
     $('#asset_order_type').val((orderType === 'buy' ? 'placeBidOrder' : 'placeAskOrder'))
     $('#asset_order_asset').val(assetId)
-    $('#asset_order_quantity').val(quantityQNT.toString())
-    $('#asset_order_price').val(priceNQT.toString())
+    $('#asset_order_quantity').val(quantityQNT)
+    $('#asset_order_price').val(priceNQT)
 }
 
-export function formsOrderAsset(data) {
+export function formsOrderAsset(data: any) {
     const requestType = data.asset_order_type
     delete data.asset_order_type
     return {
@@ -387,8 +413,8 @@ function sortCachedAssets() {
 
 /** Populates the drop-down list with the user assets, in alphabetical order.
  * It is used in places like "transfer token", so user can pick one easily. */
-export function evAssetSelectorButtonClick() {
-    const $list = $(this).parent().find('ul')
+export function evAssetSelectorButtonClick(e: JQuery.ClickEvent) {
+    const $list = $(e.target).parent().find('ul')
     $list.empty()
     if (!BRS.accountInfo.assetBalances) {
         $list.append(`<li><a class='dropdown-item' href='#' data-name='' data-asset='' data-decimals=''>${$.t('no_asset_found')}</a></li>`)

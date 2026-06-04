@@ -79,7 +79,7 @@ function getUnconfirmedOrders(type: 'ask' | 'bid') {
                 asset: unconfirmedTransaction.attachment.asset,
                 name: foundAsset ? foundAsset.name : '',
                 decimals: foundAsset ? foundAsset.decimals : 0,
-                height: 0, // indicate that it is a tentative!
+                height: 0, // indicate that transaction is unconfirmed!
                 order: unconfirmedTransaction.transaction,
                 priceNQT: unconfirmedTransaction.attachment.priceNQT,
                 quantityQNT: unconfirmedTransaction.attachment.quantityQNT,
@@ -118,10 +118,10 @@ function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid', callback:
 
         let rowClass = '';
         if (cancelled) {
-            rowClass = "class='tentative tentative-crossed'";
+            rowClass = "class='text-muted text-line-through'";
         } else {
             if (completeOrder.height === 0) {
-                rowClass = "class='tentative'";
+                rowClass = "class='text-muted'";
             }
         }
         let cancelText = '';
