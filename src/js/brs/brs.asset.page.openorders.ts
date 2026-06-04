@@ -1,4 +1,5 @@
 import { BRS } from '.';
+import { AnyAssetOrder, GetTransactionResponse } from '../typings';
 import { pageLoaded, reloadCurrentPage } from './brs';
 import { getAssetDetails } from './brs.asset.tools';
 import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from './brs.numbers';
@@ -17,76 +18,80 @@ export function pagesOpenOrders() {
     getOpenOrders('bid', allLoaded);
 }
 
-function getOpenOrders(type, callback) {
-    const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+function getOpenOrders(type: 'ask' | 'bid', callback: () => void) {
+    const getCurrentOrders = `getAccountCurrent${type.capitalize()}Orders+`;
+    const typeOrderName = `${type}Orders`;
 
-    const getCurrentOrderIds = `getAccountCurrent${capitalizedType}OrderIds+`;
-    const orderIds = `${type}OrderIds`;
-    const getOrder = `get${capitalizedType}Order+`;
-
-    const orders = [];
-
-    function allOrdersLoaded() {
-        if (BRS.currentPage !== 'open_orders') {
-            return;
-        }
-        openOrdersLoaded(orders.concat(getUnconfirmedOrders(type)), type, callback);
-    }
-
-    sendRequest(getCurrentOrderIds, {
+    sendRequest(getCurrentOrders, {
         account: BRS.account
-    }, function (response) {
-        if (response[orderIds] === undefined || response[orderIds].length === 0) {
-            allOrdersLoaded();
+    }, function (response: any) {
+        if (response[typeOrderName] === undefined || response[typeOrderName].length === 0) {
+            drawOrdersTable(getUnconfirmedOrders(type), type, callback);
             return;
         }
-        let nr_orders = 0;
-        for (const eachOrder of response[orderIds]) {
-            sendRequest(getOrder, {
-                order: eachOrder
-            }, function (order) {
-                sendRequest('getTransaction', {
-                    transaction: eachOrder
-                }, function (originalOrder) {
-                    if (originalOrder.errorCode === undefined) {
-                        order.originalQuantityQNT = originalOrder.attachment.quantityQNT;
-                    }
-                    orders.push(order);
-                    nr_orders++;
-                    if (nr_orders === response[orderIds].length) {
-                        allOrdersLoaded();
-                    }
-                });
-            });
-            if (BRS.currentPage !== 'open_orders') {
-                return;
+        const anyOrders: AnyAssetOrder[] = response[typeOrderName]
+        anyOrders.sort(function (a, b) {
+            if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                return 1;
             }
+            if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                return -1;
+            }
+            if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
+                return 1;
+            }
+            if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
+                return -1;
+            }
+            return 0;
+        });
+        drawOrdersTable(response[typeOrderName].concat(getUnconfirmedOrders(type)), type, callback);
+        for (const order of response[typeOrderName] as AnyAssetOrder[]) {
+            sendRequest('getTransaction+', {
+                transaction: order.order
+            }, function (startingOrder: GetTransactionResponse) {
+                if (startingOrder.errorCode) {
+                    fillOrderDetails(order.order, order.decimals, order.quantityQNT)
+                }
+                fillOrderDetails(order.order, order.decimals, order.quantityQNT, startingOrder.attachment.quantityQNT)
+            });
         }
     });
 }
 
-function getUnconfirmedOrders(type) {
-    const unconfirmedOrders = [];
+function fillOrderDetails(orderId: string, decimals: number, currentQNT: string, startingQNT?: string) {
+    if (!startingQNT) {
+        $(`#order${orderId}percent`).text('??')
+        return
+    }
+    $(`#order${orderId}total`).text(formatQNTAsQuantity(startingQNT, decimals))
+    $(`#order${orderId}percent`).text((100n - (BigInt(currentQNT) * 100n / BigInt(startingQNT))).toString() + '%')
+}
+
+function getUnconfirmedOrders(type: 'ask' | 'bid') {
+    const unconfirmedOrders: AnyAssetOrder[] = [];
     for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
         if (unconfirmedTransaction.type === 2 && unconfirmedTransaction.subtype === (type === 'ask' ? 2 : 3)) {
+            const foundAsset = getAssetDetails(unconfirmedTransaction.attachment.asset)
             unconfirmedOrders.push({
                 account: unconfirmedTransaction.sender,
+                accountRS: unconfirmedTransaction.senderRS,
                 asset: unconfirmedTransaction.attachment.asset,
-                assetName: '',
-                decimals: 0,
-                height: 0,
+                name: foundAsset ? foundAsset.name : '',
+                decimals: foundAsset ? foundAsset.decimals : 0,
+                height: 0, // indicate that it is a tentative!
                 order: unconfirmedTransaction.transaction,
                 priceNQT: unconfirmedTransaction.attachment.priceNQT,
                 quantityQNT: unconfirmedTransaction.attachment.quantityQNT,
-                originalQuantityQNT: unconfirmedTransaction.attachment.quantityQNT,
-                tentative: true
+                type,
+                price: ''
             });
         }
     }
     return unconfirmedOrders;
 }
 
-function openOrdersLoaded(orders, type, callback) {
+function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid', callback: () => void) {
     if (!orders.length) {
         $('#open_' + type + '_orders_table tbody').empty();
         dataLoadFinished($('#open_' + type + '_orders_table'));
@@ -95,32 +100,6 @@ function openOrdersLoaded(orders, type, callback) {
 
         return;
     }
-
-    orders.forEach(obj => {
-        const assetDetails = getAssetDetails(obj.asset);
-        if (assetDetails) {
-            obj.assetName = assetDetails.name;
-            obj.assetDecimals = assetDetails.decimals;
-        } else {
-            obj.assetName = 'undefined';
-            obj.assetDecimals = 0;
-        }
-    });
-    orders.sort(function (a, b) {
-        if (a.assetName.toLowerCase() > b.assetName.toLowerCase()) {
-            return 1;
-        } else if (a.assetName.toLowerCase() < b.assetName.toLowerCase()) {
-            return -1;
-        } else {
-            if (a.quantity * a.price > b.quantity * b.price) {
-                return 1;
-            } else if (a.quantity * a.price < b.quantity * b.price) {
-                return -1;
-            } else {
-                return 0;
-            }
-        }
-    });
 
     let rows = '';
 
@@ -135,32 +114,30 @@ function openOrdersLoaded(orders, type, callback) {
             }
         }
 
-        completeOrder.priceNQT = new BigInteger(completeOrder.priceNQT);
-        completeOrder.quantityQNT = new BigInteger(completeOrder.quantityQNT);
-        completeOrder.totalNQT = new BigInteger(calculateOrderTotalNQT(completeOrder.quantityQNT, completeOrder.priceNQT));
-        completeOrder.originalQuantityQNT = new BigInteger(completeOrder.originalQuantityQNT);
-        const filled = new BigInteger('100').subtract(completeOrder.quantityQNT.multiply(new BigInteger('100')).divide(completeOrder.originalQuantityQNT)).toString() + '%';
+        const totalNQT = calculateOrderTotalNQT(completeOrder.quantityQNT, completeOrder.priceNQT);
 
         let rowClass = '';
         if (cancelled) {
             rowClass = "class='tentative tentative-crossed'";
         } else {
-            if (completeOrder.tentative) {
+            if (completeOrder.height === 0) {
                 rowClass = "class='tentative'";
             }
         }
         let cancelText = '';
         if (rowClass === '') {
             cancelText = `<a href='#' data-toggle='modal' data-target='#cancel_order_modal' data-order='${completeOrder.order}' data-type='${type}'><i class="fas fa-trash"></i></a>`;
+        } else {
+            cancelText = BRS.pendingTransactionHTML
         }
 
         rows += `
             <tr data-order='${completeOrder.order}' ${rowClass}>
-                <td><a href='#' data-goto-asset='${completeOrder.asset}'>${completeOrder.assetName}</a></td>
-                <td>${formatQNTAsQuantity(completeOrder.originalQuantityQNT, completeOrder.assetDecimals)}</td>
-                <td>${filled}</td>
-                <td>${formatPriceNQTAsPriceQuantity(completeOrder.priceNQT, completeOrder.assetDecimals)}</td>
-                <td>${formatNQTAsAmount(completeOrder.totalNQT)}</td>
+                <td><a href='#' data-goto-asset='${completeOrder.asset.escapeHTML()}'>${completeOrder.name.escapeHTML()}</a></td>
+                <td id='order${completeOrder.order}total'>${formatQNTAsQuantity(completeOrder.quantityQNT, completeOrder.decimals)}</td>
+                <td id='order${completeOrder.order}percent'>${completeOrder.height === 0 ? '' : BRS.pendingTransactionHTML}</td>
+                <td>${formatPriceNQTAsPriceQuantity(completeOrder.priceNQT, completeOrder.decimals)}</td>
+                <td>${formatNQTAsAmount(totalNQT)}</td>
                 <td class='cancel'>${cancelText}</td>
             </tr>`;
     }
@@ -168,7 +145,6 @@ function openOrdersLoaded(orders, type, callback) {
     $('#open_' + type + '_orders_table tbody').empty().append(rows);
 
     dataLoadFinished($('#open_' + type + '_orders_table'));
-    orders = {};
 
     callback();
 }

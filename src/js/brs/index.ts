@@ -345,7 +345,7 @@ export const BRS = {
 
     // from transactions
     lastTransactions: '',
-    unconfirmedTransactions: [],
+    unconfirmedTransactions: [] as Transaction[],
     unconfirmedTransactionIds: '',
     unconfirmedTransactionsChange: true,
     transactionsPageType: null,

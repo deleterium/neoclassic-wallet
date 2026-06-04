@@ -71,7 +71,6 @@ export interface Transaction {
     recipient?: string;
     recipientRS?: string;
     referencedTransactionFullHash?: string;
-    requestProcessingTime: number;
     sender: string;
     senderPublicKey: string;
     senderRS: string;
@@ -82,6 +81,12 @@ export interface Transaction {
     transaction: string;
     type: number;
     version: number;
+}
+
+export interface GetTransactionResponse extends Transaction {
+    requestProcessingTime: number;
+    errorCode?: number;
+    errorDescription?: string;
 }
 
 export interface ParseTransactionResponse extends Transaction {
@@ -339,6 +344,10 @@ export interface AskAssetOrder extends AssetOrder {
 
 export interface BidAssetOrder extends AssetOrder {
     type: 'bid'
+}
+
+export interface AnyAssetOrder extends AssetOrder {
+    type: 'ask' | 'bid'
 }
 
 export interface GetAskOrdersResponse {
