@@ -159,6 +159,9 @@ export function checkSelectedNode () : void {
 }
 
 export function autoSelectServer () : void {
+    $('#node_alert').show()
+    $('#node_alert').html($.t('trying_auto_connection'))
+    $('#brs_version, #brs_version_dashboard').html(BRS.loadingDotsHTML).addClass('loading_dots')
     // shuffleArray but keep localhost as first one
     const mainnetServers = BRS.nodes.filter(obj => obj.testnet === false).slice(1)
     for (let i = mainnetServers.length - 1; i > 0; i--) {
@@ -249,7 +252,8 @@ export function getState (callback?: () => void) : void {
                     return
                 }
                 $('#node_alert').show()
-                $('#brs_version, #brs_version_dashboard').html(BRS.loadingDotsHTML).addClass('loading_dots')
+                $('#node_alert').html($.t('could_not_connect_to', { server: BRS.server }))
+                $('#brs_version, #brs_version_dashboard').html(BRS.loadingDotsHTML).removeClass('loading_dots')
             }
             return
         }
