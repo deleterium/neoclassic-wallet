@@ -24,5 +24,4 @@ Outdated/Unchecked - WIP:
 passphrasegenerator.js - custom - based on https://github.com/michenriksen/diceware (UNLICENSE) and https://github.com/ggozad/mnemonic.js (MIT)
 signing/curve25519.js - MIT - https://github.com/Jaguar0625/JavaScriptNrs
 ajaxmultiqueue.js - MIT - https://github.com/GeReV/jQuery.ajaxMultiQueue
-jsbn.js / jsbn2.js - BSD - http://www-cs-students.stanford.edu/~tjw/jsbn/
 nxtaddress.js - public domain

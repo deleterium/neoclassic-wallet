@@ -5,49 +5,6 @@ import {
     HexChar
 } from "../typings"
 
-type BigInteger = {
-    t: number
-    s: number
-    add: (a: BigInteger) => BigInteger
-    subtract: (a: BigInteger) => BigInteger
-    multiply: (a: BigInteger) => BigInteger
-    divide: (a: BigInteger) => BigInteger
-    mod: (a: BigInteger) => BigInteger
-    modPowInt: (e: number, m: BigInteger) => BigInteger
-    modInverse: (m: BigInteger) => BigInteger
-    pow: (e: BigInteger) => BigInteger
-    gcd: (a: BigInteger) => BigInteger
-    isProbablePrime: (t?: number) => boolean
-    bitLength: () => number
-    getLowestSetBit: () => number
-    bitCount: () => number
-    testBit: (n: number) => boolean
-    setBit: (n: number) => BigInteger
-    clearBit: (n: number) => BigInteger
-    flipBit: (n: number) => BigInteger
-    shiftLeft: (n: number) => BigInteger
-    shiftRight: (n: number) => BigInteger
-    and: (a: BigInteger) => BigInteger
-    or: (a: BigInteger) => BigInteger
-    xor: (a: BigInteger) => BigInteger
-    andNot: (a: BigInteger) => BigInteger
-    not: () => BigInteger
-    equals: (a: BigInteger) => boolean
-    min: (a: BigInteger) => BigInteger
-    max: (a: BigInteger) => BigInteger
-    clone: () => BigInteger
-    intValue: () => number
-    byteValue: () => number
-    shortValue: () => number
-    signum: () => number
-    toByteArray: () => number[]
-    square: () => BigInteger
-    constructor: (a: any, b?: number, c?: any) => void
-    ZERO: BigInteger
-    ONE: BigInteger
-}
-
-
 export default {
     charToNibble: {
         '0': 0,
@@ -133,14 +90,11 @@ export default {
         value += bytes[index + 3] << 24
         return value
     },
-    byteArrayToBigInteger (bytes: ByteArray, opt_startIndex?: number) : BigInteger {
+    byteArrayToBigInt64 (bytes: ByteArray, opt_startIndex?: number) : bigint {
         const index = this.checkBytesToIntInput(bytes, 8, opt_startIndex)
-        let value = new BigInteger('0', 10)
-        let temp1: BigInteger; let temp2: BigInteger
+        let value = 0n
         for (let i = 7; i >= 0; i--) {
-            temp1 = value.multiply(new BigInteger('256', 10))
-            temp2 = temp1.add(new BigInteger(bytes[index + i].toString(10), 10))
-            value = temp2
+            value = (value << 8n) | BigInt(bytes[index + i]);
         }
         return value
     },
@@ -158,7 +112,7 @@ export default {
         const utf8decoder = new TextDecoder('utf-8', { fatal: true })
         try {
             return utf8decoder.decode(UintBytes)
-        } catch (_error) {
+        } catch {
             return ''
         }
     }

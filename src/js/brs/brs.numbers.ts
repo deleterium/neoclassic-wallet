@@ -9,27 +9,6 @@ interface ParsedNumberObject {
     fractional: string;
 }
 
-// Temporary until removal of BigInteger
-function anyToBigint (input: any) {
-    try {
-        if (typeof input === 'object') {
-            // BigInteger
-            return BigInt(input.toString())
-        }
-        if (typeof input === 'string' || typeof input === 'number') {
-            return BigInt(input)
-        }
-        if (typeof input === 'bigint') {
-            return input
-        }
-        console.error('Verify here!')
-        return 0n
-    } catch {
-        console.error('Verify here!')
-        return 0n
-    }
-}
-
 /**
  * Formats a volume in bytes into a human-readable string with appropriate units (B, KB, MB, GB, TB).
  * The output is localized based on the current language setting.
@@ -73,7 +52,7 @@ export function formatNumber (num: number) : string {
  * @returns {string} Formatted price string (e.g., "1,234.56" in en-US).
  */
 export function formatPriceNQTAsPriceQuantity (priceNQT: string | number | bigint, decimals: number) : string {
-    const biPrice = anyToBigint(priceNQT)
+    const biPrice = BigInt(priceNQT)
     const power = BigInt(Math.pow(10, decimals))
     return format(convertNQTToNumberObject(biPrice * power))
 }
@@ -114,8 +93,8 @@ export function calculateOrderTotalNQT (
     quantityQNT: string | number | bigint,
     priceNQT: string | number | bigint
 ) : string {
-    const quantity = anyToBigint(quantityQNT)
-    const price = anyToBigint(priceNQT)
+    const quantity = BigInt(quantityQNT)
+    const price = BigInt(priceNQT)
 
     return (quantity * price).toString()
 }
@@ -129,8 +108,8 @@ export function calculateOrderTotalNQT (
  * @returns {string} Formatted total amount in Signa (e.g., "1,234.56" in en-US).
  */
 export function formatOrderTotal (quantityQNT: string | number | bigint, priceNQT: string | number | bigint) : string {
-    const quantity = anyToBigint(quantityQNT)
-    const price = anyToBigint(priceNQT)
+    const quantity = BigInt(quantityQNT)
+    const price = BigInt(priceNQT)
 
     return format(convertNQTToNumberObject(quantity * price))
 }
@@ -181,7 +160,7 @@ export function parseAmountToNQT(amount: string | number | undefined | string[])
  * @returns {ParsedNumberObject}
  */
 function convertQNTToNumberObject (quantityQNT: string | number | bigint, decimals: number) : ParsedNumberObject {
-    let biQNT = anyToBigint(quantityQNT)
+    let biQNT = BigInt(quantityQNT)
     if (biQNT < 0) {
         console.error('Negative amount should not be used!')
         biQNT = -biQNT
@@ -296,7 +275,7 @@ export function formatNQTAsAmount(amountNQT: string | number | bigint): string {
         console.error("Do not use number here")
         amountNQT *= 1E8
     }
-    const biAmountNQT = anyToBigint(amountNQT)
+    const biAmountNQT = BigInt(amountNQT)
     if (biAmountNQT === 0n) {
         return '0'
     }

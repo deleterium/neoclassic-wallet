@@ -35,9 +35,9 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
         transaction.timestamp = String(converters.byteArrayToSignedInt32(byteArray, 2));
         transaction.deadline = String(converters.byteArrayToSignedShort(byteArray, 6));
         transaction.publicKey = converters.byteArrayToHexString(byteArray.slice(8, 40));
-        transaction.recipient = String(converters.byteArrayToBigInteger(byteArray, 40));
-        transaction.amountNQT = String(converters.byteArrayToBigInteger(byteArray, 48));
-        transaction.feeNQT = String(converters.byteArrayToBigInteger(byteArray, 56));
+        transaction.recipient = String(converters.byteArrayToBigInt64(byteArray, 40));
+        transaction.amountNQT = String(converters.byteArrayToBigInt64(byteArray, 48));
+        transaction.feeNQT = String(converters.byteArrayToBigInt64(byteArray, 56));
         transaction.referencedTransactionFullHash = converters.byteArrayToHexString(byteArray.slice(64, 96));
         if (/^0+$/.test(transaction.referencedTransactionFullHash)) {
             transaction.referencedTransactionFullHash = '';
@@ -46,7 +46,7 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
         if (transaction.version > 0) {
             transaction.flags = converters.byteArrayToSignedInt32(byteArray, 160);
             transaction.ecBlockHeight = String(converters.byteArrayToSignedInt32(byteArray, 164));
-            transaction.ecBlockId = String(converters.byteArrayToBigInteger(byteArray, 168));
+            transaction.ecBlockId = String(converters.byteArrayToBigInt64(byteArray, 168));
         }
     }
 
@@ -374,14 +374,14 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
                         break;
                     case 'Long:Long':
                         currentValues.push(
-                            converters.byteArrayToBigInteger(byteArray, pos).toString() +
+                            converters.byteArrayToBigInt64(byteArray, pos).toString() +
                             ':' +
-                            converters.byteArrayToBigInteger(byteArray, pos + 8).toString()
+                            converters.byteArrayToBigInt64(byteArray, pos + 8).toString()
                         );
                         pos += 16;
                         break;
                     case 'Long':
-                        currentValues.push(converters.byteArrayToBigInteger(byteArray, pos).toString());
+                        currentValues.push(converters.byteArrayToBigInt64(byteArray, pos).toString());
                         pos += 8;
                         break;
                     case 'Int':
