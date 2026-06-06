@@ -369,77 +369,30 @@ export const BRS = {
 window.jQuery = window.$ = $
 
 document.addEventListener('DOMContentLoaded', function () {
-    let done = 0
-    const pages = [
-        { location: 'body', path: 'html/sidebar_context.html' },
-        { location: 'body', path: 'html/modals/account.html' },
-        { location: 'body', path: 'html/modals/alias.html' },
-        { location: 'body', path: 'html/modals/asset.html' },
-        { location: 'body', path: 'html/modals/block_info.html' },
-        { location: 'body', path: 'html/modals/server_info.html' },
-        { location: 'body', path: 'html/modals/contact.html' },
-        { location: 'body', path: 'html/modals/escrow.html' },
-        { location: 'body', path: 'html/modals/raw_transaction.html' },
-        { location: 'body', path: 'html/modals/request_burst_qr.html' },
-        { location: 'body', path: 'html/modals/mining.html' },
-        { location: 'body', path: 'html/modals/send_message.html' },
-        { location: 'body', path: 'html/modals/send_money.html' },
-        { location: 'body', path: 'html/modals/subscription.html' },
-        { location: 'body', path: 'html/modals/transaction_info.html' },
-        { location: 'body', path: 'html/modals/user_info.html' },
-        { location: 'body', path: 'html/modals/sign_message.html' },
-        { location: '#header_nav', path: 'html/header.html' },
-        { location: '#content', path: 'html/pages/dashboard.html' },
-        { location: '#content', path: 'html/pages/transactions.html' },
-        { location: '#content', path: 'html/pages/aliases.html' },
-        { location: '#content', path: 'html/pages/messages.html' },
-        { location: '#content', path: 'html/pages/contacts.html' },
-        { location: '#content', path: 'html/pages/asset_exchange.html' },
-        { location: '#content', path: 'html/pages/settings.html' },
-        { location: '#content', path: 'html/pages/peers.html' },
-        { location: '#content', path: 'html/pages/blocks.html' },
-        { location: '#lockscreen', path: 'html/pages/lockscreen.html' }
-    ]
-    function loadHTMLOn (domName: string, path: string) {
-        $.get(path, '', (data) => {
-            $(domName).prepend(data)
-            $('#loading_bar').val(80 + (done / pages.length) * 20)
-            ++done
-            if (done === pages.length) {
-                loadingDone()
-            }
+    i18next.use(i18nHttpApi).init({
+        fallbackLng: 'en',
+        lowerCaseLng: true,
+        backend: {
+            loadPath: './locales/__lng__.json'
+        },
+        debug: false,
+        load: 'currentOnly',
+        interpolation: {
+            prefix: '__',
+            suffix: '__'
+        }
+    }, function () {
+        jqueryI18next.init(i18next, $, {
+            tName: 't', // --> appends $.t = i18next.t
+            i18nName: 'i18n', // --> appends $.i18n = i18next
+            handleName: 'localize', // --> appends $(selector).localize(opts);
+            selectorAttr: 'data-i18n', // selector for translating elements
+            targetAttr: 'i18n-target', // data-() attribute to grab target element to translate (if diffrent then itself)
+            optionsAttr: 'i18n-options', // data-() attribute that contains options, will load/set if useOptionsAttr = true
+            useOptionsAttr: false, // see optionsAttr
+            parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
         })
-    }
-    function loadingDone () {
-        i18next.use(i18nHttpApi).init({
-            fallbackLng: 'en',
-            lowerCaseLng: true,
-            backend: {
-                loadPath: './locales/__lng__.json'
-            },
-            debug: false,
-            load: 'currentOnly',
-            interpolation: {
-                prefix: '__',
-                suffix: '__'
-            }
-        }, function () {
-            jqueryI18next.init(i18next, $, {
-                tName: 't', // --> appends $.t = i18next.t
-                i18nName: 'i18n', // --> appends $.i18n = i18next
-                handleName: 'localize', // --> appends $(selector).localize(opts);
-                selectorAttr: 'data-i18n', // selector for translating elements
-                targetAttr: 'i18n-target', // data-() attribute to grab target element to translate (if diffrent then itself)
-                optionsAttr: 'i18n-options', // data-() attribute that contains options, will load/set if useOptionsAttr = true
-                useOptionsAttr: false, // see optionsAttr
-                parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
-            })
-            addEventListeners()
-            $('#loading_bar').val(100)
-            init()
-        })
-    }
-    for (const page of pages) {
-        loadHTMLOn(page.location, page.path)
-    }
+        addEventListeners()
+        init()
+    })
 })

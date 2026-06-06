@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "npx eslint './src/js/brs/*' && npx prettier './src/html/**/*' -w --bracket-same-line --print-width 140",
-    "dev": "./cpdev.sh && node esbuild.config.js && npm run start",
-    "build": "./cpbuild.sh && node esbuild.config.js",
+    "dev": "node buildIndexHtml.js && ./cpdev.sh && node esbuild.config.js && npm run start",
+    "build": "./cpbuild.sh && node buildIndexHtml.js && node esbuild.config.js",
     "lang": "pushd ./lang && ./updateFiles.sh && popd",
     "start": "python3 -m http.server -d dist 1221",
     "release": "npm run build && npm run lang"
