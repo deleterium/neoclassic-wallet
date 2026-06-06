@@ -81,21 +81,26 @@ export function formatPriceNQTAsPriceQuantity (priceNQT: string | number | bigin
 /**
  * Converts a human-readable price (Amount per Quantity) to blockchain format (NQT per QNT).
  *
- * @param {string|number} priceQuantity - Human-friendly price in Amount per Quantity format. May be user input.
+ * @param {string | number | string[] | undefined} priceQuantity - Human-friendly price in Amount per Quantity format. May be user input.
  * @param {number} decimals - Number of decimals for the asset.
  * @returns {string} Price in NQT per QNT format.
  * @throws {Error} on invalid input
  */
-export function parsePriceQuantityToPriceNQT (priceQuantity: string | number, decimals: number) : string {
+export function parsePriceQuantityToPriceNQT (priceQuantity: string | number | string[] | undefined, decimals: number) : string {
     const priceNQTperQuantity = parseAmountToNQT(priceQuantity)
     if (decimals === 0) {
         return priceNQTperQuantity
     }
     const toRemove = priceNQTperQuantity.slice(-decimals)
     if (!/^[0]+$/.test(toRemove)) {
-        console.error('invalid input. Check here')
+        throw new Error($.t('error_fraction_decimals', {
+            decimals: 8 - decimals
+        }))
     }
-    return priceNQTperQuantity.slice(0, -decimals)
+    const retVal = priceNQTperQuantity.slice(0, -decimals)
+
+    if (!retVal) return '0'
+    return retVal
 }
 
 /**
