@@ -43,7 +43,7 @@ import {
 
 import {
     goToAsset
-} from './brs.assetexchange'
+} from './brs.asset.page.assetexchange'
 
 import {
     getNewTransactions,

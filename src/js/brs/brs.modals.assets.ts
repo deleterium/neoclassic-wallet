@@ -1,7 +1,7 @@
 import { BRS } from '.';
 import { PostResponse, ShowBootstrapModalEvent } from '../typings';
 import { reloadCurrentPage } from './brs';
-import { loadAssetExchangeSidebar } from './brs.assetexchange';
+import { loadAssetExchangeSidebar } from './brs.asset.page.assetexchange';
 import { dbPut } from './brs.database';
 import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from './brs.numbers';
 import { getTranslatedFieldName } from './brs.util';

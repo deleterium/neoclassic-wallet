@@ -72,7 +72,7 @@ import {
     evCalculatePricePreviewInput,
     evAssetExchangeSidebarContextClick,
     goToAsset
-} from './brs.assetexchange'
+} from './brs.asset.page.assetexchange'
 
 import {
     evTransferAssetModalOnShowBsModal,
