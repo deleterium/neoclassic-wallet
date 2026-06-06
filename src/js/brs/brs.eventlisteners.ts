@@ -69,9 +69,7 @@ import {
     updateMiniTradeHistory,
     evAssetExchangeSearchInput,
     evAssetExchangeOrdersTableClick,
-    evSellBuyAutomaticPriceClick,
-    evAssetExchangeQuantityPriceKeydown,
-    evCalculatePricePreviewKeyup,
+    evCalculatePricePreviewInput,
     evAssetExchangeSidebarContextClick,
     goToAsset
 } from './brs.assetexchange'
@@ -328,9 +326,7 @@ export function addEventListeners () {
         }
     })
     $('#asset_exchange_bid_orders_table tbody, #asset_exchange_ask_orders_table tbody').on('click', 'td', evAssetExchangeOrdersTableClick)
-    $('#sell_automatic_price, #buy_automatic_price').on('click', evSellBuyAutomaticPriceClick)
-    $('#buy_asset_quantity, #buy_asset_price, #sell_asset_quantity, #sell_asset_price').keydown(evAssetExchangeQuantityPriceKeydown)
-    $('#sell_asset_quantity, #sell_asset_price, #buy_asset_quantity, #buy_asset_price').keyup(evCalculatePricePreviewKeyup)
+    $('#sell_asset_quantity, #sell_asset_price, #buy_asset_quantity, #buy_asset_price').on('input', evCalculatePricePreviewInput)
     $('#asset_order_modal').on('show.bs.modal', evAssetOrderModalOnShowBsModal)
     $('#asset_exchange_vtab_group_context').on('click', 'a', function (e) {
         e.preventDefault()

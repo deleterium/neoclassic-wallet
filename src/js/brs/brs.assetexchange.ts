@@ -1,9 +1,3 @@
-/**
- * @depends {brs.js}
- */
-
-/* global BigInteger */
-
 import { BRS } from '.'
 
 import {
@@ -23,7 +17,6 @@ import {
     formatPriceNQTAsPriceQuantity,
     calculateOrderTotalNQT,
     formatOrderTotal,
-    parseAmountToNQT,
     parseQuantityToQNT,
     formatQNTAsQuantity,
     formatNQTAsAmount,
@@ -35,25 +28,34 @@ import {
     getAccountTitle,
     getAccountFormatted,
     dataLoadFinished,
-    getSelectedText
 } from './brs.util'
 
 import {
     closeContextMenu
 } from './brs.contextmenu'
 
-import { cacheAsset, getAssetDetails } from './brs.asset.tools'
+import {
+    cacheAsset,
+    getAssetDetails
+} from './brs.asset.tools'
 
-export function pagesAssetExchange (callback) {
-    $('.content.content-stretch:visible').width($('.page:visible').width())
+import {
+    AnyAssetOrder,
+    DBAsset,
+    GetAssetResponse,
+    GetTradesResponse,
+    PostResponse
+} from '../typings'
 
+export function pagesAssetExchange (callback: () => void) {
+    $('#asset_details').hide()
     loadAssetExchangeSidebar(callback)
 }
 
 export function bookmarkAllUserAssets () {
     // check owned assets, adding all to bookmarks
-    const assetsToBookmark = []
-    const idsToFetchAndBookmark = []
+    const assetsToBookmark: DBAsset[] = []
+    const idsToFetchAndBookmark: string[] = []
 
     if (!BRS.accountInfo.unconfirmedAssetBalances) {
         return
@@ -74,7 +76,7 @@ export function bookmarkAllUserAssets () {
         // Not all are cached, so request info about missing.
         sendRequest('getAsset+', {
             asset: eachAsset
-        }, function (response) {
+        }, function (response: GetAssetResponse) {
             if (!response.errorCode) {
                 cacheAsset(response)
             }
@@ -85,11 +87,11 @@ export function bookmarkAllUserAssets () {
         $.notify('Some assets not bookmarked, because their details are still beeing processing. Try again in 10 seconds!', { type: 'danger' })
     }
     // Finish with only cached assets.
-    saveAssetBookmarks(assetsToBookmark, formsAddAssetBookmarkComplete)
+    saveAssetBookmarks(assetsToBookmark, notifyAndGoToAsset)
 }
 
-export function formsAddAssetBookmark (data) {
-    data.id = $.trim(data.id)
+export function formsAddAssetBookmark (data: any) {
+    data.id = data.id.trim()
 
     if (!data.id) {
         return {
@@ -108,12 +110,12 @@ export function formsAddAssetBookmark (data) {
             error: $.t('no_asset_found')
         }
     }
-    saveAssetBookmarks([foundAsset], formsAddAssetBookmarkComplete)
+    saveAssetBookmarks([foundAsset], notifyAndGoToAsset)
 
     return { stop: true, hide: true }
 }
 
-function formsAddAssetBookmarkComplete (newAssets, submittedAssets) {
+function notifyAndGoToAsset (newAssets: DBAsset[], submittedAssets: DBAsset[]) {
     BRS.assetSearch = false
     if (newAssets.length === 0) {
         $.notify($.t('error_asset_already_bookmarked', {
@@ -129,8 +131,11 @@ function formsAddAssetBookmarkComplete (newAssets, submittedAssets) {
     }
 }
 
-export function saveAssetBookmarks (assets, callback) {
-    const newAssets = []
+export function saveAssetBookmarks (
+    assets: DBAsset[],
+    callback: (newAssets: DBAsset[], assets: DBAsset[]) => void
+) {
+    const newAssets: DBAsset[] = []
 
     for (const asset of assets) {
         const foundAsset = BRS.assets.find(Obj => Obj.asset === asset.asset)
@@ -149,9 +154,11 @@ export function saveAssetBookmarks (assets, callback) {
     }
 }
 
-function createBookmarkSidebarHTMLItem (asset, quantityHTML) {
-    return `${asset.name}<br>
-            <small>${$.t('quantity_abbr')}: ${quantityHTML}</small>`
+function createBookmarkSidebarHTMLItem (asset: DBAsset, quantityHTML: string) {
+    if (quantityHTML === '0') {
+        return asset.name + '<br>&nbsp;'
+    }
+    return `${asset.name}<br><small>${$.t('quantity_abbr')}: ${quantityHTML}</small>`
 }
 
 /** It does not redraw, it only updates values */
@@ -178,7 +185,7 @@ function updateQuantitiesInAssetExchangeSidebarContent () {
 }
 
 // called on opening the asset exchange page and automatic refresh
-export function loadAssetExchangeSidebar (callback) {
+export function loadAssetExchangeSidebar (callback?: () => void) {
     const bookmarkedAssets = BRS.assets.filter(token => token.bookmarked === true)
     let rows = ''
 
@@ -206,10 +213,8 @@ export function loadAssetExchangeSidebar (callback) {
     let ungrouped = true
     let isClosedGroup = false
 
-    const isSearch = BRS.assetSearch !== false
-
     for (const asset of bookmarkedAssets) {
-        if (isSearch && BRS.assetSearch.indexOf(asset.asset) === -1) {
+        if (BRS.assetSearch !== false && BRS.assetSearch.indexOf(asset.asset) === -1) {
             continue
         }
 
@@ -270,18 +275,15 @@ export function loadAssetExchangeSidebar (callback) {
             </a>`
     }
 
-    let active = $('#asset_exchange_vtab a.active')
-
-    if (active.length) {
-        active = active.data('asset')
-    } else {
-        active = false
+    let active = ''
+    if ($('#asset_exchange_vtab a.active').length) {
+        active = $('#asset_exchange_vtab a.active').data('asset')
     }
 
     $('#asset_exchange_vtab').html(rows)
     $('#asset_exchange_vtab_search').show()
 
-    if (isSearch) {
+    if (BRS.assetSearch !== false) {
         if (active && BRS.assetSearch.indexOf(active) !== -1) {
             // check if currently selected asset is in search results, if so keep it at that
             $('#asset_exchange_vtab a[data-asset=' + active + ']').addClass('active')
@@ -293,13 +295,13 @@ export function loadAssetExchangeSidebar (callback) {
         $('#asset_exchange_vtab a[data-asset=' + active + ']').addClass('active')
     }
 
-    if (isSearch || bookmarkedAssets.length >= 10) {
+    if (BRS.assetSearch !== false || bookmarkedAssets.length >= 10) {
         $('#asset_exchange_vtab_search').show()
     } else {
         $('#asset_exchange_vtab_search').hide()
     }
 
-    if (isSearch && BRS.assetSearch.length === 0) {
+    if (BRS.assetSearch !== false && BRS.assetSearch.length === 0) {
         $('#no_asset_search_results').show()
         $('#asset_details, #no_asset_selected, #no_assets_available').hide()
     } else if (!bookmarkedAssets.length) {
@@ -324,10 +326,11 @@ export function incomingAssetExchange () {
     updateQuantitiesInAssetExchangeSidebarContent()
 }
 
-export function evAssetExchangeSidebarClick (e) {
+export function evAssetExchangeSidebarClick (e: JQuery.ClickEvent) {
+    const element = e.currentTarget
     e.preventDefault()
 
-    const assetClicked = String($(this).data('asset')).escapeHTML()
+    const assetClicked = String($(element).data('asset')).escapeHTML()
     if (assetClicked !== 'undefined') {
         // Only update if clicked on sidebar. Click in "load my orders only
         // refreshes current asset.
@@ -335,9 +338,9 @@ export function evAssetExchangeSidebarClick (e) {
     } else {
         // clicked on a group
         if (BRS.databaseSupport) {
-            let group = $(this).data('groupname')
-            const closed = $(this).data('closed')
-            let $links
+            let group = $(element).data('groupname')
+            const closed = $(element).data('closed')
+            let $links: JQuery<HTMLElement>
 
             if (!group) {
                 $links = $('#asset_exchange_vtab a.list-group-item-ungrouped')
@@ -353,13 +356,13 @@ export function evAssetExchangeSidebarClick (e) {
                 if (pos >= 0) {
                     BRS.closedGroups.splice(pos)
                 }
-                $(this).data('closed', '')
-                $(this).find('i').removeClass('fa-angle-right').addClass('fa-angle-down')
+                $(element).data('closed', '')
+                $(element).find('i').removeClass('fa-angle-right').addClass('fa-angle-down')
                 $links.show()
             } else {
                 BRS.closedGroups.push(group)
-                $(this).data('closed', true)
-                $(this).find('i').removeClass('fa-angle-down').addClass('fa-angle-right')
+                $(element).data('closed', true)
+                $(element).find('i').removeClass('fa-angle-down').addClass('fa-angle-right')
                 $links.hide()
             }
 
@@ -377,20 +380,22 @@ export function evAssetExchangeSidebarClick (e) {
     } else {
         sendRequest('getAsset+', {
             asset: BRS.currentAssetID
-        }, function (response) {
+        }, function (response: GetAssetResponse) {
             if (!response.errorCode && response.asset === BRS.currentAssetID) {
-                loadAsset(response, true, false)
+                const addedAsset = cacheAsset(response)
+                loadAsset(addedAsset, true, false)
             }
         })
     }
 }
 
-function loadAsset (asset, refreshHTML, refreshAsset) {
+function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) {
     if (!asset?.asset) {
         return
     }
     const assetId = asset.asset
 
+    BRS.currentSubPage = asset.asset
     BRS.currentAsset = asset
 
     if (refreshHTML) {
@@ -458,9 +463,9 @@ function loadAsset (asset, refreshHTML, refreshAsset) {
     }
 
     if (refreshAsset) {
-        sendRequest('getAsset', {
+        sendRequest('getAsset+', {
             asset: assetId
-        }, function (response) {
+        }, function (response: GetAssetResponse) {
             if (!response.errorCode) {
                 cacheAsset(response)
                 $('#asset_quantity').html(formatQNTAsQuantity(response.quantityCirculatingQNT, response.decimals))
@@ -473,43 +478,36 @@ function loadAsset (asset, refreshHTML, refreshAsset) {
         })
     }
 
-    if (BRS.accountInfo.unconfirmedBalanceNQT === '0') {
-        $('#your_burst_balance').html('0')
-        $('#buy_automatic_price').addClass('zero').removeClass('nonzero')
-    } else {
-        $('#your_burst_balance').html(formatNQTAsAmount(BRS.accountInfo.unconfirmedBalanceNQT))
-        $('#buy_automatic_price').addClass('nonzero').removeClass('zero')
-    }
-
+    let userAssetBlance = '0'
     if (BRS.accountInfo.unconfirmedAssetBalances) {
-        for (let i = 0; i < BRS.accountInfo.unconfirmedAssetBalances.length; i++) {
-            const balance = BRS.accountInfo.unconfirmedAssetBalances[i]
-
-            if (balance.asset === assetId) {
-                BRS.currentAsset.yourBalanceNQT = balance.unconfirmedBalanceQNT
-                $('#your_asset_balance').html(formatQNTAsQuantity(balance.unconfirmedBalanceQNT, BRS.currentAsset.decimals))
-                if (balance.unconfirmedBalanceQNT === '0') {
-                    $('#sell_automatic_price').addClass('zero').removeClass('nonzero')
-                } else {
-                    $('#sell_automatic_price').addClass('nonzero').removeClass('zero')
-                }
-                break
+        for (const balance of BRS.accountInfo.unconfirmedAssetBalances) {
+            if (balance.asset !== assetId) {
+                continue
             }
+            userAssetBlance = balance.unconfirmedBalanceQNT
+            break
         }
     }
 
-    if (!BRS.currentAsset.yourBalanceNQT) {
-        BRS.currentAsset.yourBalanceNQT = '0'
-        $('#your_asset_balance').html('0')
-    }
+    $('#your_asset_balance').html(formatQNTAsQuantity(userAssetBlance, BRS.currentAsset.decimals))
+    $('#your_burst_balance').html(formatNQTAsAmount(BRS.accountInfo.unconfirmedBalanceNQT))
 
-    loadAssetOrders('ask', assetId, refreshHTML | refreshAsset)
-    loadAssetOrders('bid', assetId, refreshHTML | refreshAsset)
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    })
+
+    loadAssetOrders('ask', assetId, refreshHTML || refreshAsset)
+    loadAssetOrders('bid', assetId, refreshHTML || refreshAsset)
 
     updateMiniTradeHistory()
 }
 
 function showHideBookmarkAllAssetsButton () {
+    if (!BRS.accountInfo.assetBalances) {
+        $('#asset_exchange_add_all_assets_bookmark').hide()
+        return
+    }
     let show = false
     for (const userAsset of BRS.accountInfo.assetBalances) {
         if (BRS.assets.findIndex((tkn) => tkn.asset === userAsset.asset && tkn.bookmarked === true) === -1) {
@@ -522,13 +520,13 @@ function showHideBookmarkAllAssetsButton () {
 }
 
 export function updateMiniTradeHistory () {
-    // todo BRS.currentSubPageID ??...
+    const myTrades = $('#ae_show_my_trades_only').is(':checked')
     sendRequest('getTrades+', {
         asset: BRS.currentAsset.asset,
-        account: ($('#ae_show_my_trades_only').is(':checked')) ? BRS.account : '',
+        account: myTrades ? BRS.account : '',
         firstIndex: 0,
         lastIndex: 49
-    }, function (response) {
+    }, function (response: GetTradesResponse) {
         if (!response.trades || !response.trades.length) {
             $('#asset_exchange_trade_history_table tbody').empty()
             dataLoadFinished($('#asset_exchange_trade_history_table'), true)
@@ -536,17 +534,15 @@ export function updateMiniTradeHistory () {
         }
         let rows = ''
         for (const trade of response.trades) {
-            trade.priceNQT = new BigInteger(trade.priceNQT)
-            trade.quantityQNT = new BigInteger(trade.quantityQNT)
-            trade.totalNQT = new BigInteger(calculateOrderTotalNQT(trade.priceNQT, trade.quantityQNT))
+            const totalNQT = calculateOrderTotalNQT(trade.priceNQT, trade.quantityQNT)
             rows += `
                 <tr>
-                    <td>${formatTimestampAsDateTime(trade.timestamp)}</td>
-                    <td>${formatQNTAsQuantity(trade.quantityQNT, BRS.currentAsset.decimals)}</td>
-                    <td class='asset_price'>${formatPriceNQTAsPriceQuantity(trade.priceNQT, BRS.currentAsset.decimals)}</td>
-                    <td>${formatNQTAsAmount(trade.totalNQT)}</td>
-                    <td><a href='#' data-transaction='${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
-                    <td><a href='#' data-transaction='${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
+                  <td>${formatTimestampAsDateTime(trade.timestamp)}</td>
+                  <td>${formatQNTAsQuantity(trade.quantityQNT, BRS.currentAsset.decimals)}</td>
+                  <td class='asset_price'>${formatPriceNQTAsPriceQuantity(trade.priceNQT, BRS.currentAsset.decimals)}</td>
+                  <td>${formatNQTAsAmount(totalNQT)}</td>
+                  <td><a href='#' data-transaction='${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
+                  <td><a href='#' data-transaction='${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
                 </tr>`
         }
         $('#asset_exchange_trade_history_table tbody').empty().append(rows)
@@ -554,18 +550,15 @@ export function updateMiniTradeHistory () {
     })
 }
 
-function loadAssetOrders (type, assetId, refresh) {
-    type = type.toLowerCase()
-
+function loadAssetOrders (type: 'ask' | 'bid', assetId: string, refresh: boolean) {
     sendRequest('get' + type.capitalize() + 'Orders+', {
         asset: assetId,
         firstIndex: 0,
         lastIndex: 49
-    }, function (response) {
-        let orders = response[type + 'Orders']
-        let i
-        if (!orders) {
-            orders = []
+    }, function (response: any) {
+        let orders: AnyAssetOrder[] = []
+        if (response[type + 'Orders']) {
+            orders = response[type + 'Orders']
         }
         let typeAction = 'buy'
         if (type === 'ask') {
@@ -575,25 +568,42 @@ function loadAssetOrders (type, assetId, refresh) {
         if (BRS.unconfirmedTransactions.length) {
             let added = false
 
-            for (i = 0; i < BRS.unconfirmedTransactions.length; i++) {
-                const unconfirmedTransaction = BRS.unconfirmedTransactions[i]
-                unconfirmedTransaction.order = unconfirmedTransaction.transaction
-
-                if (unconfirmedTransaction.type === 2 && (type === 'ask' ? unconfirmedTransaction.subtype === 2 : unconfirmedTransaction.subtype === 3) && unconfirmedTransaction.asset === assetId) {
-                    orders.push($.extend(true, {}, unconfirmedTransaction)) // make sure it's a deep copy
+            for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
+                if (unconfirmedTransaction.type === 2 &&
+                    (type === 'ask' ? unconfirmedTransaction.subtype === 2 : unconfirmedTransaction.subtype === 3) &&
+                    unconfirmedTransaction.attachment.asset === assetId
+                ) {
+                    // transform the current pending transaction into a supposed order.
+                    // Note: height, name, decimals and price are incorrect!!!
+                    orders.push({
+                        order: unconfirmedTransaction.transaction,
+                        asset: unconfirmedTransaction.attachment.asset,
+                        account: unconfirmedTransaction.sender,
+                        accountRS: unconfirmedTransaction.senderRS,
+                        quantityQNT: unconfirmedTransaction.attachment.quantityQNT,
+                        priceNQT: unconfirmedTransaction.attachment.priceNQT,
+                        height: 0,
+                        name: '',
+                        decimals: -1,
+                        price: '',
+                        type: unconfirmedTransaction.subtype === 2 ? 'ask' : 'bid'
+                    })
                     added = true
                 }
             }
 
             if (added) {
                 orders.sort(function (a, b) {
-                    if (type === 'ask') {
-                        // lowest price at the top
-                        return new BigInteger(a.priceNQT).compareTo(new BigInteger(b.priceNQT))
-                    } else {
+                    let invert = 1
+                    if (type === 'bid') {
                         // highest price at the top
-                        return new BigInteger(b.priceNQT).compareTo(new BigInteger(a.priceNQT))
+                        invert = -1
                     }
+                    const priceA = BigInt(a.priceNQT)
+                    const priceB = BigInt(b.priceNQT)
+                    if (priceA > priceB) return 1 * invert
+                    if (priceA < priceB) return -1 * invert
+                    return 0
                 })
             }
         }
@@ -607,103 +617,110 @@ function loadAssetOrders (type, assetId, refresh) {
             dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
             return
         }
+
         $(`#${typeAction}_orders_count`).html('(' + orders.length + (orders.length === 50 ? '+' : '') + ')')
 
         let rows = ''
         let first = true
         for (const order of orders) {
-            order.priceNQT = new BigInteger(order.priceNQT)
-            order.quantityQNT = new BigInteger(order.quantityQNT)
-            order.totalNQT = new BigInteger(calculateOrderTotalNQT(order.quantityQNT, order.priceNQT))
+            const totalNQT = calculateOrderTotalNQT(order.quantityQNT, order.priceNQT)
 
             if (first && !refresh) {
                 $(`#${typeAction}_asset_price`).val(formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals))
             }
 
-            const className = (order.account === BRS.account ? 'your-order' : '') + (order.unconfirmed ? ' tentative' : (isUserCancelledOrder(order) ? ' tentative tentative-crossed' : ''))
+            const toBeCancelled = hasCancelOrder(order)
+            let className = '';
+            if (order.account === BRS.account) {
+                className += 'your-order';
+            }
+            if (order.height === 0) {
+                className += ' text-muted';
+            }
+            if (toBeCancelled) {
+                className += ' text-line-through';
+            }
 
             let accountHTML = ''
-            if (order.unconfirmed) {
-                accountHTML = `${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong>`
-            } else if (order.account === BRS.account) {
-                accountHTML = `<strong>${$.t('you')}</strong>`
-            } else {
-                accountHTML = "<a href='#' data-user='" + getAccountFormatted(order, 'account') + "' class='user_info'>"
-                if (order.account === BRS.currentAsset.account) {
-                    accountHTML += $.t('asset_issuer')
-                } else {
-                    accountHTML += getAccountTitle(order, 'account')
-                }
-                accountHTML += '</a>'
+            if (order.height === 0 || toBeCancelled) {
+                accountHTML = BRS.pendingTransactionHTML + '&nbsp;'
             }
+            if (order.account === BRS.currentAsset.account) {
+                accountHTML += $.t('asset_issuer')
+            } else {
+                accountHTML += getAccountTitle(order, 'account')
+            }
+            accountHTML = `<a href='#' data-user='${getAccountFormatted(order, 'account')}' class='user_info'>${accountHTML}</a>`
 
             rows += `
                 <tr class='${className}'
-                    data-transaction='${order.order}'
-                    data-quantity='${order.quantityQNT.toString()}'
-                    data-price='${order.priceNQT.toString()}'>`
+                  data-transaction='${order.order}'
+                  data-quantity='${order.quantityQNT.toString()}'
+                  data-price='${order.priceNQT.toString()}'>`
             if (type === 'ask') {
                 rows += `
-                    <td class='bold red-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
-                    <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
-                    <td>${formatNQTAsAmount(order.totalNQT)}</td>
-                    <td>${accountHTML}</td>`
+                  <td class='bold red-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
+                  <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
+                  <td>${formatNQTAsAmount(totalNQT)}</td>
+                  <td>${accountHTML}</td>
+                </tr>`
             } else {
                 rows += `
-                    <td>${accountHTML}</td>
-                    <td>${formatNQTAsAmount(order.totalNQT)}</td>
-                    <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
-                    <td class='bold green-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>`
+                  <td>${accountHTML}</td>
+                  <td>${formatNQTAsAmount(totalNQT)}</td>
+                  <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
+                  <td class='bold green-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
+                </tr>`
             }
-            rows += '</tr>'
             first = false
         }
 
         $(`#asset_exchange_${type}_orders_table tbody`).html(rows)
-
         dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
     })
 }
 
-function isUserCancelledOrder (order) {
-    if (BRS.unconfirmedTransactions.length) {
-        for (let i = 0; i < BRS.unconfirmedTransactions.length; i++) {
-            const unconfirmedTransaction = BRS.unconfirmedTransactions[i]
-
-            if (unconfirmedTransaction.type === 2 && (order.type === 'ask' ? unconfirmedTransaction.subtype === 4 : unconfirmedTransaction.subtype === 5) && unconfirmedTransaction.attachment.order === order.order) {
-                return true
-            }
+function hasCancelOrder (order: AnyAssetOrder) {
+    if (!BRS.unconfirmedTransactions.length) {
+        return false
+    }
+    for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
+        if (unconfirmedTransaction.type === 2 &&
+            (order.type === 'ask' ? unconfirmedTransaction.subtype === 4 : unconfirmedTransaction.subtype === 5) &&
+            unconfirmedTransaction.attachment.order === order.order
+        ) {
+            return true
         }
     }
-
     return false
 }
 
-export function evAssetExchangeSearchInput () {
-    const input = $.trim($(this).val()).toUpperCase()
+export function evAssetExchangeSearchInput (e: JQuery.TriggeredEvent) {
+    let input: string = $(e.target).val()
+    input = input.toUpperCase()
 
     if (!input) {
         BRS.assetSearch = false
         loadAssetExchangeSidebar()
         $('#asset_exchange_clear_search').hide()
-    } else {
-        BRS.assetSearch = []
-
-        for (const asset of BRS.assets) {
-            if (asset.bookmarked === true &&
-                    (asset.account === input || asset.asset === input || asset.name.toUpperCase().includes(input) || asset.accountRS.includes(input))) {
-                BRS.assetSearch.push(asset.asset)
-            }
-        };
-
-        loadAssetExchangeSidebar()
-        $('#asset_exchange_clear_search').show()
+        return
     }
+
+    BRS.assetSearch = []
+    for (const asset of BRS.assets) {
+        if (asset.bookmarked === true &&
+            (asset.account === input || asset.asset === input || asset.name.toUpperCase().includes(input) || asset.accountRS.includes(input))
+        ) {
+            BRS.assetSearch.push(asset.asset)
+        }
+    };
+
+    loadAssetExchangeSidebar()
+    $('#asset_exchange_clear_search').show()
 }
 
-export function evAssetExchangeOrdersTableClick (e) {
+export function evAssetExchangeOrdersTableClick (e: JQuery.ClickEvent) {
     const $target = $(e.target)
-    let totalNQT
     if ($target.prop('tagName').toLowerCase() === 'a') {
         return
     }
@@ -712,26 +729,18 @@ export function evAssetExchangeOrdersTableClick (e) {
 
     const $tr = $target.closest('tr')
 
-    try {
-        const priceNQT = new BigInteger(String($tr.data('price')))
-        const quantityQNT = new BigInteger(String($tr.data('quantity')))
-        totalNQT = new BigInteger(calculateOrderTotalNQT(quantityQNT, priceNQT))
+    const priceNQT = String($tr.data('price'))
+    const quantityQNT = String($tr.data('quantity'))
+    const totalNQT = calculateOrderTotalNQT(quantityQNT, priceNQT)
 
-        $('#' + type + '_asset_price').val(formatPriceNQTAsPriceQuantity(priceNQT, BRS.currentAsset.decimals))
-        $('#' + type + '_asset_quantity').val(formatQNTAsQuantity(quantityQNT, BRS.currentAsset.decimals))
-        $('#' + type + '_asset_total').val(formatNQTAsAmount(totalNQT))
-    } catch {
-        return
-    }
-    let balanceNQT
+    $('#' + type + '_asset_price').val(formatPriceNQTAsPriceQuantity(priceNQT, BRS.currentAsset.decimals))
+    $('#' + type + '_asset_quantity').val(formatQNTAsQuantity(quantityQNT, BRS.currentAsset.decimals))
+    $('#' + type + '_asset_total').val(formatNQTAsAmount(totalNQT))
+
     if (type === 'sell') {
-        try {
-            balanceNQT = new BigInteger(BRS.accountInfo.unconfirmedBalanceNQT)
-        } catch {
-            return
-        }
+        const balanceNQT = BRS.accountInfo.unconfirmedBalanceNQT ?? '0'
 
-        if (totalNQT.compareTo(balanceNQT) > 0) {
+        if (BigInt(totalNQT) > BigInt(balanceNQT)) {
             $('#' + type + '_asset_total').css({
                 background: '#ED4348',
                 color: 'white'
@@ -752,177 +761,34 @@ export function evAssetExchangeOrdersTableClick (e) {
     }
 }
 
-export function evSellBuyAutomaticPriceClick () {
+export function evCalculatePricePreviewInput (e: JQuery.TriggeredEvent) {
+    const orderType = $(e.target).data('type').toLowerCase()
+    $('#' + orderType + '_asset_total').val($.t('error'))
+    let quantityQNT:string
+    let priceNQT: string
     try {
-        const type = ($(this).attr('id') === 'sell_automatic_price' ? 'sell' : 'buy')
-        const assetMult = BigInt('1'.padEnd(BRS.currentAsset.decimals + 1, '0'))
-        const userInputPrice = $('#' + type + '_asset_price').val()
-        let priceNQT = BigInt(parseAmountToNQT(userInputPrice === '' ? '0' : userInputPrice)) / assetMult
-        const balance = BigInt(type === 'buy' ? BRS.accountInfo.unconfirmedBalanceNQT : BRS.currentAsset.yourBalanceNQT)
-        const balanceNQT = BigInt(BRS.accountInfo.unconfirmedBalanceNQT)
-        const maxQuantity = BigInt(BRS.currentAsset.quantityCirculatingQNT)
-
-        if (priceNQT === 0n) {
-            // get minimum price if no offers exist, based on asset decimals..
-            priceNQT = assetMult
-            $('#' + type + '_asset_price').val(formatNQTAsAmount(priceNQT))
-        }
-        let quantityQNT = (type === 'buy' ? balanceNQT / priceNQT : balance)
-        if (quantityQNT > maxQuantity) {
-            quantityQNT = maxQuantity
-        }
-        if (type === 'sell') {
-            const maxUserQuantity = balance
-            if (maxUserQuantity > quantityQNT) {
-                quantityQNT = maxQuantity
-            }
-        }
-        const total = quantityQNT * priceNQT
-
-        $('#' + type + '_asset_quantity').val(formatQNTAsQuantity(quantityQNT, BRS.currentAsset.decimals))
-        $('#' + type + '_asset_total').val(formatNQTAsAmount(total.toString()))
-        $('#' + type + '_asset_total').css({
-            background: '',
-            color: ''
-        })
-    } catch {}
-}
-
-function isControlKey (charCode) {
-    if (charCode >= 32) {
-        return false
-    }
-    if (charCode === 10) {
-        return false
-    }
-    if (charCode === 13) {
-        return false
-    }
-
-    return true
-}
-
-export function evAssetExchangeQuantityPriceKeydown(e) {
-    const currentValue = $(this).val()
-    const cleanedValue = currentValue.replace(
-        new RegExp('[^0-9' + BRS.decimalSign + ']', 'g'),
-        ''
-    )
-    if (cleanedValue !== currentValue) {
-        // Update the input value and position cursor at end
-        $(this).val(cleanedValue)
-        this.selectionEnd = cleanedValue.length
-        // Prevent the original character from being added
-        e.preventDefault()
-        return false
-    }
-
-    // Get the character code from the event
-    const charCode = !e.charCode ? e.which : e.charCode
-    const enteredChar = e.key
-
-    // Allow control keys (like Tab, Escape, etc.)
-    if (isControlKey(charCode) || e.ctrlKey || e.metaKey) {
+        quantityQNT = parseQuantityToQNT(String($('#' + orderType + '_asset_quantity').val()), BRS.currentAsset.decimals)
+    } catch (e) {
+        $('#' + orderType + '_asset_quantity').addClass('is-invalid')
+        $.notify((e as Error).message)
         return
     }
-
-    // Check if this is the quantity field (vs price field)
-    const isQuantityField = /_quantity/i.test($(this).attr('id'))
-
-    // Determine max decimal places allowed:
-    // - For quantity: use asset's decimals
-    // - For price: use 8 minus asset's decimals (since total must be <= 8)
-    const maxFractionLength = (isQuantityField ? BRS.currentAsset.decimals : 8 - BRS.currentAsset.decimals)
-
-    if (maxFractionLength) {
-        // Allow the configured decimal sign
-        if (enteredChar === BRS.decimalSign) {
-            // If there's already a decimal point in the value, prevent adding another one
-            if ($(this).val().indexOf(BRS.decimalSign) !== -1) {
-                e.preventDefault()
-                return false
-            } else {
-                return  // Allow this decimal sign
-            }
-        }
-    } else {
-        // If no decimals allowed (maxFractionLength = 0), block the decimal sign
-        if (enteredChar === BRS.decimalSign) {
-            $.notify($.t('error_fractions'), { type: 'danger' })
-            e.preventDefault()
-            return false
-        }
-    }
-
-    // Create a test string by adding the new character to current value
-    const input = $(this).val() + enteredChar;
-
-    // Check how many digits are after the decimal point (using regex with dynamic decimal sign)
-    const afterComma = input.match(new RegExp('\\' + BRS.decimalSign + '(\\d*)$'))
-
-    // If there are more decimal places than allowed, check if user is selecting text
-    if (afterComma && afterComma[1].length > maxFractionLength) {
-        const selectedText = getSelectedText()
-
-        // Only block if user isn't trying to select/modify existing digits
-        if (selectedText !== $(this).val()) {
-            let errorMessage
-
-            if (isQuantityField) {
-                errorMessage = $.t('error_asset_decimals', {
-                    count: (0 + BRS.currentAsset.decimals)
-                })
-            } else {
-                errorMessage = $.t('error_decimals', {
-                    count: (8 - BRS.currentAsset.decimals)
-                })
-            }
-
-            $.notify(errorMessage, { type: 'danger' })
-            e.preventDefault()
-            return false
-        }
-    }
-
-    // Allow these specific keys:
-    // charCode 8 = Backspace
-    // charCode 37 = Left arrow
-    // charCode 39 = Right arrow
-    // charCode 46 = Delete
-    // charCodes 48-57 = Number keys 0-9 on main keyboard (charCode 48 = '0', charCode 57 = '9')
-    // charCodes 96-105 = Number keys 0-9 on numpad (charCode 96 = '0' on numpad, charCode 105 = '9' on numpad)
-    if (charCode === 8 || charCode === 37 || charCode === 39 || charCode === 46 ||
-        (charCode >= 48 && charCode <= 57) || (charCode >= 96 && charCode <= 105)) {
+    try {
+        priceNQT = parsePriceQuantityToPriceNQT($('#' + orderType + '_asset_price').val(), BRS.currentAsset.decimals)
+    } catch (e) {
+        $('#' + orderType + '_asset_price').addClass('is-invalid')
+        $.notify((e as Error).message)
         return
     }
-    e.preventDefault()
-    return false
+    const total = formatOrderTotal(quantityQNT, priceNQT)
+    $('#' + orderType + '_asset_total').val(total.toString())
 }
 
-// calculate preview price (calculated on every keypress)
-export function evCalculatePricePreviewKeyup () {
-    const orderType = $(this).data('type').toLowerCase()
-
-    try {
-        const quantityQNT = parseQuantityToQNT(String($('#' + orderType + '_asset_quantity').val()), BRS.currentAsset.decimals)
-        const priceNQT = parsePriceQuantityToPriceNQT($('#' + orderType + '_asset_price').val(), BRS.currentAsset.decimals)
-
-        if (priceNQT.toString() === '0' || quantityQNT.toString() === '0') {
-            $('#' + orderType + '_asset_total').val('0')
-        } else {
-            const total = formatOrderTotal(quantityQNT, priceNQT, BRS.currentAsset.decimals)
-            $('#' + orderType + '_asset_total').val(total.toString())
-        }
-    } catch {
-        $('#' + orderType + '_asset_total').val('0')
-    }
-}
-
-export function formsOrderAssetComplete (response, data) {
+export function formsOrderAssetComplete (response: PostResponse, data: any) {
     if (response.alreadyProcessed) {
         return
     }
-    let $table
+    let $table: JQuery<HTMLElement>
     if (data.requestType === 'placeBidOrder') {
         $table = $('#asset_exchange_bid_orders_table tbody')
     } else {
@@ -935,41 +801,40 @@ export function formsOrderAssetComplete (response, data) {
 
     const $rows = $table.find('tr')
 
-    data.quantityQNT = new BigInteger(data.quantityQNT)
-    data.priceNQT = new BigInteger(data.priceNQT)
-    data.totalNQT = new BigInteger(calculateOrderTotalNQT(data.quantityQNT, data.priceNQT))
+    const totalNQT = calculateOrderTotalNQT(data.quantityQNT, data.priceNQT)
 
     let rowToAdd = `
         <tr class='tentative'
-            data-transaction='${response.transaction}'
-            data-quantity='${data.quantityQNT.toString()}'
-            data-price='${data.priceNQT.toString()}'>`
+          data-transaction='${response.transaction}'
+          data-quantity='${data.quantityQNT.toString()}'
+          data-price='${data.priceNQT.toString()}'>`
     if (data.requestType === 'placeBidOrder') {
         rowToAdd += `
-            <td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>
-            <td>${formatNQTAsAmount(data.totalNQT)}</td>
-            <td>${formatQNTAsQuantity(data.quantityQNT, BRS.currentAsset.decimals)}</td>
-            <td>${formatPriceNQTAsPriceQuantity(data.priceNQT, BRS.currentAsset.decimals)}</td>`
+          <td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>
+          <td>${formatNQTAsAmount(totalNQT)}</td>
+          <td>${formatQNTAsQuantity(data.quantityQNT, BRS.currentAsset.decimals)}</td>
+          <td>${formatPriceNQTAsPriceQuantity(data.priceNQT, BRS.currentAsset.decimals)}</td>
+        </tr>`
     } else {
         rowToAdd += `
-            <td>${formatPriceNQTAsPriceQuantity(data.priceNQT, BRS.currentAsset.decimals)}</td>
-            <td>${formatQNTAsQuantity(data.quantityQNT, BRS.currentAsset.decimals)}</td>
-            <td>${formatNQTAsAmount(data.totalNQT)}</td>
-            <td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>`
+          <td>${formatPriceNQTAsPriceQuantity(data.priceNQT, BRS.currentAsset.decimals)}</td>
+          <td>${formatQNTAsQuantity(data.quantityQNT, BRS.currentAsset.decimals)}</td>
+          <td>${formatNQTAsAmount(totalNQT)}</td>
+          <td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>
+        </tr>`
     }
-    rowToAdd += '</tr>'
 
     let rowAdded = false
 
     if ($rows.length) {
         $rows.each(function () {
-            const rowPrice = new BigInteger(String($(this).data('price')))
+            const rowPrice = BigInt($(this).data('price'))
 
-            if (data.requestType === 'placeBidOrder' && data.priceNQT.compareTo(rowPrice) > 0) {
+            if (data.requestType === 'placeBidOrder' && BigInt(data.priceNQT) > rowPrice) {
                 $(this).before(rowToAdd)
                 rowAdded = true
                 return false
-            } else if (data.requestType === 'placeAskOrder' && data.priceNQT.compareTo(rowPrice) < 0) {
+            } else if (data.requestType === 'placeAskOrder' && BigInt(data.priceNQT) < rowPrice) {
                 $(this).before(rowToAdd)
                 rowAdded = true
                 return false
@@ -983,17 +848,19 @@ export function formsOrderAssetComplete (response, data) {
     }
 }
 
-export function evAssetExchangeSidebarContextClick (e) {
+export function evAssetExchangeSidebarContextClick (e: JQuery.ClickEvent) {
     e.preventDefault()
 
+    if (!BRS.selectedContext) return
+
     const assetId = BRS.selectedContext.data('asset')
-    const option = $(this).data('option')
+    const option = $(e.target).data('option')
 
     closeContextMenu()
 
     const asset = BRS.assets.find(tkn => tkn.asset === assetId)
     if (!asset) {
-        console.log('OPA!')
+        console.error('OPA!')
         return
     }
 
@@ -1040,7 +907,7 @@ export function evAssetExchangeSidebarContextClick (e) {
     }
 }
 
-export function goToAsset (asset) {
+export function goToAsset (asset: string) {
     if (BRS.currentPage !== 'asset_exchange') {
         goToPage('asset_exchange')
     }
@@ -1062,11 +929,11 @@ export function goToAsset (asset) {
     }
     sendRequest('getAsset+', {
         asset
-    }, function (response) {
+    }, function (response: GetAssetResponse) {
         if (!response.errorCode) {
-            cacheAsset(response)
+            const addedAsset = cacheAsset(response)
             loadAssetExchangeSidebar(function () {
-                loadAsset(response, true, false)
+                loadAsset(addedAsset, true, false)
             })
             return
         }

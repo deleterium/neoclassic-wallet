@@ -364,6 +364,33 @@ export interface GetBidOrdersResponse {
     errorDescription?: string;
 }
 
+export interface Trade {
+    timestamp: number;
+    quantityQNT: string;
+    priceNQT: string;
+    asset: string;
+    askOrder: string;
+    bidOrder: string;
+    askOrderHeight: number;
+    seller: string;
+    sellerRS: string;
+    buyer: string;
+    buyerRS: string;
+    block: string;
+    height: number;
+    tradeType: "buy" | "sell";
+    name: string;
+    decimals: number;
+    price: string;
+}
+
+export interface GetTradesResponse {
+    trades: Trade[];
+    nextIndex?: number,
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 // region Alias
 
 export interface Alias {

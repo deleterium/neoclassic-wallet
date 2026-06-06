@@ -129,7 +129,6 @@ import { pagesSearchResults } from './brs.search'
 import { formsClearData } from './brs.modal.cleardata'
 
 import {
-    AssetDetails,
     BlockchainStatus,
     BrsSettings,
     DBAsset,
@@ -339,8 +338,8 @@ export const BRS = {
     // from assetexchange
     assets: [] as DBAsset[],
     closedGroups: [] as string[],
-    assetSearch: false,
-    currentAsset: {} as AssetDetails,
+    assetSearch: false as false | string[],
+    currentAsset: {} as DBAsset,
     currentAssetID: 'undefined',
 
     // from transactions

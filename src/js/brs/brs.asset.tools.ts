@@ -108,7 +108,7 @@ export function cacheUserAssets() {
  *
  * @param {Object} asset - The asset object from the server response.
  */
-export function cacheAsset(asset: GetAssetResponse) {
+export function cacheAsset(asset: GetAssetResponse) : DBAsset {
     const foundAsset = BRS.assets.find((tkn) => tkn.asset === asset.asset)
     if (foundAsset) {
         // update info
@@ -124,5 +124,6 @@ export function cacheAsset(asset: GetAssetResponse) {
         groupName: ''
     }
 
-    BRS.assets.push(assetToCache)
+    const newItem = BRS.assets.push(assetToCache) - 1
+    return BRS.assets[newItem]
 }
