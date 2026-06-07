@@ -361,7 +361,10 @@ export function pageLoading () : void {
     $pageHeader.find('.loading_dots').remove()
     $pageHeader.append("<span class='loading_dots'>" + BRS.loadingDotsHTML + '</span>')
     const $pageContainer = $('#' + BRS.currentPage + '_page .data-container')
-    $pageContainer.addClass('data-loading')
+    if (BRS.currentSubPage === '') {
+        // Only redraw entire page if there is no subpage.
+        $pageContainer.addClass('data-loading')
+    }
 }
 
 export function pageLoaded (callback?: () => void) {
