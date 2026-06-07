@@ -23,12 +23,15 @@ export function formsClearData (data: any) {
 
     if (data.contacts) {
         drop('contacts', onDropped)
+        BRS.contacts = {}
     }
     if (data.assets) {
         drop('assets', onDropped)
+        BRS.assets = []
     }
     if (data.settings) {
         drop('data', onDropped)
+        BRS.settings = BRS.defaultSettings
         localStorage.removeItem('i18next_lng')
         localStorage.removeItem('logged_in')
         localStorage.removeItem('burst.node')
