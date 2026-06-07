@@ -1,6 +1,7 @@
 import { BRS } from '.'
 
 import {
+    addPagination,
     goToPage,
     pageLoaded
 } from './brs'
@@ -48,6 +49,10 @@ import {
 } from '../typings'
 
 export function pagesAssetExchange (callback: () => void) {
+    if (BRS.currentSubPage) {
+        updateMiniTradeHistory()
+        return
+    }
     $('#asset_details').hide()
     loadAssetExchangeSidebar(callback)
 }
@@ -524,13 +529,17 @@ export function updateMiniTradeHistory () {
     sendRequest('getTrades+', {
         asset: BRS.currentAsset.asset,
         account: myTrades ? BRS.account : '',
-        firstIndex: 0,
-        lastIndex: 49
+        firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
+        lastIndex: BRS.pageSize * BRS.pageNumber,
     }, function (response: GetTradesResponse) {
         if (!response.trades || !response.trades.length) {
             $('#asset_exchange_trade_history_table tbody').empty()
             dataLoadFinished($('#asset_exchange_trade_history_table'), true)
             return
+        }
+        if (response.trades.length > BRS.pageSize) {
+            BRS.hasMorePages = true
+            response.trades.pop()
         }
         let rows = ''
         for (const trade of response.trades) {
@@ -547,6 +556,7 @@ export function updateMiniTradeHistory () {
         }
         $('#asset_exchange_trade_history_table tbody').empty().append(rows)
         dataLoadFinished($('#asset_exchange_trade_history_table'), true)
+        addPagination()
     })
 }
 
