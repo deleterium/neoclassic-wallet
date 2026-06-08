@@ -162,7 +162,7 @@ export function sendRequest (requestType, data, callback, async) {
 
     // check to see if secretPhrase supplied matches logged in account, if not - show error.
     if ('secretPhrase' in data) {
-        const accountId = getAccountId(BRS.rememberPassword ? BRS._password : data.secretPhrase)
+        const accountId = getAccountId(getSavedPassword() || data.secretPhrase)
         if (accountId !== BRS.account) {
             if (callback) {
                 callback({
@@ -234,11 +234,7 @@ export function processAjaxRequest (requestType, data, callback, async) {
     }
 
     if (type === 'POST') {
-        if (BRS.rememberPassword) {
-            secretPhrase = BRS._password
-        } else {
-            secretPhrase = data.secretPhrase
-        }
+        secretPhrase = getSavedPassword() || data.secretPhrase
         delete data.secretPhrase
 
         if (BRS.accountInfo && BRS.accountInfo.publicKey) {

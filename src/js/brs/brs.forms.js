@@ -455,7 +455,7 @@ export async function submitForm ($btn) {
         }
     }
 
-    if ('secretPhrase' in data && !data.secretPhrase.length && !BRS.rememberPassword) {
+    if ('secretPhrase' in data && !data.secretPhrase.length && !BRS.settings.remember_passphrase) {
         endWithError($.t('error_passphrase_required'))
         return
     }

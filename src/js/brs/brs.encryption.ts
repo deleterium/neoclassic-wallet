@@ -253,7 +253,7 @@ export function setDecryptionPassword (password: string) : void {
 }
 
 export function getDecryptionPassword () : string | undefined {
-    if (BRS.rememberPassword) {
+    if (BRS._password) {
         return BRS._password
     }
     if (BRS._decryptionPassword) {

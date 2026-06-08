@@ -192,7 +192,6 @@ export const BRS = {
     downloadingBlockchain: false, // More than 4 days from last block
     rescaningBlockchain: false, // More than 1 hour from last block
 
-    rememberPassword: false,
     selectedContext: null as null | JQuery<HTMLElement>,
 
     // Used by 'pages' logic and RequestController
