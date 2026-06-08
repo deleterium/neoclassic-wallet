@@ -108,12 +108,7 @@ export function init () : void {
         showLockscreen()
     }, 250)
 
-    setStateInterval(30)
-
     automaticallyCheckRecipient()
-
-    setInterval(setHeaderClock, 1000)
-
 }
 
 export function setStateInterval (seconds: number) : void {
@@ -124,9 +119,7 @@ export function setStateInterval (seconds: number) : void {
         clearInterval(BRS.stateInterval)
     }
     BRS.stateIntervalSeconds = seconds
-    BRS.stateInterval = setInterval(function () {
-        getState()
-    }, 1000 * seconds)
+    BRS.stateInterval = setInterval(checkBlocksAndTransactions, 1000 * seconds)
 }
 
 /**
@@ -226,8 +219,8 @@ export function secondsToDuration(durationInSeconds: number) {
     }
 }
 
-function setHeaderClock () : void {
-    if (!BRS.durationFormatter || !BRS.blockchainStatus.lastBlockTimestamp) {
+export function setHeaderClock () : void {
+    if (!BRS.durationFormatter || !BRS.blockchainStatus?.lastBlockTimestamp) {
         return
     }
     const lastBlockDate = new Date((BRS.genesisSeconds + BRS.blockchainStatus.lastBlockTimestamp) * 1000)

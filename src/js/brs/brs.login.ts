@@ -7,7 +7,7 @@ import { BRS } from '.'
 import {
     getAccountInfo,
     checkLocationHash,
-    setStateInterval,
+    setHeaderClock,
 } from './brs'
 
 import {
@@ -307,6 +307,8 @@ function unlock () {
     $('#main_wrapper').show()
 
     $('#login_error').html('').hide()
+
+    setInterval(setHeaderClock, 1000)
 
     $(document.documentElement).scrollTop(0)
 }
