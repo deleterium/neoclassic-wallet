@@ -58,6 +58,8 @@ export function handleNewBlocks () {
  * @returns 
  */
 function checkSyncProcess() {
+    if (!BRS.blockchainStatus) return
+
     const secondsBehind = BRS.blockchainStatus.time - BRS.blocks[0].timestamp
 
     if (secondsBehind > 60 * 60 * 24  * 4) {
@@ -92,7 +94,7 @@ function checkSyncProcess() {
 
 function updateBlockchainDownloadProgress () : void {
     let percentage = 0
-    if (BRS.blockchainStatus.numberOfBlocks && BRS.blockchainStatus.lastBlockchainFeederHeight) {
+    if (BRS.blockchainStatus?.numberOfBlocks && BRS.blockchainStatus.lastBlockchainFeederHeight) {
         percentage = Math.trunc((BRS.blockchainStatus.numberOfBlocks / BRS.blockchainStatus.lastBlockchainFeederHeight) * 100)
     }
     $('#downloading_blockchain .progress-bar').css('width', percentage + '%')

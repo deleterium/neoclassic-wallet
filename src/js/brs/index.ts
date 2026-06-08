@@ -147,7 +147,7 @@ import { RequestController } from './brs.requestcontroller'
 export const BRS = {
     version: '1.0.0',
     server: '',
-    blockchainStatus: {} as BlockchainStatus,
+    blockchainStatus: undefined as undefined | BlockchainStatus,
     blocks: [] as GetBlockResponse[],
     genesis: '0',
     genesisRS: 'S-2222-2222-2222-22222',

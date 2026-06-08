@@ -271,6 +271,11 @@ export function evLoginButtonClick (e?: JQuery.ClickEvent) {
         e.preventDefault()
     }
 
+    if (!BRS.blockchainStatus) {
+        $.notify($.t('could_not_connect_to', { server: BRS.server }))
+        return
+    }
+
     const passwd = $('#login_password').val() as string
     if (passwd !== '') {
         loginWithPassphrase(passwd)

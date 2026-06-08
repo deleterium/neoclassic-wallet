@@ -137,9 +137,18 @@ export function checkSelectedNode () : void {
     if (preferedNode !== BRS.server) {
         // Update Variables
         BRS.server = preferedNode
+        BRS.currentPage = 'lockscreen'
+        BRS.currentSubPage = preferedNode
         BRS.blocks = []
+        BRS.blockchainStatus = undefined
+
+        $('#node_alert').show()
+        $('#node_alert').html(BRS.server)
+        $('#brs_version, #brs_version_dashboard').html(BRS.loadingDotsHTML).addClass('loading_dots')
+        $('#prefered_node').addClass('is-invalid')
+
         // Server changed, get new network details
-        sendRequest('getConstants', function (response) {
+        sendRequest('getConstants+', function (response) {
             if (response.errorCode) {
                 return
             }
@@ -238,55 +247,30 @@ function setHeaderClock () : void {
 }
 
 /**
- * Runs constantly to check blockchain details, conections 
+ * Runs in lockscreen, while not logged. 
  * @param callback 
  */
-export function getState (callback?: () => void) : void {
+export function getState () : void {
     checkSelectedNode()
-
-    sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse) {
+    sendRequest('getBlockchainStatus+', function (response: GetBlochainStatusResponse) {
         if (response.errorCode) {
-            if (response.errorCode === -1) {
-                if (BRS.settings.automatic_node_selection) {
-                    autoSelectServer()
-                    return
-                }
-                $('#node_alert').show()
-                $('#node_alert').html($.t('could_not_connect_to', { server: BRS.server }))
-                $('#brs_version, #brs_version_dashboard').html(BRS.loadingDotsHTML).removeClass('loading_dots')
+            if (BRS.settings.automatic_node_selection) {
+                autoSelectServer()
+                return
             }
+            $('#node_alert').show()
+            $('#node_alert').html($.t('could_not_connect_to', { server: BRS.server }))
+            $('#brs_version, #brs_version_dashboard').html(BRS.loadingDotsHTML).removeClass('loading_dots')
+            $('#prefered_node').addClass('is-invalid')
             return
         }
         $('#node_alert').hide()
-        const previousLastBlock = BRS.blockchainStatus.lastBlock ||  '0'
-
         BRS.blockchainStatus = response
-
-        $('#brs_version').html(BRS.blockchainStatus.version + ' on ' + BRS.server).removeClass('loading_dots')
-        $('#brs_version_dashboard').html(BRS.blockchainStatus.version).removeClass('loading_dots')
-        $('#header_current_block').html('#' + BRS.blockchainStatus.numberOfBlocks)
-
-        if (previousLastBlock !== BRS.blockchainStatus.lastBlock) {
-            // New block in chain!
-            handleNewBlocks()
-            if (BRS.account) {
-                getAccountInfo(false, cacheUserAssets)
-                getNewTransactions()
-            }
-        } else {
-            if (BRS.account) {
-                getUnconfirmedTransactions(function (unconfirmedTransactions) {
-                    handleIncomingTransactions(unconfirmedTransactions, false)
-                })
-            }
-        }
-
-        if (callback) {
-            callback()
-        }
+        $('#brs_version').html(response.version + ' on ' + BRS.server).removeClass('loading_dots')
+        $('#brs_version_dashboard').html(response.version).removeClass('loading_dots')
+        $('#header_current_block').html('#' + response.numberOfBlocks)
+        $('#prefered_node').removeClass('is-invalid')
     })
-
-    saveCachedAssets()
 }
 
 /**
@@ -306,6 +290,36 @@ export function evSidebarClick (e: JQuery.ClickEvent) : void {
     $('#sidebar .active').removeClass('active')
     $(e.currentTarget).addClass('active')
     loadPage(page)
+}
+
+/**
+ * Runs constantly to check blockchain details, conections 
+ * @param callback 
+ */
+export function checkBlocksAndTransactions () : void {
+    sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse) {
+        if (response.errorCode) {
+            $.notify($.t('could_not_connect_to', { server: BRS.server }))
+            return
+        }
+        const previousLastBlock = BRS.blockchainStatus?.lastBlock ||  '0'
+        BRS.blockchainStatus = response
+        if (previousLastBlock !== BRS.blockchainStatus.lastBlock) {
+            // New block in chain!
+            handleNewBlocks()
+            if (BRS.account) {
+                getAccountInfo(false, cacheUserAssets)
+                getNewTransactions()
+            }
+        } else {
+            if (BRS.account) {
+                getUnconfirmedTransactions(function (unconfirmedTransactions) {
+                    handleIncomingTransactions(unconfirmedTransactions, false)
+                })
+            }
+        }
+    })
+    saveCachedAssets()
 }
 
 /** Load a page for first time (setting up global variables) */
