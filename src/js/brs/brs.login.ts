@@ -41,7 +41,7 @@ import {
 
 import {
     getInitialTransactions
-} from './brs.transactions'
+} from './brs.checkincoming'
 
 import PassPhraseGenerator from './brs.passphrase.generator'
 import { GetAccountPublicKeyResponse, GetAccountResponse } from '../typings'

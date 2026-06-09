@@ -1,7 +1,10 @@
 import { BRS } from '.'
 
 import {
-    setStateInterval,
+    setStateInterval
+} from './brs.checkincoming'
+
+import {
     reloadCurrentPage,
 } from './brs'
 

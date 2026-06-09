@@ -3,163 +3,31 @@
  */
 
 import { BRS } from '.'
+
 import { NxtAddress } from '../util/nxtaddress'
 
 import {
-    reloadCurrentPage,
     getAccountInfo
 } from './brs'
 
 import { sendRequest } from './brs.server'
 
-import { getContactByName } from './brs.contacts'
-
 import {
     formatQNTAsQuantity,
     formatNQTAsAmount,
-    formatTimestampAsDateTime,
-    formatNumber
 } from './brs.numbers'
 
 import {
     convertRSAccountToNumeric,
     getAccountLink,
-    getAccountTitle,
-    dataLoaded,
-    getUnconfirmedTransactionsFromCache
+    getAccountTitle
 } from './brs.util'
 
 import { getAssetDetails } from './brs.asset.tools'
 
-export function getInitialTransactions () {
-    BRS.checkIncoming.forceDashboardUpdate = true
-    fetchAndHandleLatestTransactions()
-}
-
-/* New block detected, start looking for transaction changes */
-export function getNewTransactions () {
-    // check if there is a new transaction..
-    sendRequest('getAccountTransactionIds', {
-        account: BRS.account,
-        timestamp: BRS.blocks[0].timestamp + 1,
-        firstIndex: 0,
-        lastIndex: 0
-    }, function (response) {
-        if (response.transactionIds && response.transactionIds.length) {
-            BRS.checkIncoming.newTransactions = true
-            fetchAndHandleLatestTransactions()
-        } else {
-            addUnconfirmedAndHandleIncoming([])
-        }
-    })
-}
-
-function fetchAndHandleLatestTransactions () {
-    sendRequest('getAccountTransactions', {
-        account: BRS.account,
-        firstIndex: 0,
-        lastIndex: 9,
-        includeIndirect: true
-    }, function (response) {
-        if (response.transactions && response.transactions.length) {
-            BRS.checkIncoming.latestsTransactionsIds = response.transactions.map(tr => tr.transaction)
-            addUnconfirmedAndHandleIncoming(response.transactions)
-        } else {
-            addUnconfirmedAndHandleIncoming([])
-        }
-    })
-}
-
-export function addUnconfirmedAndHandleIncoming (confirmedTransactions) {
-    sendRequest('getUnconfirmedTransactions', {
-        account: BRS.account,
-        includeIndirect: true
-    }, function (response) {
-        const sortedTransactions = response.unconfirmedTransactions?.sort((x, y) => y.timestamp - x.timestamp) || []
-
-        const transactionIdString = sortedTransactions.map(t => t.transaction).join()
-
-        BRS.checkIncoming.unconfirmedChanged = transactionIdString !== (BRS.checkIncoming.unconfirmedTransactionIds)
-        BRS.unconfirmedTransactions = sortedTransactions
-        BRS.checkIncoming.unconfirmedTransactionIds = transactionIdString
-
-        handleIncomingTransactions(confirmedTransactions.concat(sortedTransactions))
-    })
-}
-
-export function handleIncomingTransactions (transactions) {
-
-    transactions.sort((x, y) => y.timestamp - x.timestamp)
-
-    if (BRS.checkIncoming.newTransactions) {
-        $.notify('new_confirmed_transaction')
-    }
-    if (BRS.checkIncoming.unconfirmedChanged && !BRS.checkIncoming.newBlock) {
-        $.notify('new_unconfirmed_transaction')
-    }
-
-    if (BRS.checkIncoming.forceDashboardUpdate ||
-        BRS.checkIncoming.newTransactions ||
-        BRS.checkIncoming.unconfirmedChanged
-    ) {
-        incomingUpdateDashboardTransactions(transactions)
-    }
-    if (BRS.checkIncoming.newBlock || BRS.checkIncoming.unconfirmedChanged) {
-        if (BRS.incoming[BRS.currentPage]) {
-            BRS.incoming[BRS.currentPage](transactions)
-        }
-    }
-
-    // always unconfirmed transactions..
-    // if (BRS.currentPage === 'transactions' && BRS.transactionsPageType === 'unconfirmed') {
-    //     BRS.incoming.transactions()
-    // } else {
-    //     if (BRS.currentPage !== 'messages' && (!oldBlock || BRS.unconfirmedTransactionsChange)) {
-    //         if (BRS.incoming[BRS.currentPage]) {
-    //             BRS.incoming[BRS.currentPage](transactions)
-    //         }
-    //     }
-    // }
-    // // always call incoming for messages to enable message notifications
-    // if (!oldBlock || BRS.unconfirmedTransactionsChange) {
-    //     BRS.incoming.messages(transactions)
-    // }
-}
-
-// function sortArray (a, b) {
-//     return b.timestamp - a.timestamp
-// }
-
-export function incomingUpdateDashboardTransactions (newTransactions, unconfirmed) {
-    if (newTransactions.length) {
-        let onlyUnconfirmed = true
-
-        const rows = newTransactions.reduce((prev, currTr) => {
-            if (!currTr.unconfirmed) {
-                onlyUnconfirmed = false
-            }
-            return prev + getTransactionRowDashboardHTML(currTr)
-        }, '')
-
-        if (onlyUnconfirmed) {
-            $('#dashboard_transactions_table tbody tr.tentative').remove()
-            $('#dashboard_transactions_table tbody').prepend(rows)
-        } else {
-            $('#dashboard_transactions_table tbody').empty().append(rows)
-        }
-
-        const $parent = $('#dashboard_transactions_table').parent()
-
-        if ($parent.hasClass('data-empty')) {
-            $parent.removeClass('data-empty')
-            if ($parent.data('no-padding')) {
-                $parent.parent().addClass('no-padding')
-            }
-        }
-    } else if (unconfirmed) {
-        $('#dashboard_transactions_table tbody tr.tentative').remove()
-    }
-}
+import {
+    incomingUpdateDashboardTransactions
+} from './brs.dashboard.page'
 
 // todo: add to dashboard?
 export function addUnconfirmedTransaction (transactionId, callback) {
@@ -200,83 +68,6 @@ export function addUnconfirmedTransaction (transactionId, callback) {
         } else if (callback) {
             callback(false)
         }
-    })
-}
-
-export function pagesTransactions () {
-    function getFrom () {
-        const from = $('input[name=transactions_from_account]:checked').val()
-        if (from === 'me') {
-            return BRS.account
-        }
-        // from 'others'
-        const fromWho = $('#transaction_from_account_account').val().trim()
-        if (BRS.rsRegEx.test(fromWho) || BRS.idRegEx.test(fromWho)) {
-            return fromWho
-        }
-        const foundContact = getContactByName(fromWho)
-        if (foundContact) {
-            return foundContact.accountRS
-        }
-        return ''
-    }
-
-    const account = getFrom()
-    if (!account) {
-        $.notify(
-            $.t('name_not_in_contacts', { name: account }),
-            { type: 'danger' }
-        )
-        return
-    }
-
-    if (BRS.transactionsPageType === 'unconfirmed') {
-        displayUnconfirmedTransactions(account)
-        return
-    }
-
-    let rows = ''
-    let unconfirmedTransactions
-    const params = {
-        account,
-        firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
-        lastIndex: BRS.pageSize * BRS.pageNumber,
-        includeIndirect: true
-    }
-
-    if (BRS.transactionsPageType) {
-        params.type = BRS.transactionsPageType.type
-        params.subtype = BRS.transactionsPageType.subtype
-        unconfirmedTransactions = getUnconfirmedTransactionsFromCache(params.type, params.subtype)
-    } else {
-        unconfirmedTransactions = BRS.unconfirmedTransactions
-    }
-
-    if (unconfirmedTransactions && BRS.pageNumber === 1) {
-        rows = unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '')
-    }
-
-    sendRequest('getAccountTransactions+', params, (response) => {
-        if (response.transactions && response.transactions.length) {
-            if (response.transactions.length > BRS.pageSize) {
-                BRS.hasMorePages = true
-                response.transactions.pop()
-            }
-            rows += response.transactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '')
-        }
-        dataLoaded(rows)
-    })
-}
-
-function displayUnconfirmedTransactions (viewAccount) {
-    sendRequest('getUnconfirmedTransactions', function (response) {
-        let rows = ''
-
-        if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
-            rows = response.unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, viewAccount), '')
-        }
-
-        dataLoaded(rows)
     })
 }
 
@@ -600,77 +391,4 @@ export function getTransactionDetails (transaction, viewingAccount = BRS.account
         circleText,
         colorClass
     }
-}
-
-function getTransactionRowDashboardHTML (transaction) {
-    const details = getTransactionDetails(transaction)
-
-    let confirmationHTML = String(transaction.confirmations).escapeHTML()
-    if (transaction.unconfirmed) {
-        confirmationHTML = BRS.pendingTransactionHTML
-    } else if (transaction.confirmations > 10) {
-        confirmationHTML = '10+'
-    }
-
-    let rowStr = ''
-    rowStr += "<tr class='" + (transaction.unconfirmed ? 'tentative' : 'confirmed') + "'>"
-    rowStr += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "' data-timestamp='" + String(transaction.timestamp).escapeHTML() + "'>" + formatTimestampAsDateTime(transaction.timestamp) + '</a></td>'
-    rowStr += '<td>' + details.nameOfTransaction + (details.hasMessage ? " + <i class='far fa-envelope-open'></i>&nbsp;" : '') + '</td>'
-    rowStr += '<td>' + details.circleText + '</td>'
-    rowStr += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
-    rowStr += `<td>${details.accountLink}</td>`
-    rowStr += `<td class='confirmations'>${confirmationHTML}</td>`
-    rowStr += '</tr>'
-
-    return rowStr
-}
-
-function getTransactionRowHTML (transaction, viewAccount) {
-    const details = getTransactionDetails(transaction, viewAccount)
-
-    let confirmationHTML = formatNumber(transaction.confirmations)
-    if (transaction.unconfirmed) {
-        confirmationHTML = BRS.pendingTransactionHTML
-    }
-    let rowStr = ''
-    rowStr += '<tr ' + ((transaction.unconfirmed && details.toFromViewer) ? " class='tentative'" : '') + '>'
-    rowStr += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "'>" + String(transaction.transaction).escapeHTML() + '</a></td>'
-    rowStr += '<td>' + (details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '') + '</td>'
-    rowStr += '<td>' + formatTimestampAsDateTime(transaction.timestamp) + '</td>'
-    rowStr += '<td>' + details.nameOfTransaction + '</td>'
-    rowStr += '<td>' + details.circleText + '</td>'
-    rowStr += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`
-    rowStr += '<td>' + formatNQTAsAmount(transaction.feeNQT) + '</td>'
-    rowStr += `<td>${details.accountLink}</td>`
-    rowStr += '<td>' + confirmationHTML + '</td>'
-    rowStr += '</tr>'
-
-    return rowStr
-};
-
-export function evTransactionsPageTypeClick (e) {
-    e.preventDefault()
-
-    let type = $(this).data('type')
-
-    if (!type) {
-        BRS.transactionsPageType = null
-    } else if (type === 'unconfirmed') {
-        BRS.transactionsPageType = 'unconfirmed'
-    } else {
-        type = type.split(':')
-        BRS.transactionsPageType = {
-            type: type[0],
-            subtype: type[1]
-        }
-    }
-
-    BRS.pageNumber = 1
-    BRS.hasMorePages = false
-
-    $(this).parents('.btn-group').find('.text').text($(this).text())
-
-    $('.popover').remove()
-
-    reloadCurrentPage()
 }

@@ -24,10 +24,6 @@ import {
     showLockscreen
 } from './brs.login'
 
-import {
-    handleNewBlocks
-} from './brs.blocks'
-
 import { formatNQTAsAmount, formatQNTAsQuantity } from './brs.numbers'
 
 import {
@@ -37,18 +33,11 @@ import {
 import {
     loadClosedGroupsFromDB,
     loadAssetsFromDB,
-    saveCachedAssets,
-    cacheUserAssets
 } from './brs.asset.tools'
 
 import {
     goToAsset
 } from './brs.asset.page.assetexchange'
-
-import {
-    getNewTransactions,
-    addUnconfirmedAndHandleIncoming,
-} from './brs.transactions'
 
 import {
     automaticallyCheckRecipient
@@ -108,17 +97,6 @@ export function init () : void {
     }, 250)
 
     automaticallyCheckRecipient()
-}
-
-export function setStateInterval (seconds: number) : void {
-    if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
-        return
-    }
-    if (BRS.stateInterval) {
-        clearInterval(BRS.stateInterval)
-    }
-    BRS.stateIntervalSeconds = seconds
-    BRS.stateInterval = setInterval(checkBlocksAndTransactions, 1000 * seconds)
 }
 
 /**
@@ -282,37 +260,6 @@ export function evSidebarClick (e: JQuery.ClickEvent) : void {
     $('#sidebar .active').removeClass('active')
     $(e.currentTarget).addClass('active')
     loadPage(page)
-}
-
-/**
- * Runs constantly to check blockchain details, conections 
- * @param callback 
- */
-export function checkBlocksAndTransactions () : void {
-    BRS.checkIncoming.newBlock = false
-    BRS.checkIncoming.newTransactions = false
-    BRS.checkIncoming.unconfirmedChanged = false
-    BRS.checkIncoming.forceDashboardUpdate = true
-
-    sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse) {
-        if (response.errorCode) {
-            $.notify($.t('could_not_connect_to', { server: BRS.server }))
-            return
-        }
-        const previousLastBlock = BRS.blockchainStatus?.lastBlock ||  '0'
-        BRS.blockchainStatus = response
-        if (previousLastBlock !== BRS.blockchainStatus.lastBlock) {
-            // New block in chain!
-            BRS.checkIncoming.newBlock = true
-            handleNewBlocks()
-            getAccountInfo(false, cacheUserAssets)
-            getNewTransactions()
-            return
-        }
-
-        addUnconfirmedAndHandleIncoming([])
-    })
-    saveCachedAssets()
 }
 
 /** Load a page for first time (setting up global variables) */

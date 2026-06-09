@@ -81,9 +81,8 @@ import {
 } from './brs.asset.page.myassets'
 
 import {
-    incomingUpdateDashboardTransactions,
-    pagesTransactions,
-} from './brs.transactions'
+    pagesTransactions
+} from './brs.tx.pages.transactions'
 
 import {
     pagesMessages,

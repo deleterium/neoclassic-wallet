@@ -82,7 +82,7 @@ import {
 
 import {
     evTransactionsPageTypeClick
-} from './brs.transactions'
+} from './brs.tx.pages.transactions'
 
 import {
     evSidebarContextOnContextmenu,
