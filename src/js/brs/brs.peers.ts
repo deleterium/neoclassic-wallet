@@ -59,7 +59,7 @@ export function pagesPeers () {
 
                 // Append row dynamically as each peer is received
                 const peerData = response2
-                const versionToCompare = BRS.blockchainStatus.version
+                const versionToCompare = BRS.blockchainStatus?.version
                 const isUpToDate = versionCompare(peerData.version, versionToCompare)
                 const isConnected = peerData.state === 1
 
@@ -105,7 +105,7 @@ function peersFinished(peers: Record<string, GetPeerResponse>) {
             connected++
         }
 
-        const versionToCompare = BRS.blockchainStatus.version
+        const versionToCompare = BRS.blockchainStatus?.version
 
         if (versionCompare(peer.version, versionToCompare)) {
             upToDate++
@@ -199,7 +199,7 @@ class Version {
     };
 }
 
-function versionCompare (v1: string, v2: string) {
+function versionCompare (v1?: string, v2?: string) {
     if (v2 === undefined || v2 === null) {
         return -1
     } else if (v1 === undefined || v1 === null) {
