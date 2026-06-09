@@ -1,12 +1,12 @@
 import { BRS } from '.';
 import { sendRequest } from './brs.server';
 import { incomingUpdateDashboardTransactions } from './brs.dashboard.page';
-import { handleNewBlocks } from './brs.blocks';
+import { updateConfirmationsInDashboardTransactions, updateDashboardBlocks } from './brs.blocks';
 import { getAccountInfo } from './brs';
 import { cacheUserAssets, saveCachedAssets } from './brs.asset.tools';
-import { GetAccountTransactionIdsResponse, GetAccountTransactionsResponse, GetBlochainStatusResponse, GetUnconfirmedTransactionsResponse, Transaction, UnconfirmedTransaction } from '../typings';
+import { GetAccountTransactionIdsResponse, GetAccountTransactionsResponse, GetBlochainStatusResponse, GetBlocksResponse, GetUnconfirmedTransactionsResponse, Transaction, UnconfirmedTransaction } from '../typings';
 
-export function setStateInterval (seconds : number ) : void {
+export function setCheckIncomingInterval (seconds : number ) : void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
         return
     }
@@ -14,14 +14,14 @@ export function setStateInterval (seconds : number ) : void {
         clearInterval(BRS.stateInterval)
     }
     BRS.stateIntervalSeconds = seconds
-    BRS.stateInterval = setInterval(checkBlocksAndTransactions, 1000 * seconds)
+    BRS.stateInterval = setInterval(checkIncomingBlocksAndTransactions, 1000 * seconds)
 }
 
 /**
  * Runs constantly to check blockchain details, conections 
  * @param callback 
  */
-function checkBlocksAndTransactions () : void {
+function checkIncomingBlocksAndTransactions () : void {
     BRS.checkIncoming.newBlock = false
     BRS.checkIncoming.newTransactions = false
     BRS.checkIncoming.unconfirmedChanged = false
@@ -46,6 +46,69 @@ function checkBlocksAndTransactions () : void {
         addUnconfirmedAndHandleIncoming([])
     })
     saveCachedAssets()
+}
+/**
+ * Called when it is detected a new block on blockchain. Checks sync progress and update dashboard information.
+ */
+export function handleNewBlocks () {
+    sendRequest('getBlocks', {
+        firstIndex: 0,
+        lastIndex: 10
+    }, function (response: GetBlocksResponse) {
+        if (response.errorCode) {
+            return
+        }
+        if (!BRS.blocks || BRS.blocks.length === 0) {
+            // If first time, or if changed network type
+            BRS.blocks = response.blocks
+        }
+        const blockheightDiff = response.blocks[0].height - BRS.blocks[0].height
+        BRS.blocks = response.blocks
+        checkSyncProcess()
+        updateDashboardBlocks()
+        updateConfirmationsInDashboardTransactions(blockheightDiff)
+    })
+}
+
+/**
+ * Execute verifications for sync process, showing warnings and managing the interval to check it again.
+ * @returns 
+ */
+function checkSyncProcess() {
+    if (!BRS.blockchainStatus) return
+
+    const secondsBehind = BRS.blockchainStatus.time - BRS.blocks[0].timestamp
+
+    if (secondsBehind > 60 * 60 * 24  * 4) {
+        // RESYNC! Estimated that it is more than 1440 blocks behind
+        setCheckIncomingInterval(30)
+        BRS.downloadingBlockchain = true
+        $('#downloading_blockchain').show()
+        // update progress bar
+        const percentage = Math.trunc((BRS.blockchainStatus.numberOfBlocks / BRS.blockchainStatus.lastBlockchainFeederHeight) * 100)
+        $('#downloading_blockchain .progress-bar').css('width', percentage + '%')
+        return
+    }
+
+    BRS.downloadingBlockchain = false
+    $('#downloading_blockchain').hide()
+
+    if (secondsBehind > 60 * 60) {
+        // Rescanning!
+        setCheckIncomingInterval(10)
+        BRS.rescaningBlockchain = true
+        return
+    }
+
+    // Sync seems to be ok (less than one hour behind)
+    setCheckIncomingInterval(30)
+    BRS.rescaningBlockchain = false
+
+    // Check if it is on a fork
+    const onAFork = BRS.blocks.every(block => block.generator === BRS.blocks[0].generator)
+    if (onAFork) {
+        $.notify($.t('fork_warning'), { type: 'danger' })
+    }
 }
 
 /* Done only once at login */

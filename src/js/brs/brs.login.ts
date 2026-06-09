@@ -40,12 +40,13 @@ import {
 } from './brs.asset.tools'
 
 import {
-    getInitialTransactions
+    getInitialTransactions,
+    handleNewBlocks
 } from './brs.checkincoming'
 
 import PassPhraseGenerator from './brs.passphrase.generator'
+
 import { GetAccountPublicKeyResponse, GetAccountResponse } from '../typings'
-import { handleNewBlocks } from './brs.blocks'
 
 export function showLoginOrWelcomeScreen () {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {

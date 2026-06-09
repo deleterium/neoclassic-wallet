@@ -1,10 +1,6 @@
 import { BRS } from '.'
 
 import {
-    setStateInterval
-} from './brs.checkincoming'
-
-import {
     reloadCurrentPage,
 } from './brs'
 
@@ -34,79 +30,9 @@ import {
 import { BlockDetails, GetAccountBlocksResponse, GetBlockResponse, GetBlocksResponse, Transaction } from '../typings'
 
 /**
- * Called when it is detected a new block on blockchain. Checks sync progress and update dashboard information.
- */
-export function handleNewBlocks () {
-    sendRequest('getBlocks', {
-        firstIndex: 0,
-        lastIndex: 10
-    }, function (response: GetBlocksResponse) {
-        if (response.errorCode) {
-            return
-        }
-        if (!BRS.blocks || BRS.blocks.length === 0) {
-            // If first time, or if changed network type
-            BRS.blocks = response.blocks
-        }
-        const blockheightDiff = response.blocks[0].height - BRS.blocks[0].height
-        BRS.blocks = response.blocks
-        checkSyncProcess()
-        updateDashboardBlocks()
-        updateDashboardTransactions(blockheightDiff)
-    })
-}
-
-/**
- * Execute verifications for sync process, showing warnings and managing the interval to check it again.
- * @returns 
- */
-function checkSyncProcess() {
-    if (!BRS.blockchainStatus) return
-
-    const secondsBehind = BRS.blockchainStatus.time - BRS.blocks[0].timestamp
-
-    if (secondsBehind > 60 * 60 * 24  * 4) {
-        // RESYNC! Estimated that it is more than 1440 blocks behind
-        setStateInterval(30)
-        BRS.downloadingBlockchain = true
-        $('#downloading_blockchain').show()
-        updateBlockchainDownloadProgress()
-        return
-    }
-
-    BRS.downloadingBlockchain = false
-    $('#downloading_blockchain').hide()
-
-    if (secondsBehind > 60 * 60) {
-        // Rescanning!
-        setStateInterval(10)
-        BRS.rescaningBlockchain = true
-        return
-    }
-
-    // Sync seems to be ok (less than one hour behind)
-    setStateInterval(30)
-    BRS.rescaningBlockchain = false
-
-    // Check if it is on a fork
-    const onAFork = BRS.blocks.every(block => block.generator === BRS.blocks[0].generator)
-    if (onAFork) {
-        $.notify($.t('fork_warning'), { type: 'danger' })
-    }
-}
-
-function updateBlockchainDownloadProgress () : void {
-    let percentage = 0
-    if (BRS.blockchainStatus?.numberOfBlocks && BRS.blockchainStatus.lastBlockchainFeederHeight) {
-        percentage = Math.trunc((BRS.blockchainStatus.numberOfBlocks / BRS.blockchainStatus.lastBlockchainFeederHeight) * 100)
-    }
-    $('#downloading_blockchain .progress-bar').css('width', percentage + '%')
-}
-
-/**
  * Update the blocks table in dashboard with the blocks available at `BRS.blocks`
  */
-function updateDashboardBlocks () {
+export function updateDashboardBlocks () {
     let rows = ''
     for (const block of BRS.blocks) {
         const isBold = block.numberOfTransactions > 0 ? "style='font-weight:bold'" : ''
@@ -133,7 +59,7 @@ function updateDashboardBlocks () {
     $('#dashboard_blocks_table tbody').html(rows)
 }
 
-function updateDashboardTransactions(numberToAdd: number) {
+export function updateConfirmationsInDashboardTransactions(numberToAdd: number) {
     $('#dashboard_transactions_table tr.confirmed td.confirmations').each(function () {
         if ($(this).data('incoming')) {
             $(this).removeData('incoming')
