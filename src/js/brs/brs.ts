@@ -47,8 +47,7 @@ import {
 
 import {
     getNewTransactions,
-    getUnconfirmedTransactions,
-    handleIncomingTransactions
+    addUnconfirmedAndHandleIncoming,
 } from './brs.transactions'
 
 import {
@@ -290,6 +289,11 @@ export function evSidebarClick (e: JQuery.ClickEvent) : void {
  * @param callback 
  */
 export function checkBlocksAndTransactions () : void {
+    BRS.checkIncoming.newBlock = false
+    BRS.checkIncoming.newTransactions = false
+    BRS.checkIncoming.unconfirmedChanged = false
+    BRS.checkIncoming.forceDashboardUpdate = true
+
     sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse) {
         if (response.errorCode) {
             $.notify($.t('could_not_connect_to', { server: BRS.server }))
@@ -299,18 +303,14 @@ export function checkBlocksAndTransactions () : void {
         BRS.blockchainStatus = response
         if (previousLastBlock !== BRS.blockchainStatus.lastBlock) {
             // New block in chain!
+            BRS.checkIncoming.newBlock = true
             handleNewBlocks()
-            if (BRS.account) {
-                getAccountInfo(false, cacheUserAssets)
-                getNewTransactions()
-            }
-        } else {
-            if (BRS.account) {
-                getUnconfirmedTransactions(function (unconfirmedTransactions) {
-                    handleIncomingTransactions(unconfirmedTransactions, false)
-                })
-            }
+            getAccountInfo(false, cacheUserAssets)
+            getNewTransactions()
+            return
         }
+
+        addUnconfirmedAndHandleIncoming([])
     })
     saveCachedAssets()
 }

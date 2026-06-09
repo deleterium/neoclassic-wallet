@@ -26,59 +26,17 @@ import {
     getAccountLink,
     getAccountTitle,
     dataLoaded,
-    dataLoadFinished,
     getUnconfirmedTransactionsFromCache
 } from './brs.util'
 
 import { getAssetDetails } from './brs.asset.tools'
 
 export function getInitialTransactions () {
-    sendRequest('getAccountTransactions', {
-        account: BRS.account,
-        firstIndex: 0,
-        lastIndex: 9,
-        includeIndirect: true
-    }, function (response) {
-        if (response.transactions && response.transactions.length) {
-            const transactions = []
-            const transactionIds = []
-
-            for (let i = 0; i < response.transactions.length; i++) {
-                const transaction = response.transactions[i]
-
-                transactions.push(transaction)
-
-                transactionIds.push(transaction.transaction)
-            }
-
-            getUnconfirmedTransactions(function (unconfirmedTransactions) {
-                handleInitialTransactions(transactions.concat(unconfirmedTransactions), transactionIds)
-            })
-        } else {
-            getUnconfirmedTransactions(function (unconfirmedTransactions) {
-                handleInitialTransactions(unconfirmedTransactions, [])
-            })
-        }
-    })
+    BRS.checkIncoming.forceDashboardUpdate = true
+    fetchAndHandleLatestTransactions()
 }
 
-function handleInitialTransactions (transactions, transactionIds) {
-    let rows = ''
-    if (transactions.length) {
-        transactions.sort(sortArray)
-
-        if (transactionIds.length) {
-            BRS.lastTransactions = transactionIds.toString()
-        }
-
-        rows = transactions.reduce((prev, currTr) => prev + getTransactionRowDashboardHTML(currTr), '')
-    }
-
-    $('#dashboard_transactions_table tbody').empty().append(rows)
-
-    dataLoadFinished($('#dashboard_transactions_table'))
-}
-
+/* New block detected, start looking for transaction changes */
 export function getNewTransactions () {
     // check if there is a new transaction..
     sendRequest('getAccountTransactionIds', {
@@ -87,131 +45,90 @@ export function getNewTransactions () {
         firstIndex: 0,
         lastIndex: 0
     }, function (response) {
-        // if there is, get latest 10 transactions
         if (response.transactionIds && response.transactionIds.length) {
-            sendRequest('getAccountTransactions', {
-                account: BRS.account,
-                firstIndex: 0,
-                lastIndex: 9,
-                includeIndirect: true
-            }, function (response) {
-                if (response.transactions && response.transactions.length) {
-                    const transactionIds = response.transactions.map(tr => tr.transaction)
-
-                    getUnconfirmedTransactions(function (unconfirmedTransactions) {
-                        handleIncomingTransactions(response.transactions.concat(unconfirmedTransactions), transactionIds)
-                    })
-                } else {
-                    getUnconfirmedTransactions(function (unconfirmedTransactions) {
-                        handleIncomingTransactions(unconfirmedTransactions)
-                    })
-                }
-            })
+            BRS.checkIncoming.newTransactions = true
+            fetchAndHandleLatestTransactions()
         } else {
-            getUnconfirmedTransactions(function (unconfirmedTransactions) {
-                handleIncomingTransactions(unconfirmedTransactions)
-            })
+            addUnconfirmedAndHandleIncoming([])
         }
     })
 }
 
-export function getUnconfirmedTransactions (callback) {
+function fetchAndHandleLatestTransactions () {
+    sendRequest('getAccountTransactions', {
+        account: BRS.account,
+        firstIndex: 0,
+        lastIndex: 9,
+        includeIndirect: true
+    }, function (response) {
+        if (response.transactions && response.transactions.length) {
+            BRS.checkIncoming.latestsTransactionsIds = response.transactions.map(tr => tr.transaction)
+            addUnconfirmedAndHandleIncoming(response.transactions)
+        } else {
+            addUnconfirmedAndHandleIncoming([])
+        }
+    })
+}
+
+export function addUnconfirmedAndHandleIncoming (confirmedTransactions) {
     sendRequest('getUnconfirmedTransactions', {
         account: BRS.account,
         includeIndirect: true
     }, function (response) {
-        if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
-            const unconfirmedTransactions = []
-            const unconfirmedTransactionIds = []
+        const sortedTransactions = response.unconfirmedTransactions?.sort((x, y) => y.timestamp - x.timestamp) || []
 
-            response.unconfirmedTransactions.sort(function (x, y) {
-                if (x.timestamp < y.timestamp) {
-                    return 1
-                } else if (x.timestamp > y.timestamp) {
-                    return -1
-                } else {
-                    return 0
-                }
-            })
+        const transactionIdString = sortedTransactions.map(t => t.transaction).join()
 
-            for (let i = 0; i < response.unconfirmedTransactions.length; i++) {
-                const unconfirmedTransaction = response.unconfirmedTransactions[i]
-                unconfirmedTransactions.push(unconfirmedTransaction)
-                unconfirmedTransactionIds.push(unconfirmedTransaction.transaction)
-            }
+        BRS.checkIncoming.unconfirmedChanged = transactionIdString !== (BRS.checkIncoming.unconfirmedTransactionIds)
+        BRS.unconfirmedTransactions = sortedTransactions
+        BRS.checkIncoming.unconfirmedTransactionIds = transactionIdString
 
-            BRS.unconfirmedTransactions = unconfirmedTransactions
-
-            const unconfirmedTransactionIdString = unconfirmedTransactionIds.toString()
-
-            if (unconfirmedTransactionIdString !== BRS.unconfirmedTransactionIds) {
-                BRS.unconfirmedTransactionsChange = true
-                BRS.unconfirmedTransactionIds = unconfirmedTransactionIdString
-            } else {
-                BRS.unconfirmedTransactionsChange = false
-            }
-
-            if (callback) {
-                callback(unconfirmedTransactions)
-            } else if (BRS.unconfirmedTransactionsChange) {
-                BRS.incoming.updateDashboardTransactions(unconfirmedTransactions, true)
-            }
-        } else {
-            BRS.unconfirmedTransactions = []
-
-            if (BRS.unconfirmedTransactionIds) {
-                BRS.unconfirmedTransactionsChange = true
-            } else {
-                BRS.unconfirmedTransactionsChange = false
-            }
-
-            BRS.unconfirmedTransactionIds = ''
-
-            if (callback) {
-                callback([])
-            } else if (BRS.unconfirmedTransactionsChange) {
-                BRS.incoming.updateDashboardTransactions([], true)
-            }
-        }
+        handleIncomingTransactions(confirmedTransactions.concat(sortedTransactions))
     })
 }
 
-export function handleIncomingTransactions (transactions, confirmedTransactionIds) {
-    const oldBlock = (confirmedTransactionIds === false) // we pass false instead of an [] in case there is no new block..
+export function handleIncomingTransactions (transactions) {
 
-    if (typeof confirmedTransactionIds !== 'object') {
-        confirmedTransactionIds = []
+    transactions.sort((x, y) => y.timestamp - x.timestamp)
+
+    if (BRS.checkIncoming.newTransactions) {
+        $.notify('new_confirmed_transaction')
+    }
+    if (BRS.checkIncoming.unconfirmedChanged && !BRS.checkIncoming.newBlock) {
+        $.notify('new_unconfirmed_transaction')
     }
 
-    if (confirmedTransactionIds.length) {
-        BRS.lastTransactions = confirmedTransactionIds.toString()
+    if (BRS.checkIncoming.forceDashboardUpdate ||
+        BRS.checkIncoming.newTransactions ||
+        BRS.checkIncoming.unconfirmedChanged
+    ) {
+        incomingUpdateDashboardTransactions(transactions)
     }
-
-    if (confirmedTransactionIds.length || BRS.unconfirmedTransactionsChange) {
-        transactions.sort(sortArray)
-
-        BRS.incoming.updateDashboardTransactions(transactions, confirmedTransactionIds.length === 0)
+    if (BRS.checkIncoming.newBlock || BRS.checkIncoming.unconfirmedChanged) {
+        if (BRS.incoming[BRS.currentPage]) {
+            BRS.incoming[BRS.currentPage](transactions)
+        }
     }
 
     // always unconfirmed transactions..
-    if (BRS.currentPage === 'transactions' && BRS.transactionsPageType === 'unconfirmed') {
-        BRS.incoming.transactions()
-    } else {
-        if (BRS.currentPage !== 'messages' && (!oldBlock || BRS.unconfirmedTransactionsChange)) {
-            if (BRS.incoming[BRS.currentPage]) {
-                BRS.incoming[BRS.currentPage](transactions)
-            }
-        }
-    }
-    // always call incoming for messages to enable message notifications
-    if (!oldBlock || BRS.unconfirmedTransactionsChange) {
-        BRS.incoming.messages(transactions)
-    }
+    // if (BRS.currentPage === 'transactions' && BRS.transactionsPageType === 'unconfirmed') {
+    //     BRS.incoming.transactions()
+    // } else {
+    //     if (BRS.currentPage !== 'messages' && (!oldBlock || BRS.unconfirmedTransactionsChange)) {
+    //         if (BRS.incoming[BRS.currentPage]) {
+    //             BRS.incoming[BRS.currentPage](transactions)
+    //         }
+    //     }
+    // }
+    // // always call incoming for messages to enable message notifications
+    // if (!oldBlock || BRS.unconfirmedTransactionsChange) {
+    //     BRS.incoming.messages(transactions)
+    // }
 }
 
-function sortArray (a, b) {
-    return b.timestamp - a.timestamp
-}
+// function sortArray (a, b) {
+//     return b.timestamp - a.timestamp
+// }
 
 export function incomingUpdateDashboardTransactions (newTransactions, unconfirmed) {
     if (newTransactions.length) {
@@ -257,7 +174,7 @@ export function addUnconfirmedTransaction (transactionId, callback) {
             try {
                 const regex = new RegExp('(^|,)' + transactionId + '(,|$)')
 
-                if (regex.exec(BRS.lastTransactions)) {
+                if (regex.exec(BRS.checkIncoming.latestsTransactionsIds)) {
                     alreadyProcessed = true
                 } else {
                     $.each(BRS.unconfirmedTransactions, function (key, unconfirmedTransaction) {
@@ -277,7 +194,7 @@ export function addUnconfirmedTransaction (transactionId, callback) {
                 callback(alreadyProcessed)
             }
 
-            BRS.incoming.updateDashboardTransactions(BRS.unconfirmedTransactions, true)
+            incomingUpdateDashboardTransactions(BRS.unconfirmedTransactions, true)
 
             getAccountInfo(false)
         } else if (callback) {

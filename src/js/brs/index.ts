@@ -197,6 +197,17 @@ export const BRS = {
     // Used by 'pages' logic and RequestController
     currentPage: 'dashboard',
     currentSubPage: '',
+
+    // Used for checkIncoming
+    checkIncoming: {
+        newBlock: false,
+        newTransactions: false,
+        latestsTransactionsIds: '',
+        unconfirmedChanged: false,
+        unconfirmedTransactionIds: '',
+        forceDashboardUpdate: false
+    },
+    // Used for pagination
     pageNumber: 1,
     pageSize: 25,
     showPageNumbers: false,
@@ -227,7 +238,6 @@ export const BRS = {
         asset_exchange: incomingAssetExchange,
         my_assets: incomingMyAssets,
         open_orders: incomingOpenOrders,
-        updateDashboardTransactions: incomingUpdateDashboardTransactions,
         transactions: reloadCurrentPage,
         peers: incomingPeers,
         messages: incomingMessages
@@ -344,8 +354,6 @@ export const BRS = {
     // from transactions
     lastTransactions: '',
     unconfirmedTransactions: [] as Transaction[],
-    unconfirmedTransactionIds: '',
-    unconfirmedTransactionsChange: true,
     transactionsPageType: null,
 
     // from messages
