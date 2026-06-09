@@ -496,7 +496,7 @@ export interface GetAccountATsResponse {
 
 // region Escrow
 
-interface Escrow {
+export interface Escrow {
     id: string;
     sender: string;
     senderRS: string;
@@ -517,6 +517,13 @@ interface Signer {
 
 export interface GetAccountEscrowTransactionsResponse {
     escrows: Escrow[];
+    requestProcessingTime: number;
+    unconfirmed: boolean;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
+export interface GetEscrowTransactionResponse extends Escrow {
     requestProcessingTime: number;
     unconfirmed: boolean;
     errorCode?: number;

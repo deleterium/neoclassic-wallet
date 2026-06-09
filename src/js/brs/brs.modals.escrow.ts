@@ -1,43 +1,40 @@
-/**
- * @depends {brs.js}
- * @depends {brs.modals.js}
- */
-
 import { BRS } from '.'
 
 import { sendRequest } from './brs.server'
 
 import { formatTimestampAsDateTime } from './brs.numbers'
 
-export function showEscrowDecisionModal (escrow) {
+import { Escrow, GetEscrowTransactionResponse } from '../typings'
+import { getAccountTitle } from './brs.util'
+
+export function showEscrowDecisionModal (escrow: Escrow | string) {
     if (BRS.fetchingModalData) {
         return
     }
-
-    BRS.fetchingModalData = true
-
-    if (typeof escrow !== 'object') {
-        sendRequest('getEscrowTransaction', {
-            escrow
-        }, function (response) {
-            processEscrowDecisionModalData(response)
-        })
-    } else {
+    if (typeof escrow === 'object') {
         processEscrowDecisionModalData(escrow)
+        return
     }
+    // Fetch escrow details
+    BRS.fetchingModalData = true
+    sendRequest('getEscrowTransaction', {
+        escrow
+    }, function (response: GetEscrowTransactionResponse) {
+        BRS.fetchingModalData = false
+        processEscrowDecisionModalData(response)
+    })
 }
 
-export function processEscrowDecisionModalData (escrow) {
+export function processEscrowDecisionModalData (escrow: Escrow) {
     $('#escrow_decision_escrow').val(escrow.id)
     $('#escrow_decision_escrow_info').val(escrow.id)
     let decisions = ''
     for (let i = 0; i < escrow.signers.length; i++) {
-        decisions += escrow.signers[i].idRS + ' ' + escrow.signers[i].decision + '<br />'
+        decisions += getAccountTitle(escrow.signers[i], 'id') + ': ' + $.t(escrow.signers[i].decision) + '<br />'
     }
     $('#escrow_decision_decisions').html(decisions)
-    $('#escrow_decision_required').html(escrow.requiredSigners + ' signers required')
-    $('#escrow_decision_deadline').html('Defaults to ' + escrow.deadlineAction + ' at ' + formatTimestampAsDateTime(escrow.deadline))
+    $('#escrow_decision_required').text($.t('number_of_required_signers') + ': ' + escrow.requiredSigners)
+    $('#escrow_decision_deadline').text($.t('escrow_deadline_action') + ': ' + $.t(escrow.deadlineAction) + ' -- ' + formatTimestampAsDateTime(escrow.deadline))
 
     $('#escrow_decision_modal').modal('show')
-    BRS.fetchingModalData = false
 }
