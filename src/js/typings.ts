@@ -83,6 +83,40 @@ export interface Transaction {
     version: number;
 }
 
+export interface UnconfirmedTransaction {
+    // No block, blockTimestamp nor confirmations
+    amountNQT: string;
+    attachment?: any;
+    attachmentBytes?: string;
+    cashBackId: string;
+    deadline: number;
+    ecBlockHeight: number;
+    ecBlockId: string;
+    feeNQT: string;
+    fullHash: string;
+    height: 2147483647; // Java Integer.MAX_VALUE
+    recipient?: string;
+    recipientRS?: string;
+    referencedTransactionFullHash?: string;
+    sender: string;
+    senderPublicKey: string;
+    senderRS: string;
+    signature: string;
+    signatureHash: string;
+    subtype: number;
+    timestamp: number;
+    transaction: string;
+    type: number;
+    version: number;
+}
+
+export interface GetUnconfirmedTransactionsResponse {
+    unconfirmedTransactions: UnconfirmedTransaction[];
+    requestProcessingTime: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
 export interface GetTransactionResponse extends Transaction {
     requestProcessingTime: number;
     errorCode?: number;
@@ -159,6 +193,14 @@ export interface GetAccountResponse {
 
 export interface GetAccountTransactionsResponse {
     transactions: Transaction[];
+    nextIndex?: number;
+    requestProcessingTime?: number;
+    errorCode?: number;
+    errorDescription?: string;
+}
+
+export interface GetAccountTransactionIdsResponse {
+    transactionIds: string[];
     nextIndex?: number;
     requestProcessingTime?: number;
     errorCode?: number;

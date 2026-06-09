@@ -4,8 +4,9 @@ import { incomingUpdateDashboardTransactions } from './brs.dashboard.page';
 import { handleNewBlocks } from './brs.blocks';
 import { getAccountInfo } from './brs';
 import { cacheUserAssets, saveCachedAssets } from './brs.asset.tools';
+import { GetAccountTransactionIdsResponse, GetAccountTransactionsResponse, GetBlochainStatusResponse, GetUnconfirmedTransactionsResponse, Transaction, UnconfirmedTransaction } from '../typings';
 
-export function setStateInterval (seconds /* : number */ ) /* : void */ {
+export function setStateInterval (seconds : number ) : void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
         return
     }
@@ -20,13 +21,13 @@ export function setStateInterval (seconds /* : number */ ) /* : void */ {
  * Runs constantly to check blockchain details, conections 
  * @param callback 
  */
-export function checkBlocksAndTransactions () /* : void */ {
+function checkBlocksAndTransactions () : void {
     BRS.checkIncoming.newBlock = false
     BRS.checkIncoming.newTransactions = false
     BRS.checkIncoming.unconfirmedChanged = false
     BRS.checkIncoming.forceDashboardUpdate = true
 
-    sendRequest('getBlockchainStatus', function (response /* : GetBlochainStatusResponse */ ) {
+    sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse ) {
         if (response.errorCode) {
             $.notify($.t('could_not_connect_to', { server: BRS.server }))
             return
@@ -47,12 +48,15 @@ export function checkBlocksAndTransactions () /* : void */ {
     saveCachedAssets()
 }
 
+/* Done only once at login */
 export function getInitialTransactions() {
     BRS.checkIncoming.forceDashboardUpdate = true;
     fetchAndHandleLatestTransactions();
 }
 
-/* New block detected, start looking for transaction changes */
+/* New block detected, start looking for transaction changes
+   BRS.blocks[0] is still the previous block, because the new one was
+   not updated yet. */
 function getNewTransactions() {
     // check if there is a new transaction..
     sendRequest('getAccountTransactionIds', {
@@ -60,13 +64,13 @@ function getNewTransactions() {
         timestamp: BRS.blocks[0].timestamp + 1,
         firstIndex: 0,
         lastIndex: 0
-    }, function (response) {
+    }, function (response: GetAccountTransactionIdsResponse) {
         if (response.transactionIds && response.transactionIds.length) {
             BRS.checkIncoming.newTransactions = true;
             fetchAndHandleLatestTransactions();
-        } else {
-            addUnconfirmedAndHandleIncoming([]);
+            return
         }
+        addUnconfirmedAndHandleIncoming([]);
     });
 }
 
@@ -76,9 +80,9 @@ function fetchAndHandleLatestTransactions() {
         firstIndex: 0,
         lastIndex: 9,
         includeIndirect: true
-    }, function (response) {
+    }, function (response: GetAccountTransactionsResponse ) {
         if (response.transactions && response.transactions.length) {
-            BRS.checkIncoming.latestsTransactionsIds = response.transactions.map(tr => tr.transaction);
+            BRS.checkIncoming.latestsTransactionsIds = response.transactions.map(tr => tr.transaction).join();
             addUnconfirmedAndHandleIncoming(response.transactions);
         } else {
             addUnconfirmedAndHandleIncoming([]);
@@ -86,37 +90,52 @@ function fetchAndHandleLatestTransactions() {
     });
 }
 
-function addUnconfirmedAndHandleIncoming(confirmedTransactions) {
+/* Define a function to transform UnconfirmedTransaction to Transaction.
+   Unconfirmed can be identified by properties:
+   * unconfirmed: false
+   * height: 2147483647
+   * block: ''
+   * blockTimestamp: -1 */
+function mapUnconfirmedToTransaction(unconfirmed: UnconfirmedTransaction): Transaction {
+    return {
+        ...unconfirmed,
+        block: "",
+        blockTimestamp: -1
+    };
+}
+
+function addUnconfirmedAndHandleIncoming(confirmedTransactions: Transaction[]) {
     sendRequest('getUnconfirmedTransactions', {
         account: BRS.account,
         includeIndirect: true
-    }, function (response) {
+    }, function (response: GetUnconfirmedTransactionsResponse) {
         const sortedTransactions = response.unconfirmedTransactions?.sort((x, y) => y.timestamp - x.timestamp) || [];
-
         const transactionIdString = sortedTransactions.map(t => t.transaction).join();
+        const ConfUnconfTransactions = sortedTransactions.map(mapUnconfirmedToTransaction);
 
         BRS.checkIncoming.unconfirmedChanged = transactionIdString !== (BRS.checkIncoming.unconfirmedTransactionIds);
         BRS.unconfirmedTransactions = sortedTransactions;
         BRS.checkIncoming.unconfirmedTransactionIds = transactionIdString;
 
-        handleIncomingTransactions(confirmedTransactions.concat(sortedTransactions));
+        handleIncomingTransactions(confirmedTransactions.concat(ConfUnconfTransactions));
     });
 }
 
-function handleIncomingTransactions(transactions) {
+function handleIncomingTransactions(transactions: Transaction[]) {
 
     transactions.sort((x, y) => y.timestamp - x.timestamp);
 
     if (BRS.checkIncoming.newTransactions) {
-        $.notify('new_confirmed_transaction');
+        $.notify($.t('new_confirmed_transaction'));
     }
     if (BRS.checkIncoming.unconfirmedChanged && !BRS.checkIncoming.newBlock) {
-        $.notify('new_unconfirmed_transaction');
+        $.notify($.t('new_unconfirmed_transaction'));
     }
 
     if (BRS.checkIncoming.forceDashboardUpdate ||
         BRS.checkIncoming.newTransactions ||
-        BRS.checkIncoming.unconfirmedChanged) {
+        BRS.checkIncoming.unconfirmedChanged
+    ) {
         incomingUpdateDashboardTransactions(transactions);
     }
     if (BRS.checkIncoming.newBlock || BRS.checkIncoming.unconfirmedChanged) {
@@ -124,6 +143,8 @@ function handleIncomingTransactions(transactions) {
             BRS.incoming[BRS.currentPage](transactions);
         }
     }
+
+    // These handlers must be used in respective `incomingFunctions`
 
     // always unconfirmed transactions..
     // if (BRS.currentPage === 'transactions' && BRS.transactionsPageType === 'unconfirmed') {
