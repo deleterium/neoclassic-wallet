@@ -61,7 +61,7 @@ export interface Transaction {
     block: string;
     blockTimestamp: number;
     cashBackId: string;
-    confirmations?: number;
+    confirmations: number;
     deadline: number;
     ecBlockHeight: number;
     ecBlockId: string;
@@ -81,6 +81,7 @@ export interface Transaction {
     transaction: string;
     type: number;
     version: number;
+    unconfirmed: boolean
 }
 
 export interface UnconfirmedTransaction {
@@ -108,6 +109,7 @@ export interface UnconfirmedTransaction {
     transaction: string;
     type: number;
     version: number;
+    unconfirmed: true;
 }
 
 export interface GetUnconfirmedTransactionsResponse {

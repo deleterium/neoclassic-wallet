@@ -5,6 +5,7 @@ import { getUnconfirmedTransactionsFromCache, dataLoaded } from './brs.util';
 import { reloadCurrentPage } from './brs';
 import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from './brs.numbers';
 import { getTransactionDetails } from './brs.transactions';
+import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UnconfirmedTransaction } from '../typings';
 
 export function pagesTransactions() {
     function getFrom() {
@@ -13,7 +14,7 @@ export function pagesTransactions() {
             return BRS.account;
         }
         // from 'others'
-        const fromWho = $('#transaction_from_account_account').val().trim();
+        const fromWho = ($('#transaction_from_account_account').val() as string).trim();
         if (BRS.rsRegEx.test(fromWho) || BRS.idRegEx.test(fromWho)) {
             return fromWho;
         }
@@ -39,8 +40,15 @@ export function pagesTransactions() {
     }
 
     let rows = '';
-    let unconfirmedTransactions;
-    const params = {
+    let unconfirmedTransactions: UnconfirmedTransaction[];
+    const params: {
+        account: string
+        firstIndex: number;
+        lastIndex: number;
+        includeIndirect: boolean;
+        type?: string;
+        subtype?: string
+    } = {
         account,
         firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
         lastIndex: BRS.pageSize * BRS.pageNumber,
@@ -48,8 +56,9 @@ export function pagesTransactions() {
     };
 
     if (BRS.transactionsPageType) {
-        params.type = BRS.transactionsPageType.type;
-        params.subtype = BRS.transactionsPageType.subtype;
+        const types = BRS.transactionsPageType.split(':')
+        params.type = types[0];
+        params.subtype = types[1];
         unconfirmedTransactions = getUnconfirmedTransactionsFromCache(params.type, params.subtype);
     } else {
         unconfirmedTransactions = BRS.unconfirmedTransactions;
@@ -59,7 +68,7 @@ export function pagesTransactions() {
         rows = unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '');
     }
 
-    sendRequest('getAccountTransactions+', params, (response) => {
+    sendRequest('getAccountTransactions+', params, (response: GetAccountTransactionsResponse) => {
         if (response.transactions && response.transactions.length) {
             if (response.transactions.length > BRS.pageSize) {
                 BRS.hasMorePages = true;
@@ -71,8 +80,8 @@ export function pagesTransactions() {
     });
 }
 
-function displayUnconfirmedTransactions(viewAccount) {
-    sendRequest('getUnconfirmedTransactions', function (response) {
+function displayUnconfirmedTransactions(viewAccount: string) {
+    sendRequest('getUnconfirmedTransactions', function (response: GetUnconfirmedTransactionsResponse) {
         let rows = '';
 
         if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
@@ -83,50 +92,48 @@ function displayUnconfirmedTransactions(viewAccount) {
     });
 }
 
-function getTransactionRowHTML(transaction, viewAccount) {
+function getTransactionRowHTML(transaction: Transaction | UnconfirmedTransaction, viewAccount: string) {
     const details = getTransactionDetails(transaction, viewAccount);
 
-    let confirmationHTML = formatNumber(transaction.confirmations);
-    if (transaction.unconfirmed) {
-        confirmationHTML = BRS.pendingTransactionHTML;
+    let confirmationHTML = BRS.pendingTransactionHTML;
+    if (!transaction.unconfirmed) {
+        confirmationHTML = formatNumber(transaction.confirmations)
     }
-    let rowStr = '';
-    rowStr += '<tr ' + ((transaction.unconfirmed && details.toFromViewer) ? " class='tentative'" : '') + '>';
-    rowStr += "<td><a href='#' data-transaction='" + String(transaction.transaction).escapeHTML() + "'>" + String(transaction.transaction).escapeHTML() + '</a></td>';
-    rowStr += '<td>' + (details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '') + '</td>';
-    rowStr += '<td>' + formatTimestampAsDateTime(transaction.timestamp) + '</td>';
-    rowStr += '<td>' + details.nameOfTransaction + '</td>';
-    rowStr += '<td>' + details.circleText + '</td>';
-    rowStr += `<td ${details.colorClass}>${details.amountToFromViewerHTML}</td>`;
-    rowStr += '<td>' + formatNQTAsAmount(transaction.feeNQT) + '</td>';
-    rowStr += `<td>${details.accountLink}</td>`;
-    rowStr += '<td>' + confirmationHTML + '</td>';
-    rowStr += '</tr>';
+    const rowClass = transaction.unconfirmed && details.toFromViewer ? " class='tentative'" : '';
+    const messageIcon = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '';
 
-    return rowStr;
+    return `
+        <tr ${rowClass}>
+          <td><a href='#' data-transaction='${transaction.transaction}'>${transaction.transaction}</a></td>
+          <td>${messageIcon}</td>
+          <td>${formatTimestampAsDateTime(transaction.timestamp)}</td>
+          <td>${details.nameOfTransaction}</td>
+          <td>${details.circleText}</td>
+          <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
+          <td>${formatNQTAsAmount(transaction.feeNQT)}</td>
+          <td>${details.accountLink}</td>
+          <td>${confirmationHTML}</td>
+        </tr>`
 }
 
-export function evTransactionsPageTypeClick(e) {
+export function evTransactionsPageTypeClick(e: JQuery.ClickEvent) {
     e.preventDefault()
+    const element = e.target
 
-    let type = $(this).data('type')
+    const type = $(element).data('type')
 
     if (!type) {
-        BRS.transactionsPageType = null
+        BRS.transactionsPageType = ''
     } else if (type === 'unconfirmed') {
         BRS.transactionsPageType = 'unconfirmed'
     } else {
-        type = type.split(':')
-        BRS.transactionsPageType = {
-            type: type[0],
-            subtype: type[1]
-        }
+        BRS.transactionsPageType = type
     }
 
     BRS.pageNumber = 1
     BRS.hasMorePages = false
 
-    $(this).parents('.btn-group').find('.text').text($(this).text())
+    $(element).parents('.btn-group').find('.text').text($(element).text())
 
     $('.popover').remove()
 
