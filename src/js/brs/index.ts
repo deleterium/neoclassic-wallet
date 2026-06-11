@@ -86,10 +86,13 @@ import {
 
 import {
     pagesMessages,
-    incomingMessages,
+    incomingMessages
+} from './brs.messages'
+
+import {
     formsSendMessageComplete,
     formsDecryptMessages
-} from './brs.messages'
+} from './brs.modals.messages'
 
 import {
     pagesPeers,
