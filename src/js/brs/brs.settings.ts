@@ -100,7 +100,7 @@ function applySettings (key: string) {
             $(".modal form:not('#decrypt_note_form_container')").on('submit.onEnter', function (e) {
                 e.preventDefault()
                 const $modal = $(this).closest('.modal')
-                const $btn = $modal.find('button.btn-primary:not([data-dismiss=modal])')
+                const $btn = $modal.find('button.btn-primary:not([data-dismiss=modal])') as JQuery<HTMLButtonElement>
                 submitForm($btn)
             })
         } else {

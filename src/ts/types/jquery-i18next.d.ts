@@ -41,4 +41,13 @@ interface JQuery {
      * @returns The jQuery object for chaining.
      */
     localize(opts?: unknown): JQuery;
+
+    // Note: Bootstrap types were not beeing added to JQuery.
+    // Here is not the best place, but...
+    modal(action: 'show' | 'hide'): void;
+    tab(action: 'show')
+    popover(action: 'hide' | {
+        content: string,
+        trigger: 'hover'
+    })
 }

@@ -184,11 +184,13 @@ function fetchAndHandleLatestTransactions() {
    Unconfirmed can be identified by properties:
    * unconfirmed: false
    * height: 2147483647
+   * confirmations: -1
    * block: ''
    * blockTimestamp: -1 */
 function mapUnconfirmedToTransaction(unconfirmed: UnconfirmedTransaction): Transaction {
     return {
         ...unconfirmed,
+        confirmations: -1,
         block: "",
         blockTimestamp: -1
     };

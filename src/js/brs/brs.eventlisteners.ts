@@ -232,8 +232,9 @@ export function addEventListeners () {
             return false
         }
     })
-    $('.modal button.btn-primary:not([data-dismiss=modal]):not([data-ignore=true])').on('click', function () {
-        submitForm($(this))
+    $('.modal button.btn-primary:not([data-dismiss=modal]):not([data-ignore=true])').on('click', function (e: JQuery.ClickEvent) {
+        const element: JQuery<HTMLButtonElement> = e.target
+        submitForm($(element))
     })
     $('.ev-check-number-input').on('input', evCheckNumberInput)
 

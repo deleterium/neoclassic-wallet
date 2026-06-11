@@ -81,7 +81,8 @@ But if set to `true`, the request is done with `XMLHttpRequest`, a deprecated wa
 Creating a new modal
 * create html code for the modal (use the template file)
 * create the 'formFunction' if data in modal need some formatting
-* define custom messsages for sucess or error, if needed
+* Define custom messsages for sucess or error, if needed.
+They can be created by the formFunction, or by adding the property 'error_request_type' and/or 'success_request_type' in translation.csv.
 * Define custom form 'formFunctionComplete', if needed, for success after posting the request
 * Define custom form 'formFunctionError', if needed, to handle reponse error of request
 
@@ -149,7 +150,7 @@ Note that `BRS.checkIncoming` will have more details about the call.
 The incomingFunction will the called with the argument:
 * `transactions: Transaction[]`
 If there are new transactions, the last 10 confirmed transactions will be included.
-If there are a new pending transaction, all pending transactions will be passed. Unconfirmed transactions will include properties `height: 2147483647`, `block: ''` and `blockTimestamp: -1`, so they can have 'Transaction' type.
+If there are a new pending transaction, all pending transactions will be passed. Unconfirmed transactions will include properties `height: 2147483647`, `confirmations: -1`, `block: ''` and `blockTimestamp: -1`, so they can have 'Transaction' type.
 On top, all pending transactions have the property `unconfirmed: true` added by the `sendRequest` function.
 
 ## Pagination
