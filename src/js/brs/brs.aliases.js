@@ -21,11 +21,10 @@ import {
 } from './brs.numbers'
 
 import {
-    getAccountFormatted,
+    getAccountRSFromObject,
     dataLoadFinished,
     createInfoTable,
     getUnconfirmedTransactionsFromCache,
-    hasTransactionUpdates
 } from './brs.util'
 
 // TODO change to pagination?
@@ -285,14 +284,14 @@ export function pagesAliases () {
 
                 const unconfirmedTransaction = getUnconfirmedTransactionsFromCache(1, 6, {
                     alias: alias.aliasName
-                }, true)
+                })
 
                 if (unconfirmedTransaction) {
                     alias.tentative = true
-                    if (unconfirmedTransaction.recipient) {
-                        alias.buyer = unconfirmedTransaction.recipient
+                    if (unconfirmedTransaction[0].recipient) {
+                        alias.buyer = unconfirmedTransaction[0].recipient
                     }
-                    alias.priceNQT = unconfirmedTransaction.priceNQT
+                    alias.priceNQT = unconfirmedTransaction[0].priceNQT
                 }
 
                 if (!alias.aliasURI) {
@@ -585,8 +584,8 @@ export function evRegisterAliasModalOnShowBsModal (e) {
     }
 }
 
-export function incomingAliases (transactions) {
-    if (hasTransactionUpdates(transactions)) {
+export function incomingAliases () {
+    if (BRS.checkIncoming.newTransactions || BRS.checkIncoming.unconfirmedChanged) {
         reloadCurrentPage()
     }
 }
@@ -711,7 +710,7 @@ export function formsSetAliasError (response, data) {
                         message = $.t('error_alias_sale_different_account')
                     }
                 } else {
-                    message = "<a href='#' data-user='" + getAccountFormatted(response, 'account') + "'>" + $.t('view_owner_info_q') + '</a>'
+                    message = "<a href='#' data-user='" + getAccountRSFromObject(response, 'account') + "'>" + $.t('view_owner_info_q') + '</a>'
                 }
 
                 $('#register_alias_modal').find('.error_message').html(errorDescription + '. ' + message)

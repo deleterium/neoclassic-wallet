@@ -10,7 +10,7 @@ import {
 import {
     convertRSAccountToNumeric,
     getAccountLink,
-    getAccountTitle
+    getAccountTitleFromObject
 } from './brs.util'
 
 import { getAssetDetails } from './brs.asset.tools'
@@ -323,7 +323,7 @@ export function getTransactionDetails (transaction: Transaction | UnconfirmedTra
     }
 
     const accountLink = getAccountLink(transaction, senderOrRecipientOrMultiple)
-    const accountTitle = getAccountTitle(transaction, senderOrRecipientOrMultiple)
+    const accountTitle = getAccountTitleFromObject(transaction, senderOrRecipientOrMultiple)
     return {
         nameOfTransaction,
         accountLink,

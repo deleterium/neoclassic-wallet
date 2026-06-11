@@ -7,7 +7,7 @@ import {
 } from './brs'
 
 import {
-    getAccountFormatted,
+    getAccountRSFromObject,
     dataLoaded
 } from './brs.util'
 
@@ -93,9 +93,9 @@ export function pagesContacts () {
                 </td>
                 <td>
                 <a href='#'
-                    data-user='${getAccountFormatted(contact, 'account')}'
+                    data-user='${getAccountRSFromObject(contact, 'account')}'
                     class='user_info'>
-                    ${getAccountFormatted(contact, 'account')}
+                    ${getAccountRSFromObject(contact, 'account')}
                 </a>
                 </td>
                 <td>${contact.email ? contact.email.escapeHTML() : '-'}</td>

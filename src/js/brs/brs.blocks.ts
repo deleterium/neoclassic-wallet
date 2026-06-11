@@ -17,8 +17,8 @@ import {
 } from './brs.numbers'
 
 import {
-    getAccountTitle,
-    getAccountFormatted,
+    getAccountTitleFromObject,
+    getAccountRSFromObject,
     dataLoaded,
     formatStyledAmount
 } from './brs.util'
@@ -150,7 +150,7 @@ function blocksPageLoaded (blocks: BlockDetails[]) {
         const fee = formatNQTAsAmount(block.totalFeeNQT)
         const transactions = formatNumber(block.numberOfTransactions)
         const generatorDisplay = block.generator !== BRS.genesis
-            ? `<a href='#' data-user='${getAccountFormatted(block, 'generator')}' class='user_info'>${getAccountTitle(block, 'generator')}</a>`
+            ? `<a href='#' data-user='${getAccountRSFromObject(block, 'generator')}' class='user_info'>${getAccountTitleFromObject(block, 'generator')}</a>`
             : $.t('genesis')
         const volume = formatVolume(block.payloadLength)
         const percentage = Math.round(Number(block.baseTarget) / 153722867 * 100).toString().padStart(4, '0') + ' %'

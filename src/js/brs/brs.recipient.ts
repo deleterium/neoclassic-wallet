@@ -18,7 +18,7 @@ import {
 } from './brs.numbers'
 
 import {
-    getAccountFormatted,
+    getAccountRSFromObject,
     convertPublicKeyFromBase36ToBase16
 } from './brs.util'
 
@@ -270,7 +270,7 @@ function checkRecipient (account: string, form: JQuery<HTMLFormElement>) {
         getAccountTypeAndMessage(contact.account, function (response) {
             formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
             checkForMerchant(response.account?.description, form)
-            const message = $.t('contact_account_link', { account_id: getAccountFormatted(contact, 'account') })
+            const message = $.t('contact_account_link', { account_id: getAccountRSFromObject(contact, 'account') })
                 + ' '
                 + response.message.escapeHTML()
             updateCallout(callout, 'alert-' + response.type, message)

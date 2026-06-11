@@ -1,42 +1,39 @@
-/**
- * @depends {brs.js}
- */
-
 import { BRS } from '.'
+
+import { AjaxResponse, AssetDetails, Transaction, UnconfirmedTransaction } from '../typings'
+
 import { NxtAddress } from '../util/nxtaddress'
 
 import { pageLoaded } from './brs'
 
 import { formatQNTAsQuantity, formatNQTAsAmount } from './brs.numbers'
 
-import { sendRequest } from './brs.server'
+// region converter
 
-export function convertFromHex16 (hex) {
-    let j
+export function convertFromHex16 (hex: string) {
     const hexes = hex.match(/.{1,4}/g) || []
     let back = ''
-    for (j = 0; j < hexes.length; j++) {
+    for (let j = 0; j < hexes.length; j++) {
         back += String.fromCharCode(parseInt(hexes[j], 16))
     }
 
     return back
 }
 
-export function convertFromHex8 (hex) {
-    hex = hex.toString() // force conversion
+export function convertFromHex8 (hex: string) {
     let str = ''
     for (let i = 0; i < hex.length; i += 2) {
-        str += String.fromCharCode(parseInt(hex.substr(i, 2), 16))
+        str += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16))
     }
     return str
 }
 
-export function convertNumericToRSAccountFormat (account) {
+export function convertNumericToRSAccountFormat (account: string) {
     const address = new NxtAddress(account)
     return address.getAccountRS(BRS.prefix)
 }
 
-export function convertRSAccountToNumeric (account) {
+export function convertRSAccountToNumeric (account: string) {
     const address = new NxtAddress(account)
     return address.getAccountId()
 }
@@ -45,15 +42,17 @@ export function convertRSAccountToNumeric (account) {
  * @param {String} inVal base36 string
  * @returns same value but as hexString (64 chars)
  */
-export function convertPublicKeyFromBase36ToBase16 (inVal) {
-    function convert (value) {
+export function convertPublicKeyFromBase36ToBase16 (inVal: string) {
+    function convert (value: string) {
         return [...value.toString()]
             .reduce((r, v) => r * 36n + BigInt(parseInt(v, 36)), 0n)
     }
     return convert(inVal).toString(16).padStart(64, '0')
 }
 
-export function getAccountLink (object, acc) {
+// region getLink
+
+export function getAccountLink (object: Transaction, acc: string) {
     if (acc === 'multiple') {
         return $.t('multiple')
     }
@@ -63,63 +62,57 @@ export function getAccountLink (object, acc) {
         }
         return '/'
     } else {
-        return "<a href='#' data-user='" + String(object[acc + 'RS']).escapeHTML() + "' class='user-info'>" + getAccountTitle(object, acc) + '</a>'
+        return `<a href='#' data-user='${String(object[acc + 'RS']).escapeHTML()}' class='user-info'>${getAccountTitleFromObject(object, acc)}</a>`
     }
 }
 
-export function getAssetLink (asset) {
+export function getAssetLink (asset: AssetDetails) {
     if (!asset || !asset.asset) {
         return '/'
     }
     return `${asset.name} <a href='#' data-goto-asset='${asset.asset}'>${asset.asset}</a>`
 }
 
-export function getAccountTitle (object, acc) {
-    const type = typeof object
+// region getAccount
 
-    let formattedAcc = ''
+export function getAccountTitleFromObject (object: object, acc: string) {
+    let accountRS = ''
 
     if (acc === 'multiple') {
         return $.t('multiple')
     }
-    if (type === 'string' || type === 'number') {
-        formattedAcc = convertNumericToRSAccountFormat(object)
-        object = null
+    if (typeof object[acc + 'RS'] === 'undefined') {
+        return '/'
     } else {
-        if (typeof object[acc + 'RS'] === 'undefined') {
-            return '/'
-        } else {
-            formattedAcc = String(object[acc + 'RS']).escapeHTML()
-        }
+        accountRS = String(object[acc + 'RS']).escapeHTML()
     }
 
-    if (formattedAcc === BRS.accountRS) {
+    return getAccountTitle(accountRS)
+}
+
+export function getAccountTitle (accountRS: string) {
+    if (accountRS === BRS.accountRS) {
         return $.t('you')
     }
-    if (formattedAcc in BRS.contacts) {
-        return BRS.contacts[formattedAcc].name.escapeHTML()
+    if (accountRS in BRS.contacts) {
+        return BRS.contacts[accountRS].name.escapeHTML()
     }
-    if (formattedAcc.endsWith('2222-2222-2222-22222')) {
+    if (accountRS.endsWith('2222-2222-2222-22222')) {
         return $.t('burn_address')
     }
-    return String(formattedAcc).escapeHTML()
+    return accountRS.escapeHTML()
 }
 
-export function getAccountFormatted (object, acc) {
-    const type = typeof object
-
-    if (type === 'string' || type === 'number') {
-        return String(object).escapeHTML()
-    } else {
-        if (typeof object[acc + 'RS'] === 'undefined') {
-            return ''
-        } else {
-            return String(object[acc + 'RS']).escapeHTML()
-        }
+export function getAccountRSFromObject (object: object, acc: string) {
+    if (typeof object[acc + 'RS'] === 'undefined') {
+        return ''
     }
+    return String(object[acc + 'RS']).escapeHTML()
 }
 
-function getClipboardText (type) {
+// region clipboard
+
+function getClipboardText (type: string) {
     switch (type) {
     case 'account_id':
         return BRS.account
@@ -172,7 +165,9 @@ export function setupClipboardFunctionality () {
     }
 }
 
-export function dataLoaded (data, noPageLoad) {
+// region dataLoad
+
+export function dataLoaded (data: string = '', noPageLoad: boolean = false) {
     let $el = $('#' + BRS.currentPage + '_contents')
 
     if ($el.length) {
@@ -189,7 +184,7 @@ export function dataLoaded (data, noPageLoad) {
     }
 }
 
-export function dataLoadFinished ($el, fadeIn) {
+export function dataLoadFinished ($el: JQuery<HTMLElement>, fadeIn: boolean = false) {
     const $parent = $el.parent()
 
     if (fadeIn) {
@@ -216,7 +211,7 @@ export function dataLoadFinished ($el, fadeIn) {
             empty = true
         }
     } else {
-        if ($.trim($el.html()).length === 0) {
+        if (($el.html()).trim().length === 0) {
             empty = true
         }
     }
@@ -240,7 +235,7 @@ export function dataLoadFinished ($el, fadeIn) {
     }
 }
 
-export function createInfoTable (data) {
+export function createInfoTable (data: object) {
     let rows = ''
 
     for (let key in data) {
@@ -265,9 +260,9 @@ export function createInfoTable (data) {
         } else if (/_formatted$/i.test(key)) {
             key = key.replace('_formatted', '')
             value = String(value).escapeHTML()
-        } else if (key === 'quantity' && $.isArray(value)) {
-            if ($.isArray(value)) {
-                value = formatQNTAsQuantity(value[0], value[1])
+        } else if (key === 'quantity') {
+            if ('decimals' in data) {
+                value = formatQNTAsQuantity(value, data['decimals'] as number)
             } else {
                 value = formatQNTAsQuantity(value, 0)
             }
@@ -279,25 +274,19 @@ export function createInfoTable (data) {
             value = String(value).escapeHTML().nl2br()
         }
 
-        rows += "<tr><td style='font-weight:bold;'>" + $.t(key).escapeHTML() + (type ? ' ' + type.escapeHTML() : '') + ":</td><td style='word-break: break-word;'>" + value + '</td></tr>'
+        const escapedKey = $.t(key).escapeHTML();
+        const escapedType = type ? ' ' + type.escapeHTML() : '';
+        rows += `
+            <tr>
+              <td style='font-weight:bold;'>${escapedKey}${escapedType}</td>
+              <td style='word-break: break-word;'>${value}</td>
+            </tr>`;
     }
 
     return rows
 }
 
-export function getSelectedText () {
-    let t = ''
-    if (window.getSelection) {
-        t = window.getSelection().toString()
-    } else if (document.getSelection) {
-        t = document.getSelection().toString()
-    } else if (document.selection) {
-        t = document.selection.createRange().text
-    }
-    return t
-}
-
-export function formatStyledAmount (amount) {
+export function formatStyledAmount (amount: string) {
     const parts = formatNQTAsAmount(amount).split(BRS.decimalSign)
     if (parts.length === 2) {
         return `${parts[0]}<span style='font-size:12px'>${BRS.decimalSign}${parts[1]}</span>`
@@ -305,81 +294,44 @@ export function formatStyledAmount (amount) {
     return parts[0]
 }
 
-export function getUnconfirmedTransactionsFromCache (type, subtype, fields, single) {
+// region unconfirmed
+
+export function getUnconfirmedTransactionsFromCache (
+    type: number,
+    subtype: number,
+    fields?: any
+) {
     if (!BRS.unconfirmedTransactions.length) {
-        return false
+        return
     }
 
-    if (typeof type === 'number') {
-        type = [type]
-    }
+    const unconfirmedTransactions: UnconfirmedTransaction[] = []
 
-    if (typeof subtype === 'number') {
-        subtype = [subtype]
-    }
-
-    const unconfirmedTransactions = []
-
-    for (let i = 0; i < BRS.unconfirmedTransactions.length; i++) {
-        const unconfirmedTransaction = BRS.unconfirmedTransactions[i]
-
-        if (type.indexOf(unconfirmedTransaction.type) === -1 || subtype.indexOf(unconfirmedTransaction.subtype) === -1) {
+    for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
+        if (type !== unconfirmedTransaction.type || subtype !== unconfirmedTransaction.subtype) {
             continue
         }
 
         if (fields) {
             for (const key in fields) {
                 if (unconfirmedTransaction[key] === fields[key]) {
-                    if (single) {
-                        return completeUnconfirmedTransactionDetails(unconfirmedTransaction)
-                    } else {
-                        unconfirmedTransactions.push(unconfirmedTransaction)
-                    }
+                    unconfirmedTransactions.push(unconfirmedTransaction)
                 }
             }
         } else {
-            if (single) {
-                return completeUnconfirmedTransactionDetails(unconfirmedTransaction)
-            } else {
-                unconfirmedTransactions.push(unconfirmedTransaction)
-            }
+            unconfirmedTransactions.push(unconfirmedTransaction)
         }
     }
 
-    if (single || unconfirmedTransactions.length === 0) {
-        return false
-    } else {
-        $.each(unconfirmedTransactions, function (key, val) {
-            unconfirmedTransactions[key] = completeUnconfirmedTransactionDetails(val)
-        })
-
-        return unconfirmedTransactions
+    if (unconfirmedTransactions.length === 0) {
+        return
     }
+    return unconfirmedTransactions
 }
 
-function completeUnconfirmedTransactionDetails (unconfirmedTransaction) {
-    if (unconfirmedTransaction.type === 3 && unconfirmedTransaction.subtype === 4 && !unconfirmedTransaction.name) {
-        sendRequest('getDGSGood', {
-            goods: unconfirmedTransaction.attachment.goods
-        }, function (response) {
-            unconfirmedTransaction.name = response.name
-            unconfirmedTransaction.buyer = unconfirmedTransaction.sender
-            unconfirmedTransaction.buyerRS = unconfirmedTransaction.senderRS
-            unconfirmedTransaction.seller = response.seller
-            unconfirmedTransaction.sellerRS = response.sellerRS
-        }, false)
-    } else if (unconfirmedTransaction.type === 3 && unconfirmedTransaction.subtype === 0) {
-        unconfirmedTransaction.goods = unconfirmedTransaction.transaction
-    }
+// region translate
 
-    return unconfirmedTransaction
-}
-
-export function hasTransactionUpdates (transactions) {
-    return ((transactions && transactions.length) || BRS.unconfirmedTransactionsChange)
-}
-
-export function translateServerError (response) {
+export function translateServerError (response: AjaxResponse) {
     if (!response.errorDescription) {
         if (response.errorMessage) {
             response.errorDescription = response.errorMessage
@@ -395,7 +347,7 @@ export function translateServerError (response) {
         }
     }
 
-    let match
+    let match: RegExpMatchArray | null
 
     switch (response.errorCode) {
     case -1:
@@ -496,7 +448,7 @@ export function translateServerError (response) {
         match = response.errorDescription.match(/At least one of \[(.*)\] must be specified/i)
         if (match && match[1]) {
             const fieldNames = match[1].split(',')
-            const translatedFieldNames = []
+            const translatedFieldNames: string[] = []
 
             for (const fieldName of fieldNames) {
                 translatedFieldNames.push(getTranslatedFieldName(fieldName).toLowerCase())
@@ -580,7 +532,7 @@ export function translateServerError (response) {
     }
 }
 
-export function getTranslatedFieldName (name) {
+export function getTranslatedFieldName (name: string) {
     let nameKey = String(name).replace(/Planck|NQT|QNT|RS$/, '').replace(/\s+/g, '').replace(/([A-Z])/g, function ($1) {
         return '_' + $1.toLowerCase()
     })
@@ -591,7 +543,6 @@ export function getTranslatedFieldName (name) {
 
     if ($.i18n.exists(nameKey)) {
         return $.t(nameKey).escapeHTML()
-    } else {
-        return nameKey.replace(/_/g, ' ').escapeHTML()
     }
+    return nameKey.replace(/_/g, ' ').escapeHTML()
 }

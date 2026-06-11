@@ -12,7 +12,7 @@ import { formatNQTAsAmount, parseAmountToNumber } from './brs.numbers'
 
 import {
     dataLoaded,
-    getAccountTitle
+    getAccountTitleFromObject
 } from './brs.util'
 
 import { GetAccountEscrowTransactionsResponse } from '../typings'
@@ -32,12 +32,12 @@ export function pagesEscrow () {
             rows += `
                 <tr>
                   <td><a href='#' data-escrow='${escrow.id.escapeHTML()}'>${escrow.id.escapeHTML()}</a></td>
-                  <td>${getAccountTitle(escrow, 'sender')}</td>
-                  <td>${getAccountTitle(escrow, 'recipient')}</td>
+                  <td>${getAccountTitleFromObject(escrow, 'sender')}</td>
+                  <td>${getAccountTitleFromObject(escrow, 'recipient')}</td>
                   <td>`
             for (let i=0; i< escrow.signers.length; i++) {
                 if (i !== 0) rows += '<br>'
-                rows += getAccountTitle(escrow.signers[i], 'id')
+                rows += getAccountTitleFromObject(escrow.signers[i], 'id')
             }
             rows += `
                   </td>

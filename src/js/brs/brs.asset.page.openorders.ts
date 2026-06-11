@@ -4,7 +4,7 @@ import { pageLoaded, reloadCurrentPage } from './brs';
 import { getAssetDetails } from './brs.asset.tools';
 import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from './brs.numbers';
 import { sendRequest } from './brs.server';
-import { dataLoadFinished, hasTransactionUpdates } from './brs.util';
+import { dataLoadFinished } from './brs.util';
 
 export function pagesOpenOrders() {
     let loaded = 0;
@@ -149,8 +149,8 @@ function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid', callback:
     callback();
 }
 
-export function incomingOpenOrders(transactions) {
-    if (hasTransactionUpdates(transactions)) {
+export function incomingOpenOrders() {
+    if (BRS.checkIncoming.newTransactions || BRS.checkIncoming.unconfirmedChanged) {
         reloadCurrentPage();
     }
 }

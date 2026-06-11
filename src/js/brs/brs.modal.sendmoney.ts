@@ -3,7 +3,7 @@ import { PostResponse } from '../typings';
 import { getContactByName } from './brs.contacts';
 import { evCheckNumberInput } from './brs.modals';
 import { parseAmountToNQT, formatNQTAsAmount } from './brs.numbers';
-import { convertRSAccountToNumeric, getAccountFormatted } from './brs.util';
+import { convertRSAccountToNumeric, getAccountRSFromObject } from './brs.util';
 
 import {
     evSpanRecipientSelectorClickButton,
@@ -15,7 +15,7 @@ export function formsSendMoneyComplete(_response: PostResponse, data: any) {
         $.notify(
             `${$.t('success_sendMoney', { valueSuffix: BRS.valueSuffix })}
             <a href='#'
-              data-account='${getAccountFormatted(data, 'recipient')}'
+              data-account='${getAccountRSFromObject(data, 'recipient')}'
               data-toggle='modal'
               data-target='#add_contact_modal'
               style='text-decoration:underline'>

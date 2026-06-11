@@ -40,7 +40,7 @@ export function pagesTransactions() {
     }
 
     let rows = '';
-    let unconfirmedTransactions: UnconfirmedTransaction[];
+    let unconfirmedTransactions: UnconfirmedTransaction[] | undefined;
     const params: {
         account: string
         firstIndex: number;
@@ -59,7 +59,7 @@ export function pagesTransactions() {
         const types = BRS.transactionsPageType.split(':')
         params.type = types[0];
         params.subtype = types[1];
-        unconfirmedTransactions = getUnconfirmedTransactionsFromCache(params.type, params.subtype);
+        unconfirmedTransactions = getUnconfirmedTransactionsFromCache(Number(params.type), Number(params.subtype));
     } else {
         unconfirmedTransactions = BRS.unconfirmedTransactions;
     }

@@ -5,7 +5,7 @@ import { sendRequest } from './brs.server'
 import { formatTimestampAsDateTime } from './brs.numbers'
 
 import { Escrow, GetEscrowTransactionResponse } from '../typings'
-import { getAccountTitle } from './brs.util'
+import { getAccountTitleFromObject } from './brs.util'
 
 export function showEscrowDecisionModal (escrow: Escrow | string) {
     if (BRS.fetchingModalData) {
@@ -30,7 +30,7 @@ export function processEscrowDecisionModalData (escrow: Escrow) {
     $('#escrow_decision_escrow_info').val(escrow.id)
     let decisions = ''
     for (let i = 0; i < escrow.signers.length; i++) {
-        decisions += getAccountTitle(escrow.signers[i], 'id') + ': ' + $.t(escrow.signers[i].decision) + '<br />'
+        decisions += getAccountTitleFromObject(escrow.signers[i], 'id') + ': ' + $.t(escrow.signers[i].decision) + '<br />'
     }
     $('#escrow_decision_decisions').html(decisions)
     $('#escrow_decision_required').text($.t('number_of_required_signers') + ': ' + escrow.requiredSigners)

@@ -26,8 +26,8 @@ import {
 } from './brs.numbers'
 
 import {
-    getAccountTitle,
-    getAccountFormatted,
+    getAccountTitleFromObject,
+    getAccountRSFromObject,
     dataLoadFinished,
 } from './brs.util'
 
@@ -412,7 +412,7 @@ function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean)
             scrollTop: 0
         }, 0)
 
-        $('#asset_account').html("<a href='#' data-user='" + getAccountFormatted(asset, 'account') + "' class='user_info'>" + getAccountTitle(asset, 'account') + '</a>')
+        $('#asset_account').html("<a href='#' data-user='" + getAccountRSFromObject(asset, 'account') + "' class='user_info'>" + getAccountTitleFromObject(asset, 'account') + '</a>')
         $('#asset_id').html(assetId.escapeHTML())
         $('#asset_decimals').html(String(asset.decimals).escapeHTML())
         $('#asset_name').html(String(asset.name).escapeHTML())
@@ -658,9 +658,9 @@ function loadAssetOrders (type: 'ask' | 'bid', assetId: string, refresh: boolean
             if (order.account === BRS.currentAsset.account) {
                 accountHTML += $.t('asset_issuer')
             } else {
-                accountHTML += getAccountTitle(order, 'account')
+                accountHTML += getAccountTitleFromObject(order, 'account')
             }
-            accountHTML = `<a href='#' data-user='${getAccountFormatted(order, 'account')}' class='user_info'>${accountHTML}</a>`
+            accountHTML = `<a href='#' data-user='${getAccountRSFromObject(order, 'account')}' class='user_info'>${accountHTML}</a>`
 
             rows += `
                 <tr class='${className}'

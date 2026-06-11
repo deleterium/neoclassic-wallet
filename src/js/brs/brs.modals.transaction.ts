@@ -28,8 +28,8 @@ import {
     convertNumericToRSAccountFormat,
     getAssetLink,
     getAccountTitle,
-    getAccountFormatted,
-    createInfoTable
+    getAccountRSFromObject,
+    createInfoTable,
 } from './brs.util'
 
 import { removeDecryptionForm } from './brs.modals'
@@ -507,7 +507,7 @@ function processTransactionModalData (transaction: Transaction) {
         case 0:
             // marketplace listing
             delete data.sender_formatted_html
-            data.seller = getAccountFormatted(transaction, 'sender')
+            data.seller = getAccountRSFromObject(transaction, 'sender')
             data.name = transaction.attachment.name
             data.description = transaction.attachment.description
             data.price = transaction.attachment.priceNQT
@@ -520,7 +520,7 @@ function processTransactionModalData (transaction: Transaction) {
             sendRequest('getDGSGood', {
                 goods: transaction.attachment.goods
             }, function (goods) {
-                data.seller = getAccountFormatted(goods, 'seller')
+                data.seller = getAccountRSFromObject(goods, 'seller')
                 data.item_name = goods.name
                 transactionEndLoad()
             })
@@ -532,7 +532,7 @@ function processTransactionModalData (transaction: Transaction) {
             sendRequest('getDGSGood', {
                 goods: transaction.attachment.goods
             }, function (goods) {
-                data.seller = getAccountFormatted(goods, 'seller')
+                data.seller = getAccountRSFromObject(goods, 'seller')
                 data.item_name = goods.name
                 data.new_price_formatted_html = formatNQTAsAmount(transaction.attachment.priceNQT) + ' ' + BRS.valueSuffix
                 transactionEndLoad()
@@ -545,7 +545,7 @@ function processTransactionModalData (transaction: Transaction) {
             sendRequest('getDGSGood', {
                 goods: transaction.attachment.goods
             }, function (goods) {
-                data.seller = getAccountFormatted(goods, 'seller')
+                data.seller = getAccountRSFromObject(goods, 'seller')
                 data.item_name = goods.name
                 data.delta_quantity = transaction.attachment.deltaQuantity
                 transactionEndLoad()
@@ -567,8 +567,8 @@ function processTransactionModalData (transaction: Transaction) {
             sendRequest('getDGSPurchase', {
                 purchase: transaction.attachment.purchase
             }, function (purchase) {
-                data.seller = getAccountFormatted(purchase, 'seller')
-                data.buyer = getAccountFormatted(purchase, 'buyer')
+                data.seller = getAccountRSFromObject(purchase, 'seller')
+                data.buyer = getAccountRSFromObject(purchase, 'buyer')
                 sendRequest('getDGSGood', {
                     goods: purchase.goods
                 }, function (goods) {
@@ -590,8 +590,8 @@ function processTransactionModalData (transaction: Transaction) {
         sendRequest('getDGSGood', {
             goods: transaction.attachment.goods
         }, function (goods) {
-            data.buyer = getAccountFormatted(transaction, 'sender')
-            data.seller = getAccountFormatted(goods, 'seller')
+            data.buyer = getAccountRSFromObject(transaction, 'sender')
+            data.seller = getAccountRSFromObject(goods, 'seller')
             data.item_name = goods.name
             data.price = transaction.attachment.priceNQT
             data.quantity_formatted_html = formatNumber(transaction.attachment.quantity)
@@ -638,8 +638,8 @@ function processTransactionModalData (transaction: Transaction) {
         sendRequest('getDGSPurchase', {
             purchase: transaction.attachment.purchase
         }, function (purchase) {
-            data.seller = getAccountFormatted(purchase, 'seller')
-            data.buyer = getAccountFormatted(purchase, 'buyer')
+            data.seller = getAccountRSFromObject(purchase, 'seller')
+            data.buyer = getAccountRSFromObject(purchase, 'buyer')
             sendRequest('getDGSGood', {
                 goods: purchase.goods
             }, function (goods) {
@@ -680,8 +680,8 @@ function processTransactionModalData (transaction: Transaction) {
         sendRequest('getDGSPurchase', {
             purchase: transaction.attachment.purchase
         }, function (purchase) {
-            data.seller = getAccountFormatted(purchase, 'seller')
-            data.buyer = getAccountFormatted(purchase, 'buyer')
+            data.seller = getAccountRSFromObject(purchase, 'seller')
+            data.buyer = getAccountRSFromObject(purchase, 'buyer')
             sendRequest('getDGSGood', {
                 goods: purchase.goods
             }, function (goods) {

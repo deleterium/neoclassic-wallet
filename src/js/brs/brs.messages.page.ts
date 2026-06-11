@@ -18,10 +18,9 @@ import {
 import { formatTimestampAsDateTime } from './brs.numbers'
 
 import {
-    getAccountTitle,
-    getAccountFormatted,
+    getAccountTitleFromObject,
+    getAccountRSFromObject,
     getUnconfirmedTransactionsFromCache,
-    hasTransactionUpdates
 } from './brs.util'
 
 import {
@@ -113,18 +112,18 @@ function displayMessageSidebar () {
     for (const sidebarUser of sidebarUserList) {
         let dataContact = ''
         if (sidebarUser.userRS in BRS.contacts) {
-            dataContact = ` data-contact="${getAccountTitle(sidebarUser, 'user')}"`;
+            dataContact = ` data-contact="${getAccountTitleFromObject(sidebarUser, 'user')}"`;
         }
 
         rows += `
             <a href='#'
               class='nav-link' 
-              data-account="${getAccountFormatted(sidebarUser, 'user')}"
-              data-account-id="${getAccountFormatted(sidebarUser.user)}"
+              data-account="${sidebarUser.userRS}"
+              data-account-id="${sidebarUser.user}"
               ${dataContact}
               data-context="messages_vtab_context"
               >
-              ${getAccountTitle(sidebarUser, 'user')}
+              ${getAccountTitleFromObject(sidebarUser, 'user')}
               <br>
               <small>${formatTimestampAsDateTime(sidebarUser.timestamp)}</small>
             </a>`;
@@ -138,7 +137,7 @@ function displayMessageSidebar () {
 }
 
 export function incomingMessages (transactions: Transaction[]) {
-    if (!hasTransactionUpdates(transactions)) {
+    if (!BRS.checkIncoming.newTransactions && !BRS.checkIncoming.unconfirmedChanged) {
         return
     }
     let reloadContent = false
@@ -165,8 +164,8 @@ export function incomingMessages (transactions: Transaction[]) {
         }
         if (trans.sender !== BRS.account) {
             $.notify($.t('you_received_message', {
-                account: getAccountFormatted(trans, 'sender'),
-                name: getAccountTitle(trans, 'sender')
+                account: getAccountRSFromObject(trans, 'sender'),
+                name: getAccountTitleFromObject(trans, 'sender')
             }), { type: 'success' })
         }
     }
@@ -307,7 +306,7 @@ export function evMessagesSidebarContextClick (e: JQuery.ClickEvent) {
     if (!BRS.selectedContext) return
 
     const element = e.currentTarget
-    const account = getAccountFormatted(BRS.selectedContext.data('account'))
+    const account = BRS.selectedContext.data('account')
     const option = $(element).data('option')
 
     closeContextMenu()

@@ -2,7 +2,7 @@ import { BRS } from '.';
 import { GetAssetTransfersResponse } from '../typings';
 import { formatTimestampAsDateTime, formatQNTAsQuantity } from './brs.numbers';
 import { sendRequest } from './brs.server';
-import { getAccountFormatted, getAccountTitle, dataLoaded } from './brs.util';
+import { getAccountRSFromObject, getAccountTitleFromObject, dataLoaded } from './brs.util';
 
 export function pagesTransferHistory() {
     sendRequest('getAssetTransfers+', {
@@ -41,13 +41,13 @@ export function pagesTransferHistory() {
                         ${formatQNTAsQuantity(transfer.quantityQNT, transfer.decimals)}
                       </td>
                       <td>
-                        <a href='#' data-user='${getAccountFormatted(transfer, 'recipient')}' class='user_info'>
-                          ${getAccountTitle(transfer, 'recipient')}
+                        <a href='#' data-user='${getAccountRSFromObject(transfer, 'recipient')}' class='user_info'>
+                          ${getAccountTitleFromObject(transfer, 'recipient')}
                         </a>
                       </td>
                       <td>
-                        <a href='#' data-user='${getAccountFormatted(transfer, 'sender')}' class='user_info'>
-                          ${getAccountTitle(transfer, 'sender')}
+                        <a href='#' data-user='${getAccountRSFromObject(transfer, 'sender')}' class='user_info'>
+                          ${getAccountTitleFromObject(transfer, 'sender')}
                         </a>
                       </td>
                     </tr>`;

@@ -641,3 +641,8 @@ export interface PostResponse {
     errorCode?: number;
     errorDescription?: string;
 }
+
+export interface AjaxResponse extends PostResponse {
+    error: string
+    errorMessage: string
+}

@@ -2,13 +2,13 @@ import { BRS } from '.';
 import { PostResponse, Transaction } from '../typings';
 import { reloadCurrentPage } from './brs';
 import { addDecryptedTransactionToCache, getAccountId, setDecryptionPassword, decryptAttachmentField } from './brs.encryption';
-import { getAccountFormatted, getUnconfirmedTransactionsFromCache } from './brs.util';
+import { getAccountRSFromObject, getUnconfirmedTransactionsFromCache } from './brs.util';
 
 export function formsSendMessageComplete(response: PostResponse, data: any) {
     data.message = data._extra.message;
 
     if (!(data._extra && data._extra.convertedAccount)) {
-        $.notify($.t('success_message_sent') + " <a href='#' data-account='" + getAccountFormatted(data, 'recipient') + "' data-toggle='modal' data-target='#add_contact_modal' style='text-decoration:underline'>" + $.t('add_recipient_to_contacts_q') + '</a>', { type: 'success' });
+        $.notify($.t('success_message_sent') + " <a href='#' data-account='" + getAccountRSFromObject(data, 'recipient') + "' data-toggle='modal' data-target='#add_contact_modal' style='text-decoration:underline'>" + $.t('add_recipient_to_contacts_q') + '</a>', { type: 'success' });
     } else {
         $.notify($.t('success_message_sent'), { type: 'success' });
     }
