@@ -360,7 +360,9 @@ export const BRS = {
     transactionsPageType: '',
 
     // from messages
-    _messages: {},
+    _messages: {} as {
+        [userID: string]: Transaction[];
+    },
 
     // from modals
     fetchingModalData: false,

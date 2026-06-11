@@ -1,9 +1,10 @@
 import { BRS } from '.';
+import { PostResponse, Transaction } from '../typings';
 import { reloadCurrentPage } from './brs';
 import { addDecryptedTransactionToCache, getAccountId, setDecryptionPassword, decryptAttachmentField } from './brs.encryption';
 import { getAccountFormatted, getUnconfirmedTransactionsFromCache } from './brs.util';
 
-export function formsSendMessageComplete(response, data) {
+export function formsSendMessageComplete(response: PostResponse, data: any) {
     data.message = data._extra.message;
 
     if (!(data._extra && data._extra.convertedAccount)) {
@@ -23,7 +24,7 @@ export function formsSendMessageComplete(response, data) {
     }
 }
 
-export async function formsDecryptMessages(data) {
+export async function formsDecryptMessages(data: any) {
     const accountId = getAccountId(data.secretPhrase);
     if (accountId !== BRS.account) {
         return {
@@ -39,10 +40,9 @@ export async function formsDecryptMessages(data) {
         };
     }
     try {
-        const messagesToDecrypt = [];
+        const messagesToDecrypt: Transaction[] = [];
         for (const otherUser in BRS._messages) {
-            for (const key in BRS._messages[otherUser]) {
-                const message = BRS._messages[otherUser][key];
+            for (const message of BRS._messages[otherUser]) {
                 if (message.attachment && message.attachment.encryptedMessage) {
                     messagesToDecrypt.push(message);
                 }
@@ -64,14 +64,9 @@ export async function formsDecryptMessages(data) {
             }
         }
     } catch (err) {
-        const errorMessage = err.message;
-        if (errorMessage) {
-            return {
-                error: errorMessage
-            };
-        }
+        const errorMessage = (err as Error).message;
         return {
-            error: $.t('error_messages_decrypt')
+            error: errorMessage || $.t('error_messages_decrypt')
         };
     }
 
