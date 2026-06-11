@@ -87,7 +87,7 @@ import {
 import {
     pagesMessages,
     incomingMessages
-} from './brs.messages'
+} from './brs.messages.page'
 
 import {
     formsSendMessageComplete,

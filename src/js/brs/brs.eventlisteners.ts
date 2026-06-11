@@ -92,7 +92,7 @@ import {
 import {
     evMessagesSidebarClick,
     evMessagesSidebarContextClick
-} from './brs.messages'
+} from './brs.messages.page'
 
 import {
     sendMoneyCalculateTotal,
