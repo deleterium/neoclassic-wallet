@@ -23,6 +23,15 @@ interface JQueryStatic {
      * @param options - Default options for notifications.
      */
     notifyDefaults(options?: any): void;
+
+    /**
+     * Checks if a translation key exists in the i18next store.
+     * @param key - The translation key to check.
+     * @returns A boolean indicating if the key exists.
+     */
+    i18n: {
+        exists(key: string) : boolean;
+    };
 }
 
 interface JQuery {
