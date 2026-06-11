@@ -1,7 +1,3 @@
-/**
- * @depends {brs.js}
- */
-
 import hashicon from 'hashicon'
 
 import { BRS } from '.'
@@ -42,7 +38,9 @@ import {
     decryptAttachmentFieldAndUpdateSelector
 } from './brs.messages.tools'
 
-export function pagesMessages (callback) {
+import { GetAccountTransactionsResponse, Transaction } from '../typings'
+
+export function pagesMessages () {
     if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
         // we will refresh current chat box
         const chatMessages = buildChatMessages(BRS.currentSubPage)
@@ -52,7 +50,7 @@ export function pagesMessages (callback) {
         $('#message_details .unlock-messages').on('click', function () {
             $('#messages_decrypt_modal').modal('show')
         })
-        pageLoaded(callback)
+        pageLoaded()
         return
     }
     $('#messages_vtab').empty()
@@ -69,69 +67,67 @@ export function pagesMessages (callback) {
         type: 1,
         subtype: 0,
         includeIndirect: false
-    }, function (response) {
+    }, function (response: GetAccountTransactionsResponse) {
         if (response.transactions && response.transactions.length) {
-            for (let i = 0; i < response.transactions.length; i++) {
-                const otherUser = (response.transactions[i].recipient === BRS.account ? response.transactions[i].sender : response.transactions[i].recipient)
+            for (const tx of response.transactions) {
+                const otherUser = (tx.recipient === BRS.account ? tx.sender : tx.recipient) as string
                 if (!(otherUser in BRS._messages)) {
                     BRS._messages[otherUser] = []
                 }
-                BRS._messages[otherUser].push(response.transactions[i])
+                BRS._messages[otherUser].push(tx)
             }
             displayMessageSidebar()
         } else {
             $('#no_message_selected').hide()
             $('#no_messages_available').show()
         }
-        pageLoaded(callback)
+        pageLoaded()
     })
 }
 
 function displayMessageSidebar () {
     let rows = ''
 
-    const sortedMessages = []
+    const sidebarUserList: {
+        timestamp: number;
+        user: string;
+        userRS: string;
+    }[] = []
 
     for (const otherUser in BRS._messages) {
-        BRS._messages[otherUser].sort(function (a, b) {
-            if (a.timestamp > b.timestamp) {
-                return 1
-            } else if (a.timestamp < b.timestamp) {
-                return -1
-            } else {
-                return 0
-            }
-        })
+        BRS._messages[otherUser].sort((a, b) => a.timestamp - b.timestamp)
 
-        const otherUserRS = (otherUser === BRS._messages[otherUser][0].sender ? BRS._messages[otherUser][0].senderRS : BRS._messages[otherUser][0].recipientRS)
+        // The otherUserRS variable is set to either the senderRS or recipientRS of the first message in the sorted list,
+        // depending on whether otherUser matches the sender.
+        const otherUserRS = (otherUser === BRS._messages[otherUser][0].sender ? BRS._messages[otherUser][0].senderRS : BRS._messages[otherUser][0].recipientRS) as string
 
-        sortedMessages.push({
+        sidebarUserList.push({
             timestamp: BRS._messages[otherUser][BRS._messages[otherUser].length - 1].timestamp,
             user: otherUser,
             userRS: otherUserRS
         })
     }
 
-    sortedMessages.sort(function (a, b) {
-        if (a.timestamp < b.timestamp) {
-            return 1
-        } else if (a.timestamp > b.timestamp) {
-            return -1
-        } else {
-            return 0
-        }
-    })
+    sidebarUserList.sort((a, b)  => a.timestamp - b.timestamp)
 
-    for (let i = 0; i < sortedMessages.length; i++) {
-        const sortedMessage = sortedMessages[i]
-
-        let extra = ''
-
-        if (sortedMessage.userRS in BRS.contacts) {
-            extra = " data-contact='" + getAccountTitle(sortedMessage, 'user') + "'"
+    for (const sidebarUser of sidebarUserList) {
+        let dataContact = ''
+        if (sidebarUser.userRS in BRS.contacts) {
+            dataContact = ` data-contact="${getAccountTitle(sidebarUser, 'user')}"`;
         }
 
-        rows += "<a href='#' class='nav-link' data-account='" + getAccountFormatted(sortedMessage, 'user') + "' data-account-id='" + getAccountFormatted(sortedMessage.user) + "'" + extra + ' data-context="messages_vtab_context">' + getAccountTitle(sortedMessage, 'user') + '<br><small>' + formatTimestampAsDateTime(sortedMessage.timestamp) + '</small></a>'
+        rows += `
+            <a href='#'
+              class='nav-link' 
+              data-account="${getAccountFormatted(sidebarUser, 'user')}"
+              data-account-id="${getAccountFormatted(sidebarUser.user)}"
+              ${dataContact}
+              data-context="messages_vtab_context"
+              >
+              ${getAccountTitle(sidebarUser, 'user')}
+              <br>
+              <small>${formatTimestampAsDateTime(sidebarUser.timestamp)}</small>
+            </a>`;
     }
 
     $('#messages_vtab').empty().append(rows)
@@ -141,7 +137,7 @@ function displayMessageSidebar () {
     }
 }
 
-export function incomingMessages (transactions) {
+export function incomingMessages (transactions: Transaction[]) {
     if (!hasTransactionUpdates(transactions)) {
         return
     }
@@ -153,7 +149,7 @@ export function incomingMessages (transactions) {
     }
     const newMessagesTransactions = transactions.filter(tx => tx.type === 1 && tx.subtype === 0 && tx.unconfirmed !== true && (tx.sender === BRS.account || tx.recipient === BRS.account))
     for (const trans of newMessagesTransactions) {
-        const chatTo = trans.sender === BRS.account ? trans.recipient : trans.sender
+        const chatTo = (trans.sender === BRS.account ? trans.recipient : trans.sender) as string
         if (BRS._messages[chatTo] === undefined) {
             reloadSidebar = true
             BRS._messages[chatTo] = [trans]
@@ -185,7 +181,7 @@ export function incomingMessages (transactions) {
     }
 }
 
-function buildChatMessages (account_id) {
+function buildChatMessages (account_id: string) {
     const msgFromTemplate = `
         <div class="direct-chat-msg %pendingClass%">
             <div class="direct-chat-infos clearfix">
@@ -217,8 +213,7 @@ function buildChatMessages (account_id) {
         messages.push(...unconfirmedTransactions.reverse())
     }
 
-    for (let i = 0; i < messages.length; i++) {
-        const message = messages[i]
+    for (const message of messages) {
 
         const containerID = 'message' + message.transaction
         const plainMessage = getMessageFromTX(message)
@@ -275,7 +270,7 @@ function buildChatMessages (account_id) {
     return output
 }
 
-export function evMessagesSidebarClick (e) {
+export function evMessagesSidebarClick (e: JQuery.ClickEvent) {
     e.preventDefault()
     const clickedElement = $(e.currentTarget)
 
@@ -307,11 +302,13 @@ export function evMessagesSidebarClick (e) {
     })
 }
 
-export function evMessagesSidebarContextClick (e) {
+export function evMessagesSidebarContextClick (e: JQuery.ClickEvent) {
     e.preventDefault()
+    if (!BRS.selectedContext) return
 
+    const element = e.currentTarget
     const account = getAccountFormatted(BRS.selectedContext.data('account'))
-    const option = $(this).data('option')
+    const option = $(element).data('option')
 
     closeContextMenu()
 
