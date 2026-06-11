@@ -30,59 +30,6 @@ import {
 import { BlockDetails, GetAccountBlocksResponse, GetBlockResponse, GetBlocksResponse, Transaction } from '../typings'
 
 /**
- * Update the blocks table in dashboard with the blocks available at `BRS.blocks`
- */
-export function updateDashboardBlocks () {
-    let rows = ''
-    for (const block of BRS.blocks) {
-        const isBold = block.numberOfTransactions > 0 ? "style='font-weight:bold'" : ''
-        const height = String(block.height).escapeHTML()
-        const blockId = String(block.block).escapeHTML()
-        const timestamp = String(block.timestamp).escapeHTML()
-        const formattedTimestamp = formatTimestampAsDateTime(block.timestamp)
-        const totalAmount = formatNQTAsAmount(block.totalAmountNQT)
-        const totalFee = formatNQTAsAmount(block.totalFeeNQT)
-        const transactionCount = formatNumber(block.numberOfTransactions)
-
-        rows += `
-            <tr>
-              <td>
-                <a href='#' data-block='${height}' data-blockid='${blockId}' class='block' ${isBold}>
-                  ${height}
-                </a>
-              </td>
-              <td data-timestamp='${timestamp}'>${formattedTimestamp}</td>
-              <td>${totalAmount} + ${totalFee}</td>
-              <td>${transactionCount}</td>
-            </tr>`
-    }
-    $('#dashboard_blocks_table tbody').html(rows)
-}
-
-export function updateConfirmationsInDashboardTransactions(numberToAdd: number) {
-    $('#dashboard_transactions_table tr.confirmed td.confirmations').each(function () {
-        if ($(this).data('incoming')) {
-            $(this).removeData('incoming')
-            return
-        }
-
-        const confirmations = parseInt($(this).text(), 10)
-
-        const nrConfirmations = confirmations + numberToAdd
-
-        if (confirmations <= 10) {
-            if (nrConfirmations > 10) {
-                $(this).text('10+')
-                return
-            }
-            $(this).text(nrConfirmations)
-            return
-        }
-        $(this).text('10+')
-    })
-}
-
-/**
  * Draws the page 'Mining' -> 'Forged block'.
  */
 export function pagesBlocksForged () {

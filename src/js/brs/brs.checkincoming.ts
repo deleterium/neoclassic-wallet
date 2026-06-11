@@ -1,10 +1,24 @@
 import { BRS } from '.';
 import { sendRequest } from './brs.server';
-import { incomingUpdateDashboardTransactions } from './brs.dashboard.page';
-import { updateConfirmationsInDashboardTransactions, updateDashboardBlocks } from './brs.blocks';
+
+import {
+    incomingUpdateDashboardTransactions,
+    updateConfirmationsInDashboardTransactions,
+    updateDashboardBlocks
+} from './brs.dashboard.page';
+
 import { getAccountInfo } from './brs';
 import { cacheUserAssets, saveCachedAssets } from './brs.asset.tools';
-import { GetAccountTransactionIdsResponse, GetAccountTransactionsResponse, GetBlochainStatusResponse, GetBlocksResponse, GetUnconfirmedTransactionsResponse, Transaction, UnconfirmedTransaction } from '../typings';
+
+import {
+    GetAccountTransactionIdsResponse,
+    GetAccountTransactionsResponse,
+    GetBlochainStatusResponse,
+    GetBlocksResponse,
+    GetUnconfirmedTransactionsResponse,
+    Transaction,
+    UnconfirmedTransaction
+} from '../typings';
 
 export function setCheckIncomingInterval (seconds : number ) : void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
