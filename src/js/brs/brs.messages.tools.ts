@@ -1,13 +1,14 @@
+import { Transaction } from '../typings';
 import converters from '../util/converters';
 import { getDecryptedMessageFromCache, decryptAttachmentField } from './brs.encryption';
 import { convertFromHex16, convertFromHex8 } from './brs.util';
 
 /**
  * Get plain message in a given transaction.
- * @param {Transaction} A transaction object from the blockchain
- * @returns {string} The message, inf any, or undefine if not present
+ * @param transaction - A transaction object from the blockchain
+ * @returns The message, if any, or undefined if not present
  */
-export function getMessageFromTX(transaction) {
+export function getMessageFromTX(transaction: Transaction): string | undefined {
     if (!transaction.attachment) {
         return;
     }
@@ -31,16 +32,21 @@ export function getMessageFromTX(transaction) {
     }
 }
 
+interface GetEncryptedMessage {
+    message: string;
+    isDecrypted: boolean
+}
+
 /**
  * Get information about encryptedMessage in a given Transaction. Do not decrypt.
  * Meant to be fast.
- * @param {Transaction} A transaction object from the blockchain
- * @returns {response} Object {
+ * @param transaction - A transaction object from the blockchain
+ * @returns Object {
  *     message: {string} Empty if no message. Empty if it is not decrypted.
  *     isDecrypted: {boolean}
  * } OR {undefined} if no EncryptedMessage in that TX
  */
-export function getEncryptedMessageFromTX(transaction) {
+export function getEncryptedMessageFromTX(transaction): GetEncryptedMessage | undefined {
     if (!transaction.attachment || !transaction.attachment.encryptedMessage) {
         return;
     }
@@ -60,13 +66,13 @@ export function getEncryptedMessageFromTX(transaction) {
 /**
  * Get information about EncryptToSelfMessage in a given Transaction. Do not decrypt.
  * Meant to be fast.
- * @param {Transaction} A transaction object from the blockchain
- * @returns {response} Object {
+ * @param transaction - A transaction object from the blockchain
+ * @returns Object {
  *     message: {string} Empty if no message. Empty if it is not decrypted.
  *     isDecrypted: {boolean}
  * } OR {undefined} if no EncryptedMessage in that TX
  */
-export function getEncryptToSelfMessageFromTX(transaction) {
+export function getEncryptToSelfMessageFromTX(transaction: Transaction): GetEncryptedMessage | undefined {
     if (!transaction.attachment || !transaction.attachment.encryptToSelfMessage) {
         return;
     }
@@ -83,7 +89,12 @@ export function getEncryptToSelfMessageFromTX(transaction) {
     };
 }
 
-export async function decryptAttachmentFieldAndUpdateSelector(transaction, field, passphrase, querySelector) {
+export async function decryptAttachmentFieldAndUpdateSelector(
+    transaction: Transaction,
+    field: "encryptedMessage" | "encryptToSelfMessage",
+    passphrase: string,
+    querySelector: string
+) {
     const itemID = '#' + querySelector;
     const decoded = await decryptAttachmentField(transaction, field, false, passphrase);
     $(itemID).html(decoded.escapeHTML().nl2br());
