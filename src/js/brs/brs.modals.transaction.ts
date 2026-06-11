@@ -41,7 +41,7 @@ import { getTransactionDetails } from './brs.tx.tools'
 import {
     decryptAttachmentFieldAndUpdateSelector,
     getMessageFromTX
-} from './brs.messages'
+} from './brs.messages.tools'
 
 import { DBAsset, GetIndirectIncomingResponse, Transaction } from '../typings'
 
