@@ -24,7 +24,7 @@ import {
 
 import {
     getTransactionDetails
-} from './brs.transactions'
+} from './brs.tx.tools'
 
 import { NxtAddress } from '../util/nxtaddress'
 

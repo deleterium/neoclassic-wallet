@@ -4,7 +4,7 @@ import { sendRequest } from './brs.server';
 import { getUnconfirmedTransactionsFromCache, dataLoaded } from './brs.util';
 import { reloadCurrentPage } from './brs';
 import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from './brs.numbers';
-import { getTransactionDetails } from './brs.transactions';
+import { getTransactionDetails } from './brs.tx.tools';
 import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UnconfirmedTransaction } from '../typings';
 
 export function pagesTransactions() {

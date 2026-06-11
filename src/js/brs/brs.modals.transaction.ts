@@ -36,7 +36,7 @@ import { removeDecryptionForm } from './brs.modals'
 
 import { getAssetDetails } from './brs.asset.tools'
 
-import { getTransactionDetails } from './brs.transactions'
+import { getTransactionDetails } from './brs.tx.tools'
 
 import {
     decryptAttachmentFieldAndUpdateSelector,

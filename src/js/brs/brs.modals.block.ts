@@ -13,7 +13,7 @@ import {
     createInfoTable
 } from './brs.util'
 
-import { getTransactionDetails } from './brs.transactions'
+import { getTransactionDetails } from './brs.tx.tools'
 import { GetBlockResponse, Transaction } from '../typings'
 
 export function evBlocksTableClick (event: Event) {

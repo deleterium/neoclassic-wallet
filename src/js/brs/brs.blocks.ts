@@ -25,7 +25,7 @@ import {
 
 import {
     getTransactionDetails
-} from './brs.transactions'
+} from './brs.tx.tools'
 
 import { BlockDetails, GetAccountBlocksResponse, GetBlockResponse, GetBlocksResponse, Transaction } from '../typings'
 

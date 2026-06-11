@@ -7,7 +7,7 @@ import {
     formatTimestampAsDateTime
 } from "./brs.numbers"
 
-import { getTransactionDetails } from "./brs.transactions"
+import { getTransactionDetails } from "./brs.tx.tools"
 
 export function incomingUpdateDashboardTransactions(newTransactions: Transaction[]) {
     if (!newTransactions.length) {
