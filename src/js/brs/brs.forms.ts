@@ -1,7 +1,3 @@
-/**
- * @depends {brs.js}
- */
-
 import { BRS } from '.'
 
 import {
@@ -23,11 +19,9 @@ import {
     getTranslatedFieldName
 } from './brs.util'
 
-import {
-    addUnconfirmedTransaction
-} from './brs.transactions'
-
 import { lockModal, unlockModal } from './brs.modal.lockablemodal'
+import { PostResponse, RequestType } from '../typings'
+import { checkIncomingNow } from './brs.checkincoming'
 
 /**
  * There are the 'requestType' in forms that will check if node is in sync before proceed.
@@ -66,35 +60,23 @@ const submitOnlyWhenInSync = {
 }
 
 
-function getSuccessMessage (requestType) {
-    const ignore = ['asset_exchange_change_group_name', 'asset_exchange_group', 'add_contact', 'update_contact', 'delete_contact',
-        'send_message', 'decrypt_messages', 'generate_token', 'send_money', 'set_alias', 'add_asset_bookmark', 'sell_alias'
-    ]
-
-    if (ignore.indexOf(requestType) !== -1) {
-        return ''
-    } else {
-        const key = 'success_' + requestType
-
-        if ($.i18n.exists(key)) {
-            return $.t(key)
-        } else {
-            return ''
-        }
-    }
-}
-
-function getErrorMessage (requestType) {
-    const key = 'error_' + requestType
-
+function getSuccessMessage (requestType: RequestType) {
+    const key = 'success_' + requestType
     if ($.i18n.exists(key)) {
         return $.t(key)
-    } else {
-        return ''
     }
+    return ''
 }
 
-async function addMessageData (data, requestType) {
+function getErrorMessage (requestType: RequestType) {
+    const key = 'error_' + requestType
+    if ($.i18n.exists(key)) {
+        return $.t(key)
+    }
+    return ''
+}
+
+async function addMessageData (data: any, requestType: string) {
     if (requestType === 'sendMessage') {
         data.add_message = true
         data.message_is_text = 'on'
@@ -187,8 +169,8 @@ async function addMessageData (data, requestType) {
  * @param {*} $form 
  * @returns 
  */
-function checkInvalidFormFields ($form) {
-    function hasAttr (DOM, name) {
+function checkInvalidFormFields ($form: JQuery<HTMLFormElement>) {
+    function hasAttr (DOM: JQuery<HTMLElement>, name: string) {
         return DOM.attr(name) !== undefined
     }
 
@@ -196,7 +178,7 @@ function checkInvalidFormFields ($form) {
 
     $form.find(':input').each(function () {
         const name = String($(this).attr('name')).replace('NXT', '').replace('NQT', '').capitalize()
-        const value = $(this).val()
+        const value = $(this).val() as string
         if (hasAttr($(this), 'max')) {
             // Only one case using max: Issue asset -> decimals
             if (!/^[-\d.]+$/.test(value)) {
@@ -206,7 +188,8 @@ function checkInvalidFormFields ($form) {
                 return
             } else {
                 const max = $(this).attr('max')
-                if (value > max) {
+                if (!max) return
+                if (Number(value) > Number(max)) {
                     errorMessage = $.t('error_max_value', {
                         field: getTranslatedFieldName(name).toLowerCase(),
                         max
@@ -229,7 +212,7 @@ function checkInvalidFormFields ($form) {
             } catch (e) {
                 errorMessage = $.t('error_at_field', {
                     field: getTranslatedFieldName(name).toLowerCase(),
-                    errorMessage: e.message
+                    errorMessage: (e as Error).message
                 }).capitalize()
                 return
             }
@@ -239,8 +222,8 @@ function checkInvalidFormFields ($form) {
     return errorMessage
 }
 
-/** Returns error message or empty string on success */
-function checkMerchantField (requestType, data) {
+/** Returns error message. Rmpty string is success */
+function checkMerchantField (requestType: RequestType, data: any) {
     if (requestType !== 'sendMoney' && requestType !== 'transferAsset') {
         return ''
     }
@@ -249,8 +232,8 @@ function checkMerchantField (requestType, data) {
     if (result === null || result[1] === undefined) {
         return ''
     }
-    let regexp
-    merchantInfo = $.trim(result[1])
+    let regexp: RegExp
+    merchantInfo = result[1].trim()
     if (!data.add_message || !data.message) {
         return $.t('info_merchant_message_required')
     }
@@ -279,7 +262,7 @@ function checkMerchantField (requestType, data) {
         // Message is OK!
         return ''
     }
-    let regexType
+    let regexType: 'numeric' | 'alphanumeric' | 'custom'
     let lengthRequirement = strippedRegex.match(/\{(.*)\}/)
     if (lengthRequirement) {
         strippedRegex = strippedRegex.replace(lengthRequirement[0], '+')
@@ -292,7 +275,8 @@ function checkMerchantField (requestType, data) {
         regexType = 'custom'
     }
     if (lengthRequirement) {
-        let minLength, maxLength
+        let minLength: number
+        let maxLength: number
         if (lengthRequirement[1].indexOf(',') !== -1) {
             lengthRequirement = lengthRequirement[1].split(',')
             minLength = parseInt(lengthRequirement[0], 10)
@@ -316,14 +300,13 @@ function checkMerchantField (requestType, data) {
 }
 
 /** Function called when a submit button is clicked on modals.
-     * Checks for all kinds of modals.
-     * Specific modals are coded at BRS.forms.FORMNAME and form data
-     * is passed as parameter.
-     */
-export async function submitForm ($btn) {
-    let formErrorFunction
-    let $form
-    let data
+ *  Checks for all kinds of modals.
+ *  Specific modals are coded at BRS.forms.FORMNAME and form data is passed as parameter.
+ */
+export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
+    let formFunctionError: ((response: any, arg1: any) => void) | false
+    let $form: JQuery<HTMLFormElement>
+    let data: any
     const $modal = $btn.closest('.modal')
 
     lockModal($modal, $btn)
@@ -337,32 +320,36 @@ export async function submitForm ($btn) {
         $form = $modal.find('form:first')
     }
 
-    function endWithError (errorMsg) {
+    function endWithError (errorMsg: string) {
         $form.find('.error_message').html(errorMsg).show()
-        if (formErrorFunction) {
-            formErrorFunction(false, data)
+        if (formFunctionError) {
+            formFunctionError({
+                errorCode: -1,
+                errorDescription: errorMsg
+            }, data)
         }
         unlockModal($modal, $btn, false)
     }
 
-    let requestType = $form.find('input[name=request_type]').val()
-    const requestTypeKey = requestType.replace(/([A-Z])/g, function ($1) {
-        return '_' + $1.toLowerCase()
-    })
+    let requestType = $form.find('input[name=request_type]').val() as RequestType | undefined
+    if (requestType === undefined) {
+        endWithError('Missing requestType in this form!')
+        return
+    }
 
-    let successMessage = getSuccessMessage(requestTypeKey)
-    let errorMessage = getErrorMessage(requestTypeKey)
+    let successMessage = getSuccessMessage(requestType)
+    let errorMessage = getErrorMessage(requestType)
 
     const formFunction = BRS.forms[requestType]
-    formErrorFunction = BRS.forms[requestType + 'Error']
+    formFunctionError = BRS.forms[requestType + 'Error']
 
-    if (typeof formErrorFunction !== 'function') {
-        formErrorFunction = false
+    if (typeof formFunctionError !== 'function') {
+        formFunctionError = false
     }
 
     const originalRequestType = requestType
 
-    const checkSync = submitOnlyWhenInSync[requestType]
+    const checkSync: boolean | undefined = submitOnlyWhenInSync[requestType]
     if (checkSync === undefined) {
         console.error("Unknow request type")
         return
@@ -393,7 +380,7 @@ export async function submitForm ($btn) {
             return
         }
         if (output.requestType) {
-            requestType = output.requestType
+            requestType = output.requestType as RequestType
         }
         if (output.data) {
             data = output.data
@@ -411,7 +398,7 @@ export async function submitForm ($btn) {
     }
 
     if (data.recipient) {
-        data.recipient = $.trim(data.recipient)
+        data.recipient = (data.recipient as string).trim()
         if (BRS.idRegEx.test(data.recipient) === false &&
                 BRS.rsRegEx.test(data.recipient) === false) {
             if (data.converted_account_id && (BRS.idRegEx.test(data.converted_account_id) || BRS.rsRegEx.test(data.converted_account_id))) {
@@ -435,16 +422,13 @@ export async function submitForm ($btn) {
     try {
         data = await addMessageData(data, requestType)
     } catch (err) {
-        errorStr = err.message
-        if (!errorStr) {
-            errorStr = err
-        }
-        endWithError(String(errorStr).escapeHTML())
+        errorStr = (err as Error).message
+        endWithError(errorStr.escapeHTML())
         return
     }
 
     if (data.deadline) {
-        data.deadline = String(data.deadline * 60) // hours to minutes
+        data.deadline = String(Number(data.deadline) * 60) // hours to minutes
     }
 
     if (data.doNotBroadcast) {
@@ -492,10 +476,19 @@ export async function submitForm ($btn) {
     delete data.converted_account_id
     delete data.merchant_info
 
-    sendRequest(requestType, data, function (response) {
+    sendRequest(requestType, data, function (response: PostResponse) {
         // todo check again.. response.error
-        let formCompleteFunction
+        let formFunctionComplete: undefined | ((response: any, data: any) => void)
+        if (response.errorCode) {
+            $form.find('.error_message').html(String(response.errorDescription).escapeHTML()).show()
+            if (formFunctionError) {
+                formFunctionError(response, data)
+            }
+            unlockModal($modal, $btn, false)
+            return
+        }
         if (response.fullHash) {
+            // fullHash only present if the message was signed.
             unlockModal($modal, $btn, false)
 
             if (!$modal.hasClass('modal-no-hide')) {
@@ -506,49 +499,27 @@ export async function submitForm ($btn) {
                 $.notify(successMessage.escapeHTML(), { type: 'success' })
             }
 
-            formCompleteFunction = BRS.forms[originalRequestType + 'Complete']
+            formFunctionComplete = BRS.forms[originalRequestType + 'Complete']
 
-            if (requestType !== 'parseTransaction') {
-                if (typeof formCompleteFunction === 'function') {
-                    data.requestType = requestType
-
-                    if (response.transaction) {
-                        addUnconfirmedTransaction(response.transaction, function (alreadyProcessed) {
-                            response.alreadyProcessed = alreadyProcessed
-                            formCompleteFunction(response, data)
-                        })
-                    } else {
-                        response.alreadyProcessed = false
-                        formCompleteFunction(response, data)
-                    }
-                } else {
-                    addUnconfirmedTransaction(response.transaction)
-                }
-            } else {
-                if (typeof formCompleteFunction === 'function') {
-                    data.requestType = requestType
-                    formCompleteFunction(response, data)
-                }
+            if (typeof formFunctionComplete === 'function' && response.broadcasted) {
+                data.requestType = requestType
+                formFunctionComplete(response, data)
             }
+
+            // Adds the new unconfirmed message in pages
+            checkIncomingNow()
 
             if (BRS.accountInfo && !BRS.accountInfo.publicKey) {
                 $('#dashboard_message').hide()
             }
-        } else if (response.errorCode) {
-            $form.find('.error_message').html(response.errorDescription.escapeHTML()).show()
-
-            if (formErrorFunction) {
-                formErrorFunction(response, data)
-            }
-
-            unlockModal($modal, $btn, false)
         } else {
+            // no errorCode but response was not signed. Is this part executed? 
             let sentToFunction = false
 
             if (!errorMessage) {
-                formCompleteFunction = BRS.forms[originalRequestType + 'Complete']
+                formFunctionComplete = BRS.forms[originalRequestType + 'Complete']
 
-                if (typeof formCompleteFunction === 'function') {
+                if (typeof formFunctionComplete === 'function') {
                     sentToFunction = true
                     data.requestType = requestType
 
@@ -557,7 +528,7 @@ export async function submitForm ($btn) {
                     if (!$modal.hasClass('modal-no-hide')) {
                         $modal.modal('hide')
                     }
-                    formCompleteFunction(response, data)
+                    formFunctionComplete(response, data)
                 } else {
                     errorMessage = $.t('error_unknown')
                 }
@@ -572,7 +543,7 @@ export async function submitForm ($btn) {
     })
 }
 
-export function formsAddCommitment (data) {
+export function formsAddCommitment (data: any) {
     let requestType = 'addCommitment'
     if (data.removeCommitment) {
         requestType = 'removeCommitment'
@@ -584,7 +555,7 @@ export function formsAddCommitment (data) {
     }
 }
 
-function getFormData ($form) {
+function getFormData ($form: JQuery<HTMLFormElement>) : object {
     const serialized = $form.serializeArray()
     const data = {}
     for (const s in serialized) {

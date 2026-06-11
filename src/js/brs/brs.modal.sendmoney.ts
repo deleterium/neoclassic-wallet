@@ -13,7 +13,7 @@ import {
 export function formsSendMoneyComplete(_response: PostResponse, data: any) {
     if (!(data._extra && data._extra.convertedAccount) && !(data.recipient in BRS.contacts)) {
         $.notify(
-            `${$.t('success_send_money', { valueSuffix: BRS.valueSuffix })}
+            `${$.t('success_sendMoney', { valueSuffix: BRS.valueSuffix })}
             <a href='#'
               data-account='${getAccountFormatted(data, 'recipient')}'
               data-toggle='modal'
@@ -27,7 +27,7 @@ export function formsSendMoneyComplete(_response: PostResponse, data: any) {
         );
         return;
     }
-    $.notify($.t('success_send_money', { valueSuffix: BRS.valueSuffix }), { type: 'success' });
+    $.notify($.t('success_sendMoney', { valueSuffix: BRS.valueSuffix }), { type: 'success' });
 }
 
 /** 

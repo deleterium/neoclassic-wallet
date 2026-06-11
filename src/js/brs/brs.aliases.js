@@ -393,14 +393,14 @@ export function formsSellAlias (data) {
         data.priceNXT = '0'
         data.recipient = BRS.accountRS
         successMessage = $.t('success_cancel_alias')
-        errorMessage = $.t('error_cancel_alias')
+        errorMessage = $.t('error_cancelAlias')
     } else if (data.modal === 'transfer_alias') {
         data.priceNXT = '0'
-        successMessage = $.t('success_transfer_alias')
-        errorMessage = $.t('error_transfer_alias')
+        successMessage = $.t('success_transferAlias')
+        errorMessage = $.t('error_transferAlias')
     } else {
-        successMessage = $.t('success_sell_alias')
-        errorMessage = $.t('error_sell_alias')
+        successMessage = $.t('success_sellAlias')
+        errorMessage = $.t('error_sellAlias')
         if (data.sell_to_specific) {
             if (!data.recipient) {
                 return {

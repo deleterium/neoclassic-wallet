@@ -37,6 +37,42 @@ export interface ShowBootstrapModalEvent extends JQuery.TriggeredEvent {
     relatedTarget: HTMLElement;
 }
 
+export type RequestType =
+    "addAssetBookmark" |
+    "addCommitment" |
+    "addContact" |
+    "assetExchangeChangeGroupName" |
+    "assetExchangeGroup" |
+    "broadcastTransaction" |
+    "buyAlias" |
+    "buyOrderAsset" |
+    "cancelBuyOrder" |
+    "cancelOrder" |
+    "cancelSellOrder" |
+    "clearData" |
+    "decryptMessages" |
+    "deleteContact" |
+    "escrowSign" |
+    "issueAsset" |
+    "orderAsset" |
+    "requestBurst" |
+    "sellAlias" |
+    "sellOrderAsset" |
+    "sendMessage" |
+    "sendMoney" |
+    "sendMoneyEscrow" |
+    "sendMoneyMulti" |
+    "sendMoneySubscription" |
+    "setAccountInfo" |
+    "setAlias" |
+    "setRewardRecipient" |
+    "signMessage" |
+    "subscriptionCancel" |
+    "transferAsset" |
+    "transferAssetMulti" |
+    "updateContact" |
+    "verifyMessage"
+
 // region Database
 
 export interface DBContact {
@@ -599,7 +635,7 @@ export interface PostResponse {
     transactionJSON: Transaction;
     unconfirmed: boolean;
     transaction: string;
-    fullHash: string;
+    fullHash?: string; // 
     alreadyProcessed: boolean; // TODO Simplify this 
     requestProcessingTime: number;
     errorCode?: number;

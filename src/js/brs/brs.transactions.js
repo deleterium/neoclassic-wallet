@@ -7,12 +7,6 @@ import { BRS } from '.'
 import { NxtAddress } from '../util/nxtaddress'
 
 import {
-    getAccountInfo
-} from './brs'
-
-import { sendRequest } from './brs.server'
-
-import {
     formatQNTAsQuantity,
     formatNQTAsAmount,
 } from './brs.numbers'
@@ -24,52 +18,6 @@ import {
 } from './brs.util'
 
 import { getAssetDetails } from './brs.asset.tools'
-
-import {
-    incomingUpdateDashboardTransactions
-} from './brs.dashboard.page'
-
-// todo: add to dashboard?
-export function addUnconfirmedTransaction (transactionId, callback) {
-    sendRequest('getTransaction', {
-        transaction: transactionId
-    }, function (response) {
-        if (!response.errorCode) {
-            response.transaction = transactionId
-
-            let alreadyProcessed = false
-
-            try {
-                const regex = new RegExp('(^|,)' + transactionId + '(,|$)')
-
-                if (regex.exec(BRS.checkIncoming.latestsTransactionsIds)) {
-                    alreadyProcessed = true
-                } else {
-                    $.each(BRS.unconfirmedTransactions, function (key, unconfirmedTransaction) {
-                        if (unconfirmedTransaction.transaction === transactionId) {
-                            alreadyProcessed = true
-                            return false
-                        }
-                    })
-                }
-            } catch {}
-
-            if (!alreadyProcessed) {
-                BRS.unconfirmedTransactions.unshift(response)
-            }
-
-            if (callback) {
-                callback(alreadyProcessed)
-            }
-
-            incomingUpdateDashboardTransactions(BRS.unconfirmedTransactions, true)
-
-            getAccountInfo(false)
-        } else if (callback) {
-            callback(false)
-        }
-    })
-}
 
 /**
      * Get transaction details.

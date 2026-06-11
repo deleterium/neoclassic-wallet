@@ -18,6 +18,19 @@ export function setCheckIncomingInterval (seconds : number ) : void {
 }
 
 /**
+ * Execute NOW the check for incoming transactions and blocks. Reset the interval.
+ */
+export function checkIncomingNow() {
+    if (!BRS.stateInterval) {
+        checkIncomingBlocksAndTransactions()
+        return
+    }
+    clearInterval(BRS.stateInterval)
+    checkIncomingBlocksAndTransactions()
+    BRS.stateInterval = setInterval(checkIncomingBlocksAndTransactions, 1000 * BRS.stateIntervalSeconds)
+}
+
+/**
  * Runs constantly to check blockchain details, conections 
  * @param callback 
  */

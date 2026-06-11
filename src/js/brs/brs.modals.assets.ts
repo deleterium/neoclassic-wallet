@@ -172,9 +172,9 @@ export function formsCancelOrder(data: any) {
 
 export function formsCancelOrderComplete(response: PostResponse, data: any) {
     if (data.requestType === 'cancelAskOrder') {
-        $.notify($.t('success_cancel_sell_order'), { type: 'success' })
+        $.notify($.t('success_cancelSellOrder'), { type: 'success' })
     } else {
-        $.notify($.t('success_cancel_buy_order'), { type: 'success' })
+        $.notify($.t('success_cancelBuyOrder'), { type: 'success' })
     }
 
     if (response.alreadyProcessed) {
@@ -395,8 +395,8 @@ export function formsOrderAsset(data: any) {
     delete data.asset_order_type
     return {
         requestType,
-        successMessage: (requestType === 'placeBidOrder' ? $.t('success_buy_order_asset') : $.t('success_sell_order_asset')),
-        errorMessage: $.t('error_order_asset')
+        successMessage: (requestType === 'placeBidOrder' ? $.t('success_buyOrderAsset') : $.t('success_sellOrderAsset')),
+        errorMessage: $.t('error_orderAsset')
     }
 }
 
