@@ -1,7 +1,3 @@
-/**
- * @depends {brs.js}
- */
-
 import { BRS } from '.'
 
 import { NxtAddress } from '../util/nxtaddress'
@@ -19,13 +15,15 @@ import {
 
 import { getAssetDetails } from './brs.asset.tools'
 
+import { DBAsset, Transaction, UnconfirmedTransaction } from '../typings'
+
 /**
-     * Get transaction details.
-     * @param transaction to get the name
-     * @param viewingAccount Use this account as point of view. Default to current user
-     * @returns Object with many transaction details to be shown.
-    */
-export function getTransactionDetails (transaction, viewingAccount = BRS.account) {
+ * Get transaction details.
+ * @param transaction to get the name
+ * @param viewingAccount Use this account as point of view. Default to current user
+ * @returns Object with many transaction details to be shown.
+*/
+export function getTransactionDetails (transaction: Transaction | UnconfirmedTransaction, viewingAccount: string = BRS.account) {
     if (BRS.rsRegEx.test(viewingAccount)) {
         viewingAccount = convertRSAccountToNumeric(viewingAccount)
     }
@@ -38,13 +36,14 @@ export function getTransactionDetails (transaction, viewingAccount = BRS.account
     }
     let amountToFromViewer = transaction.amountNQT
     let amountToFromViewerHTML = formatNQTAsAmount(amountToFromViewer) + ' ' + BRS.valueSuffix
-    let foundAsset, newAmountText
+    let foundAsset: DBAsset | undefined
+    let newAmountText = ''
     let hasAssets = false
 
     let recipientHTML = getAccountLink(transaction, 'recipient')
     const senderHTML = getAccountLink(transaction, 'sender')
 
-    let amountEach
+    let amountEach = ''
     // process transactions exceptions and names
     switch (transaction.type) {
     case 0: // "Payment"
@@ -81,7 +80,7 @@ export function getTransactionDetails (transaction, viewingAccount = BRS.account
                 senderOrRecipientOrMultiple = 'multiple'
             }
 
-            amountEach = (parseInt(transaction.amountNQT) / transaction.attachment.recipients.length).toString()
+            amountEach = (BigInt(transaction.amountNQT) / BigInt(transaction.attachment.recipients.length)).toString()
             recipientHTML = ''
 
             for (const recipient of transaction.attachment.recipients) {
