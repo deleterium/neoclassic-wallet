@@ -358,6 +358,7 @@ function processTransactionModalData (transaction: Transaction) {
         case 0:
             // asset issuance
             assetDetails = getAssetDetails(fullHashToId(transaction.fullHash))
+            if (!assetDetails) return
             data.asset_name_formatted_html = getAssetLink(assetDetails)
             data.description = transaction.attachment.description.escapeHTML()
             data.quantity = [transaction.attachment.quantityQNT, transaction.attachment.decimals]
@@ -414,7 +415,7 @@ function processTransactionModalData (transaction: Transaction) {
                 if (!asset) {
                     return
                 }
-                data.asset_name_formatted_html = getAssetLink(assetDetails)
+                data.asset_name_formatted_html = getAssetLink(asset)
                 data.quantity = [transactionII.attachment.quantityQNT, asset.decimals]
                 data.price_formatted_html = formatPriceNQTAsPriceQuantity(transactionII.attachment.priceNQT, asset.decimals) + ' ' + BRS.valueSuffix
                 data.total_formatted_html = formatNQTAsAmount(calculateOrderTotalNQT(transactionII.attachment.quantityQNT, transactionII.attachment.priceNQT)) + ' ' + BRS.valueSuffix
@@ -810,7 +811,7 @@ export function drawAttachmentMessages (transaction: Transaction, $output:  JQue
     let showDecryptionForm = false
 
     if (transaction.attachment.message) {
-        const messageText = getMessageFromTX(transaction)
+        const messageText = getMessageFromTX(transaction) as string
         if (transaction.attachment.messageIsText === true) {
             messageHTML += `<div class='modal-text-box'>${messageText.escapeHTML().nl2br()}</div>`
         } else {

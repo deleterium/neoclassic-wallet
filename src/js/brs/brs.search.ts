@@ -78,7 +78,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
         if (alias.priceNQT && !alias.buyer) {
             statusHTML = $.t('for_sale_indirect');
         } else if (alias.priceNQT) {
-            statusHTML = $.t('for_sale_direct') + `<br />${getAccountTitle(alias.buyer)}`;
+            statusHTML = $.t('for_sale_direct') + `<br />${getAccountTitle(alias.buyer ?? '')}`;
         }
         let priceHTML = '';
         if (alias.priceNQT) {
