@@ -32,7 +32,7 @@ import {
 } from './brs.modals.account'
 
 import {
-    getMessageFromTX,
+    getMessageTextFromTX,
     getEncryptedMessageFromTX,
     decryptAttachmentFieldAndUpdateSelector
 } from './brs.messages.tools'
@@ -215,15 +215,10 @@ function buildChatMessages (account_id: string) {
     for (const message of messages) {
 
         const containerID = 'message' + message.transaction
-        const plainMessage = getMessageFromTX(message)
-        let messageField = 'no_data'
-        if (plainMessage !== undefined) {
-            // public message
-            if (plainMessage === '') {
-                messageField = $.t('message_empty')
-            } else {
-                messageField = plainMessage.escapeHTML().nl2br()
-            }
+        const plainMessage: string | undefined = getMessageTextFromTX(message)
+        let messageField = $.t('message_empty')
+        if (plainMessage) {
+            messageField = plainMessage.escapeHTML().nl2br()
         }
         const secretMessage = getEncryptedMessageFromTX(message)
         if (!plainMessage && secretMessage) {

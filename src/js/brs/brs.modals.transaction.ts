@@ -40,7 +40,8 @@ import { getTransactionDetails } from './brs.tx.tools'
 
 import {
     decryptAttachmentFieldAndUpdateSelector,
-    getMessageFromTX
+    getMessageBytesFromTX,
+    getMessageTextFromTX,
 } from './brs.messages.tools'
 
 import { DBAsset, GetIndirectIncomingResponse, Transaction } from '../typings'
@@ -811,15 +812,17 @@ export function drawAttachmentMessages (transaction: Transaction, $output:  JQue
     let showDecryptionForm = false
 
     if (transaction.attachment.message) {
-        const messageText = getMessageFromTX(transaction) as string
+        // Works both messages v0 or v1.
+        const messageText = getMessageTextFromTX(transaction)
+        const messageBytes = getMessageBytesFromTX(transaction)
         if (transaction.attachment.messageIsText === true) {
-            messageHTML += `<div class='modal-text-box'>${messageText.escapeHTML().nl2br()}</div>`
+            messageHTML += `<div class='modal-text-box'>${(messageText ?? '').escapeHTML().nl2br()}</div>`
         } else {
-            // Show both bytes and try to decode string
-            messageHTML += `<br><label>${$.t('bytes')}:</label>`
-            messageHTML += `<div class='modal-text-box'>${messageText.escapeHTML().nl2br()}</div>`
-            messageHTML += `<label>${$.t('text')}:</label>`
-            messageHTML += `<div class='modal-text-box'>${converters.hexStringToString(messageText).escapeHTML().nl2br()}</div>`
+            // Show both bytes and text
+            messageHTML += `<br><label>${$.t('text')}:</label>`
+            messageHTML += `<div class='modal-text-box'>${(messageText ?? '').escapeHTML().nl2br()}</div>`
+            messageHTML += `<label>${$.t('bytes')}:</label>`
+            messageHTML += `<div class='modal-text-box'>${(messageBytes ?? '').escapeHTML().nl2br()}</div>`
         }
         showMessage = true
     }

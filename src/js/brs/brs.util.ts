@@ -10,24 +10,6 @@ import { formatQNTAsQuantity, formatNQTAsAmount } from './brs.numbers'
 
 // region converter
 
-export function convertFromHex16 (hex: string) {
-    const hexes = hex.match(/.{1,4}/g) || []
-    let back = ''
-    for (let j = 0; j < hexes.length; j++) {
-        back += String.fromCharCode(parseInt(hexes[j], 16))
-    }
-
-    return back
-}
-
-export function convertFromHex8 (hex: string) {
-    let str = ''
-    for (let i = 0; i < hex.length; i += 2) {
-        str += String.fromCharCode(parseInt(hex.slice(i, i + 2), 16))
-    }
-    return str
-}
-
 export function convertNumericToRSAccountFormat (account: string) {
     const address = new NxtAddress(account)
     return address.getAccountRS(BRS.prefix)

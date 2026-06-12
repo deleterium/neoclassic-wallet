@@ -1,35 +1,51 @@
-import { Transaction } from '../typings';
+import { HexString, Transaction } from '../typings';
 import converters from '../util/converters';
 import { getDecryptedMessageFromCache, decryptAttachmentField } from './brs.encryption';
-import { convertFromHex16, convertFromHex8 } from './brs.util';
 
 /**
  * Get plain message in a given transaction.
  * @param transaction - A transaction object from the blockchain
  * @returns The message, if any, or undefined if not present
  */
-export function getMessageFromTX(transaction: Transaction): string | undefined {
+export function getMessageTextFromTX(transaction: Transaction): string | undefined {
     if (!transaction.attachment) {
         return;
     }
     if (!transaction.attachment['version.Message'] && transaction.attachment.message) {
-        // Message version zero
-        try {
-            return converters.hexStringToString(transaction.attachment.message);
-        } catch {
-            // legacy
-            if (transaction.attachment.message.indexOf('feff') === 0) {
-                return convertFromHex16(transaction.attachment.message);
-            }
-            return convertFromHex8(transaction.attachment.message);
-        }
+        // Message version zero. Text are hex encoded by default.
+        return converters.hexStringToString(transaction.attachment.message);
     }
     if (transaction.attachment['version.Message'] === 1) {
+        if (transaction.attachment.messageIsText) {
+            return transaction.attachment.message;
+        }
+        // try to convert the data to string (Smart Contracts need this)
+        return converters.hexStringToString(transaction.attachment.message);
+    }
+    return 'unsupported_message_version';
+}
+
+/**
+ * Get bytes from a message in a given transaction.
+ * @param transaction - A transaction object from the blockchain
+ * @returns The message, if any, or undefined if not present
+ */
+export function getMessageBytesFromTX(transaction: Transaction): HexString | undefined {
+    if (!transaction.attachment) {
+        return;
+    }
+    if (!transaction.attachment['version.Message'] && transaction.attachment.message) {
+        // Message version zero. Text are hex encoded by default.
         return transaction.attachment.message;
     }
-    if (transaction.attachment['version.Message'] > 1) {
-        return 'unsupported_message_version';
+    if (transaction.attachment['version.Message'] === 1) {
+        if (transaction.attachment.messageIsText) {
+            return converters.stringToHexString(transaction.attachment.message);
+        }
+        // Already hex string
+        return transaction.attachment.message;
     }
+    return 'unsupported_message_version';
 }
 
 interface GetEncryptedMessage {
