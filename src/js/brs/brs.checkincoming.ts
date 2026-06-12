@@ -112,7 +112,11 @@ function checkSyncProcess() {
         BRS.downloadingBlockchain = true
         $('#downloading_blockchain').show()
         // update progress bar
-        const percentage = Math.trunc((BRS.blockchainStatus.numberOfBlocks / BRS.blockchainStatus.lastBlockchainFeederHeight) * 100)
+        let percentage = 0
+        if (BRS.blockchainStatus.lastBlockchainFeederHeight) {
+            // lastBlockchainFeederHeight is zero if node has not find feeders
+            percentage = Math.trunc((BRS.blockchainStatus.numberOfBlocks / BRS.blockchainStatus.lastBlockchainFeederHeight) * 100)
+        }
         $('#downloading_blockchain .progress-bar').css('width', percentage + '%')
         return
     }
