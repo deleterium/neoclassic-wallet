@@ -140,7 +140,6 @@ import {
     GetAssetResponse,
     GetBlockResponse,
     Transaction,
-    UnconfirmedTransaction
 } from '../typings'
 
 import { formRequestBurst } from './brs.modals.request'
@@ -356,7 +355,7 @@ export const BRS = {
 
     // from transactions
     lastTransactions: '',
-    unconfirmedTransactions: [] as UnconfirmedTransaction[],
+    unconfirmedTransactions: [] as Transaction[],
     transactionsPageType: '',
 
     // from messages

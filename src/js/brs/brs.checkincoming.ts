@@ -182,12 +182,11 @@ function fetchAndHandleLatestTransactions() {
 
 /* Define a function to transform UnconfirmedTransaction to Transaction.
    Unconfirmed can be identified by properties:
-   * unconfirmed: false
    * height: 2147483647
    * confirmations: -1
    * block: ''
    * blockTimestamp: -1 */
-function mapUnconfirmedToTransaction(unconfirmed: UnconfirmedTransaction): Transaction {
+export function mapUnconfirmedToTransaction(unconfirmed: UnconfirmedTransaction): Transaction {
     return {
         ...unconfirmed,
         confirmations: -1,
@@ -206,7 +205,7 @@ function addUnconfirmedAndHandleIncoming(confirmedTransactions: Transaction[]) {
         const ConfUnconfTransactions = sortedTransactions.map(mapUnconfirmedToTransaction);
 
         BRS.checkIncoming.unconfirmedChanged = transactionIdString !== (BRS.checkIncoming.unconfirmedTransactionIds);
-        BRS.unconfirmedTransactions = sortedTransactions;
+        BRS.unconfirmedTransactions = ConfUnconfTransactions;
         BRS.checkIncoming.unconfirmedTransactionIds = transactionIdString;
 
         handleIncomingTransactions(confirmedTransactions.concat(ConfUnconfTransactions));

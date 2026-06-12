@@ -67,8 +67,6 @@ Server response is analyzed and then the callback is executed.
 * Argument `response`
 The server response is forwarded.
 If there is an error, then a response with error is created.
-A custom property `unconfirmed: boolean` is added if the response is a transaction.
-It indicates that the transaction is unconfirmed (or pending), so it can be handled as a "tentative".
 * Argument `input`
 The `data` received is also passed to the callback to the used if needed.
 A common pattern is to include a custom object as `_extra` field in the request to be used in the callback function, avoiding to use variables from the caller.

@@ -1,5 +1,5 @@
 import { BRS } from '.';
-import { AnyAssetOrder, GetTransactionResponse } from '../typings';
+import { AnyAssetOrder, GetTransactionResponse, UNCONFIRMED_HEIGHT } from '../typings';
 import { pageLoaded, reloadCurrentPage } from './brs';
 import { getAssetDetails } from './brs.asset.tools';
 import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from './brs.numbers';
@@ -79,7 +79,7 @@ function getUnconfirmedOrders(type: 'ask' | 'bid') {
                 asset: unconfirmedTransaction.attachment.asset,
                 name: foundAsset ? foundAsset.name : '',
                 decimals: foundAsset ? foundAsset.decimals : 0,
-                height: 0, // indicate that transaction is unconfirmed!
+                height: UNCONFIRMED_HEIGHT, // indicate that transaction is unconfirmed!
                 order: unconfirmedTransaction.transaction,
                 priceNQT: unconfirmedTransaction.attachment.priceNQT,
                 quantityQNT: unconfirmedTransaction.attachment.quantityQNT,

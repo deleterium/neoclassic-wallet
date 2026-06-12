@@ -1,6 +1,6 @@
 import { BRS } from '.'
 
-import { AjaxResponse, AssetDetails, Transaction, UnconfirmedTransaction } from '../typings'
+import { AjaxResponse, AssetDetails, Transaction } from '../typings'
 
 import { NxtAddress } from '../util/nxtaddress'
 
@@ -305,7 +305,7 @@ export function getUnconfirmedTransactionsFromCache (
         return
     }
 
-    const unconfirmedTransactions: UnconfirmedTransaction[] = []
+    const unconfirmedTransactions: Transaction[] = []
 
     for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
         if (type !== unconfirmedTransaction.type || subtype !== unconfirmedTransaction.subtype) {

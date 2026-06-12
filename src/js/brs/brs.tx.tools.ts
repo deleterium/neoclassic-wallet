@@ -15,7 +15,7 @@ import {
 
 import { getAssetDetails } from './brs.asset.tools'
 
-import { DBAsset, Transaction, UnconfirmedTransaction } from '../typings'
+import { DBAsset, Transaction } from '../typings'
 
 /**
  * Get transaction details.
@@ -23,7 +23,7 @@ import { DBAsset, Transaction, UnconfirmedTransaction } from '../typings'
  * @param viewingAccount Use this account as point of view. Default to current user
  * @returns Object with many transaction details to be shown.
 */
-export function getTransactionDetails (transaction: Transaction | UnconfirmedTransaction, viewingAccount: string = BRS.account) {
+export function getTransactionDetails (transaction: Transaction, viewingAccount: string = BRS.account) {
     if (BRS.rsRegEx.test(viewingAccount)) {
         viewingAccount = convertRSAccountToNumeric(viewingAccount)
     }

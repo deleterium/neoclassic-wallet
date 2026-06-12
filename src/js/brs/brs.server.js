@@ -86,40 +86,6 @@ function convertNxtToNqt (data) {
     }
 }
 
-function addUnconfirmedProperty (response, requestType) {
-    if (!response || response.errorCode) {
-        return response
-    }
-    switch (requestType) {
-    case 'getTransaction':
-        if (response.block === undefined) {
-            response.unconfirmed = true
-            break
-        }
-        response.unconfirmed = false
-        break
-    case 'getUnconfirmedTransactions':
-        if (response.unconfirmedTransactions) {
-            response.unconfirmedTransactions.forEach(transaction => transaction.unconfirmed = true)
-        }
-        break
-    case 'getAccountTransactions':
-        if (response.transactions) {
-            response.transactions.forEach(trans => {
-                if (trans.block === undefined) {
-                    trans.unconfirmed = true
-                } else {
-                    trans.unconfirmed = false
-                }
-            })
-        }
-        break
-    default:
-        response.unconfirmed = false
-    }
-    return response
-}
-
 export function sendRequest (requestType, data, callback, async) {
     if (requestType === undefined) {
         return
@@ -269,7 +235,6 @@ export function processAjaxRequest (requestType, data, callback, async) {
         client.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8')
         client.send()
         let response = JSON.parse(client.responseText)
-        response = addUnconfirmedProperty(response, requestType)
         callback(response, data)
         return
     }
@@ -284,8 +249,6 @@ export function processAjaxRequest (requestType, data, callback, async) {
         maxRetries: (type === 'GET' ? 2 : 0),
         data
     }).done(function (response) {
-        response = addUnconfirmedProperty(response, requestType)
-
         if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode && !response.error) {
             const publicKey = getPublicKeyFromPassphrase(secretPhrase)
             const signature = signBytes(response.unsignedTransactionBytes, secretPhrase)

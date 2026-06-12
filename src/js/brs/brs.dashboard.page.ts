@@ -1,5 +1,5 @@
 import { BRS } from "."
-import { Transaction } from "../typings";
+import { Transaction, UNCONFIRMED_HEIGHT } from "../typings";
 
 import {
     formatNQTAsAmount,
@@ -16,7 +16,7 @@ export function incomingUpdateDashboardTransactions(newTransactions: Transaction
     let hasConfirmed = false;
 
     const rows = newTransactions.reduce((prev, currTr) => {
-        if (currTr.unconfirmed === false) {
+        if (currTr.height !== UNCONFIRMED_HEIGHT) {
             hasConfirmed = true;
         }
         return prev + getTransactionRowDashboardHTML(currTr);
@@ -43,13 +43,13 @@ function getTransactionRowDashboardHTML (transaction: Transaction) {
     const details = getTransactionDetails(transaction)
 
     let confirmationHTML = String(transaction.confirmations).escapeHTML()
-    if (transaction.unconfirmed) {
+    if (transaction.height === UNCONFIRMED_HEIGHT) {
         confirmationHTML = BRS.pendingTransactionHTML
     } else if (transaction.confirmations > 10) {
         confirmationHTML = '10+'
     }
 
-    const rowClass = transaction.unconfirmed ? 'tentative' : 'confirmed';
+    const rowClass = transaction.height === UNCONFIRMED_HEIGHT ? 'tentative' : 'confirmed';
     const messageIcon = details.hasMessage ? " + <i class='far fa-envelope-open'></i>&nbsp;" : '';
 
     return `

@@ -117,8 +117,9 @@ export interface Transaction {
     transaction: string;
     type: number;
     version: number;
-    unconfirmed: boolean
 }
+
+export const UNCONFIRMED_HEIGHT = 2147483647; // Java Integer.MAX_VALUE
 
 export interface UnconfirmedTransaction {
     // No block, blockTimestamp nor confirmations
@@ -145,7 +146,6 @@ export interface UnconfirmedTransaction {
     transaction: string;
     type: number;
     version: number;
-    unconfirmed: true;
 }
 
 export interface GetUnconfirmedTransactionsResponse {
@@ -556,14 +556,12 @@ interface Signer {
 export interface GetAccountEscrowTransactionsResponse {
     escrows: Escrow[];
     requestProcessingTime: number;
-    unconfirmed: boolean;
     errorCode?: number;
     errorDescription?: string;
 }
 
 export interface GetEscrowTransactionResponse extends Escrow {
     requestProcessingTime: number;
-    unconfirmed: boolean;
     errorCode?: number;
     errorDescription?: string;
 }
@@ -633,7 +631,6 @@ export interface PostResponse {
     broadcasted: boolean;
     unsignedTransactionBytes: string;
     transactionJSON: Transaction;
-    unconfirmed: boolean;
     transaction: string;
     fullHash?: string; // 
     requestProcessingTime: number;

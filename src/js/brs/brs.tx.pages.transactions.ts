@@ -5,7 +5,8 @@ import { getUnconfirmedTransactionsFromCache, dataLoaded } from './brs.util';
 import { reloadCurrentPage } from './brs';
 import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from './brs.numbers';
 import { getTransactionDetails } from './brs.tx.tools';
-import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UnconfirmedTransaction } from '../typings';
+import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings';
+import { mapUnconfirmedToTransaction } from './brs.checkincoming';
 
 export function pagesTransactions() {
     function getFrom() {
@@ -40,7 +41,7 @@ export function pagesTransactions() {
     }
 
     let rows = '';
-    let unconfirmedTransactions: UnconfirmedTransaction[] | undefined;
+    let unconfirmedTransactions: Transaction[] | undefined;
     const params: {
         account: string
         firstIndex: number;
@@ -85,21 +86,21 @@ function displayUnconfirmedTransactions(viewAccount: string) {
         let rows = '';
 
         if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
-            rows = response.unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, viewAccount), '');
+            rows = response.unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(mapUnconfirmedToTransaction(currTr), viewAccount), '');
         }
 
         dataLoaded(rows);
     });
 }
 
-function getTransactionRowHTML(transaction: Transaction | UnconfirmedTransaction, viewAccount: string) {
+function getTransactionRowHTML(transaction: Transaction, viewAccount: string) {
     const details = getTransactionDetails(transaction, viewAccount);
 
     let confirmationHTML = BRS.pendingTransactionHTML;
-    if (!transaction.unconfirmed) {
+    if (transaction.height !== UNCONFIRMED_HEIGHT) {
         confirmationHTML = formatNumber(transaction.confirmations)
     }
-    const rowClass = transaction.unconfirmed && details.toFromViewer ? " class='tentative'" : '';
+    const rowClass = (transaction.height === UNCONFIRMED_HEIGHT && details.toFromViewer) ? " class='tentative'" : '';
     const messageIcon = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '';
 
     return `

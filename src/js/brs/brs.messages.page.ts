@@ -37,7 +37,7 @@ import {
     decryptAttachmentFieldAndUpdateSelector
 } from './brs.messages.tools'
 
-import { GetAccountTransactionsResponse, Transaction } from '../typings'
+import { GetAccountTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 
 export function pagesMessages () {
     if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
@@ -142,11 +142,11 @@ export function incomingMessages (transactions: Transaction[]) {
     }
     let reloadContent = false
     let reloadSidebar = false
-    const newUnconfMessages = transactions.filter(tx => tx.type === 1 && tx.subtype === 0 && tx.unconfirmed === true)
+    const newUnconfMessages = transactions.filter(tx => tx.type === 1 && tx.subtype === 0 && tx.height === UNCONFIRMED_HEIGHT)
     if (newUnconfMessages.length > 0) {
         reloadContent = true
     }
-    const newMessagesTransactions = transactions.filter(tx => tx.type === 1 && tx.subtype === 0 && tx.unconfirmed !== true && (tx.sender === BRS.account || tx.recipient === BRS.account))
+    const newMessagesTransactions = transactions.filter(tx => tx.type === 1 && tx.subtype === 0 && tx.height !== UNCONFIRMED_HEIGHT && (tx.sender === BRS.account || tx.recipient === BRS.account))
     for (const trans of newMessagesTransactions) {
         const chatTo = (trans.sender === BRS.account ? trans.recipient : trans.sender) as string
         if (BRS._messages[chatTo] === undefined) {
@@ -246,7 +246,7 @@ function buildChatMessages (account_id: string) {
         const day = formatTimestampAsDateTime(message.timestamp)
 
         let pendingClass = ''
-        if (message.unconfirmed === true) {
+        if (message.height === UNCONFIRMED_HEIGHT) {
             pendingClass = 'messagePending'
         }
 
