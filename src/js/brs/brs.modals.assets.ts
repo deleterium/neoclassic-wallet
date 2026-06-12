@@ -176,11 +176,6 @@ export function formsCancelOrderComplete(response: PostResponse, data: any) {
     } else {
         $.notify($.t('success_cancelBuyOrder'), { type: 'success' })
     }
-
-    if (response.alreadyProcessed) {
-        return
-    }
-
     $('#open_orders_page tr[data-order=' + String(data.order).escapeHTML() + ']').addClass('text-muted text-line-through').find('td.cancel').html(BRS.pendingTransactionHTML)
 }
 

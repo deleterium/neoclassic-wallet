@@ -636,7 +636,6 @@ export interface PostResponse {
     unconfirmed: boolean;
     transaction: string;
     fullHash?: string; // 
-    alreadyProcessed: boolean; // TODO Simplify this 
     requestProcessingTime: number;
     errorCode?: number;
     errorDescription?: string;

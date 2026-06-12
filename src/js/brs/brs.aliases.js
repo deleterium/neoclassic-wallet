@@ -437,10 +437,6 @@ export function formsSellAlias (data) {
 }
 
 export function formsSellAliasComplete (response, data) {
-    if (response.alreadyProcessed) {
-        return
-    }
-
     const $row = $('#aliases_table tr[data-alias=' + String(data.aliasName).toLowerCase().escapeHTML() + ']')
 
     $row.addClass('tentative')
@@ -513,10 +509,6 @@ export function formsBuyAliasError () {
 }
 
 export function formsBuyAliasComplete (response, data) {
-    if (response.alreadyProcessed) {
-        return
-    }
-
     if (BRS.currentPage !== 'aliases') {
         return
     }
@@ -720,10 +712,6 @@ export function formsSetAliasError (response, data) {
 }
 
 export function formsSetAliasComplete (response, data) {
-    if (response.alreadyProcessed) {
-        return
-    }
-
     if (BRS.currentPage === 'aliases') {
         data.aliasName = String(data.aliasName).escapeHTML()
         data.aliasURI = String(data.aliasURI)

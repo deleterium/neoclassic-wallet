@@ -795,9 +795,6 @@ export function evCalculatePricePreviewInput (e: JQuery.TriggeredEvent) {
 }
 
 export function formsOrderAssetComplete (response: PostResponse, data: any) {
-    if (response.alreadyProcessed) {
-        return
-    }
     let $table: JQuery<HTMLElement>
     if (data.requestType === 'placeBidOrder') {
         $table = $('#asset_exchange_bid_orders_table tbody')
