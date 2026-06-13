@@ -37,10 +37,11 @@ import {
     evBuyAliasModalOnShowBsModal,
     evRegisterAliasModalOnShowBsModal,
     setAliasType,
-    evAliasSearchSubmit,
     evSellAliasSellToSpecificClick,
     showAliasModal
 } from './brs.aliases'
+
+import { evAliasSearchSubmit } from './brs.alias.page'
 
 import {
     evDeleteContactModalOnShowBsModal,

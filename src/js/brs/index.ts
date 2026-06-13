@@ -21,16 +21,19 @@ import {
 } from './brs.blocks'
 
 import {
-    pagesAliases,
     formsSellAlias,
     formsSellAliasComplete,
     formsBuyAliasError,
     formsBuyAliasComplete,
-    incomingAliases,
     formsSetAlias,
     formsSetAliasError,
     formsSetAliasComplete
 } from './brs.aliases'
+
+import {
+    pagesAliases,
+    incomingAliases
+} from './brs.alias.page'
 
 import { pagesAt } from './brs.at'
 
