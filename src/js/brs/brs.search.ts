@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { GetAssetResponse, Alias, GetAccountResponse, GetAliasesResponse, GetAssetsByNameResponse } from '../typings';
-import { showAliasModal } from './brs.aliases';
+import { showAliasModal } from './brs.modals.alias';
 import { showAccountModal } from './brs.modals.account';
 import { showBlockModal } from './brs.modals.block';
 import { showTransactionModal } from './brs.modals.transaction';

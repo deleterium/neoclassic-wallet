@@ -28,7 +28,7 @@ import {
     formsSetAlias,
     formsSetAliasError,
     formsSetAliasComplete
-} from './brs.aliases'
+} from './brs.modals.alias'
 
 import {
     pagesAliases,

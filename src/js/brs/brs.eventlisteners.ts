@@ -39,7 +39,7 @@ import {
     setAliasType,
     evSellAliasSellToSpecificClick,
     showAliasModal
-} from './brs.aliases'
+} from './brs.modals.alias'
 
 import { evAliasSearchSubmit } from './brs.alias.page'
 
