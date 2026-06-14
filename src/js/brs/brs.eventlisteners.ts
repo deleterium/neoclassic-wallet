@@ -416,8 +416,8 @@ export function addEventListeners () {
     $('#buy_alias_modal').on('show.bs.modal', evBuyAliasModalOnShowBsModal)
     $('#register_alias_modal').on('show.bs.modal', evRegisterAliasModalOnShowBsModal)
     $('#register_alias_type').on('change', function () {
-        const type = $(this).val()
-        setAliasType(type, $('#register_alias_uri').val())
+        const type = $(this).val() as string
+        setAliasType(type, $('#register_alias_uri').val() as string)
     })
     $('#alias_search').on('submit', evAliasSearchSubmit)
     $('#search_results_contents, #aliases_table, #user_info_modal_aliases_table').on('click', 'a[data-alias]', function (e) {
