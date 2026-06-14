@@ -138,11 +138,11 @@ function getAccountTypeAndMessage (
 }
 
 export function evMalformedAddressClick (el: JQuery.ClickEvent) {
-    $(el.target)
+    $(el.currentTarget)
         .closest('form')
         .find('input[name=recipient],input[name=account_id]')
         .val(
-            $(el.target).data('address')
+            $(el.currentTarget).data('address')
         ).trigger('blur')
 }
 
