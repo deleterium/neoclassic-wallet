@@ -5,7 +5,15 @@
 */
 
 export class NxtAddress {
-    constructor (idOrRs) {
+    private codeword: number[];
+    private gexp: number[];
+    private glog: number[];
+    private cwmap: number[];
+    private rsRegEx: RegExp;
+    private alphabet: string;
+    private guess: Set<string>;
+
+    constructor (idOrRs: string) {
         this.codeword = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         this.gexp = [1, 2, 4, 8, 16, 5, 10, 20, 13, 26, 17, 7, 14, 28, 29, 31, 27, 19, 3, 6, 12, 24, 21, 15, 30, 25, 23, 11, 22, 9, 18, 1]
         this.glog = [0, 0, 1, 18, 2, 5, 19, 11, 3, 29, 6, 27, 20, 8, 12, 23, 4, 10, 30, 17, 7, 22, 28, 26, 21, 25, 9, 16, 13, 14, 24, 15]
@@ -21,20 +29,17 @@ export class NxtAddress {
         this.setFromRS(idOrRs)
     }
 
-    /** private */
-    ginv (a) {
+    private ginv (a: number) : number {
         return this.gexp[31 - this.glog[a]]
     }
 
-    /** private */
-    gmult (a, b) {
+    private gmult (a: number, b: number) : number {
         if (a === 0 || b === 0) return 0
         const idx = (this.glog[a] + this.glog[b]) % 31
         return this.gexp[idx]
     }
 
-    /** private */
-    calcDiscrepancy (lambda, r, syndrome) {
+    private calcDiscrepancy (lambda: number[], r: number, syndrome: number[]) : number {
         let discr = 0
         for (let i = 0; i < r; i++) {
             discr ^= this.gmult(lambda[i], syndrome[r - i])
@@ -42,9 +47,8 @@ export class NxtAddress {
         return discr
     }
 
-    /** private */
-    calcSyndrome () {
-        const syndrome = [0, 0, 0, 0, 0]
+    private calcSyndrome () : number[] {
+        const syndrome: number[] = [0, 0, 0, 0, 0]
         for (let i = 1; i < 5; i++) {
             let t = 0
             for (let j = 0; j < 31; j++) {
@@ -58,9 +62,8 @@ export class NxtAddress {
         return syndrome
     }
 
-    /** private */
-    findErrors (lambda) {
-        const errloc = []
+    private findErrors (lambda: number[]) : number[] {
+        const errloc: number[] = []
         for (let i = 1; i <= 31; i++) {
             let sum = 0
             for (let j = 0; j < 5; j++) {
@@ -77,13 +80,12 @@ export class NxtAddress {
         return errloc
     }
 
-    /** private */
-    guessErrors (maxErrors) {
+    private guessErrors (maxErrors: number) : boolean {
         let el = 0
-        const b = [0, 0, 0, 0, 0]
-        const t = []
+        const b: number[] = [0, 0, 0, 0, 0]
+        const t: number[] = []
         let deg_lambda = 0
-        let lambda = [1, 0, 0, 0, 0] // error+erasure locator poly
+        let lambda: number[] = [1, 0, 0, 0, 0] // error+erasure locator poly
         // Berlekamp-Massey algorithm to determine error+erasure locator polynomial
         const syndrome = this.calcSyndrome()
         for (let r = 0; r < 4; r++) {
@@ -115,7 +117,7 @@ export class NxtAddress {
             return false
         }
         // Compute err+eras evaluator poly omega(x) = s(x)*lambda(x) (modulo x**(4)). Also find deg(omega).
-        const omega = [0, 0, 0, 0, 0]
+        const omega: number[] = [0, 0, 0, 0, 0]
         for (let i = 0; i < 4; i++) {
             let t1 = 0
             for (let j = 0; j < i; j++) {
@@ -145,9 +147,8 @@ export class NxtAddress {
         return true
     }
 
-    /** private */
-    calculateParity () {
-        const p = [0, 0, 0, 0]
+    private calculateParity () : number[] {
+        const p: number[] = [0, 0, 0, 0]
         for (let i = 12; i >= 0; i--) {
             const fb = this.codeword[i] ^ p[3]
             p[3] = p[2] ^ this.gmult(30, fb)
@@ -158,23 +159,20 @@ export class NxtAddress {
         return p
     }
 
-    /** private */
-    setInvalidCodeword () {
+    private setInvalidCodeword () : void {
         // just sets codeword to an invalid value
         this.codeword = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     }
 
-    /** private */
-    setCodeword (clean) {
+    private setCodeword (clean: number[]) : void {
         for (let i = 0; i < clean.length; i++) {
             this.codeword[this.cwmap[i]] = clean[i]
         }
     }
 
-    /** private */
-    setFromId (acc) {
-        const inp = []
-        const out = []
+    private setFromId (acc: string) : void {
+        const inp: number[] = []
+        const out: number[] = []
         let pos = 0
         let len = acc.length
         if (len === 20 && acc.charAt(0) !== '1') {
@@ -184,7 +182,7 @@ export class NxtAddress {
         for (let i = 0; i < len; i++) {
             inp[i] = acc.charCodeAt(i) - '0'.charCodeAt(0)
         }
-        let newlen
+        let newlen: number
         do {
             // base 10 to base 32 conversion
             let divide = 0
@@ -212,10 +210,9 @@ export class NxtAddress {
         this.codeword[16] = parity[3]
     }
 
-    /** private */
-    setFromRS (adr) {
+    private setFromRS (adr: string) : void {
         let len = 0
-        const clean = []
+        const clean: number[] = []
         const rsParts = this.rsRegEx.exec(adr)
         if (rsParts !== null) {
             // remove prefix and public key
@@ -284,7 +281,7 @@ export class NxtAddress {
      * or false if there is an error. Use 'getGuesses' to check if
      * the mistake was recovered.
      */
-    isOk () {
+    public isOk () : boolean {
         const parity = this.calculateParity()
         return this.codeword[13] === parity[0] &&
             this.codeword[14] === parity[1] &&
@@ -295,7 +292,7 @@ export class NxtAddress {
     /** Returns the account in the Reed-Solomon format.
      * If prefix is undefined, no prefix is added.
      */
-    getAccountRS (prefix) {
+    public getAccountRS (prefix?: string) : string {
         if (!this.isOk()) {
             return ''
         }
@@ -312,17 +309,17 @@ export class NxtAddress {
 
     /** Returns the numeric ID of an account as string. If given account was
      * invalid, returns empty string */
-    getAccountId () {
+    public getAccountId () : string {
         if (!this.isOk()) {
             return ''
         }
         let out = ''
-        const inp = []
+        const inp: number[] = []
         let len = 13
         for (let i = 0; i < 13; i++) {
             inp[i] = this.codeword[12 - i]
         }
-        let newlen
+        let newlen: number
         do {
             // base 32 to base 10 conversion
             let divide = 0
@@ -343,7 +340,7 @@ export class NxtAddress {
     }
 
     /** Get guessed results */
-    getGuesses (prefix) {
+    public getGuesses (prefix?: string) : string[] {
         const resultArray = Array.from(this.guess)
         if (prefix === undefined) {
             return resultArray
@@ -353,9 +350,9 @@ export class NxtAddress {
     }
 
     /** Compares two strings and returns the diff formatted in HTML with underscore */
-    formatGuess (s, org) {
+    public formatGuess (s: string, org: string) : string {
         let d = ''
-        const list = []
+        const list: { s: number, e: number }[] = []
         s = s.toUpperCase()
         org = org.toUpperCase()
         for (let i = 0; i < s.length; i++) {
@@ -383,7 +380,7 @@ export class NxtAddress {
         }
         for (let i = 0, j = 0; i < s.length; i++) {
             if (i >= list[j].e) {
-                let start
+                let start: number
                 while (j < list.length - 1) {
                     start = list[j++].s
                     if (i < list[j].e || list[j].s >= start) {
