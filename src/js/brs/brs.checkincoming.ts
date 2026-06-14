@@ -54,7 +54,7 @@ function checkIncomingBlocksAndTransactions () : void {
     BRS.checkIncoming.unconfirmedChanged = false
     BRS.checkIncoming.forceDashboardUpdate = true
 
-    sendRequest('getBlockchainStatus', function (response: GetBlochainStatusResponse ) {
+    sendRequest('getBlockchainStatus', {}, function (response: GetBlochainStatusResponse ) {
         if (response.errorCode) {
             $.notify($.t('could_not_connect_to', { server: BRS.server }))
             return

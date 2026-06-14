@@ -118,7 +118,7 @@ export function checkSelectedNode () : void {
         $('#prefered_node').addClass('is-invalid')
 
         // Server changed, get new network details
-        sendRequest('getConstants+', function (response) {
+        sendRequest('getConstants+', {}, function (response) {
             if (response.errorCode) {
                 return
             }
@@ -222,7 +222,7 @@ export function setHeaderClock () : void {
  */
 export function getState () : void {
     checkSelectedNode()
-    sendRequest('getBlockchainStatus+', function (response: GetBlochainStatusResponse) {
+    sendRequest('getBlockchainStatus+', {}, function (response: GetBlochainStatusResponse) {
         if (response.errorCode) {
             if (BRS.settings.automatic_node_selection) {
                 autoSelectServer()

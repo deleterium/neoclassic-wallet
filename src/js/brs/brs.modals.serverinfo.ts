@@ -22,7 +22,7 @@ export function evBrsModalServerInfoOnShowBsModal () {
 
     BRS.fetchingModalData = true
 
-    sendRequest('getState', function (state: GetStateResponse) {
+    sendRequest('getState', {}, function (state: GetStateResponse) {
         BRS.fetchingModalData = false
 
         for (const key in state) {

@@ -82,7 +82,7 @@ export function pagesTransactions() {
 }
 
 function displayUnconfirmedTransactions(viewAccount: string) {
-    sendRequest('getUnconfirmedTransactions', function (response: GetUnconfirmedTransactionsResponse) {
+    sendRequest('getUnconfirmedTransactions', {}, function (response: GetUnconfirmedTransactionsResponse) {
         let rows = '';
 
         if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
