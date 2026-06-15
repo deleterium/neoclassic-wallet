@@ -1,17 +1,28 @@
 import { BRS } from '.';
+import { Transaction } from '../typings';
 import converters from '../util/converters';
 import { NxtAddress } from '../util/nxtaddress';
 import { convertPublicKeyFromBase36ToBase16 } from './brs.util';
 
+interface AttachmentSpec {
+    type: number;
+    subtype: number;
+    attachmentInfo?: {
+        type: string;
+        value: any[];
+    }[];
+    postCheck?: () => boolean;
+}
 
-export function verifyTransactionBytes(transactionBytes, signature, requestType, data) {
-    // this will be the reconstructed base transaction
-    const transaction = {};
+export function verifyTransactionBytes(transactionBytes: string, signature: string, requestType: string, data: any) {
+    /* @ts-expect-error Empty object to be populated with the Transaction properties. */
+    const transaction: Transaction = {};
+    let txFlags = 0
     // position to start attachment (if any)
     let pos = 184;
     const byteArray = converters.hexStringToByteArray(transactionBytes);
     // This will bring the info to check type, subtype and attachment for a given requestType
-    let attachmentSpec;
+    let attachmentSpec: AttachmentSpec;
     const ERROR = true;
     const SUCCESS = false;
 
@@ -32,9 +43,9 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
         transaction.type = byteArray[0];
         transaction.version = (byteArray[1] & 0xF0) >> 4;
         transaction.subtype = byteArray[1] & 0x0F;
-        transaction.timestamp = String(converters.byteArrayToSignedInt32(byteArray, 2));
-        transaction.deadline = String(converters.byteArrayToSignedShort(byteArray, 6));
-        transaction.publicKey = converters.byteArrayToHexString(byteArray.slice(8, 40));
+        transaction.timestamp = converters.byteArrayToSignedInt32(byteArray, 2);
+        transaction.deadline = converters.byteArrayToSignedShort(byteArray, 6);
+        transaction.senderPublicKey = converters.byteArrayToHexString(byteArray.slice(8, 40));
         transaction.recipient = String(converters.byteArrayToBigInt64(byteArray, 40));
         transaction.amountNQT = String(converters.byteArrayToBigInt64(byteArray, 48));
         transaction.feeNQT = String(converters.byteArrayToBigInt64(byteArray, 56));
@@ -42,10 +53,9 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
         if (/^0+$/.test(transaction.referencedTransactionFullHash)) {
             transaction.referencedTransactionFullHash = '';
         }
-        transaction.flags = 0;
         if (transaction.version > 0) {
-            transaction.flags = converters.byteArrayToSignedInt32(byteArray, 160);
-            transaction.ecBlockHeight = String(converters.byteArrayToSignedInt32(byteArray, 164));
+            txFlags = converters.byteArrayToSignedInt32(byteArray, 160);
+            transaction.ecBlockHeight = converters.byteArrayToSignedInt32(byteArray, 164);
             transaction.ecBlockId = String(converters.byteArrayToBigInt64(byteArray, 168));
         }
     }
@@ -58,9 +68,9 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
             data.recipient = '0';
             data.recipientRS = BRS.prefix + '2222-2222-2222-22222';
         }
-        if (BRS.rsRegEx.test(data.recipient)) {
+        const parts = BRS.rsRegEx.exec(data.recipient)
+        if (parts) {
             // wrong data type... Fix
-            const parts = BRS.rsRegEx.exec(data.recipient);
             const address = new NxtAddress(parts[1] + parts[2]);
             data.recipient = address.getAccountId();
             data.recipientRS = address.getAccountRS(BRS.prefix);
@@ -71,8 +81,8 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
     }
 
     function checkBaseTransaction() {
-        if (transaction.publicKey !== BRS.accountInfo.publicKey ||
-            transaction.deadline !== data.deadline ||
+        if (transaction.senderPublicKey !== BRS.accountInfo.publicKey ||
+            transaction.deadline !== Number(data.deadline) ||
             transaction.feeNQT !== data.feeNQT ||
             transaction.version === 0 ||
             transaction.type !== attachmentSpec.type ||
@@ -124,7 +134,7 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
         }
     }
 
-    function getAttachmentSpec(rqType) {
+    function getAttachmentSpec(rqType: string) : AttachmentSpec {
         switch (rqType) {
             case 'sendMoney':
                 return { type: 0, subtype: 0 };
@@ -326,7 +336,7 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
     };
 
     function checkAttachment() {
-        const pastValues = [];
+        const pastValues: string[][] = [];
         if (attachmentSpec.attachmentInfo === undefined) {
             return SUCCESS;
         }
@@ -345,6 +355,9 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
             default:
                 return ERROR;
         }
+        if (attachmentSpec.attachmentInfo === undefined) {
+            return SUCCESS;
+        }
         for (const item of attachmentSpec.attachmentInfo) {
             const itemType = item.type.split('*');
             const typeSpec = itemType[0];
@@ -357,12 +370,12 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
                 // fixed repetition
                 repetition = parseInt(repetitionSpec);
             }
-            const currentValues = [];
-            let sizeOfString;
+            const currentValues: string[] = [];
+            let sizeOfString: number;
             for (let amount = 0; amount < repetition; amount++) {
                 switch (typeSpec) {
                     case 'ByteString':
-                        sizeOfString = parseInt(byteArray[pos++], 10);
+                        sizeOfString = byteArray[pos++];
                         currentValues.push(converters.byteArrayToString(byteArray, pos, sizeOfString));
                         pos += sizeOfString;
                         break;
@@ -421,7 +434,7 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
     function checkMessage() {
         // flag for non-encrypted message
         const flagBit = 0b1;
-        if ((transaction.flags & flagBit) === 0) {
+        if ((txFlags & flagBit) === 0) {
             if (data.message) return ERROR;
             else return SUCCESS;
         }
@@ -430,24 +443,25 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
         if (attachmentVersion !== 1) {
             return ERROR;
         }
+        const attachment: any = {}
         let messageLength = converters.byteArrayToSignedInt32(byteArray, pos);
         pos += 4;
-        transaction.messageIsText = messageLength < 0;
+        attachment.messageIsText = messageLength < 0;
         if (messageLength < 0) {
             messageLength &= 2147483647;
         }
-        if (transaction.messageIsText) {
-            transaction.message = converters.byteArrayToString(byteArray, pos, messageLength);
+        if (attachment.messageIsText) {
+            attachment.message = converters.byteArrayToString(byteArray, pos, messageLength);
         } else {
             const slice = byteArray.slice(pos, pos + messageLength);
-            transaction.message = converters.byteArrayToHexString(slice);
+            attachment.message = converters.byteArrayToHexString(slice);
         }
         pos += messageLength;
-        const messageIsText = (transaction.messageIsText ? 'true' : 'false');
+        const messageIsText = (attachment.messageIsText ? 'true' : 'false');
         if (messageIsText !== data.messageIsText) {
             return ERROR;
         }
-        if (transaction.message !== data.message) {
+        if (attachment.message !== data.message) {
             return ERROR;
         }
         return SUCCESS;
@@ -456,7 +470,7 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
     function checkEncryptedMessage() {
         // flag for encrypted note
         const flagBit = 0b10;
-        if ((transaction.flags & flagBit) === 0) {
+        if ((txFlags & flagBit) === 0) {
             if (data.encryptedMessageData) return ERROR;
             else return SUCCESS;
         }
@@ -465,22 +479,23 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
         if (attachmentVersion !== 1) {
             return ERROR;
         }
+        const attachment: any = {}
         let encryptedMessageLength = converters.byteArrayToSignedInt32(byteArray, pos);
         pos += 4;
-        transaction.messageToEncryptIsText = encryptedMessageLength < 0;
+        attachment.messageToEncryptIsText = encryptedMessageLength < 0;
         if (encryptedMessageLength < 0) {
             encryptedMessageLength &= 2147483647;
         }
-        transaction.encryptedMessageData = converters.byteArrayToHexString(byteArray.slice(pos, pos + encryptedMessageLength));
+        attachment.encryptedMessageData = converters.byteArrayToHexString(byteArray.slice(pos, pos + encryptedMessageLength));
         pos += encryptedMessageLength;
-        transaction.encryptedMessageNonce = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32));
+        attachment.encryptedMessageNonce = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32));
         pos += 32;
-        const messageToEncryptIsText = (transaction.messageToEncryptIsText ? 'true' : 'false');
+        const messageToEncryptIsText = (attachment.messageToEncryptIsText ? 'true' : 'false');
         if (messageToEncryptIsText !== data.messageToEncryptIsText) {
             return ERROR;
         }
-        if (transaction.encryptedMessageData !== data.encryptedMessageData ||
-            transaction.encryptedMessageNonce !== data.encryptedMessageNonce) {
+        if (attachment.encryptedMessageData !== data.encryptedMessageData ||
+            attachment.encryptedMessageNonce !== data.encryptedMessageNonce) {
             return ERROR;
         }
         return SUCCESS;
@@ -488,7 +503,7 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
 
     function checkRecipientPublicKey() {
         const flagBit = 0b100;
-        if ((transaction.flags & flagBit) === 0) {
+        if ((txFlags & flagBit) === 0) {
             if (data.recipientPublicKey) return ERROR;
             else return SUCCESS;
         }
@@ -507,7 +522,7 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
 
     function checkEncryptToSelfMessage() {
         const flagBit = 0b1000;
-        if ((transaction.flags & flagBit) === 0) {
+        if ((txFlags & flagBit) === 0) {
             if (data.encryptToSelfMessageData) return ERROR;
             else return false;
         }
@@ -516,22 +531,23 @@ export function verifyTransactionBytes(transactionBytes, signature, requestType,
         if (attachmentVersion !== 1) {
             return ERROR;
         }
+        const attachment: any = {}
         let encryptedToSelfMessageLength = converters.byteArrayToSignedInt32(byteArray, pos);
-        transaction.messageToEncryptToSelfIsText = encryptedToSelfMessageLength < 0;
+        attachment.messageToEncryptToSelfIsText = encryptedToSelfMessageLength < 0;
         if (encryptedToSelfMessageLength < 0) {
             encryptedToSelfMessageLength &= 2147483647;
         }
         pos += 4;
-        transaction.encryptToSelfMessageData = converters.byteArrayToHexString(byteArray.slice(pos, pos + encryptedToSelfMessageLength));
+        attachment.encryptToSelfMessageData = converters.byteArrayToHexString(byteArray.slice(pos, pos + encryptedToSelfMessageLength));
         pos += encryptedToSelfMessageLength;
-        transaction.encryptToSelfMessageNonce = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32));
+        attachment.encryptToSelfMessageNonce = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32));
         pos += 32;
-        const messageToEncryptToSelfIsText = (transaction.messageToEncryptToSelfIsText ? 'true' : 'false');
+        const messageToEncryptToSelfIsText = (attachment.messageToEncryptToSelfIsText ? 'true' : 'false');
         if (messageToEncryptToSelfIsText !== data.messageToEncryptToSelfIsText) {
             return ERROR;
         }
-        if (transaction.encryptToSelfMessageData !== data.encryptToSelfMessageData ||
-            transaction.encryptToSelfMessageNonce !== data.encryptToSelfMessageNonce) {
+        if (attachment.encryptToSelfMessageData !== data.encryptToSelfMessageData ||
+            attachment.encryptToSelfMessageNonce !== data.encryptToSelfMessageNonce) {
             return ERROR;
         }
         return SUCCESS;
