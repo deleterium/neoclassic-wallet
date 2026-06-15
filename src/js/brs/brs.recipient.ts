@@ -411,7 +411,7 @@ export function evSpanRecipientSelectorClickUlLiA (e: JQuery.ClickEvent) {
         .trigger('blur')
 }
 
-export function evAddRecipientsClick(e) {
+export function evAddRecipientsClick(e: JQuery.ClickEvent) {
     e.preventDefault()
     if ($('#send_money_same_out_checkbox').is(':checked')) {
         $('#multi_out_same_recipients').append($('#additional_multi_out_same_recipient').html()) // add input box

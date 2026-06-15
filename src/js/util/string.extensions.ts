@@ -17,7 +17,7 @@ String.prototype.escapeHTML = function() {
 			'"': '&quot;',
 			"'": '&#39;',
 			'/': '&#x2F;'
-		}[match]
+		}[match] as string
 	});
 }
 

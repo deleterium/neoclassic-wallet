@@ -75,7 +75,7 @@ export function blocksInfoLoad (blockheight: number | '') {
             return
         }
         $('#block_info_input_block').val(blockheight)
-        const rows = response.transactions.reduce((prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr as Transaction), '')
+        const rows = (response.transactions as Transaction[]).reduce((prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr as Transaction), '')
         dataLoaded(rows)
     })
 }

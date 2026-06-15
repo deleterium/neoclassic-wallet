@@ -74,6 +74,7 @@ function applySettings (key: string) {
         parts = BRS.durationFormatter.formatToParts({ days: 1, hours: 1, minutes: 1, seconds: 1 });
         parts.forEach(part => {
             if (part.type !== 'unit') return
+            // @ts-expect-error Unit is included in parts for this format.
             switch (part.unit) {
             case 'day':
                 BRS.timeUnits.day = part.value
