@@ -43,24 +43,24 @@ export default (function () {
     ]
 
     /* constants 2Gy and 1/(2Gy) */
-    const BASE_2Y = [
+    const BASE_2Y = Uint16Array.from([
         22587, 610, 29883, 44076,
         15515, 9479, 25859, 56197,
         23910, 4462, 17831, 16322,
         62102, 36542, 52412, 16035
-    ]
+    ])
 
-    const BASE_R2Y = [
+    const BASE_R2Y = Uint16Array.from([
         5744, 16384, 61977, 54121,
         8776, 18501, 26522, 34893,
         23833, 5823, 55924, 58749,
         24147, 14085, 13606, 6080
-    ]
+    ])
 
-    const C1 = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    const C9 = [9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    const C486671 = [0x6D0F, 0x0007, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-    const C39420360 = [0x81C8, 0x0259, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    const C1 = Uint16Array.from([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    const C9 = Uint16Array.from([9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    const C486671 = Uint16Array.from([0x6D0F, 0x0007, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    const C39420360 = Uint16Array.from([0x81C8, 0x0259, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
     const P25 = 33554431 /* (1 << 25) - 1 */
     const P26 = 67108863 /* (1 << 26) - 1 */
@@ -72,7 +72,7 @@ export default (function () {
     /** Clamps private key in place
      * @param  k {number[]} Private key clamped (in place)
      */
-    function clamp (k) {
+    function clamp (k: number[]) {
         k[31] &= 0x7F
         k[31] |= 0x40
         k[0] &= 0xF8
@@ -82,7 +82,7 @@ export default (function () {
 
     // region radix 2^8 math
 
-    function cpy32 (d, s) {
+    function cpy32 (d: number[], s: number[]): void {
         for (let i = 0; i < 32; i++) {
             d[i] = s[i]
         }
@@ -91,7 +91,7 @@ export default (function () {
     /* p[m..n+m-1] = q[m..n+m-1] + z * x */
     /* n is the size of x */
     /* n+m is the size of p and q */
-    function mula_small (p, q, m, x, n, z) {
+    function mula_small (p: number[], q: number[], m: number, x: number[], n: number, z: number): number {
         m = m | 0
         n = n | 0
         z = z | 0
@@ -109,7 +109,7 @@ export default (function () {
     /* p += x * y * z  where z is a small integer
      * x is size 32, y is size t, p is size 32+t
      * y is allowed to overlap with p+32 if you don't care about the upper half  */
-    function mula32 (p, x, y, t, z) {
+    function mula32 (p: number[], x: number[], y: number[], t: number, z: number): number {
         t = t | 0
         z = z | 0
 
@@ -131,7 +131,7 @@ export default (function () {
      * requires t > 0 && d[t-1] !== 0
      * requires that r[-1] and d[-1] are valid memory locations
      * q may overlap with r+t */
-    function divmod (q, r, n, d, t) {
+    function divmod (q: number[], r: number[], n: number, d: number[], t: number): void {
         n = n | 0
         t = t | 0
 
@@ -160,8 +160,7 @@ export default (function () {
         r[t - 1] = rn & 0xFF
     }
 
-    function numsize (x, n) {
-        // eslint-disable-next-line no-empty
+    function numsize (x: number[], n: number): number {
         while (n-- !== 0 && x[n] === 0) { }
         return n + 1
     }
@@ -171,8 +170,8 @@ export default (function () {
      * as 32-byte signed.
      * x and y must have 64 bytes space for temporary use.
      * requires that a[-1] and b[-1] are valid memory locations  */
-    function egcd32 (x, y, a, b) {
-        let an; let bn = 32; let qn; let i
+    function egcd32 (x: number[], y: number[], a: number[], b: number[]): number[] {
+        let an: number; let bn = 32; let qn: number; let i:number
         for (i = 0; i < 32; i++) {
             x[i] = y[i] = 0
         }
@@ -208,14 +207,14 @@ export default (function () {
     // region pack / unpack
 
     /* Convert to internal format from little-endian byte format */
-    function unpack (x, m) {
+    function unpack (x: Uint16Array, m: number[]): void {
         for (let i = 0; i < KEY_SIZE; i += 2) {
             x[i / 2] = m[i] & 0xFF | ((m[i + 1] & 0xFF) << 8)
         }
     }
 
     /* Check if reduced-form input >= 2^255-19 */
-    function is_overflow (x) {
+    function is_overflow (x: Uint16Array): boolean {
         return (
             ((x[0] > P26 - 19)) &&
                 ((x[1] & x[3] & x[5] & x[7] & x[9]) === P25) &&
@@ -228,7 +227,7 @@ export default (function () {
      *     unpack, mul, sqr
      *     set --  if input in range 0 .. P25
      * If you're unsure if the number is reduced, first multiply it by 1.  */
-    function pack (x, m) {
+    function pack (x: Uint16Array, m: number[]): void {
         for (let i = 0; i < UNPACKED_SIZE; ++i) {
             m[2 * i] = x[i] & 0x00FF
             m[2 * i + 1] = (x[i] & 0xFF00) >> 8
@@ -237,19 +236,19 @@ export default (function () {
 
     // endregion
 
-    function createUnpackedArray () {
+    function createUnpackedArray (): Uint16Array {
         return new Uint16Array(UNPACKED_SIZE)
     }
 
     /* Copy a number */
-    function cpy (d, s) {
+    function cpy (d: Uint16Array, s: Uint16Array): void {
         for (let i = 0; i < UNPACKED_SIZE; ++i) {
             d[i] = s[i]
         }
     }
 
     /* Set a number to value, which must be in range -185861411 .. 185861411 */
-    function set (d, s) {
+    function set (d: Uint16Array, s: number): void {
         d[0] = s
         for (let i = 1; i < UNPACKED_SIZE; ++i) {
             d[i] = 0
@@ -276,7 +275,7 @@ export default (function () {
     /* Calculates a reciprocal.  The output is in reduced form, the inputs need not
      * be.  Simply calculates  y = x^(p-2)  so it's not too fast. */
     /* When sqrtassist is true, it instead calculates y = x^((p-5)/8) */
-    function recip (y, x, sqrtassist) {
+    function recip (y: Uint16Array, x: Uint16Array, sqrtassist: number): void {
         const t0 = createUnpackedArray()
         const t1 = createUnpackedArray()
         const t2 = createUnpackedArray()
@@ -284,7 +283,7 @@ export default (function () {
         const t4 = createUnpackedArray()
 
         /* the chain for x^(2^255-21) is straight from djb's implementation */
-        let i
+        let i: number
         sqr(t1, x) /*  2 === 2 * 1 */
         sqr(t2, t1) /*  4 === 2 * 2 */
         sqr(t0, t2) /*  8 === 2 * 4 */
@@ -349,14 +348,14 @@ export default (function () {
     }
 
     /* checks if x is "negative", requires reduced input */
-    function is_negative (x) {
+    function is_negative (x: Uint16Array): number {
         const isOverflowOrNegative = is_overflow(x) || x[9] < 0
         const leastSignificantBit = x[0] & 1
         return ((isOverflowOrNegative ? 1 : 0) ^ leastSignificantBit) & 0xFFFFFFFF
     }
 
     /* a square root */
-    function sqrt (x, u) {
+    function sqrt (x: Uint16Array, u: Uint16Array): void {
         const v = createUnpackedArray()
         const t1 = createUnpackedArray()
         const t2 = createUnpackedArray()
@@ -374,9 +373,18 @@ export default (function () {
 
     // region JavaScript Fast Math
 
-    function c255lsqr8h (a7, a6, a5, a4, a3, a2, a1, a0) {
-        const r = []
-        let v
+    function c255lsqr8h (
+        a7: number,
+        a6: number,
+        a5: number,
+        a4: number,
+        a3: number,
+        a2: number,
+        a1: number,
+        a0: number
+    ): number[] {
+        const r: number[] = []
+        let v: number
         r[0] = (v = a0 * a0) & 0xFFFF
         r[1] = (v = ((v / 0x10000) | 0) + 2 * a0 * a1) & 0xFFFF
         r[2] = (v = ((v / 0x10000) | 0) + 2 * a0 * a2 + a1 * a1) & 0xFFFF
@@ -396,12 +404,12 @@ export default (function () {
         return r
     }
 
-    function c255lsqrmodp (r, a) {
+    function c255lsqrmodp (r: Uint16Array, a: Uint16Array): void {
         const x = c255lsqr8h(a[15], a[14], a[13], a[12], a[11], a[10], a[9], a[8])
         const z = c255lsqr8h(a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0])
         const y = c255lsqr8h(a[15] + a[7], a[14] + a[6], a[13] + a[5], a[12] + a[4], a[11] + a[3], a[10] + a[2], a[9] + a[1], a[8] + a[0])
 
-        let v
+        let v: number
         r[0] = (v = 0x800000 + z[0] + (y[8] - x[8] - z[8] + x[0] - 0x80) * 38) & 0xFFFF
         r[1] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[1] + (y[9] - x[9] - z[9] + x[1]) * 38) & 0xFFFF
         r[2] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[2] + (y[10] - x[10] - z[10] + x[2]) * 38) & 0xFFFF
@@ -421,9 +429,26 @@ export default (function () {
         c255lreduce(r, r15)
     }
 
-    function c255lmul8h (a7, a6, a5, a4, a3, a2, a1, a0, b7, b6, b5, b4, b3, b2, b1, b0) {
-        const r = []
-        let v
+    function c255lmul8h (
+        a7: number,
+        a6: number,
+        a5: number,
+        a4: number,
+        a3: number,
+        a2: number,
+        a1: number,
+        a0: number,
+        b7: number,
+        b6: number,
+        b5: number,
+        b4: number,
+        b3: number,
+        b2: number,
+        b1: number,
+        b0: number
+    ): number[] {
+        const r: number[] = []
+        let v: number
         r[0] = (v = a0 * b0) & 0xFFFF
         r[1] = (v = ((v / 0x10000) | 0) + a0 * b1 + a1 * b0) & 0xFFFF
         r[2] = (v = ((v / 0x10000) | 0) + a0 * b2 + a1 * b1 + a2 * b0) & 0xFFFF
@@ -443,14 +468,14 @@ export default (function () {
         return r
     }
 
-    function c255lmulmodp (r, a, b) {
+    function c255lmulmodp (r: Uint16Array, a: Uint16Array, b: Uint16Array): void {
         // Karatsuba multiplication scheme: x*y = (b^2+b)*x1*y1 - b*(x1-x0)*(y1-y0) + (b+1)*x0*y0
         const x = c255lmul8h(a[15], a[14], a[13], a[12], a[11], a[10], a[9], a[8], b[15], b[14], b[13], b[12], b[11], b[10], b[9], b[8])
         const z = c255lmul8h(a[7], a[6], a[5], a[4], a[3], a[2], a[1], a[0], b[7], b[6], b[5], b[4], b[3], b[2], b[1], b[0])
         const y = c255lmul8h(a[15] + a[7], a[14] + a[6], a[13] + a[5], a[12] + a[4], a[11] + a[3], a[10] + a[2], a[9] + a[1], a[8] + a[0],
             b[15] + b[7], b[14] + b[6], b[13] + b[5], b[12] + b[4], b[11] + b[3], b[10] + b[2], b[9] + b[1], b[8] + b[0])
 
-        let v
+        let v: number
         r[0] = (v = 0x800000 + z[0] + (y[8] - x[8] - z[8] + x[0] - 0x80) * 38) & 0xFFFF
         r[1] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[1] + (y[9] - x[9] - z[9] + x[1]) * 38) & 0xFFFF
         r[2] = (v = 0x7fff80 + ((v / 0x10000) | 0) + z[2] + (y[10] - x[10] - z[10] + x[2]) * 38) & 0xFFFF
@@ -470,7 +495,7 @@ export default (function () {
         c255lreduce(r, r15)
     }
 
-    function c255lreduce (a, a15) {
+    function c255lreduce (a: Uint16Array, a15: number): void {
         let v = a15
         a[15] = v & 0x7FFF
         v = ((v / 0x8000) | 0) * 19
@@ -482,8 +507,8 @@ export default (function () {
         a[15] += v
     }
 
-    function c255laddmodp (r, a, b) {
-        let v
+    function c255laddmodp (r: Uint16Array, a: Uint16Array, b: Uint16Array): void {
+        let v: number
         r[0] = (v = (((a[15] / 0x8000) | 0) + ((b[15] / 0x8000) | 0)) * 19 + a[0] + b[0]) & 0xFFFF
         for (let i = 1; i <= 14; ++i) {
             r[i] = (v = ((v / 0x10000) | 0) + a[i] + b[i]) & 0xFFFF
@@ -492,8 +517,8 @@ export default (function () {
         r[15] = ((v / 0x10000) | 0) + (a[15] & 0x7FFF) + (b[15] & 0x7FFF)
     }
 
-    function c255lsubmodp (r, a, b) {
-        let v
+    function c255lsubmodp (r: Uint16Array, a: Uint16Array, b: Uint16Array): void {
+        let v: number
         r[0] = (v = 0x80000 + (((a[15] / 0x8000) | 0) - ((b[15] / 0x8000) | 0) - 1) * 19 + a[0] - b[0]) & 0xFFFF
         for (let i = 1; i <= 14; ++i) {
             r[i] = (v = ((v / 0x10000) | 0) + 0x7fff8 + a[i] - b[i]) & 0xFFFF
@@ -502,8 +527,8 @@ export default (function () {
         r[15] = ((v / 0x10000) | 0) + 0x7ff8 + (a[15] & 0x7FFF) - (b[15] & 0x7FFF)
     }
 
-    function c255lmulasmall (r, a, m) {
-        let v
+    function c255lmulasmall (r: Uint16Array, a: Uint16Array, m: number): void {
+        let v: number
         r[0] = (v = a[0] * m) & 0xFFFF
         for (let i = 1; i <= 14; ++i) {
             r[i] = (v = ((v / 0x10000) | 0) + a[i] * m) & 0xFFFF
@@ -521,7 +546,7 @@ export default (function () {
 
     /* t1 = ax + az
      * t2 = ax - az  */
-    function mont_prep (t1, t2, ax, az) {
+    function mont_prep (t1: Uint16Array, t2: Uint16Array, ax: Uint16Array, az: Uint16Array): void {
         add(t1, ax, az)
         sub(t2, ax, az)
     }
@@ -532,7 +557,15 @@ export default (function () {
      *  X(Q) = (t3+t4)/(t3-t4)
      *  X(P-Q) = dx
      * clobbers t1 and t2, preserves t3 and t4  */
-    function mont_add (t1, t2, t3, t4, ax, az, dx) {
+    function mont_add (
+        t1: Uint16Array,
+        t2: Uint16Array,
+        t3: Uint16Array,
+        t4: Uint16Array,
+        ax: Uint16Array,
+        az: Uint16Array,
+        dx: Uint16Array
+    ): void {
         mul(ax, t2, t3)
         mul(az, t1, t4)
         add(t1, ax, az)
@@ -546,7 +579,14 @@ export default (function () {
      *  X(B) = bx/bz
      *  X(Q) = (t3+t4)/(t3-t4)
      * clobbers t1 and t2, preserves t3 and t4  */
-    function mont_dbl (t1, t2, t3, t4, bx, bz) {
+    function mont_dbl (
+        t1: Uint16Array,
+        t2: Uint16Array,
+        t3: Uint16Array,
+        t4: Uint16Array,
+        bx: Uint16Array,
+        bz: Uint16Array
+    ): void {
         sqr(t1, t3)
         sqr(t2, t4)
         mul(bx, t1, t2)
@@ -558,7 +598,7 @@ export default (function () {
 
     /* Y^2 = X^3 + 486662 X^2 + X
      * t is a temporary  */
-    function x_to_y2 (t, y2, x) {
+    function x_to_y2 (t: Uint16Array, y2: Uint16Array, x: Uint16Array): void {
         sqr(t, x)
         mul_small(y2, x, 486662)
         add(t, t, y2)
@@ -567,7 +607,7 @@ export default (function () {
     }
 
     /* P = kG   and  s = sign(P)/k  */
-    function core (Px, s, k, Gx) {
+    function core (Px: number[], s: number[] | null, k: number[], Gx: number[] | null): void {
         const dx = createUnpackedArray()
         const t1 = createUnpackedArray()
         const t2 = createUnpackedArray()
@@ -575,7 +615,7 @@ export default (function () {
         const t4 = createUnpackedArray()
         const x = [createUnpackedArray(), createUnpackedArray()]
         const z = [createUnpackedArray(), createUnpackedArray()]
-        let i, j
+        let i: number; let j: number
 
         /* unpack the base */
         if (Gx !== null) {
@@ -697,9 +737,9 @@ export default (function () {
      *   s  [in]  private key for signing
      * returns signature value on success, undefined on failure (use different x or h)
      */
-    function sign (h, x, s) {
+    function sign (h: number[], x: number[], s: number[]): number[] | undefined {
         // v = (x - h) s  mod q
-        let w, i
+        let w: number; let i: number
         const h1 = new Array(32)
         const x1 = new Array(32)
         const tmp1 = new Array(64)
@@ -739,7 +779,7 @@ export default (function () {
      *   P  [in]  public key
      *   Returns signature public key
      */
-    function verify (v, h, P) {
+    function verify (v: number[], h: number[], P: number[]): number[] {
         /* Y = v abs(P) + h G  */
         const d = new Array(32)
         const p = [createUnpackedArray(), createUnpackedArray()]
@@ -749,7 +789,7 @@ export default (function () {
         const t1 = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()]
         const t2 = [createUnpackedArray(), createUnpackedArray(), createUnpackedArray()]
 
-        let vi = 0; let hi = 0; let di = 0; let nvh = 0; let i; let j; let k
+        let vi = 0; let hi = 0; let di = 0; let nvh = 0; let i: number; let j: number; let k: number
 
         /* set p[0] to G and p[1] to P  */
 
@@ -844,7 +884,7 @@ export default (function () {
         recip(t1[0], yz[k], 0)
         mul(t1[1], yx[k], t1[0])
 
-        const Y = []
+        const Y: number[] = []
         pack(t1[1], Y)
         return Y
     }
@@ -857,22 +897,20 @@ export default (function () {
      * s may be NULL if you don't care
      *
      * WARNING: if s is not NULL, this function has data-dependent timing */
-    function keygen (k) {
-        const P = []
-        const s = []
-        k = k || []
+    function keygen (k: number[]) {
+        const P: number[] = []
+        const s: number[] = []
         clamp(k)
         core(P, s, k, null)
 
         return { p: P, s, k }
     }
 
-    function sharedkey (k, oP) {
+    function sharedkey (k: number[], oP: number[]) {
         const P = new Array(32)
         if (oP.every(byte => byte === 0)) {
             return P.fill(0)
         }
-        k = k || []
         clamp(k)
         core(P, null, k, oP)
         return P

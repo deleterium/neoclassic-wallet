@@ -47,7 +47,7 @@ export default {
         const encoder = new TextEncoder()
         return Array.from(encoder.encode(str))
     },
-    hexStringToByteArray (str: HexString) : ByteArray {
+    hexStringToByteArray (str: HexString) : number[] {
         const bytes : ByteArray = []
         let i = 0
         if (str.length % 2 !== 0) {
