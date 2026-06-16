@@ -6,11 +6,7 @@ import { dbPut } from './brs.database';
 import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from './brs.numbers';
 import { getTranslatedFieldName } from './brs.util';
 
-export function evTransferAssetModalOnShowBsModal(e: ShowBootstrapModalEvent) {
-    let $invoker = $(e.relatedTarget);
-    if (e.relatedTarget === null) {
-        $invoker = $(e.currentTarget);
-    }
+export function populateTransferAssetSelector($invoker: JQuery<HTMLElement>) {
     const assetId = $invoker.data('asset') ?? '';
     const assetName = $invoker.data('name') ?? '?';
     const decimals = $invoker.data('decimals') ?? '';
@@ -305,8 +301,8 @@ export function formsAssetExchangeChangeGroupName(data: any) {
     }
 }
 
-export function evAssetOrderModalOnShowBsModal(e: ShowBootstrapModalEvent) {
-    const $invoker = $(e.relatedTarget)
+export function evAssetOrderModalOnShowBsModal(e: JQuery.TriggeredEvent) {
+    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
 
     const orderType: string = String($invoker.data('type')).toLowerCase()
     const assetId: string = $invoker.data('asset')

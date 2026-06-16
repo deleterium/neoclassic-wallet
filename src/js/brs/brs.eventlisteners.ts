@@ -76,7 +76,7 @@ import {
 } from './brs.asset.page.assetexchange'
 
 import {
-    evTransferAssetModalOnShowBsModal,
+    populateTransferAssetSelector,
     evAssetOrderModalOnShowBsModal,
     evAssetSelectorButtonClick
 } from './brs.modals.assets'
@@ -280,7 +280,9 @@ export function addEventListeners () {
         sendMoneyCalculateTotal($(this))
     })
     $('span.asset_selector button').on('click', evAssetSelectorButtonClick)
-    $('span.asset_selector').on('click', 'ul li a', evTransferAssetModalOnShowBsModal)
+    $('span.asset_selector').on('click', 'ul li a', (e) => {
+        populateTransferAssetSelector($(e.currentTarget))
+    })
     $('.recipient_selector button').on('click', evSpanRecipientSelectorClickButton)
     $('.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
 
@@ -354,7 +356,9 @@ export function addEventListeners () {
     $('#asset_exchange_group_modal').on('hidden.bs.modal', function () {
         $('#asset_exchange_group_new_group_div').val('').hide()
     })
-    $('#transfer_asset_modal').on('show.bs.modal', evTransferAssetModalOnShowBsModal)
+    $('#transfer_asset_modal').on('show.bs.modal', (e) => {
+        populateTransferAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget))
+    })
     $('body').on('click', 'a[data-goto-asset]', function (e) {
         e.preventDefault()
         const $visible_modal = $('.modal.in')

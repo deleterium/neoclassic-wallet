@@ -17,8 +17,8 @@ import {
 
 import { GetAliasResponse, PostResponse, ShowBootstrapModalEvent } from '../typings'
 
-export function evAliasModalOnShowBsModal (e: ShowBootstrapModalEvent) {
-    const $invoker = $(e.relatedTarget)
+export function evAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
+    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
     const modal = e.target
 
     const alias = String($invoker.data('alias'))
@@ -113,9 +113,9 @@ export function evSellAliasSellToSpecificClick (e: JQuery.ClickEvent) {
  * Called when showing "Buy Alias Modal". Invoker is "<a>" with "data-buy-alias" set. Fetches the alias details and shows them.
  * @param {*} e Event 
  */
-export function evBuyAliasModalOnShowBsModal (e: ShowBootstrapModalEvent) {
+export function evBuyAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
     const $modal = $(e.target)
-    const $invoker = $(e.relatedTarget)
+    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
 
     BRS.fetchingModalData = true
 
@@ -178,8 +178,8 @@ export function formsBuyAliasComplete (response: PostResponse, data: any) {
     }
 }
 
-export function evRegisterAliasModalOnShowBsModal (e: ShowBootstrapModalEvent) {
-    const $invoker = $(e.relatedTarget)
+export function evRegisterAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
+    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
 
     const alias = $invoker.data('alias')
 
