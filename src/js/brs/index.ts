@@ -35,7 +35,7 @@ import {
     incomingAliases
 } from './brs.alias.page'
 
-import { pagesAt } from './brs.at'
+import { pagesAt } from './brs.at.page'
 
 import {
     pagesContacts,
