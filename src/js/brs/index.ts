@@ -15,10 +15,13 @@ import {
 
 import {
     pagesBlocksForged,
-    pagesBlockInfo,
     pagesBlocks,
     incomingBlocks
 } from './brs.blocks'
+
+import {
+    pagesBlockInfo
+} from './brs.blockchain.page.blockInfo'
 
 import {
     formsSellAlias,

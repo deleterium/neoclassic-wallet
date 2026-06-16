@@ -29,8 +29,8 @@ import {
 } from './brs.login'
 
 import {
-    blocksInfoLoad
-} from './brs.blocks'
+    blockInfoLoad
+} from './brs.blockchain.page.blockInfo'
 
 import {
     evAliasModalOnShowBsModal,
@@ -654,7 +654,7 @@ export function addEventListeners () {
     // from brs.blocks.js
     $('#block_info_latest_block').on('click', function (e) {
         e.preventDefault()
-        blocksInfoLoad('')
+        blockInfoLoad('')
     })
     $('#block_info_search').on('click', function () {
         const userInput = $('#block_info_input_block').val()
@@ -662,7 +662,7 @@ export function addEventListeners () {
         if (isNaN(currentBlock) || currentBlock < 0) {
             $.notify($.t('invalid_blockheight'), { type: 'danger' })
         }
-        blocksInfoLoad(currentBlock)
+        blockInfoLoad(currentBlock)
     })
     $('#block_info_previous_block').on('click', function () {
         const userInput = $('#block_info_input_block').val()
@@ -670,7 +670,7 @@ export function addEventListeners () {
         if (isNaN(currentBlock) || currentBlock <= 0) {
             $.notify($.t('invalid_blockheight'), { type: 'danger' })
         }
-        blocksInfoLoad(currentBlock - 1)
+        blockInfoLoad(currentBlock - 1)
     })
     $('#block_info_next_block').on('click', function () {
         const userInput = $('#block_info_input_block').val()
@@ -678,6 +678,6 @@ export function addEventListeners () {
         if (isNaN(currentBlock) || currentBlock < 0) {
             $.notify($.t('invalid_blockheight'), { type: 'danger' })
         }
-        blocksInfoLoad(currentBlock + 1)
+        blockInfoLoad(currentBlock + 1)
     })
 }

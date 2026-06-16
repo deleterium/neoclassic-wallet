@@ -23,11 +23,8 @@ import {
     formatStyledAmount
 } from './brs.util'
 
-import {
-    getTransactionDetails
-} from './brs.tx.tools'
 
-import { BlockDetails, GetAccountBlocksResponse, GetBlockResponse, GetBlocksResponse, Transaction } from '../typings'
+import { BlockDetails, GetAccountBlocksResponse, GetBlocksResponse } from '../typings'
 
 /**
  * Draws the page 'Mining' -> 'Forged block'.
@@ -46,59 +43,6 @@ export function pagesBlocksForged () {
         // We have blocks!
         blocksPageLoaded(response.blocks)
     })
-}
-
-/**
- * Draws the page 'Blockchain' -> 'Blocks Info' with latest block available.
- * @param blockheight Block to show
- */
-export function pagesBlockInfo () {
-    blocksInfoLoad('')
-}
-
-/**
- * Draws the page 'Blockchain' -> 'Blocks Info'
- * @param blockheight Block to show
- */
-export function blocksInfoLoad (blockheight: number | '') {
-    if (blockheight === '') {
-        blockheight = BRS.blocks[0].height
-    }
-
-    sendRequest('getBlock+', {
-        height: blockheight,
-        includeTransactions: true
-    }, function (response: GetBlockResponse) {
-        if (response.errorCode) {
-            $.notify($.t('invalid_blockheight'), { type: 'danger' })
-            dataLoaded('')
-            return
-        }
-        $('#block_info_input_block').val(blockheight)
-        const rows = (response.transactions as Transaction[]).reduce((prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr as Transaction), '')
-        dataLoaded(rows)
-    })
-}
-
-function getTransactionInBlocksRowHTML (transaction: Transaction) {
-    const details = getTransactionDetails(transaction)
-    const transactionId = String(transaction.transaction).escapeHTML()
-    const hasMessage = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : ''
-    const timestamp = formatTimestampAsDateTime(transaction.timestamp)
-    const fee = formatNQTAsAmount(transaction.feeNQT)
-
-    return `
-        <tr>
-          <td><a href='#' data-transaction='${transactionId}'>${transactionId}</a></td>
-          <td>${hasMessage}</td>
-          <td>${timestamp}</td>
-          <td>${details.nameOfTransaction}</td>
-          <td>${details.senderHTML}</td>
-          <td>${details.recipientHTML}</td>
-          <td>${details.circleText}</td>
-          <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
-          <td>${fee}</td>
-        </tr>`
 }
 
 /**
