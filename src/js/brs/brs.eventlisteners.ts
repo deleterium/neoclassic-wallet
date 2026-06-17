@@ -5,13 +5,13 @@
 import { BRS } from '.'
 
 import {
-    autoSelectServer,
-    getState,
     evSidebarClick,
     reloadCurrentPage,
     goToPage,
     goToPageNumber
 } from './brs'
+
+import { autoSelectServer, getState } from './brs.lockscreen'
 
 import {
     updateSettings
