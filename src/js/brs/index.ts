@@ -42,11 +42,12 @@ import {
 import { pagesAt } from './brs.at.page'
 
 import {
-    pagesContacts,
     formsAddContact,
     formsUpdateContact,
     formsDeleteContact
 } from './brs.contacts'
+
+import { pagesContacts } from './brs.contacts.page'
 
 import { formsSendMoneyEscrow, pagesEscrow } from './brs.escrow'
 

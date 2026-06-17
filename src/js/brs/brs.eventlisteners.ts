@@ -45,10 +45,13 @@ import { evAliasSearchSubmit } from './brs.alias.page'
 
 import {
     evDeleteContactModalOnShowBsModal,
-    evUpdateContactModalOnShowBsModal,
+    evUpdateContactModalOnShowBsModal
+} from './brs.contacts'
+
+import {
     exportContacts,
     importContacts
-} from './brs.contacts'
+} from './brs.contacts.page'
 
 import {
     submitForm
