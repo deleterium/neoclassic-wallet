@@ -134,7 +134,7 @@ import {
 
 import { init, reloadCurrentPage } from './brs'
 
-import { pagesSearchResults } from './brs.search'
+import { pagesSearchResults } from './brs.searchResults.page'
 
 import { formsClearData } from './brs.modal.cleardata'
 
