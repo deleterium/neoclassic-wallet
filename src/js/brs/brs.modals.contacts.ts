@@ -1,7 +1,7 @@
 import { BRS } from '.';
 import { ShowBootstrapModalEvent } from '../typings';
 import { NxtAddress } from '../util/nxtaddress';
-import { notifyContactOperationSuccess, getContactByName, saveContactToDatabase, removeContactFromDB } from './brs.contacts';
+import { notifyContactOperationSuccess, getContactByName, saveContactToDatabase, removeContactFromDB } from './brs.contacts.tools';
 
 export function formsAddContact(data: any) {
     const error = checkContactDataError(data);

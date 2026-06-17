@@ -49,7 +49,7 @@ import {
     dbPut
 } from './brs.database'
 
-import { loadContactsFromDB } from './brs.contacts'
+import { loadContactsFromDB } from './brs.contacts.tools'
 
 import { BRS } from '.'
 

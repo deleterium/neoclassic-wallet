@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { PostResponse } from '../typings';
-import { getContactByName } from './brs.contacts';
+import { getContactByName } from './brs.contacts.tools';
 import { evCheckNumberInput } from './brs.modals';
 import { parseAmountToNQT, formatNQTAsAmount } from './brs.numbers';
 import { convertRSAccountToNumeric, getAccountRSFromObject } from './brs.util';

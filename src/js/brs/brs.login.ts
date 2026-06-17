@@ -21,7 +21,7 @@ import {
 
 import {
     getContactByName
-} from './brs.contacts'
+} from './brs.contacts.tools'
 
 import {
     getPublicKeyFromPassphrase,

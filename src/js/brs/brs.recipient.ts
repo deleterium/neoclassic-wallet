@@ -8,7 +8,7 @@ import { NxtAddress } from '../util/nxtaddress'
 
 import { sendRequest } from './brs.server'
 
-import { getContactByName } from './brs.contacts'
+import { getContactByName } from './brs.contacts.tools'
 
 import { getAccountIdFromPublicKey } from './brs.encryption'
 

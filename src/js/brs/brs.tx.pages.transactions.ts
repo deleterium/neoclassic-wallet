@@ -1,5 +1,5 @@
 import { BRS } from '.';
-import { getContactByName } from './brs.contacts';
+import { getContactByName } from './brs.contacts.tools';
 import { sendRequest } from './brs.server';
 import { getUnconfirmedTransactionsFromCache, dataLoaded } from './brs.util';
 import { reloadCurrentPage } from './brs';

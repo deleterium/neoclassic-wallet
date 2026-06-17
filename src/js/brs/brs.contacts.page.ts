@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { DBContact } from '../typings';
-import { notifyContactOperationSuccess } from './brs.contacts';
+import { notifyContactOperationSuccess } from './brs.contacts.tools';
 import { dbGet, dbPut } from './brs.database';
 import { dataLoaded, getAccountRSFromObject } from './brs.util';
 
