@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { GetAccountBlocksResponse } from '../typings';
-import { blocksPageLoaded } from './brs.blockchain.page.latestBlocks';
+import { drawBlocksInCurrentPage } from './brs.blockchain.tools';
 import { sendRequest } from './brs.server';
 
 /**
@@ -14,10 +14,10 @@ export function pagesForgedBlocks() {
         timestamp: 0
     }, function (response: GetAccountBlocksResponse) {
         if (!response.blocks || response.blocks.length === 0) {
-            blocksPageLoaded([]);
+            drawBlocksInCurrentPage([]);
             return;
         }
         // We have blocks!
-        blocksPageLoaded(response.blocks);
+        drawBlocksInCurrentPage(response.blocks);
     });
 }
