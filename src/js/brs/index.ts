@@ -39,7 +39,7 @@ import {
     incomingAliases
 } from './brs.alias.page'
 
-import { pagesAt } from './brs.at.page'
+import { pagesAt } from './brs.payment.page.at'
 
 import {
     formsAddContact,
