@@ -105,7 +105,7 @@ import {
 import {
     pagesPeers,
     incomingPeers
-} from './brs.peers'
+} from './brs.peers.page'
 
 import {
     formsSendMoneyComplete,
