@@ -4,7 +4,7 @@ import { showAliasModal } from './brs.modals.alias';
 import { showAccountModal } from './brs.modals.account';
 import { showBlockModal } from './brs.modals.block';
 import { showTransactionModal } from './brs.modals.transaction';
-import { sendRequest } from './brs.server';
+import { sendRequest } from './brs.sendRequest';
 import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from './brs.util';
 import { formatNQTAsAmount } from './brs.numbers';
 

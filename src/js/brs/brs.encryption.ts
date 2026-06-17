@@ -11,7 +11,7 @@ import converters from '../util/converters'
 
 import {
     sendRequest
-} from './brs.server'
+} from './brs.sendRequest'
 
 import {
     ByteArray,

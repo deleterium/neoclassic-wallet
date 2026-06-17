@@ -6,7 +6,7 @@ import { BRS } from '.'
 
 import { NxtAddress } from '../util/nxtaddress'
 
-import { sendRequest } from './brs.server'
+import { sendRequest } from './brs.sendRequest'
 
 import { getContactByName } from './brs.contacts.tools'
 

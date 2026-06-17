@@ -3,7 +3,7 @@ import { AnyAssetOrder, GetTransactionResponse, UNCONFIRMED_HEIGHT } from '../ty
 import { pageLoaded, reloadCurrentPage } from './brs';
 import { getAssetDetails } from './brs.asset.tools';
 import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from './brs.numbers';
-import { sendRequest } from './brs.server';
+import { sendRequest } from './brs.sendRequest';
 import { dataLoadFinished } from './brs.util';
 
 export function pagesOpenOrders() {

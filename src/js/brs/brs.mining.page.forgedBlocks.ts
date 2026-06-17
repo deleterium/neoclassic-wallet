@@ -1,7 +1,7 @@
 import { BRS } from '.';
 import { GetAccountBlocksResponse } from '../typings';
 import { drawBlocksInCurrentPage } from './brs.blockchain.tools';
-import { sendRequest } from './brs.server';
+import { sendRequest } from './brs.sendRequest';
 
 /**
  * Draws the page 'Mining' -> 'Forged block'.

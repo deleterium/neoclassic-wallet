@@ -6,7 +6,7 @@ import { BRS } from '.'
 
 import { reloadCurrentPage } from './brs'
 
-import { sendRequest } from './brs.server'
+import { sendRequest } from './brs.sendRequest'
 
 import { formatVolume } from './brs.numbers'
 

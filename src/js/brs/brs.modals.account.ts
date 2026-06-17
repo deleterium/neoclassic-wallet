@@ -7,7 +7,7 @@ import { BRS } from '.'
 
 import {
     sendRequest
-} from './brs.server'
+} from './brs.sendRequest'
 
 import {
     calculatePercentage,

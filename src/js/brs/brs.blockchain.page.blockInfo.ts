@@ -1,7 +1,7 @@
 import { BRS } from '.';
 import { GetBlockResponse, Transaction } from '../typings';
 import { formatTimestampAsDateTime, formatNQTAsAmount } from './brs.numbers';
-import { sendRequest } from './brs.server';
+import { sendRequest } from './brs.sendRequest';
 import { getTransactionDetails } from './brs.tx.tools';
 import { dataLoaded } from './brs.util';
 

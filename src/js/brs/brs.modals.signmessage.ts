@@ -2,7 +2,7 @@ import converters from '../util/converters'
 
 import { BRS } from '.'
 
-import { getSavedPassword, sendRequest } from './brs.server'
+import { getSavedPassword, sendRequest } from './brs.sendRequest'
 
 import {
     getAccountIdFromPublicKey,

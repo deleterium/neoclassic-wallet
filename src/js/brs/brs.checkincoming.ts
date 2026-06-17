@@ -1,5 +1,5 @@
 import { BRS } from '.';
-import { sendRequest } from './brs.server';
+import { sendRequest } from './brs.sendRequest';
 
 import {
     incomingUpdateDashboardTransactions,

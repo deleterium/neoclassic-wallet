@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { getContactByName } from './brs.contacts.tools';
-import { sendRequest } from './brs.server';
+import { sendRequest } from './brs.sendRequest';
 import { getUnconfirmedTransactionsFromCache, dataLoaded } from './brs.util';
 import { reloadCurrentPage } from './brs';
 import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from './brs.numbers';

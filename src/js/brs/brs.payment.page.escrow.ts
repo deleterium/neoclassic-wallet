@@ -6,7 +6,7 @@ import { BRS } from '.'
 
 import {
     sendRequest
-} from './brs.server'
+} from './brs.sendRequest'
 
 import { formatNQTAsAmount, parseAmountToNumber } from './brs.numbers'
 

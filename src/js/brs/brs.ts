@@ -18,7 +18,7 @@ import {
 
 import {
     sendRequest
-} from './brs.server'
+} from './brs.sendRequest'
 
 import {
     showLockscreen

@@ -17,7 +17,7 @@ import {
 import {
     setSavedPassword,
     sendRequest
-} from './brs.server'
+} from './brs.sendRequest'
 
 import {
     getContactByName
