@@ -14,9 +14,9 @@ import {
 } from './brs.settings'
 
 import {
-    pagesBlocks,
-    incomingBlocks
-} from './brs.blocks'
+    pagesLatestBlocks,
+    incomingLatestBlocks
+} from './brs.blockchain.page.latestBlocks'
 
 import { pagesForgedBlocks } from './brs.mining.page.forgedBlocks'
 
@@ -226,7 +226,7 @@ export const BRS = {
         settings: pagesSettings,
         forged_blocks: pagesForgedBlocks,
         block_info: pagesBlockInfo,
-        blocks: pagesBlocks,
+        latest_blocks: pagesLatestBlocks,
         aliases: pagesAliases,
         at: pagesAt,
         contacts: pagesContacts,
@@ -242,7 +242,7 @@ export const BRS = {
         messages: pagesMessages
     },
     incoming: {
-        blocks: incomingBlocks,
+        latest_blocks: incomingLatestBlocks,
         aliases: incomingAliases,
         asset_exchange: incomingAssetExchange,
         my_assets: incomingMyAssets,

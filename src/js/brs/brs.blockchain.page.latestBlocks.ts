@@ -30,7 +30,7 @@ import { BlockDetails, GetBlocksResponse } from '../typings'
  * Draws the page 'Blockchain' -> 'Latest blocks'
  * @param blockheight Block to show
  */
-export function pagesBlocks () {
+export function pagesLatestBlocks () {
     sendRequest('getBlocks', {
         firstIndex: 0,
         lastIndex: BRS.pageSize
@@ -43,7 +43,7 @@ export function pagesBlocks () {
     })
 }
 
-export function incomingBlocks () {
+export function incomingLatestBlocks () {
     reloadCurrentPage()
 }
 
@@ -127,13 +127,13 @@ export function blocksPageLoaded (blocks: BlockDetails[]) {
         $('#forged_fees_total').html(formatStyledAmount(BRS.accountInfo.forgedBalanceNQT)).removeClass('loading_dots')
     } else {
         if (time === 0) {
-            $('#blocks_transactions_per_hour').html('0').removeClass('loading_dots')
+            $('#latest_blocks_transactions_per_hour').html('0').removeClass('loading_dots')
         } else {
-            $('#blocks_transactions_per_hour').html((Math.round(totalTransactions / (time / 60) * 60)).toString()).removeClass('loading_dots')
+            $('#latest_blocks_transactions_per_hour').html((Math.round(totalTransactions / (time / 60) * 60)).toString()).removeClass('loading_dots')
         }
-        $('#blocks_average_fee').html(formatStyledAmount(averageFee)).removeClass('loading_dots')
-        $('#blocks_average_amount').html(formatStyledAmount(averageAmount)).removeClass('loading_dots')
-        $('#blocks_average_generation_time').html(Math.round(time / 100) + 's').removeClass('loading_dots')
+        $('#latest_blocks_average_fee').html(formatStyledAmount(averageFee)).removeClass('loading_dots')
+        $('#latest_blocks_average_amount').html(formatStyledAmount(averageAmount)).removeClass('loading_dots')
+        $('#latest_blocks_average_generation_time').html(Math.round(time / 100) + 's').removeClass('loading_dots')
     }
 
     dataLoaded(rows)

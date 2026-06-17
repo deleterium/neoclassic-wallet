@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { GetAccountBlocksResponse } from '../typings';
-import { blocksPageLoaded } from './brs.blocks';
+import { blocksPageLoaded } from './brs.blockchain.page.latestBlocks';
 import { sendRequest } from './brs.server';
 
 /**
