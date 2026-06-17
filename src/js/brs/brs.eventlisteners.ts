@@ -555,7 +555,7 @@ export function addEventListeners () {
     $('.advanced_info a').on('click', evAdvancedInfoClick)
 
     // from brs.modals.account.js
-    $('#blocks_table, #blocks_forged_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents').on('click', 'a[data-user]', function (e) {
+    $('#blocks_table, #forged_blocks_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents').on('click', 'a[data-user]', function (e) {
         e.preventDefault()
         const account = $(this).data('user')
         showAccountModal(account)
@@ -574,7 +574,7 @@ export function addEventListeners () {
     })
 
     // from brs.modals.block.js
-    $('#blocks_table, #blocks_forged_table, #dashboard_blocks_table, #search_results_contents').on('click', 'a[data-block]', evBlocksTableClick)
+    $('#blocks_table, #forged_blocks_table, #dashboard_blocks_table, #search_results_contents').on('click', 'a[data-block]', evBlocksTableClick)
     $('#block_info_modal_info_tab').tab('show')
     $('#block_info_modal').on('hide.bs.modal', function () {
         $('#block_info_modal_info_tab').tab('show')

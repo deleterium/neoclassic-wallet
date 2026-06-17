@@ -14,10 +14,11 @@ import {
 } from './brs.settings'
 
 import {
-    pagesBlocksForged,
     pagesBlocks,
     incomingBlocks
 } from './brs.blocks'
+
+import { pagesForgedBlocks } from './brs.mining.page.forgedBlocks'
 
 import {
     pagesBlockInfo
@@ -223,7 +224,7 @@ export const BRS = {
 
     pages: {
         settings: pagesSettings,
-        blocks_forged: pagesBlocksForged,
+        forged_blocks: pagesForgedBlocks,
         block_info: pagesBlockInfo,
         blocks: pagesBlocks,
         aliases: pagesAliases,

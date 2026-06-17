@@ -24,26 +24,7 @@ import {
 } from './brs.util'
 
 
-import { BlockDetails, GetAccountBlocksResponse, GetBlocksResponse } from '../typings'
-
-/**
- * Draws the page 'Mining' -> 'Forged block'.
- */
-export function pagesBlocksForged () {
-    sendRequest('getAccountBlocks+', {
-        account: BRS.account,
-        firstIndex: 0,
-        lastIndex: BRS.pageSize,
-        timestamp: 0
-    }, function (response: GetAccountBlocksResponse) {
-        if (!response.blocks || response.blocks.length === 0) {
-            blocksPageLoaded([])
-            return
-        }
-        // We have blocks!
-        blocksPageLoaded(response.blocks)
-    })
-}
+import { BlockDetails, GetBlocksResponse } from '../typings'
 
 /**
  * Draws the page 'Blockchain' -> 'Latest blocks'
@@ -70,7 +51,7 @@ export function incomingBlocks () {
  * Draws the page 'Blockchain' -> 'Latest blocks' or the page 'Mining' -> 'Forged blocks'
  * @param blockheight Blocks to show in current page.
  */
-function blocksPageLoaded (blocks: BlockDetails[]) {
+export function blocksPageLoaded (blocks: BlockDetails[]) {
     let rows = ''
     let totalAmount = 0n
     let totalFees = 0n
@@ -134,14 +115,14 @@ function blocksPageLoaded (blocks: BlockDetails[]) {
     averageFee = parseAmountToNQT(averageFee)
     averageAmount = parseAmountToNQT(averageAmount)
 
-    if (BRS.currentPage === 'blocks_forged') {
+    if (BRS.currentPage === 'forged_blocks') {
         if (blocks.length >= BRS.pageSize) {
             blockCount = BRS.pageSize + '+'
         } else {
             blockCount = blocks.length.toString()
         }
-        $('#blocks_forged_average_fee').html(formatStyledAmount(averageFee)).removeClass('loading_dots')
-        $('#blocks_forged_average_amount').html(formatStyledAmount(averageAmount)).removeClass('loading_dots')
+        $('#forged_blocks_average_fee').html(formatStyledAmount(averageFee)).removeClass('loading_dots')
+        $('#forged_blocks_average_amount').html(formatStyledAmount(averageAmount)).removeClass('loading_dots')
         $('#forged_blocks_total').html(blockCount).removeClass('loading_dots')
         $('#forged_fees_total').html(formatStyledAmount(BRS.accountInfo.forgedBalanceNQT)).removeClass('loading_dots')
     } else {
