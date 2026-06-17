@@ -49,7 +49,7 @@ import {
 
 import { pagesContacts } from './brs.contacts.page'
 
-import { formsSendMoneyEscrow, pagesEscrow } from './brs.escrow'
+import { formsSendMoneyEscrow, pagesEscrow } from './brs.payment.page.escrow'
 
 import {
     formsAddCommitment
