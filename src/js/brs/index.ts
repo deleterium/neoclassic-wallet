@@ -11,7 +11,7 @@ import '../util/string.extensions'
 
 import {
     pagesSettings
-} from './brs.settings'
+} from './brs.settings.page'
 
 import {
     pagesLatestBlocks,

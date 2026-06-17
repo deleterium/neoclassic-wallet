@@ -14,7 +14,7 @@ import hashicon from 'hashicon'
 
 import {
     loadSettingsFromDB
-} from './brs.settings'
+} from './brs.settings.page'
 
 import {
     sendRequest

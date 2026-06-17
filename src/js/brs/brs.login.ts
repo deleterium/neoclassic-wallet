@@ -12,7 +12,7 @@ import {
 
 import {
     updateSettings
-} from './brs.settings'
+} from './brs.settings.page'
 
 import {
     setSavedPassword,
