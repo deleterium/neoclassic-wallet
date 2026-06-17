@@ -45,7 +45,7 @@ import {
     formsAddContact,
     formsUpdateContact,
     formsDeleteContact
-} from './brs.contacts'
+} from './brs.modals.contacts'
 
 import { pagesContacts } from './brs.contacts.page'
 

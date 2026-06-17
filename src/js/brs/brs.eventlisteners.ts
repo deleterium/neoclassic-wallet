@@ -46,7 +46,7 @@ import { evAliasSearchSubmit } from './brs.alias.page'
 import {
     evDeleteContactModalOnShowBsModal,
     evUpdateContactModalOnShowBsModal
-} from './brs.contacts'
+} from './brs.modals.contacts'
 
 import {
     exportContacts,
