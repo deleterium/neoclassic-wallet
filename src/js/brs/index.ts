@@ -114,7 +114,7 @@ import {
 
 import {
     pagesSubscription
-} from './brs.subscription'
+} from './brs.payment.page.subscription'
 
 import {
     formsSetAccountInfoComplete
