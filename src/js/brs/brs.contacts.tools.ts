@@ -2,7 +2,7 @@ import { BRS } from '.'
 
 import {
     reloadCurrentPage,
-} from './brs'
+} from './brs.navigation'
 
 import {
     dbGet,

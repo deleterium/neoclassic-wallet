@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { GetAliasesResponse } from '../typings';
-import { goToPage, pageLoaded, reloadCurrentPage } from './brs';
+import { goToPage, pageLoaded, reloadCurrentPage } from './brs.navigation';
 import { sendRequest } from './brs.sendRequest';
 import { getUnconfirmedTransactionsFromCache, dataLoadFinished } from './brs.util';
 

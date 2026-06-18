@@ -4,7 +4,7 @@ import { AjaxResponse, AssetDetails, Transaction } from '../typings'
 
 import { NxtAddress } from '../util/nxtaddress'
 
-import { pageLoaded } from './brs'
+import { pageLoaded } from './brs.navigation'
 
 import { formatQNTAsQuantity, formatNQTAsAmount } from './brs.numbers'
 

@@ -132,7 +132,7 @@ import {
     formsVerifyMessage
 } from './brs.modals.signmessage'
 
-import { reloadCurrentPage } from './brs'
+import { reloadCurrentPage } from './brs.navigation'
 
 import { init } from './brs.lockscreen'
 

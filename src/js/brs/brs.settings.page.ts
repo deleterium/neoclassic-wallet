@@ -2,7 +2,7 @@ import i18next from 'i18next'
 
 import { BRS } from '.'
 
-import { pageLoaded } from './brs'
+import { pageLoaded } from './brs.navigation'
 
 import { submitForm } from './brs.forms'
 

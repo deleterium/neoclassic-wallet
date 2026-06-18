@@ -5,7 +5,7 @@ import { BRS } from '.'
 import {
     reloadCurrentPage,
     pageLoaded
-} from './brs'
+} from './brs.navigation'
 
 import {
     sendRequest

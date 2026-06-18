@@ -2,7 +2,7 @@ import { BRS } from '.';
 import { getContactByName } from './brs.contacts.tools';
 import { sendRequest } from './brs.sendRequest';
 import { getUnconfirmedTransactionsFromCache, dataLoaded } from './brs.util';
-import { reloadCurrentPage } from './brs';
+import { reloadCurrentPage } from './brs.navigation';
 import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from './brs.numbers';
 import { getTransactionDetails } from './brs.tx.tools';
 import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings';

@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { AnyAssetOrder, GetTransactionResponse, UNCONFIRMED_HEIGHT } from '../typings';
-import { pageLoaded, reloadCurrentPage } from './brs';
+import { pageLoaded, reloadCurrentPage } from './brs.navigation';
 import { getAssetDetails } from './brs.asset.tools';
 import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from './brs.numbers';
 import { sendRequest } from './brs.sendRequest';

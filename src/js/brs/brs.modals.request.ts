@@ -1,6 +1,6 @@
 import { BRS } from '.'
 
-import { checkMinimumFee } from './brs'
+import { checkMinimumFee } from './brs.navigation'
 
 import { formatNQTAsAmount, parseAmountToNQT } from './brs.numbers'
 

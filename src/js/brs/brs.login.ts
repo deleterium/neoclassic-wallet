@@ -6,7 +6,7 @@ import { BRS } from '.'
 
 import {
     checkLocationHash,
-} from './brs'
+} from './brs.navigation'
 
 import { getAndUpdateAccountDetails } from './brs.checkincoming.account'
 

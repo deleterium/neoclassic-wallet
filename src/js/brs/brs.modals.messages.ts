@@ -1,6 +1,6 @@
 import { BRS } from '.';
 import { PostResponse, Transaction } from '../typings';
-import { reloadCurrentPage } from './brs';
+import { reloadCurrentPage } from './brs.navigation';
 import { addDecryptedTransactionToCache, getAccountId, setDecryptionPassword, decryptAttachmentField } from './brs.encryption';
 import { getAccountRSFromObject, getUnconfirmedTransactionsFromCache } from './brs.util';
 

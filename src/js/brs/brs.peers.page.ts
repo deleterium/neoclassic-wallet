@@ -4,7 +4,7 @@
 
 import { BRS } from '.'
 
-import { reloadCurrentPage } from './brs'
+import { reloadCurrentPage } from './brs.navigation'
 
 import { sendRequest } from './brs.sendRequest'
 

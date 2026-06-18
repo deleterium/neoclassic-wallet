@@ -1,5 +1,5 @@
 import { BRS } from '.';
-import { reloadCurrentPage } from './brs';
+import { reloadCurrentPage } from './brs.navigation';
 import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from './brs.numbers';
 import { sendRequest } from './brs.sendRequest';
 import { dataLoaded } from './brs.util';

@@ -4,7 +4,7 @@ import {
     addPagination,
     goToPage,
     pageLoaded
-} from './brs'
+} from './brs.navigation'
 
 import {
     sendRequest

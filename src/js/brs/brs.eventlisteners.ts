@@ -9,7 +9,7 @@ import {
     reloadCurrentPage,
     goToPage,
     goToPageNumber
-} from './brs'
+} from './brs.navigation'
 
 import { autoSelectServer, getState } from './brs.lockscreen'
 
