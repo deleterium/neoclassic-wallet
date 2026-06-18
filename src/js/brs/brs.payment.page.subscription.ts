@@ -4,7 +4,8 @@ import { sendRequest } from './brs.sendRequest'
 
 import {
     formatNQTAsAmount,
-    formatTimestampAsDateTime
+    formatTimestampAsDateTime,
+    convertSecondsToDuration
 } from './brs.numbers'
 
 import {
@@ -12,8 +13,6 @@ import {
 } from './brs.util'
 
 import { GetAccountSubscriptionsResponse } from '../typings'
-
-import { secondsToDuration } from './brs'
 
 export function pagesSubscription () {
     sendRequest('getAccountSubscriptions', {
@@ -25,7 +24,7 @@ export function pagesSubscription () {
         let rows = '';
         for (const subscription of response.subscriptions) {
             const subscriptionId = String(subscription.id).escapeHTML()
-            const timeInterval = secondsToDuration(subscription.frequency)
+            const timeInterval = convertSecondsToDuration(subscription.frequency)
             rows += `
                 <tr>
                   <td>

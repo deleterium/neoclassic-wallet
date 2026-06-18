@@ -21,7 +21,8 @@ import {
     formatNQTAsAmount,
     formatTimestampAsDateTime,
     formatOrderTotal,
-    formatNumber
+    formatNumber,
+    convertSecondsToDuration
 } from './brs.numbers'
 
 import {
@@ -45,8 +46,6 @@ import {
 } from './brs.messages.tools'
 
 import { DBAsset, GetIndirectIncomingResponse, Transaction } from '../typings'
-
-import { secondsToDuration } from './brs'
 
 export function showTransactionModal (transaction: Transaction | string) {
     if (BRS.fetchingModalData) {
@@ -753,7 +752,7 @@ function processTransactionModalData (transaction: Transaction) {
         case 3:
             data.frequency = BRS.durationFormatter.format({seconds: transaction.attachment.frequency})
                 + ' - '
-                + BRS.durationFormatter.format(secondsToDuration(transaction.attachment.frequency))
+                + BRS.durationFormatter.format(convertSecondsToDuration(transaction.attachment.frequency))
             return
         case 4:
         case 5:

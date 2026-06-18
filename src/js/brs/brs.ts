@@ -20,7 +20,11 @@ import {
 } from './brs.sendRequest'
 
 
-import { formatNQTAsAmount, formatQNTAsQuantity } from './brs.numbers'
+import {
+    formatNQTAsAmount,
+    formatQNTAsQuantity,
+    convertSecondsToDuration
+} from './brs.numbers'
 
 import {
     formatStyledAmount
@@ -53,26 +57,6 @@ export function loadAllDBValues () {
     loadSettingsFromDB()
 }
 
-export function secondsToDuration(durationInSeconds: number) {
-    const days = Math.floor(durationInSeconds / (24 * 60 * 60))
-    const remainingSecondsAfterDays = durationInSeconds % (24 * 60 * 60)
-
-    // Calculate hours
-    const hours = Math.floor(remainingSecondsAfterDays / (60 * 60))
-    const remainingSecondsAfterHours = remainingSecondsAfterDays % (60 * 60)
-
-    // Calculate minutes and seconds
-    const minutes = Math.floor(remainingSecondsAfterHours / 60)
-    const seconds = remainingSecondsAfterHours % 60
-
-    return  {
-        days: days,
-        hours: hours,
-        minutes: minutes,
-        seconds: seconds,
-    }
-}
-
 export function setHeaderClock () : void {
     if (!BRS.durationFormatter || !BRS.blockchainStatus?.lastBlockTimestamp) {
         return
@@ -80,7 +64,7 @@ export function setHeaderClock () : void {
     const lastBlockDate = new Date((BRS.genesisSeconds + BRS.blockchainStatus.lastBlockTimestamp) * 1000)
     const diffSeconds = Math.floor((Date.now() - lastBlockDate.getTime()) / 1000)
 
-    const duration = secondsToDuration(diffSeconds)
+    const duration = convertSecondsToDuration(diffSeconds)
 
     // Simplify display.
     if (duration.days > 7) {

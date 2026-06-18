@@ -362,3 +362,23 @@ export function parseAmountToNumber (userNumber: string | number | undefined | s
     }
     return Number(numberObj.integer + '.' + numberObj.fractional)
 }
+
+export function convertSecondsToDuration(durationInSeconds: number) {
+    const days = Math.floor(durationInSeconds / (24 * 60 * 60))
+    const remainingSecondsAfterDays = durationInSeconds % (24 * 60 * 60)
+
+    // Calculate hours
+    const hours = Math.floor(remainingSecondsAfterDays / (60 * 60))
+    const remainingSecondsAfterHours = remainingSecondsAfterDays % (60 * 60)
+
+    // Calculate minutes and seconds
+    const minutes = Math.floor(remainingSecondsAfterHours / 60)
+    const seconds = remainingSecondsAfterHours % 60
+
+    return {
+        days: days,
+        hours: hours,
+        minutes: minutes,
+        seconds: seconds,
+    }
+}
