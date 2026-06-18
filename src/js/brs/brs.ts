@@ -202,7 +202,7 @@ export function goToPageNumber (pageNumber: number) {
  * @param firstRun 
  * @param callback 
  */
-export function getAccountInfo (firstRun: boolean, callback?: () => void) {
+export function getAndUpdateAccountDetails (firstRun: boolean, callback?: () => void) {
     sendRequest('getAccount', {
         account: BRS.account,
         getCommittedAmount: 'true'

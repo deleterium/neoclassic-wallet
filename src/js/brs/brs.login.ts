@@ -5,7 +5,7 @@
 import { BRS } from '.'
 
 import {
-    getAccountInfo,
+    getAndUpdateAccountDetails,
     checkLocationHash,
     setHeaderClock,
 } from './brs'
@@ -133,7 +133,7 @@ export function loginCommon () {
     }
     $('[data-value-suffix]').text(BRS.valueSuffix)
 
-    getAccountInfo(true, cacheUserAssets)
+    getAndUpdateAccountDetails(true, cacheUserAssets)
 
     unlock()
 

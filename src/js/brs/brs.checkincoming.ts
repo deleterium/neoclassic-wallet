@@ -7,7 +7,7 @@ import {
     updateDashboardBlocks
 } from './brs.dashboard.page';
 
-import { getAccountInfo } from './brs';
+import { getAndUpdateAccountDetails } from './brs';
 import { cacheUserAssets, saveCachedAssets } from './brs.asset.tools';
 
 import {
@@ -65,7 +65,7 @@ function checkIncomingBlocksAndTransactions () : void {
             // New block in chain!
             BRS.checkIncoming.newBlock = true
             handleNewBlocks()
-            getAccountInfo(false, cacheUserAssets)
+            getAndUpdateAccountDetails(false, cacheUserAssets)
             getNewTransactions()
             return
         }
