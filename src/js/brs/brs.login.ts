@@ -5,10 +5,11 @@
 import { BRS } from '.'
 
 import {
-    getAndUpdateAccountDetails,
     checkLocationHash,
     setHeaderClock,
 } from './brs'
+
+import { getAndUpdateAccountDetails } from './brs.checkincoming.account'
 
 import {
     updateSettings

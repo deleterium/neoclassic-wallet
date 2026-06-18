@@ -7,7 +7,8 @@ import {
     updateDashboardBlocks
 } from './brs.dashboard.page';
 
-import { getAndUpdateAccountDetails } from './brs';
+import { getAndUpdateAccountDetails } from './brs.checkincoming.account';
+
 import { cacheUserAssets, saveCachedAssets } from './brs.asset.tools';
 
 import {
