@@ -1,6 +1,8 @@
 import { BRS } from '.';
 import { GetBlochainStatusResponse } from '../typings';
-import { loadAllDBValues } from './brs';
+import { loadClosedGroupsFromDB, loadAssetsFromDB } from './brs.asset.tools';
+import { loadContactsFromDB } from './brs.contacts.tools';
+import { loadSettingsFromDB } from './brs.settings.page';
 import { createDatabase } from './brs.database';
 import { showLockscreen } from './brs.login';
 import { automaticallyCheckRecipient } from './brs.recipient';
@@ -147,4 +149,11 @@ export function init(): void {
     }, 250)
 
     automaticallyCheckRecipient()
+}
+
+function loadAllDBValues() {
+    loadContactsFromDB()
+    loadClosedGroupsFromDB()
+    loadAssetsFromDB()
+    loadSettingsFromDB()
 }

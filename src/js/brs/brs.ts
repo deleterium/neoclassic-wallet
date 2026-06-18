@@ -4,34 +4,14 @@
  */
 
 import {
-    loadSettingsFromDB
-} from './brs.settings.page'
-
-import {
     convertSecondsToDuration
 } from './brs.numbers'
-
-
-import {
-    loadClosedGroupsFromDB,
-    loadAssetsFromDB,
-} from './brs.asset.tools'
 
 import {
     goToAsset
 } from './brs.asset.page.assetexchange'
 
-import { loadContactsFromDB } from './brs.contacts.tools'
-
 import { BRS } from '.'
-
-
-export function loadAllDBValues () {
-    loadContactsFromDB()
-    loadClosedGroupsFromDB()
-    loadAssetsFromDB()
-    loadSettingsFromDB()
-}
 
 export function setHeaderClock () : void {
     if (!BRS.durationFormatter || !BRS.blockchainStatus?.lastBlockTimestamp) {
