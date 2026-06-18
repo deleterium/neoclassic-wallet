@@ -1,7 +1,5 @@
 import { BRS } from '.'
 
-import { showFeeSuggestionsNG } from './brs'
-
 import {
     parseAmountToNQT,
     formatNQTAsAmount
@@ -17,6 +15,8 @@ import {
 import { resetModalMultiOut } from './brs.modal.sendmoney'
 
 import { unlockModal } from './brs.modal.lockablemodal'
+import { SuggestFee } from '../typings'
+import { sendRequest } from './brs.sendRequest'
 
 /**
  * @param {JQuery.TriggeredEvent} e
@@ -212,4 +212,65 @@ export function decryptNoteFormSubmit () {
     drawAttachmentMessages(BRS._encryptedNote, $output, password)
 
     BRS._encryptedNote = null
+}
+
+/**
+ * Requests current fee values from node.
+ * @param input_form The form of current modal that is going to be shown
+ */
+export function showFeeSuggestionsNG(input_form: HTMLElement): void {
+    const $groups = $(input_form).find('.has-suggested-fee-group')
+    if ($groups.length === 0) {
+        $(input_form).find('[name=feeNXT]').trigger('change')
+        return
+    }
+    $groups.find('.suggested_fee_spinner').show()
+    $groups.find('.suggested_fee_response').empty()
+
+    sendRequest('suggestFee', {}, function (response: SuggestFee) {
+        $groups.find('.suggested_fee_spinner').hide()
+        const minFeeNQT = Number($groups.find('[name=feeNXT]').prop('min')) * 1E8
+        if (response.errorCode) {
+            const errorMessage = response.errorDescription || `Error code: ${String(response.errorCode)}`
+            $groups.find('.suggested_fee_response').text(errorMessage)
+            $groups.find('[name=feeNXT]').val(minFeeNQT.toString())
+            return
+        }
+        if (minFeeNQT >= response.standard) {
+            // Special cases like 'issue asset', 'create alias'
+            $groups.find('[name=feeNXT]').val(formatNQTAsAmount(minFeeNQT.toString()))
+            $groups.find('[name=feeNXT]').trigger('change')
+            $groups.find('.suggested_fee_response').html(`
+                <span title='${$.t('special_mininum_fee')}'>
+                  <i class='fas fa-lock'></i>
+                  <a href='#' name='suggested_fee_value'>${formatNQTAsAmount(minFeeNQT.toString())}</a>
+                </span>`)
+            return
+        }
+        // Regular transactions
+        $groups.find('[name=feeNXT]').val(formatNQTAsAmount(response.standard.toString()))
+        $groups.find('[name=feeNXT]').trigger('change')
+
+        const cheapMessage = `
+            <span title='${$.t('cheap_fee')}'>
+              <i class='fas fa-leaf'></i>
+              <a href='#' name='suggested_fee_value'>${formatNQTAsAmount(response.cheap.toString())}</a>
+            </span>`
+        const standardMessage = `
+            <span title='${$.t('standard_fee')}'>
+              <i class='fas fa-balance-scale'></i>
+              <a href='#' name='suggested_fee_value'>${formatNQTAsAmount(response.standard.toString())}</a>
+            </span>`
+        const priorityMessage = `
+            <span title='${$.t('priority_fee')}'>
+              <i class='fas fa-exclamation-triangle'></i>
+              <a href='#' name='suggested_fee_value'>${formatNQTAsAmount(response.priority.toString())}</a>
+            </span>`
+        $groups.find('.suggested_fee_response').html(`${cheapMessage}&nbsp;&nbsp; ${standardMessage}&nbsp;&nbsp; ${priorityMessage}`)
+        $groups.find("[name='suggested_fee_value']").on('click', function (e) {
+            e.preventDefault()
+            $groups.find('[name=feeNXT]').val($(this).text())
+            $groups.find('[name=feeNXT]').trigger('change')
+        })
+    })
 }
