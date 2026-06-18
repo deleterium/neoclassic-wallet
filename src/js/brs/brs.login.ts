@@ -6,7 +6,6 @@ import { BRS } from '.'
 
 import {
     checkLocationHash,
-    setHeaderClock,
 } from './brs'
 
 import { getAndUpdateAccountDetails } from './brs.checkincoming.account'
@@ -48,6 +47,7 @@ import {
 import PassPhraseGenerator from './brs.passphrase.generator'
 
 import { GetAccountPublicKeyResponse, GetAccountResponse } from '../typings'
+import { convertSecondsToDuration } from './brs.numbers'
 
 export function showLoginOrWelcomeScreen () {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
@@ -313,6 +313,26 @@ function unlock () {
     setInterval(setHeaderClock, 1000)
 
     $(document.documentElement).scrollTop(0)
+}
+
+function setHeaderClock(): void {
+    if (!BRS.durationFormatter || !BRS.blockchainStatus?.lastBlockTimestamp) {
+        return
+    }
+    const lastBlockDate = new Date((BRS.genesisSeconds + BRS.blockchainStatus.lastBlockTimestamp) * 1000)
+    const diffSeconds = Math.floor((Date.now() - lastBlockDate.getTime()) / 1000)
+
+    const duration = convertSecondsToDuration(diffSeconds)
+
+    // Simplify display.
+    if (duration.days > 7) {
+        duration.hours = duration.minutes = duration.seconds = 0
+    } else if (duration.days > 0) {
+        duration.minutes = duration.seconds = 0
+    } else if (duration.hours > 0) {
+        duration.seconds = 0
+    }
+    $('#header_block_time').text(BRS.durationFormatter.format(duration))
 }
 
 export function logout () {

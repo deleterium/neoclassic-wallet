@@ -4,34 +4,10 @@
  */
 
 import {
-    convertSecondsToDuration
-} from './brs.numbers'
-
-import {
     goToAsset
 } from './brs.asset.page.assetexchange'
 
 import { BRS } from '.'
-
-export function setHeaderClock () : void {
-    if (!BRS.durationFormatter || !BRS.blockchainStatus?.lastBlockTimestamp) {
-        return
-    }
-    const lastBlockDate = new Date((BRS.genesisSeconds + BRS.blockchainStatus.lastBlockTimestamp) * 1000)
-    const diffSeconds = Math.floor((Date.now() - lastBlockDate.getTime()) / 1000)
-
-    const duration = convertSecondsToDuration(diffSeconds)
-
-    // Simplify display.
-    if (duration.days > 7) {
-        duration.hours = duration.minutes = duration.seconds = 0
-    } else if (duration.days > 0) {
-        duration.minutes = duration.seconds = 0
-    } else if (duration.hours > 0) {
-        duration.seconds = 0
-    }
-    $('#header_block_time').text(BRS.durationFormatter.format(duration))
-}
 
 /**
  * Handles clicks in sidebar, changing current page if needed
