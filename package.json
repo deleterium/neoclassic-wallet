@@ -5,7 +5,7 @@
   "main": "src/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "npx eslint './src/js/brs/*' && npx prettier './src/html/**/*' -w",
+    "lint": "npx eslint ./src --fix && npx prettier './src/html/**/*' -w",
     "dev": "node buildIndexHtml.js && ./cpdev.sh && node esbuild.config.js && npm run start",
     "build": "./cpbuild.sh && node buildIndexHtml.js && node esbuild.config.js",
     "lang": "pushd ./lang && ./updateFiles.sh && popd",
@@ -39,6 +39,7 @@
     "esbuild": "^0.28.0",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
     "globals": "^17.6.0",
     "hashicon": "^0.3.0",
     "i18next": "^22.0.6",
