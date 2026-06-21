@@ -1,67 +1,70 @@
-import { BRS } from '..';
-import { reloadCurrentPage } from '../core/navigation';
-import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from '../core/numbers';
-import { sendRequest } from '../core/send_request';
-import { dataLoaded } from '../core/util';
-import { GetAskOrdersResponse, GetAssetResponse, GetBidOrdersResponse, MyAssetDetails } from '../typings';
+import { BRS } from '..'
+import { reloadCurrentPage } from '../core/navigation'
+import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from '../core/numbers'
+import { sendRequest } from '../core/send_request'
+import { dataLoaded } from '../core/util'
+import { GetAskOrdersResponse, GetAssetResponse, GetBidOrdersResponse, MyAssetDetails } from '../typings'
 
 export function pagesMyAssets() {
     if (!BRS.accountInfo.assetBalances || !BRS.accountInfo.assetBalances.length) {
-        dataLoaded();
-        return;
+        dataLoaded()
+        return
     }
     const myAssets: MyAssetDetails[] = []
     const count = {
         total_assets: BRS.accountInfo.assetBalances.length,
         cachedAssets: 0,
         requestedAssets: 0,
-        ignored_assets: 0
-    };
+        ignored_assets: 0,
+    }
 
     // First, fetch and display all asset details
     for (const myAsset of BRS.accountInfo.assetBalances) {
         if (myAsset.balanceQNT === '0') {
-            count.ignored_assets++;
-            continue;
+            count.ignored_assets++
+            continue
         }
 
-        const foundAsset = BRS.assets.find(asset => asset.asset === myAsset.asset);
+        const foundAsset = BRS.assets.find((asset) => asset.asset === myAsset.asset)
         if (foundAsset) {
             myAssets.push({ balanceQNT: myAsset.balanceQNT, ...foundAsset })
-            count.cachedAssets++;
-            continue;
+            count.cachedAssets++
+            continue
         }
 
-        sendRequest('getAsset+', {
-            asset: myAsset.asset,
-            _extra: {
-                balanceQNT: myAsset.balanceQNT
-            }
-        }, function (asset: GetAssetResponse, input: { asset: string, _extra: { balanceQNT: string }}) {
-            if (BRS.currentPage !== 'my_assets') {
-                return;
-            }
-            myAssets.push({balanceQNT: input._extra.balanceQNT, ...asset});
-            count.requestedAssets++;
-            if (checkMyAssetsPageLoaded()) {
-                myAssetsPageLoaded(myAssets);
-            }
-        });
+        sendRequest(
+            'getAsset+',
+            {
+                asset: myAsset.asset,
+                _extra: {
+                    balanceQNT: myAsset.balanceQNT,
+                },
+            },
+            function (asset: GetAssetResponse, input: { asset: string; _extra: { balanceQNT: string } }) {
+                if (BRS.currentPage !== 'my_assets') {
+                    return
+                }
+                myAssets.push({ balanceQNT: input._extra.balanceQNT, ...asset })
+                count.requestedAssets++
+                if (checkMyAssetsPageLoaded()) {
+                    myAssetsPageLoaded(myAssets)
+                }
+            },
+        )
     }
     if (checkMyAssetsPageLoaded()) {
-        myAssetsPageLoaded(myAssets);
+        myAssetsPageLoaded(myAssets)
     }
 
     function checkMyAssetsPageLoaded() {
-        return count.cachedAssets + count.requestedAssets + count.ignored_assets === count.total_assets;
+        return count.cachedAssets + count.requestedAssets + count.ignored_assets === count.total_assets
     }
 }
 
-
 function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
-    let rows = '';
+    let rows = ''
 
-    myAssets.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+    myAssets.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
 
     for (const asset of myAssets) {
         rows += `
@@ -84,72 +87,85 @@ function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
                   ${$.t('transfer')}
                 </a>
               </td>
-            </tr>`;
+            </tr>`
     }
 
     // Initial page loaded, fetch order details asynchronously
     for (const asset of myAssets) {
-        sendRequest('getAskOrders+', {
-            asset: asset.asset,
-            firstIndex: 0,
-            lastIndex: 0
-        }, function (response: GetAskOrdersResponse, input: any) {
-            if (BRS.currentPage !== 'my_assets') {
-                return;
-            }
+        sendRequest(
+            'getAskOrders+',
+            {
+                asset: asset.asset,
+                firstIndex: 0,
+                lastIndex: 0,
+            },
+            function (response: GetAskOrdersResponse, input: any) {
+                if (BRS.currentPage !== 'my_assets') {
+                    return
+                }
 
-            if (response.errorCode || !response.askOrders || response.askOrders.length === 0) {
-                updateAskOrderCell(input.asset);
-                return;
-            }
-            updateAskOrderCell(response.askOrders[0].asset, response.askOrders[0].priceNQT, response.askOrders[0].decimals);
-        });
+                if (response.errorCode || !response.askOrders || response.askOrders.length === 0) {
+                    updateAskOrderCell(input.asset)
+                    return
+                }
+                updateAskOrderCell(response.askOrders[0].asset, response.askOrders[0].priceNQT, response.askOrders[0].decimals)
+            },
+        )
 
-        sendRequest('getBidOrders+', {
-            asset: asset.asset,
-            firstIndex: 0,
-            lastIndex: 0,
-            _extra: {
-                balanceQNT: asset.balanceQNT
-            }
-        }, function (response: GetBidOrdersResponse, input: any) {
-            if (BRS.currentPage !== 'my_assets') {
-                return;
-            }
+        sendRequest(
+            'getBidOrders+',
+            {
+                asset: asset.asset,
+                firstIndex: 0,
+                lastIndex: 0,
+                _extra: {
+                    balanceQNT: asset.balanceQNT,
+                },
+            },
+            function (response: GetBidOrdersResponse, input: any) {
+                if (BRS.currentPage !== 'my_assets') {
+                    return
+                }
 
-            if (response.errorCode || !response.bidOrders || response.bidOrders.length === 0) {
-                updateBidOrderCell(input.asset);
-                return;
-            }
-            updateBidOrderCell(response.bidOrders[0].asset, response.bidOrders[0].priceNQT, response.bidOrders[0].decimals, input._extra.balanceQNT);
-        });
+                if (response.errorCode || !response.bidOrders || response.bidOrders.length === 0) {
+                    updateBidOrderCell(input.asset)
+                    return
+                }
+                updateBidOrderCell(
+                    response.bidOrders[0].asset,
+                    response.bidOrders[0].priceNQT,
+                    response.bidOrders[0].decimals,
+                    input._extra.balanceQNT,
+                )
+            },
+        )
     }
 
-    dataLoaded(rows);
+    dataLoaded(rows)
 }
 
 function updateAskOrderCell(assetId: string, priceNQT?: string, decimals?: number) {
-    const cellSelector = '#ask-order-' + assetId.escapeHTML();
-    if (!priceNQT || ! decimals) {
-        $(cellSelector).text('--');
-        return;
+    const cellSelector = '#ask-order-' + assetId.escapeHTML()
+    if (!priceNQT || !decimals) {
+        $(cellSelector).text('--')
+        return
     }
-    $(cellSelector).text(formatPriceNQTAsPriceQuantity(priceNQT, decimals));
+    $(cellSelector).text(formatPriceNQTAsPriceQuantity(priceNQT, decimals))
 }
 
 function updateBidOrderCell(assetId: string, priceNQT?: string, decimals?: number, userBalanceQNT?: string) {
-    const orderSelector = '#bid-order-' + assetId.escapeHTML();
-    const valueSelector = '#value-order-' + assetId.escapeHTML();
-    if (!priceNQT || ! decimals || !userBalanceQNT) {
-        $(orderSelector).text('--');
-        $(valueSelector).text('--');
-        return;
+    const orderSelector = '#bid-order-' + assetId.escapeHTML()
+    const valueSelector = '#value-order-' + assetId.escapeHTML()
+    if (!priceNQT || !decimals || !userBalanceQNT) {
+        $(orderSelector).text('--')
+        $(valueSelector).text('--')
+        return
     }
-    $(orderSelector).text(formatPriceNQTAsPriceQuantity(priceNQT, decimals));
-    const totalNQT = calculateOrderTotalNQT(userBalanceQNT, priceNQT);
-    $(valueSelector).text(formatNQTAsAmount(totalNQT));
+    $(orderSelector).text(formatPriceNQTAsPriceQuantity(priceNQT, decimals))
+    const totalNQT = calculateOrderTotalNQT(userBalanceQNT, priceNQT)
+    $(valueSelector).text(formatNQTAsAmount(totalNQT))
 }
 
 export function incomingMyAssets() {
-    reloadCurrentPage();
+    reloadCurrentPage()
 }

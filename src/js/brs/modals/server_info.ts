@@ -7,15 +7,11 @@ import { BRS } from '..'
 
 import { sendRequest } from '../core/send_request'
 
-import {
-    formatVolume,
-    formatNQTAsAmount,
-    formatTimestampAsDateTime
-} from '../core/numbers'
+import { formatVolume, formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
 import { GetStateResponse } from '../typings'
 
-export function evBrsModalServerInfoOnShowBsModal () {
+export function evBrsModalServerInfoOnShowBsModal() {
     if (BRS.fetchingModalData) {
         return
     }
@@ -39,6 +35,5 @@ export function evBrsModalServerInfoOnShowBsModal () {
                 }
             }
         }
-
     })
 }

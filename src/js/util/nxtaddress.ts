@@ -5,15 +5,15 @@
 */
 
 export class NxtAddress {
-    private codeword: number[];
-    private gexp: number[];
-    private glog: number[];
-    private cwmap: number[];
-    private rsRegEx: RegExp;
-    private alphabet: string;
-    private guess: Set<string>;
+    private codeword: number[]
+    private gexp: number[]
+    private glog: number[]
+    private cwmap: number[]
+    private rsRegEx: RegExp
+    private alphabet: string
+    private guess: Set<string>
 
-    constructor (idOrRs: string) {
+    constructor(idOrRs: string) {
         this.codeword = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         this.gexp = [1, 2, 4, 8, 16, 5, 10, 20, 13, 26, 17, 7, 14, 28, 29, 31, 27, 19, 3, 6, 12, 24, 21, 15, 30, 25, 23, 11, 22, 9, 18, 1]
         this.glog = [0, 0, 1, 18, 2, 5, 19, 11, 3, 29, 6, 27, 20, 8, 12, 23, 4, 10, 30, 17, 7, 22, 28, 26, 21, 25, 9, 16, 13, 14, 24, 15]
@@ -29,17 +29,17 @@ export class NxtAddress {
         this.setFromRS(idOrRs)
     }
 
-    private ginv (a: number) : number {
+    private ginv(a: number): number {
         return this.gexp[31 - this.glog[a]]
     }
 
-    private gmult (a: number, b: number) : number {
+    private gmult(a: number, b: number): number {
         if (a === 0 || b === 0) return 0
         const idx = (this.glog[a] + this.glog[b]) % 31
         return this.gexp[idx]
     }
 
-    private calcDiscrepancy (lambda: number[], r: number, syndrome: number[]) : number {
+    private calcDiscrepancy(lambda: number[], r: number, syndrome: number[]): number {
         let discr = 0
         for (let i = 0; i < r; i++) {
             discr ^= this.gmult(lambda[i], syndrome[r - i])
@@ -47,7 +47,7 @@ export class NxtAddress {
         return discr
     }
 
-    private calcSyndrome () : number[] {
+    private calcSyndrome(): number[] {
         const syndrome: number[] = [0, 0, 0, 0, 0]
         for (let i = 1; i < 5; i++) {
             let t = 0
@@ -62,7 +62,7 @@ export class NxtAddress {
         return syndrome
     }
 
-    private findErrors (lambda: number[]) : number[] {
+    private findErrors(lambda: number[]): number[] {
         const errloc: number[] = []
         for (let i = 1; i <= 31; i++) {
             let sum = 0
@@ -80,7 +80,7 @@ export class NxtAddress {
         return errloc
     }
 
-    private guessErrors (maxErrors: number) : boolean {
+    private guessErrors(maxErrors: number): boolean {
         let el = 0
         const b: number[] = [0, 0, 0, 0, 0]
         const t: number[] = []
@@ -147,7 +147,7 @@ export class NxtAddress {
         return true
     }
 
-    private calculateParity () : number[] {
+    private calculateParity(): number[] {
         const p: number[] = [0, 0, 0, 0]
         for (let i = 12; i >= 0; i--) {
             const fb = this.codeword[i] ^ p[3]
@@ -159,18 +159,18 @@ export class NxtAddress {
         return p
     }
 
-    private setInvalidCodeword () : void {
+    private setInvalidCodeword(): void {
         // just sets codeword to an invalid value
         this.codeword = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     }
 
-    private setCodeword (clean: number[]) : void {
+    private setCodeword(clean: number[]): void {
         for (let i = 0; i < clean.length; i++) {
             this.codeword[this.cwmap[i]] = clean[i]
         }
     }
 
-    private setFromId (acc: string) : void {
+    private setFromId(acc: string): void {
         const inp: number[] = []
         const out: number[] = []
         let pos = 0
@@ -201,7 +201,7 @@ export class NxtAddress {
         } while (newlen)
         for (let i = 0; i < 13; i++) {
             // copy to codeword in reverse, pad with 0's
-            this.codeword[i] = (--pos >= 0 ? out[i] : 0)
+            this.codeword[i] = --pos >= 0 ? out[i] : 0
         }
         const parity = this.calculateParity()
         this.codeword[13] = parity[0]
@@ -210,7 +210,7 @@ export class NxtAddress {
         this.codeword[16] = parity[3]
     }
 
-    private setFromRS (adr: string) : void {
+    private setFromRS(adr: string): void {
         let len = 0
         const clean: number[] = []
         const rsParts = this.rsRegEx.exec(adr)
@@ -229,11 +229,27 @@ export class NxtAddress {
             }
         }
         switch (len) {
-        case 16: // guess deletion
-            for (let i = 16; i >= 0; i--) {
-                for (let j = 0; j < 32; j++) {
+            case 16: // guess deletion
+                for (let i = 16; i >= 0; i--) {
+                    for (let j = 0; j < 32; j++) {
+                        const tempClean = clean.slice(0)
+                        tempClean.splice(i, 0, j)
+                        this.setCodeword(tempClean)
+                        if (this.isOk()) {
+                            this.guess.add(this.getAccountRS())
+                            continue
+                        }
+                        if (this.guessErrors(1) && this.isOk()) {
+                            this.guess.add(this.getAccountRS())
+                        }
+                    }
+                }
+                this.setInvalidCodeword()
+                return
+            case 18: // guess insertion
+                for (let i = 0; i < 18; i++) {
                     const tempClean = clean.slice(0)
-                    tempClean.splice(i, 0, j)
+                    tempClean.splice(i, 1)
                     this.setCodeword(tempClean)
                     if (this.isOk()) {
                         this.guess.add(this.getAccountRS())
@@ -243,37 +259,21 @@ export class NxtAddress {
                         this.guess.add(this.getAccountRS())
                     }
                 }
-            }
-            this.setInvalidCodeword()
-            return
-        case 18: // guess insertion
-            for (let i = 0; i < 18; i++) {
-                const tempClean = clean.slice(0)
-                tempClean.splice(i, 1)
-                this.setCodeword(tempClean)
-                if (this.isOk()) {
-                    this.guess.add(this.getAccountRS())
-                    continue
-                }
-                if (this.guessErrors(1) && this.isOk()) {
-                    this.guess.add(this.getAccountRS())
-                }
-            }
-            this.setInvalidCodeword()
-            return
-        case 17:
-            this.setCodeword(clean)
-            if (this.isOk()) {
-                // Address is OK, so let the right codeword loaded
+                this.setInvalidCodeword()
                 return
-            }
-            if (this.guessErrors(2) && this.isOk()) {
-                this.guess.add(this.getAccountRS())
-            }
-            this.setInvalidCodeword()
-            return
-        default:
-            this.setInvalidCodeword()
+            case 17:
+                this.setCodeword(clean)
+                if (this.isOk()) {
+                    // Address is OK, so let the right codeword loaded
+                    return
+                }
+                if (this.guessErrors(2) && this.isOk()) {
+                    this.guess.add(this.getAccountRS())
+                }
+                this.setInvalidCodeword()
+                return
+            default:
+                this.setInvalidCodeword()
         }
     }
 
@@ -281,18 +281,20 @@ export class NxtAddress {
      * or false if there is an error. Use 'getGuesses' to check if
      * the mistake was recovered.
      */
-    public isOk () : boolean {
+    public isOk(): boolean {
         const parity = this.calculateParity()
-        return this.codeword[13] === parity[0] &&
+        return (
+            this.codeword[13] === parity[0] &&
             this.codeword[14] === parity[1] &&
             this.codeword[15] === parity[2] &&
             this.codeword[16] === parity[3]
+        )
     }
 
     /** Returns the account in the Reed-Solomon format.
      * If prefix is undefined, no prefix is added.
      */
-    public getAccountRS (prefix?: string) : string {
+    public getAccountRS(prefix?: string): string {
         if (!this.isOk()) {
             return ''
         }
@@ -309,7 +311,7 @@ export class NxtAddress {
 
     /** Returns the numeric ID of an account as string. If given account was
      * invalid, returns empty string */
-    public getAccountId () : string {
+    public getAccountId(): string {
         if (!this.isOk()) {
             return ''
         }
@@ -340,19 +342,19 @@ export class NxtAddress {
     }
 
     /** Get guessed results */
-    public getGuesses (prefix?: string) : string[] {
+    public getGuesses(prefix?: string): string[] {
         const resultArray = Array.from(this.guess)
         if (prefix === undefined) {
             return resultArray
         }
         prefix = prefix.replace('-', '')
-        return resultArray.map(adr => prefix + '-' + adr)
+        return resultArray.map((adr) => prefix + '-' + adr)
     }
 
     /** Compares two strings and returns the diff formatted in HTML with underscore */
-    public formatGuess (s: string, org: string) : string {
+    public formatGuess(s: string, org: string): string {
         let d = ''
-        const list: { s: number, e: number }[] = []
+        const list: { s: number; e: number }[] = []
         s = s.toUpperCase()
         org = org.toUpperCase()
         for (let i = 0; i < s.length; i++) {
@@ -370,7 +372,7 @@ export class NxtAddress {
             if (m) {
                 list[list.length] = {
                     s: i,
-                    e: i + m
+                    e: i + m,
                 }
                 i += m - 1
             }

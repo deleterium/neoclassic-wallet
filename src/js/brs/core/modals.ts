@@ -1,16 +1,10 @@
 import { BRS } from '..'
 
-import {
-    parseAmountToNQT,
-    formatNQTAsAmount
-} from './numbers'
+import { parseAmountToNQT, formatNQTAsAmount } from './numbers'
 
 import { drawAttachmentMessages } from '../modals/transaction'
 
-import {
-    getAccountId,
-    setDecryptionPassword
-} from './encryption'
+import { getAccountId, setDecryptionPassword } from './encryption'
 
 import { resetModalMultiOut } from '../modals/sendmoney'
 
@@ -32,7 +26,7 @@ export function evCheckNumberInput(e: JQuery.TriggeredEvent) {
 }
 
 // hide modal when another one is activated.
-export function evModalOnShowBsModal (e: JQuery.TriggeredEvent) {
+export function evModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     const $visible_modal = $('.modal.show')
     if ($visible_modal.length) {
         if ($visible_modal.hasClass('locked')) {
@@ -47,7 +41,7 @@ export function evModalOnShowBsModal (e: JQuery.TriggeredEvent) {
 }
 
 // Reset form to initial state when modal is closed
-export function evModalOnHiddenBsModal (event: JQuery.TriggeredEvent) {
+export function evModalOnHiddenBsModal(event: JQuery.TriggeredEvent) {
     const $modal = $(event.target)
     resetModalMultiOut()
 
@@ -119,7 +113,9 @@ export function evModalOnHiddenBsModal (event: JQuery.TriggeredEvent) {
     $modal.find('.advanced_extend').each(function (index, obj) {
         const normalSize = $(obj).data('normal')
         const advancedSize = $(obj).data('advanced')
-        $(obj).removeClass('col-xs-' + advancedSize + ' col-sm-' + advancedSize + ' col-md-' + advancedSize).addClass('col-xs-' + normalSize + ' col-sm-' + normalSize + ' col-md-' + normalSize)
+        $(obj)
+            .removeClass('col-xs-' + advancedSize + ' col-sm-' + advancedSize + ' col-md-' + advancedSize)
+            .addClass('col-xs-' + normalSize + ' col-sm-' + normalSize + ' col-md-' + normalSize)
     })
 
     const $feeInput = $modal.find('input[name=feeNXT]')
@@ -136,7 +132,7 @@ export function evModalOnHiddenBsModal (event: JQuery.TriggeredEvent) {
     BRS.showedFormWarning = false
 }
 
-export function showModalError (errorMessage: string, $modal: JQuery<HTMLElement>) {
+export function showModalError(errorMessage: string, $modal: JQuery<HTMLElement>) {
     const $btn = $modal.find('button.btn-primary:not([data-dismiss=modal], .ignore)') as JQuery<HTMLButtonElement>
 
     $modal.find('button').prop('disabled', false)
@@ -145,7 +141,7 @@ export function showModalError (errorMessage: string, $modal: JQuery<HTMLElement
     unlockModal($modal, $btn, false)
 }
 
-export function evAdvancedInfoClick (e: JQuery.ClickEvent) {
+export function evAdvancedInfoClick(e: JQuery.ClickEvent) {
     e.preventDefault()
 
     const $modal = $(e.target).closest('.modal')
@@ -163,9 +159,13 @@ export function evAdvancedInfoClick (e: JQuery.ClickEvent) {
         const advancedSize = $(obj).data('advanced')
 
         if (text === 'advanced') {
-            $(obj).addClass('col-xs-' + advancedSize + ' col-sm-' + advancedSize + ' col-md-' + advancedSize).removeClass('col-xs-' + normalSize + ' col-sm-' + normalSize + ' col-md-' + normalSize)
+            $(obj)
+                .addClass('col-xs-' + advancedSize + ' col-sm-' + advancedSize + ' col-md-' + advancedSize)
+                .removeClass('col-xs-' + normalSize + ' col-sm-' + normalSize + ' col-md-' + normalSize)
         } else {
-            $(obj).removeClass('col-xs-' + advancedSize + ' col-sm-' + advancedSize + ' col-md-' + advancedSize).addClass('col-xs-' + normalSize + ' col-sm-' + normalSize + ' col-md-' + normalSize)
+            $(obj)
+                .removeClass('col-xs-' + advancedSize + ' col-sm-' + advancedSize + ' col-md-' + advancedSize)
+                .addClass('col-xs-' + normalSize + ' col-sm-' + normalSize + ' col-md-' + normalSize)
         }
     })
 
@@ -176,13 +176,13 @@ export function evAdvancedInfoClick (e: JQuery.ClickEvent) {
     }
 }
 
-export function removeDecryptionForm () {
+export function removeDecryptionForm() {
     $('#decrypt_note_form_container input').val('')
     $('#decrypt_note_form_container').find('.callout').html($.t('passphrase_required_to_decrypt_data'))
     $('#decrypt_note_form_container').hide().detach().appendTo('body')
 }
 
-export function decryptNoteFormSubmit () {
+export function decryptNoteFormSubmit() {
     const $form = $('#decrypt_note_form_container')
 
     if (!BRS._encryptedNote) {
@@ -229,7 +229,7 @@ export function showFeeSuggestionsNG(input_form: HTMLElement): void {
 
     sendRequest('suggestFee', {}, function (response: SuggestFee) {
         $groups.find('.suggested_fee_spinner').hide()
-        const minFeeNQT = Number($groups.find('[name=feeNXT]').prop('min')) * 1E8
+        const minFeeNQT = Number($groups.find('[name=feeNXT]').prop('min')) * 1e8
         if (response.errorCode) {
             const errorMessage = response.errorDescription || `Error code: ${String(response.errorCode)}`
             $groups.find('.suggested_fee_response').text(errorMessage)

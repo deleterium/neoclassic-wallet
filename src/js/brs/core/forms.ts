@@ -1,23 +1,12 @@
 import { BRS } from '..'
 
-import {
-    sendRequest
-} from './send_request'
+import { sendRequest } from './send_request'
 
-import {
-    encryptNote,
-    createEncryptionToOtherOptions,
-    createEncryptionToSelfOptions
-} from './encryption'
+import { encryptNote, createEncryptionToOtherOptions, createEncryptionToSelfOptions } from './encryption'
 
-import {
-    parseAmountToNQT,
-    formatNQTAsAmount
-} from './numbers'
+import { parseAmountToNQT, formatNQTAsAmount } from './numbers'
 
-import {
-    getTranslatedFieldName
-} from './util'
+import { getTranslatedFieldName } from './util'
 
 import { lockModal, unlockModal } from './lockable_modal'
 import { PostResponse, RequestType } from '../typings'
@@ -56,11 +45,10 @@ const submitOnlyWhenInSync = {
     transferAsset: true,
     transferAssetMulti: true,
     updateContact: false,
-    verifyMessage: false
+    verifyMessage: false,
 }
 
-
-function getSuccessMessage (requestType: RequestType) {
+function getSuccessMessage(requestType: RequestType) {
     const key = 'success_' + requestType
     if ($.i18n.exists(key)) {
         return $.t(key)
@@ -68,7 +56,7 @@ function getSuccessMessage (requestType: RequestType) {
     return ''
 }
 
-function getErrorMessage (requestType: RequestType) {
+function getErrorMessage(requestType: RequestType) {
     const key = 'error_' + requestType
     if ($.i18n.exists(key)) {
         return $.t(key)
@@ -76,7 +64,7 @@ function getErrorMessage (requestType: RequestType) {
     return ''
 }
 
-async function addMessageData (data: any, requestType: string) {
+async function addMessageData(data: any, requestType: string) {
     if (requestType === 'sendMessage') {
         data.add_message = true
         data.message_is_text = 'on'
@@ -107,8 +95,7 @@ async function addMessageData (data: any, requestType: string) {
         message: data.message,
         note_to_self: data.note_to_self,
         message_is_text: data.message_is_text,
-        note_to_self_is_text: data.note_to_self_is_text
-
+        note_to_self_is_text: data.note_to_self_is_text,
     }
 
     if (data.add_message && data.message) {
@@ -120,12 +107,7 @@ async function addMessageData (data: any, requestType: string) {
                 account = data.encryptedMessageRecipient
                 delete data.encryptedMessageRecipient
             }
-            const options = await createEncryptionToOtherOptions(
-                account,
-                data.publicKey,
-                data.message_is_text === 'on',
-                data.secretPhrase
-            )
+            const options = await createEncryptionToOtherOptions(account, data.publicKey, data.message_is_text === 'on', data.secretPhrase)
             const encrypted = await encryptNote(data.message, options)
             data.encryptedMessageData = encrypted.message
             data.encryptedMessageNonce = encrypted.nonce
@@ -142,10 +124,7 @@ async function addMessageData (data: any, requestType: string) {
     }
 
     if (data.add_note_to_self && data.note_to_self) {
-        const options = await createEncryptionToSelfOptions(
-            data.note_to_self_is_text === 'on',
-            data.secretPhrase
-        )
+        const options = await createEncryptionToSelfOptions(data.note_to_self_is_text === 'on', data.secretPhrase)
         const encrypted = await encryptNote(data.note_to_self, options)
         data.encryptToSelfMessageData = encrypted.message
         data.encryptToSelfMessageNonce = encrypted.nonce
@@ -166,11 +145,11 @@ async function addMessageData (data: any, requestType: string) {
 
 /**
  * Verify every input at the given form for custom rules.
- * @param {*} $form 
- * @returns 
+ * @param {*} $form
+ * @returns
  */
-function checkInvalidFormFields ($form: JQuery<HTMLFormElement>) {
-    function hasAttr (DOM: JQuery<HTMLElement>, name: string) {
+function checkInvalidFormFields($form: JQuery<HTMLFormElement>) {
+    function hasAttr(DOM: JQuery<HTMLElement>, name: string) {
         return DOM.attr(name) !== undefined
     }
 
@@ -183,7 +162,7 @@ function checkInvalidFormFields ($form: JQuery<HTMLFormElement>) {
             // Only one case using max: Issue asset -> decimals
             if (!/^[-\d.]+$/.test(value)) {
                 errorMessage = $.t('error_not_a_number', {
-                    field: getTranslatedFieldName(name).toLowerCase()
+                    field: getTranslatedFieldName(name).toLowerCase(),
                 }).capitalize()
                 return
             } else {
@@ -192,7 +171,7 @@ function checkInvalidFormFields ($form: JQuery<HTMLFormElement>) {
                 if (Number(value) > Number(max)) {
                     errorMessage = $.t('error_max_value', {
                         field: getTranslatedFieldName(name).toLowerCase(),
-                        max
+                        max,
                     }).capitalize()
                     return
                 }
@@ -202,17 +181,17 @@ function checkInvalidFormFields ($form: JQuery<HTMLFormElement>) {
             try {
                 const inputNQT = BigInt(parseAmountToNQT(value))
                 const min = $(this).attr('min') || '0'
-                if (inputNQT < BigInt(Number(min) * 1E8)) {
+                if (inputNQT < BigInt(Number(min) * 1e8)) {
                     errorMessage = $.t('error_min_value', {
                         field: getTranslatedFieldName(name).toLowerCase(),
-                        min
+                        min,
                     }).capitalize()
                     return
                 }
             } catch (e) {
                 errorMessage = $.t('error_at_field', {
                     field: getTranslatedFieldName(name).toLowerCase(),
-                    errorMessage: (e as Error).message
+                    errorMessage: (e as Error).message,
                 }).capitalize()
                 return
             }
@@ -223,7 +202,7 @@ function checkInvalidFormFields ($form: JQuery<HTMLFormElement>) {
 }
 
 /** Returns error message. Rmpty string is success */
-function checkMerchantField (requestType: RequestType, data: any) {
+function checkMerchantField(requestType: RequestType, data: any) {
     if (requestType !== 'sendMoney' && requestType !== 'transferAsset') {
         return ''
     }
@@ -284,16 +263,16 @@ function checkMerchantField (requestType: RequestType, data: any) {
                 maxLength = parseInt(lengthRequirement[1], 10)
                 return $.t('error_merchant_message_' + regexType + '_range_length', {
                     minLength,
-                    maxLength
+                    maxLength,
                 })
             }
             return $.t('error_merchant_message_' + regexType + '_min_length', {
-                minLength
+                minLength,
             })
         }
         const requiredLength = parseInt(lengthRequirement[1], 10)
         return $.t('error_merchant_message_' + regexType + '_length', {
-            length: requiredLength
+            length: requiredLength,
         })
     }
     return $.t('error_merchant_message_' + regexType)
@@ -303,7 +282,7 @@ function checkMerchantField (requestType: RequestType, data: any) {
  *  Checks for all kinds of modals.
  *  Specific modals are coded at BRS.forms.FORMNAME and form data is passed as parameter.
  */
-export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
+export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     let formFunctionError: ((response: any, arg1: any) => void) | false
     let $form: JQuery<HTMLFormElement>
     let data: any
@@ -320,13 +299,16 @@ export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
         $form = $modal.find('form:first')
     }
 
-    function endWithError (errorMsg: string) {
+    function endWithError(errorMsg: string) {
         $form.find('.error_message').html(errorMsg).show()
         if (formFunctionError) {
-            formFunctionError({
-                errorCode: -1,
-                errorDescription: errorMsg
-            }, data)
+            formFunctionError(
+                {
+                    errorCode: -1,
+                    errorDescription: errorMsg,
+                },
+                data,
+            )
         }
         unlockModal($modal, $btn, false)
     }
@@ -351,7 +333,7 @@ export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
 
     const checkSync: boolean | undefined = submitOnlyWhenInSync[requestType]
     if (checkSync === undefined) {
-        console.error("Unknow request type")
+        console.error('Unknow request type')
         return
     }
     if (checkSync) {
@@ -399,12 +381,11 @@ export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
 
     if (data.recipient) {
         data.recipient = (data.recipient as string).trim()
-        if (BRS.idRegEx.test(data.recipient) === false &&
-                BRS.rsRegEx.test(data.recipient) === false) {
+        if (BRS.idRegEx.test(data.recipient) === false && BRS.rsRegEx.test(data.recipient) === false) {
             if (data.converted_account_id && (BRS.idRegEx.test(data.converted_account_id) || BRS.rsRegEx.test(data.converted_account_id))) {
                 data.recipient = data.converted_account_id
                 data._extra = {
-                    convertedAccount: true
+                    convertedAccount: true,
                 }
             } else {
                 endWithError($.t('error_account_id'))
@@ -452,10 +433,12 @@ export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
         if ('amountNXT' in data && BRS.settings.amount_warning && BRS.settings.amount_warning !== '0') {
             if (BigInt(parseAmountToNQT(data.amountNXT)) > BigInt(BRS.settings.amount_warning)) {
                 BRS.showedFormWarning = true
-                endWithError($.t('error_max_amount_warning', {
-                    burst: formatNQTAsAmount(BRS.settings.amount_warning),
-                    valueSuffix: BRS.valueSuffix
-                }))
+                endWithError(
+                    $.t('error_max_amount_warning', {
+                        burst: formatNQTAsAmount(BRS.settings.amount_warning),
+                        valueSuffix: BRS.valueSuffix,
+                    }),
+                )
                 return
             }
         }
@@ -463,10 +446,12 @@ export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
         if ('feeNXT' in data && BRS.settings.fee_warning && BRS.settings.fee_warning !== '0') {
             if (BigInt(parseAmountToNQT(data.feeNXT)) > BigInt(BRS.settings.fee_warning)) {
                 BRS.showedFormWarning = true
-                endWithError($.t('error_max_fee_warning', {
-                    burst: formatNQTAsAmount(BRS.settings.fee_warning),
-                    valueSuffix: BRS.valueSuffix
-                }))
+                endWithError(
+                    $.t('error_max_fee_warning', {
+                        burst: formatNQTAsAmount(BRS.settings.fee_warning),
+                        valueSuffix: BRS.valueSuffix,
+                    }),
+                )
                 return
             }
         }
@@ -513,7 +498,7 @@ export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
                 $('#dashboard_message').hide()
             }
         } else {
-            // no errorCode but response was not signed. Is this part executed? 
+            // no errorCode but response was not signed. Is this part executed?
             let sentToFunction = false
 
             if (!errorMessage) {
@@ -543,7 +528,7 @@ export async function submitForm ($btn: JQuery<HTMLButtonElement>) {
     })
 }
 
-export function formsAddCommitment (data: any) {
+export function formsAddCommitment(data: any) {
     let requestType = 'addCommitment'
     if (data.removeCommitment) {
         requestType = 'removeCommitment'
@@ -551,11 +536,11 @@ export function formsAddCommitment (data: any) {
     }
     return {
         requestType,
-        data
+        data,
     }
 }
 
-function getFormData ($form: JQuery<HTMLFormElement>) : object {
+function getFormData($form: JQuery<HTMLFormElement>): object {
     const serialized = $form.serializeArray()
     const data = {}
     for (const s in serialized) {

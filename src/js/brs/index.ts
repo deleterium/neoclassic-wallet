@@ -1,6 +1,6 @@
 /**
  * @module BRS
-*/
+ */
 
 import $ from 'jquery'
 import i18next from 'i18next'
@@ -9,20 +9,13 @@ import i18nHttpApi from 'i18next-http-backend'
 
 import '../util/string.extensions'
 
-import {
-    pagesSettings
-} from './pages/settings'
+import { pagesSettings } from './pages/settings'
 
-import {
-    pagesLatestBlocks,
-    incomingLatestBlocks
-} from './pages/blockchain.latest_blocks'
+import { pagesLatestBlocks, incomingLatestBlocks } from './pages/blockchain.latest_blocks'
 
 import { pagesForgedBlocks } from './pages/mining.forged_blocks'
 
-import {
-    pagesBlockInfo
-} from './pages/blockchain.block_info'
+import { pagesBlockInfo } from './pages/blockchain.block_info'
 
 import {
     formsSellAlias,
@@ -31,38 +24,24 @@ import {
     formsBuyAliasComplete,
     formsSetAlias,
     formsSetAliasError,
-    formsSetAliasComplete
+    formsSetAliasComplete,
 } from './modals/aliases'
 
-import {
-    pagesAliases,
-    incomingAliases
-} from './pages/aliases'
+import { pagesAliases, incomingAliases } from './pages/aliases'
 
 import { pagesAt } from './pages/payments.at'
 
-import {
-    formsAddContact,
-    formsUpdateContact,
-    formsDeleteContact
-} from './modals/contacts'
+import { formsAddContact, formsUpdateContact, formsDeleteContact } from './modals/contacts'
 
 import { pagesContacts } from './pages/contacts'
 
 import { formsSendMoneyEscrow, pagesEscrow } from './pages/payments.escrow'
 
-import {
-    formsAddCommitment
-} from './core/forms'
+import { formsAddCommitment } from './core/forms'
 
 import { addEventListeners } from './core/event_listeners'
 
-import {
-    pagesAssetExchange,
-    formsAddAssetBookmark,
-    incomingAssetExchange,
-    formsOrderAssetComplete
-} from './pages/assets.asset_exchange'
+import { pagesAssetExchange, formsAddAssetBookmark, incomingAssetExchange, formsOrderAssetComplete } from './pages/assets.asset_exchange'
 
 import { pagesTransferHistory } from './pages/assets.transfer_history'
 
@@ -75,62 +54,30 @@ import {
     formsTransferAsset,
     formsTransferAssetComplete,
     formsCancelOrder,
-    formsCancelOrderComplete
+    formsCancelOrderComplete,
 } from './modals/assets'
 
-import {
-    pagesOpenOrders,
-    incomingOpenOrders
-} from './pages/assets.open_orders'
+import { pagesOpenOrders, incomingOpenOrders } from './pages/assets.open_orders'
 
-import {
-    pagesMyAssets,
-    incomingMyAssets
-} from './pages/assets.my_assets'
+import { pagesMyAssets, incomingMyAssets } from './pages/assets.my_assets'
 
-import {
-    pagesTransactions
-} from './pages/transactions'
+import { pagesTransactions } from './pages/transactions'
 
-import {
-    pagesMessages,
-    incomingMessages
-} from './pages/messages'
+import { pagesMessages, incomingMessages } from './pages/messages'
 
-import {
-    formsSendMessageComplete,
-    formsDecryptMessages
-} from './modals/messages'
+import { formsSendMessageComplete, formsDecryptMessages } from './modals/messages'
 
-import {
-    pagesPeers,
-    incomingPeers
-} from './pages/peers'
+import { pagesPeers, incomingPeers } from './pages/peers'
 
-import {
-    formsSendMoneyComplete,
-    formsSendMoneyMulti
-} from './modals/sendmoney'
+import { formsSendMoneyComplete, formsSendMoneyMulti } from './modals/sendmoney'
 
-import {
-    pagesSubscription
-} from './pages/payments.subscription'
+import { pagesSubscription } from './pages/payments.subscription'
 
-import {
-    formsSetAccountInfoComplete
-} from './modals/account_info'
+import { formsSetAccountInfoComplete } from './modals/account_info'
 
-import {
-    formsBroadcastTransactionComplete,
-    formsParseTransactionComplete,
-    formsParseTransactionError
-} from './modals/advanced'
+import { formsBroadcastTransactionComplete, formsParseTransactionComplete, formsParseTransactionError } from './modals/advanced'
 
-import {
-    formsSignModalButtonClicked,
-    formsSignMessage,
-    formsVerifyMessage
-} from './modals/sign_message'
+import { formsSignModalButtonClicked, formsSignMessage, formsVerifyMessage } from './modals/sign_message'
 
 import { reloadCurrentPage } from './core/navigation'
 
@@ -189,7 +136,7 @@ export const BRS = {
     // Number formatting in chose locale.
     decimalSign: '.',
     groupSeparator: ',',
-    durationFormatter: new Intl.DurationFormat('en', { style: "short" }),
+    durationFormatter: new Intl.DurationFormat('en', { style: 'short' }),
     volumeFormatter: new Intl.NumberFormat('en', {
         maximumSignificantDigits: 3,
         minimumSignificantDigits: 1,
@@ -198,7 +145,7 @@ export const BRS = {
         day: 'd',
         hour: 'h',
         minute: 'm',
-        second: 's'
+        second: 's',
     },
 
     downloadingBlockchain: false, // More than 4 days from last block
@@ -217,7 +164,7 @@ export const BRS = {
         latestsTransactionsIds: '',
         unconfirmedChanged: false,
         unconfirmedTransactionIds: '',
-        forceDashboardUpdate: false
+        forceDashboardUpdate: false,
     },
     // Used for pagination
     pageNumber: 1,
@@ -242,7 +189,7 @@ export const BRS = {
         peers: pagesPeers,
         subscription: pagesSubscription,
         search_results: pagesSearchResults,
-        messages: pagesMessages
+        messages: pagesMessages,
     },
     incoming: {
         latest_blocks: incomingLatestBlocks,
@@ -252,7 +199,7 @@ export const BRS = {
         open_orders: incomingOpenOrders,
         transactions: reloadCurrentPage,
         peers: incomingPeers,
-        messages: incomingMessages
+        messages: incomingMessages,
     },
     forms: {
         sellAlias: formsSellAlias,
@@ -290,7 +237,7 @@ export const BRS = {
         signModalButtonClicked: formsSignModalButtonClicked,
         signMessage: formsSignMessage,
         verifyMessage: formsVerifyMessage,
-        requestBurst: formRequestBurst
+        requestBurst: formRequestBurst,
     },
 
     hasLocalStorage: true,
@@ -319,7 +266,7 @@ export const BRS = {
         { address: 'https://ru.signum.network', testnet: false },
         { address: 'https://canada.signum.network', testnet: false },
         { address: 'https://europe3.testnet.signum.network', testnet: true },
-        { address: 'http://localhost:6876', testnet: true }
+        { address: 'http://localhost:6876', testnet: true },
     ],
 
     // from brs.settings
@@ -337,7 +284,7 @@ export const BRS = {
         prefered_node: '',
         language: 'en',
         last_remembered_account: '',
-        rate_limiter: '9'
+        rate_limiter: '9',
     } as BrsSettings,
 
     // from brs.server
@@ -354,7 +301,7 @@ export const BRS = {
     _password: '',
     _decryptionPassword: '',
     _decryptedTransactions: {} as DecryptedTransactionsCache,
-    _publicKeys: {} as { [key: string]: string},
+    _publicKeys: {} as { [key: string]: string },
 
     // from assetexchange
     assets: [] as DBAsset[],
@@ -370,7 +317,7 @@ export const BRS = {
 
     // from messages
     _messages: {} as {
-        [userID: string]: Transaction[];
+        [userID: string]: Transaction[]
     },
 
     // from modals
@@ -383,37 +330,40 @@ export const BRS = {
         modalAccount: GetAccountResponse
         assetsDetails: GetAssetResponse[]
         issuedAssets: GetAssetResponse[]
-    }
+    },
 }
 
 // @ts-expect-error: Browser only
 window.jQuery = window.$ = $
 
 document.addEventListener('DOMContentLoaded', function () {
-    i18next.use(i18nHttpApi).init({
-        fallbackLng: 'en',
-        lowerCaseLng: true,
-        backend: {
-            loadPath: './locales/__lng__.json'
+    i18next.use(i18nHttpApi).init(
+        {
+            fallbackLng: 'en',
+            lowerCaseLng: true,
+            backend: {
+                loadPath: './locales/__lng__.json',
+            },
+            debug: false,
+            load: 'currentOnly',
+            interpolation: {
+                prefix: '__',
+                suffix: '__',
+            },
         },
-        debug: false,
-        load: 'currentOnly',
-        interpolation: {
-            prefix: '__',
-            suffix: '__'
-        }
-    }, function () {
-        jqueryI18next.init(i18next, $, {
-            tName: 't', // --> appends $.t = i18next.t
-            i18nName: 'i18n', // --> appends $.i18n = i18next
-            handleName: 'localize', // --> appends $(selector).localize(opts);
-            selectorAttr: 'data-i18n', // selector for translating elements
-            targetAttr: 'i18n-target', // data-() attribute to grab target element to translate (if diffrent then itself)
-            optionsAttr: 'i18n-options', // data-() attribute that contains options, will load/set if useOptionsAttr = true
-            useOptionsAttr: false, // see optionsAttr
-            parseDefaultValueFromContent: true // parses default values from content ele.val or ele.text
-        })
-        addEventListeners()
-        init()
-    })
+        function () {
+            jqueryI18next.init(i18next, $, {
+                tName: 't', // --> appends $.t = i18next.t
+                i18nName: 'i18n', // --> appends $.i18n = i18next
+                handleName: 'localize', // --> appends $(selector).localize(opts);
+                selectorAttr: 'data-i18n', // selector for translating elements
+                targetAttr: 'i18n-target', // data-() attribute to grab target element to translate (if diffrent then itself)
+                optionsAttr: 'i18n-options', // data-() attribute that contains options, will load/set if useOptionsAttr = true
+                useOptionsAttr: false, // see optionsAttr
+                parseDefaultValueFromContent: true, // parses default values from content ele.val or ele.text
+            })
+            addEventListeners()
+            init()
+        },
+    )
 })

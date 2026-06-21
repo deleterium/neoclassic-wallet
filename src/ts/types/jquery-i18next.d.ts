@@ -9,20 +9,20 @@ interface JQueryStatic {
      * @param options - Optional configuration for the translation.
      * @returns The translated string.
      */
-    t(key: string, options?: any): string;
+    t(key: string, options?: any): string
 
     /**
      * Displays a notification message.
      * @param message - The message to display in the notification.
      * @param options - Optional configuration for the notification.
      */
-    notify(message: string, options?: any): void;
+    notify(message: string, options?: any): void
 
     /**
      * Sets default options for notifications.
      * @param options - Default options for notifications.
      */
-    notifyDefaults(options?: any): void;
+    notifyDefaults(options?: any): void
 
     /**
      * Checks if a translation key exists in the i18next store.
@@ -30,8 +30,8 @@ interface JQueryStatic {
      * @returns A boolean indicating if the key exists.
      */
     i18n: {
-        exists(key: string) : boolean;
-    };
+        exists(key: string): boolean
+    }
 }
 
 interface JQuery {
@@ -40,14 +40,18 @@ interface JQuery {
      * @param opts - Optional configuration for localization.
      * @returns The jQuery object for chaining.
      */
-    localize(opts?: unknown): JQuery;
+    localize(opts?: unknown): JQuery
 
     // Note: Bootstrap types were not beeing added to JQuery.
     // Here is not the best place, but...
-    modal(action: 'show' | 'hide'): void;
+    modal(action: 'show' | 'hide'): void
     tab(action: 'show')
-    popover(action: 'hide' | {
-        content: string,
-        trigger: 'hover'
-    })
+    popover(
+        action:
+            | 'hide'
+            | {
+                  content: string
+                  trigger: 'hover'
+              },
+    )
 }

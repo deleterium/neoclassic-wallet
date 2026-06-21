@@ -5,26 +5,13 @@
 
 import { BRS } from '..'
 
-import {
-    sendRequest
-} from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
-import {
-    calculatePercentage,
-    formatQNTAsQuantity,
-    formatNQTAsAmount,
-    formatTimestampAsDateTime
-} from '../core/numbers'
+import { calculatePercentage, formatQNTAsQuantity, formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
-import {
-    convertRSAccountToNumeric,
-    getAccountTitle,
-    dataLoadFinished
-} from '../core/util'
+import { convertRSAccountToNumeric, getAccountTitle, dataLoadFinished } from '../core/util'
 
-import {
-    getTransactionDetails
-} from '../tools/transactions'
+import { getTransactionDetails } from '../tools/transactions'
 
 import { NxtAddress } from '../../util/nxtaddress'
 
@@ -33,17 +20,17 @@ import {
     GetAccountTransactionsResponse,
     GetAliasesResponse,
     GetAssetResponse,
-    GetAssetsByIssuerResponse
+    GetAssetsByIssuerResponse,
 } from '../typings'
 
 import { cacheAsset } from '../tools/assets'
 
-/** Start the process of showing an "Account Modal". 
+/** Start the process of showing an "Account Modal".
  * @param {string|GetAccountResponse} account - Account to be shown.
  * @description Note that if account is a string, request 'getAccount' and draw.
  * If it is an object, it must be an 'getAccount' response with option 'getCommitment: true'.
  */
-export function showAccountModal (account: string | GetAccountResponse) {
+export function showAccountModal(account: string | GetAccountResponse) {
     if (BRS.fetchingModalData) {
         return
     }
@@ -53,29 +40,33 @@ export function showAccountModal (account: string | GetAccountResponse) {
         BRS.userInfoModal = {
             modalAccount: account,
             assetsDetails: [],
-            issuedAssets: []
+            issuedAssets: [],
         }
         accountModalDataReady()
         userAccount = account.account
     } else {
         userAccount = account
         BRS.fetchingModalData = true
-        sendRequest('getAccount', {
-            account: userAccount,
-            getCommittedAmount: 'true'
-        }, function (response: GetAccountResponse) {
-            BRS.fetchingModalData = false
-            if (response.errorCode) {
-                $.notify($.t('error_account_id'))
-                return
-            }
-            BRS.userInfoModal = {
-                modalAccount: response,
-                assetsDetails: [],
-                issuedAssets: []
-            }
-            accountModalDataReady()
-        })
+        sendRequest(
+            'getAccount',
+            {
+                account: userAccount,
+                getCommittedAmount: 'true',
+            },
+            function (response: GetAccountResponse) {
+                BRS.fetchingModalData = false
+                if (response.errorCode) {
+                    $.notify($.t('error_account_id'))
+                    return
+                }
+                BRS.userInfoModal = {
+                    modalAccount: response,
+                    assetsDetails: [],
+                    issuedAssets: [],
+                }
+                accountModalDataReady()
+            },
+        )
     }
 
     let accountNameOrRs: string
@@ -99,7 +90,7 @@ export function showAccountModal (account: string | GetAccountResponse) {
  * Second part starting to show the "Account Modal", when all info about the account is available at BRS.userInfoModal.account.
  * It draws the "Details" tab.
  */
-function accountModalDataReady () {
+function accountModalDataReady() {
     if (!BRS.userInfoModal) return
     const accountInfo = BRS.userInfoModal.modalAccount
     if (accountInfo.unconfirmedBalanceNQT === '0') {
@@ -127,45 +118,48 @@ function accountModalDataReady () {
 /**
  * Handles the tab switching in "Account Modal"
  */
-export function evShowBsTab (e) {
+export function evShowBsTab(e) {
     switch ((e.target as HTMLElement).id) {
-    case 'user_info_modal_transactions_tab':
-        return userInfoModalTransactions()
-    case 'user_info_modal_assets_tab':
-        return userInfoModalAssets()
-    case 'user_info_modal_details_tab':
-        return
-    case 'user_info_modal_smartcontract_tab':
-        return userInfoModalSmartcontract()
-    case 'user_info_modal_aliases_tab':
-        return userInfoModalAliases()
-    case 'user_info_modal_vcard_tab':
-        // TODO
-        return
-    case 'user_info_modal_actions_tab':
-        // Already done 'on show modal'
-        return
+        case 'user_info_modal_transactions_tab':
+            return userInfoModalTransactions()
+        case 'user_info_modal_assets_tab':
+            return userInfoModalAssets()
+        case 'user_info_modal_details_tab':
+            return
+        case 'user_info_modal_smartcontract_tab':
+            return userInfoModalSmartcontract()
+        case 'user_info_modal_aliases_tab':
+            return userInfoModalAliases()
+        case 'user_info_modal_vcard_tab':
+            // TODO
+            return
+        case 'user_info_modal_actions_tab':
+            // Already done 'on show modal'
+            return
     }
 }
 
-function userInfoModalTransactions () {
+function userInfoModalTransactions() {
     if (!BRS.userInfoModal) return
-    sendRequest('getAccountTransactions', {
-        account: BRS.userInfoModal.modalAccount.account,
-        firstIndex: 0,
-        lastIndex: BRS.pageSize,
-        includeIndirect: true
-    }, function (response: GetAccountTransactionsResponse) {
-        if (!BRS.userInfoModal) return
-        let rows = ''
-        if (!response.transactions || response.transactions.length === 0) {
-            $('#user_info_modal_transactions_table tbody').empty().append(rows)
-            dataLoadFinished($('#user_info_modal_transactions_table'))
-            return
-        }
-        for (const transaction of response.transactions) {
-            const details = getTransactionDetails(transaction, BRS.userInfoModal.modalAccount.account)
-            rows += `
+    sendRequest(
+        'getAccountTransactions',
+        {
+            account: BRS.userInfoModal.modalAccount.account,
+            firstIndex: 0,
+            lastIndex: BRS.pageSize,
+            includeIndirect: true,
+        },
+        function (response: GetAccountTransactionsResponse) {
+            if (!BRS.userInfoModal) return
+            let rows = ''
+            if (!response.transactions || response.transactions.length === 0) {
+                $('#user_info_modal_transactions_table tbody').empty().append(rows)
+                dataLoadFinished($('#user_info_modal_transactions_table'))
+                return
+            }
+            for (const transaction of response.transactions) {
+                const details = getTransactionDetails(transaction, BRS.userInfoModal.modalAccount.account)
+                rows += `
                 <tr>
                   <td>
                     <a href='#'
@@ -181,55 +175,60 @@ function userInfoModalTransactions () {
                   <td>${formatNQTAsAmount(transaction.feeNQT)}</td>
                   <td>${details.accountTitle}</td>
                 </tr>`
-        }
-        $('#user_info_modal_transactions_table tbody').empty().append(rows)
-        dataLoadFinished($('#user_info_modal_transactions_table'))
-    })
+            }
+            $('#user_info_modal_transactions_table tbody').empty().append(rows)
+            dataLoadFinished($('#user_info_modal_transactions_table'))
+        },
+    )
 }
 
-function userInfoModalAliases () {
+function userInfoModalAliases() {
     if (!BRS.userInfoModal) return
-    sendRequest('getAliases', {
-        account: BRS.userInfoModal.modalAccount.account,
-        timestamp: 0
-    }, function (response: GetAliasesResponse) {
-        if (!response.aliases || response.aliases.length === 0) {
-            $('#user_info_modal_aliases_table tbody').empty()
-            dataLoadFinished($('#user_info_modal_aliases_table'))
-            return
-        }
-        let rows = ''
-        const aliases = response.aliases
-        aliases.sort(function (a, b) {
-            if (a.aliasName.toLowerCase() > b.aliasName.toLowerCase()) {
-                return 1
-            } else if (a.aliasName.toLowerCase() < b.aliasName.toLowerCase()) {
-                return -1
-            } else {
-                return 0
+    sendRequest(
+        'getAliases',
+        {
+            account: BRS.userInfoModal.modalAccount.account,
+            timestamp: 0,
+        },
+        function (response: GetAliasesResponse) {
+            if (!response.aliases || response.aliases.length === 0) {
+                $('#user_info_modal_aliases_table tbody').empty()
+                dataLoadFinished($('#user_info_modal_aliases_table'))
+                return
             }
-        })
-        for (let i = 0; i < aliases.length; i++) {
-            const alias = aliases[i]
-            const aliasName = String(alias.aliasName).escapeHTML()
-            const tldName = String(alias.aliasName).escapeHTML()
-            const aliasURI = String(alias.aliasURI).escapeHTML()
-            rows += `
+            let rows = ''
+            const aliases = response.aliases
+            aliases.sort(function (a, b) {
+                if (a.aliasName.toLowerCase() > b.aliasName.toLowerCase()) {
+                    return 1
+                } else if (a.aliasName.toLowerCase() < b.aliasName.toLowerCase()) {
+                    return -1
+                } else {
+                    return 0
+                }
+            })
+            for (let i = 0; i < aliases.length; i++) {
+                const alias = aliases[i]
+                const aliasName = String(alias.aliasName).escapeHTML()
+                const tldName = String(alias.aliasName).escapeHTML()
+                const aliasURI = String(alias.aliasURI).escapeHTML()
+                rows += `
                 <tr>
                     <td><a href="#" data-alias="${alias.alias}">${aliasName}</a></td>
                     <td>${tldName}</td>
                     <td>${aliasURI}</td>
                 </tr>`
-        }
-        $('#user_info_modal_aliases_table tbody').empty().append(rows)
-        dataLoadFinished($('#user_info_modal_aliases_table'))
-    })
+            }
+            $('#user_info_modal_aliases_table tbody').empty().append(rows)
+            dataLoadFinished($('#user_info_modal_aliases_table'))
+        },
+    )
 }
 
 /**
  * Third part of "Account Modal" when all info about is available.
  */
-function userInfoModalDetails () {
+function userInfoModalDetails() {
     if (!BRS.userInfoModal) return
     const accountInfo = BRS.userInfoModal.modalAccount
     const publicKey = accountInfo.publicKey || ''
@@ -290,72 +289,76 @@ function userInfoModalDetails () {
     dataLoadFinished($('#user_info_modal_details_table'))
 }
 
-function userInfoModalSmartcontract () {
+function userInfoModalSmartcontract() {
     if (!BRS.userInfoModal) return
-    sendRequest('getAT', {
-        at: convertRSAccountToNumeric(BRS.userInfoModal.modalAccount.account)
-    }, function (response) {
-        if (response.errorCode) {
-            $('#user_info_modal_smartcontract_table tbody').empty()
-            dataLoadFinished($('#user_info_modal_smartcontract_table'))
-            return
-        }
-        let rows = ''
-        const props = [
-            'name',
-            'description',
-            'creatorRS',
-            'minActivation',
-            'machineCodeHashId',
-            'status',
-            'atVersion',
-            'creationBlock',
-            'machineData',
-            'machineCode'
-        ]
-        for (const row of props) {
-            const key = row.replace(/\s+/g, '').replace(/([A-Z])/g, function ($1) {
-                return '_' + $1.toLowerCase()
-            })
-            rows += '<tr>'
-            rows += `<td>${$.t(key)}</td>`
-            let codeHTML = ''
-            switch (row) {
-            case 'minActivation':
-                codeHTML = formatNQTAsAmount(response[row]) + ' ' + BRS.valueSuffix
-                break
-            case 'creatorRS':
-                codeHTML = getAccountTitle(response[row])
-                break
-            case 'machineCode':
-                codeHTML = response[row].replace(/0+$/, '')
-                break
-            case 'status':
-                for (const val of ['running', 'stopped', 'finished', 'frozen', 'dead']) {
-                    if (response[val] === true) {
-                        codeHTML += (codeHTML === '' ? '' : ' + ') + $.t(val)
-                    }
-                }
-                break
-            default:
-                codeHTML = String(response[row]).escapeHTML()
+    sendRequest(
+        'getAT',
+        {
+            at: convertRSAccountToNumeric(BRS.userInfoModal.modalAccount.account),
+        },
+        function (response) {
+            if (response.errorCode) {
+                $('#user_info_modal_smartcontract_table tbody').empty()
+                dataLoadFinished($('#user_info_modal_smartcontract_table'))
+                return
             }
-            rows += `<td style='word-break: break-word;'>${codeHTML}</td>`
-            rows += '</tr>'
-        }
-        $('#user_info_modal_smartcontract_table tbody').html(rows)
-        dataLoadFinished($('#user_info_modal_smartcontract_table'))
-    })
+            let rows = ''
+            const props = [
+                'name',
+                'description',
+                'creatorRS',
+                'minActivation',
+                'machineCodeHashId',
+                'status',
+                'atVersion',
+                'creationBlock',
+                'machineData',
+                'machineCode',
+            ]
+            for (const row of props) {
+                const key = row.replace(/\s+/g, '').replace(/([A-Z])/g, function ($1) {
+                    return '_' + $1.toLowerCase()
+                })
+                rows += '<tr>'
+                rows += `<td>${$.t(key)}</td>`
+                let codeHTML = ''
+                switch (row) {
+                    case 'minActivation':
+                        codeHTML = formatNQTAsAmount(response[row]) + ' ' + BRS.valueSuffix
+                        break
+                    case 'creatorRS':
+                        codeHTML = getAccountTitle(response[row])
+                        break
+                    case 'machineCode':
+                        codeHTML = response[row].replace(/0+$/, '')
+                        break
+                    case 'status':
+                        for (const val of ['running', 'stopped', 'finished', 'frozen', 'dead']) {
+                            if (response[val] === true) {
+                                codeHTML += (codeHTML === '' ? '' : ' + ') + $.t(val)
+                            }
+                        }
+                        break
+                    default:
+                        codeHTML = String(response[row]).escapeHTML()
+                }
+                rows += `<td style='word-break: break-word;'>${codeHTML}</td>`
+                rows += '</tr>'
+            }
+            $('#user_info_modal_smartcontract_table tbody').html(rows)
+            dataLoadFinished($('#user_info_modal_smartcontract_table'))
+        },
+    )
 }
 
-function userInfoModalAssets () {
+function userInfoModalAssets() {
     if (!BRS.userInfoModal) return
 
     const count = {
         ignoredAssets: 0,
         cachedAssets: 0,
         requestedAssets: 0,
-        total: 0
+        total: 0,
     }
 
     function verifyRequestsAndProceed() {
@@ -368,17 +371,21 @@ function userInfoModalAssets () {
     const accountInfo = BRS.userInfoModal.modalAccount
 
     // Ensures all assets issued by the account are cached.
-    sendRequest('getAssetsByIssuer', {
-        account: accountInfo.account
-    }, function (response: GetAssetsByIssuerResponse) {
-        count.requestedAssets++
-        if (response.assets && response.assets.length) {
-            for (const issuedAsset of response.assets) {
-                cacheAsset(issuedAsset)
+    sendRequest(
+        'getAssetsByIssuer',
+        {
+            account: accountInfo.account,
+        },
+        function (response: GetAssetsByIssuerResponse) {
+            count.requestedAssets++
+            if (response.assets && response.assets.length) {
+                for (const issuedAsset of response.assets) {
+                    cacheAsset(issuedAsset)
+                }
             }
-        }
-        verifyRequestsAndProceed()
-    })
+            verifyRequestsAndProceed()
+        },
+    )
 
     if (!accountInfo.assetBalances) {
         count.total = 1 // Issued assets response.
@@ -393,23 +400,27 @@ function userInfoModalAssets () {
             continue
         }
         // Check first in cached assets
-        const foundAsset = BRS.assets.find(asset => asset.asset === currAssetBalance.asset)
+        const foundAsset = BRS.assets.find((asset) => asset.asset === currAssetBalance.asset)
         if (foundAsset) {
             count.cachedAssets++
             continue
         }
         // If not in cache, request and cache.
-        sendRequest('getAsset', {
-            asset: currAssetBalance.asset,
-        }, function (asset: GetAssetResponse) {
-            if (asset.errorCode) {
-                count.ignoredAssets++
-                return
-            }
-            count.requestedAssets++
-            cacheAsset(asset)
-            verifyRequestsAndProceed()
-        })
+        sendRequest(
+            'getAsset',
+            {
+                asset: currAssetBalance.asset,
+            },
+            function (asset: GetAssetResponse) {
+                if (asset.errorCode) {
+                    count.ignoredAssets++
+                    return
+                }
+                count.requestedAssets++
+                cacheAsset(asset)
+                verifyRequestsAndProceed()
+            },
+        )
     }
 }
 
@@ -435,11 +446,11 @@ function userInfoModalAssetsLoaded() {
         if (balance.balanceQNT === '0') {
             continue
         }
-        const cachedAsset = BRS.assets.find(asset => asset.asset === balance.asset)
+        const cachedAsset = BRS.assets.find((asset) => asset.asset === balance.asset)
         if (cachedAsset) {
             combinedAssets.push({
                 ...cachedAsset,
-                balanceQNT: balance.balanceQNT
+                balanceQNT: balance.balanceQNT,
             })
         }
     }
@@ -449,11 +460,11 @@ function userInfoModalAssetsLoaded() {
         if (cachedAsset.account !== currentAccount) {
             continue
         }
-        const isAlreadyIncluded = combinedAssets.some(asset => asset.asset === cachedAsset.asset)
+        const isAlreadyIncluded = combinedAssets.some((asset) => asset.asset === cachedAsset.asset)
         if (!isAlreadyIncluded) {
             combinedAssets.push({
                 ...cachedAsset,
-                balanceQNT: '0'
+                balanceQNT: '0',
             })
         }
     }

@@ -1,14 +1,11 @@
-import { BRS } from '..';
-import { PostResponse } from '../typings';
-import { getContactByName } from '../tools/contacts';
-import { evCheckNumberInput } from '../core/modals';
-import { parseAmountToNQT, formatNQTAsAmount } from '../core/numbers';
-import { convertRSAccountToNumeric, getAccountRSFromObject } from '../core/util';
+import { BRS } from '..'
+import { PostResponse } from '../typings'
+import { getContactByName } from '../tools/contacts'
+import { evCheckNumberInput } from '../core/modals'
+import { parseAmountToNQT, formatNQTAsAmount } from '../core/numbers'
+import { convertRSAccountToNumeric, getAccountRSFromObject } from '../core/util'
 
-import {
-    evSpanRecipientSelectorClickButton,
-    evSpanRecipientSelectorClickUlLiA
-} from '../core/recipient';
+import { evSpanRecipientSelectorClickButton, evSpanRecipientSelectorClickUlLiA } from '../core/recipient'
 
 export function formsSendMoneyComplete(_response: PostResponse, data: any) {
     if (!(data._extra && data._extra.convertedAccount) && !(data.recipient in BRS.contacts)) {
@@ -22,15 +19,15 @@ export function formsSendMoneyComplete(_response: PostResponse, data: any) {
               ${$.t('add_recipient_to_contacts_q')}
             </a>`,
             {
-                type: 'success'
-            }
-        );
-        return;
+                type: 'success',
+            },
+        )
+        return
     }
-    $.notify($.t('success_sendMoney', { valueSuffix: BRS.valueSuffix }), { type: 'success' });
+    $.notify($.t('success_sendMoney', { valueSuffix: BRS.valueSuffix }), { type: 'success' })
 }
 
-/** 
+/**
  * Converts a recipient to accountId, looking for the name in contacts too
  * On error, returns ''. It means invalid rsAddress, or name not found in contacts
  */
@@ -74,7 +71,7 @@ export function formsSendMoneyMulti(data: any) {
             const accountId = recipientToId(recipient)
             if (accountId === '') {
                 return {
-                    error: $.t('name_not_in_contacts', { name: recipient })
+                    error: $.t('name_not_in_contacts', { name: recipient }),
                 }
             }
             if (items > 0) {
@@ -89,14 +86,13 @@ export function formsSendMoneyMulti(data: any) {
         }
     } else {
         for (let i = 0; i < data.recipient_multi_out.length; i++) {
-            if (data.recipient_multi_out[i] === '' ||
-                data.amount_multi_out[i] === '') {
+            if (data.recipient_multi_out[i] === '' || data.amount_multi_out[i] === '') {
                 continue
             }
             const accountId = recipientToId(data.recipient_multi_out[i])
             if (accountId === '') {
                 return {
-                    error: $.t('name_not_in_contacts', { name: data.recipient_multi_out[i] })
+                    error: $.t('name_not_in_contacts', { name: data.recipient_multi_out[i] }),
                 }
             }
             try {
@@ -121,19 +117,17 @@ export function formsSendMoneyMulti(data: any) {
     if (items < 2) {
         return { error: $.t('error_multi_out_minimum_recipients') }
     }
-    const singleRecipients = new Set(data.recipients.split(';').map(item => item.split(':')[0]))
+    const singleRecipients = new Set(data.recipients.split(';').map((item) => item.split(':')[0]))
     if (singleRecipients.size !== items) {
         return { error: $.t('error_multi_out_duplicate_recipient') }
     }
-    if (!BRS.showedFormWarning &&
-        Number(BRS.settings.amount_warning) !== 0 &&
-        biTotalAmount >= BigInt(BRS.settings.amount_warning)) {
+    if (!BRS.showedFormWarning && Number(BRS.settings.amount_warning) !== 0 && biTotalAmount >= BigInt(BRS.settings.amount_warning)) {
         BRS.showedFormWarning = true
         return {
             error: $.t('error_max_amount_warning', {
                 burst: formatNQTAsAmount(BRS.settings.amount_warning),
-                valueSuffix: BRS.valueSuffix
-            })
+                valueSuffix: BRS.valueSuffix,
+            }),
         }
     }
 
@@ -145,17 +139,23 @@ export function formsSendMoneyMulti(data: any) {
 
     return {
         requestType,
-        data
+        data,
     }
 }
 
 export function sendMoneyCalculateTotal(element: JQuery<HTMLElement>) {
     try {
-        const current_amount = BigInt(parseAmountToNQT($('#send_money_amount').val()));
-        const current_fee = BigInt(parseAmountToNQT($('#send_money_fee').val()));
-        $(element).closest('.modal').find('.total_amount_ordinary').text(formatNQTAsAmount(current_amount + current_fee) + ' ' + BRS.valueSuffix);
+        const current_amount = BigInt(parseAmountToNQT($('#send_money_amount').val()))
+        const current_fee = BigInt(parseAmountToNQT($('#send_money_fee').val()))
+        $(element)
+            .closest('.modal')
+            .find('.total_amount_ordinary')
+            .text(formatNQTAsAmount(current_amount + current_fee) + ' ' + BRS.valueSuffix)
     } catch {
-        $(element).closest('.modal').find('.total_amount_ordinary').text('??? ' + BRS.valueSuffix);
+        $(element)
+            .closest('.modal')
+            .find('.total_amount_ordinary')
+            .text('??? ' + BRS.valueSuffix)
     }
 }
 
@@ -243,4 +243,3 @@ export function resetModalMultiOut() {
     $('#multi_out_same_amount').val('')
     $('#send_ordinary_tab').tab('show')
 }
-

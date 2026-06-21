@@ -11,17 +11,17 @@
  * - Added AbortController
  * - Added retries
  * - Added rate limiter
- * 
+ *
  * Requires jQuery 3.5+
  */
 
 import { BRS } from '..'
 
 interface RequestControllerOptions extends JQueryAjaxSettings {
-    currentPageAndSubPage?: string;
-    maxRetries: number;
+    currentPageAndSubPage?: string
+    maxRetries: number
     // RequestController internal use only
-    signal?: AbortSignal;
+    signal?: AbortSignal
 }
 
 /**
@@ -33,7 +33,7 @@ interface RequestControllerOptions extends JQueryAjaxSettings {
  */
 export class RequestController {
     private concurrency: number
-    private rateLimit: number  // max starts per second (0 = disabled)
+    private rateLimit: number // max starts per second (0 = disabled)
     private waiting: Array<() => void> = []
     private running = 0
     private startTimes: number[] = [] // timestamps of recent starts
@@ -56,10 +56,10 @@ export class RequestController {
     queue = (ajaxOpts: RequestControllerOptions) => {
         const dfd = $.Deferred()
         const promise = dfd.promise()
-        let controller: AbortController | null = null;
+        let controller: AbortController | null = null
         if (ajaxOpts.currentPageAndSubPage) {
-            controller = new AbortController();
-            ajaxOpts.signal = controller.signal;
+            controller = new AbortController()
+            ajaxOpts.signal = controller.signal
         }
 
         let retriesLeft = ajaxOpts.maxRetries ?? 0
@@ -69,7 +69,7 @@ export class RequestController {
          */
         const attempt = () => {
             // Check conditions for abortion
-            if (controller && (ajaxOpts.currentPageAndSubPage !== BRS.currentPage + BRS.currentSubPage)) {
+            if (controller && ajaxOpts.currentPageAndSubPage !== BRS.currentPage + BRS.currentSubPage) {
                 controller.abort()
                 this.running--
                 this.processNext()
@@ -77,7 +77,7 @@ export class RequestController {
             }
 
             if (this.rateLimit > 0) {
-                this.startTimes.push(Date.now());
+                this.startTimes.push(Date.now())
             }
 
             const jqXHR = $.ajax(ajaxOpts)
@@ -110,15 +110,15 @@ export class RequestController {
      */
     processNext = () => {
         if (this.waiting.length === 0) return
-        if (this.running >= this.concurrency) return   // still at max
+        if (this.running >= this.concurrency) return // still at max
 
         // Rate limit check
         if (this.rateLimit > 0) {
             const now = Date.now()
-            this.startTimes = this.startTimes.filter(t => now - t < 1000)
+            this.startTimes = this.startTimes.filter((t) => now - t < 1000)
             if (this.startTimes.length >= this.rateLimit) {
                 const oldest = this.startTimes[0]
-                const delay = oldest - now + 1000 
+                const delay = oldest - now + 1000
                 setTimeout(this.processNext, delay)
                 return
             }

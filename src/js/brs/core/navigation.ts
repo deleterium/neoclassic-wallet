@@ -3,16 +3,14 @@
  * @depends {3rdparty/notify.min.js}
  */
 
-import {
-    goToAsset
-} from '../pages/assets.asset_exchange'
+import { goToAsset } from '../pages/assets.asset_exchange'
 
 import { BRS } from '..'
 
 /**
  * Handles clicks in sidebar, changing current page if needed
  */
-export function evSidebarClick (e: JQuery.ClickEvent) : void {
+export function evSidebarClick(e: JQuery.ClickEvent): void {
     e.preventDefault()
     if ($(e.currentTarget).data('toggle') === 'modal') {
         return
@@ -29,7 +27,7 @@ export function evSidebarClick (e: JQuery.ClickEvent) : void {
 }
 
 /** Load a page for first time (setting up global variables) */
-function loadPage (page: string) : void {
+function loadPage(page: string): void {
     BRS.currentPage = page
     BRS.currentSubPage = ''
     BRS.pageNumber = 1
@@ -41,7 +39,7 @@ function loadPage (page: string) : void {
 }
 
 /** Reload current page, keeping variables like pagination */
-export function reloadCurrentPage () : void {
+export function reloadCurrentPage(): void {
     if (!BRS.pages[BRS.currentPage]) {
         console.log('Possible bug on reloadCurrentPage.')
         return
@@ -51,7 +49,7 @@ export function reloadCurrentPage () : void {
 }
 
 /** Go to a page, updating sidebar menu */
-export function goToPage (page: string) : void {
+export function goToPage(page: string): void {
     let $link = $('[data-widget="treeview"] a[data-page=' + page + ']')
 
     if ($link.length > 1) {
@@ -75,7 +73,7 @@ export function goToPage (page: string) : void {
     loadPage(page)
 }
 
-export function pageLoading () : void {
+export function pageLoading(): void {
     BRS.hasMorePages = false
     const $pageHeader = $('#' + BRS.currentPage + '_page .content-header h1')
     $pageHeader.find('.loading_dots').remove()
@@ -87,7 +85,7 @@ export function pageLoading () : void {
     }
 }
 
-export function pageLoaded (callback?: () => void) {
+export function pageLoaded(callback?: () => void) {
     const $currentPage = $('#' + BRS.currentPage + '_page')
     $currentPage.find('.content-header h1 .loading_dots').remove()
     if ($currentPage.hasClass('paginated')) {
@@ -95,14 +93,14 @@ export function pageLoaded (callback?: () => void) {
     }
     window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: 'smooth',
     })
     if (callback) {
         callback()
     }
 }
 
-export function addPagination () : void {
+export function addPagination(): void {
     let output = ''
 
     if (BRS.pageNumber === 2) {
@@ -125,13 +123,13 @@ export function addPagination () : void {
     }
 }
 
-export function goToPageNumber (pageNumber: number) {
+export function goToPageNumber(pageNumber: number) {
     BRS.pageNumber = pageNumber
     pageLoading()
     BRS.pages[BRS.currentPage]()
 }
 
-export function checkLocationHash () : void {
+export function checkLocationHash(): void {
     if (!window.location.hash) {
         return
     }
@@ -161,6 +159,6 @@ export function checkLocationHash () : void {
 }
 
 /** Checks if a Number is valid and greater than minimum fee. If not, return minimum fee */
-export function checkMinimumFee (value: number) : number {
-    return (isNaN(value) ? BRS.minimumFeeNumber : (value < BRS.minimumFeeNumber ? BRS.minimumFeeNumber : value))
+export function checkMinimumFee(value: number): number {
+    return isNaN(value) ? BRS.minimumFeeNumber : value < BRS.minimumFeeNumber ? BRS.minimumFeeNumber : value
 }

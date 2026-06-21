@@ -1,31 +1,24 @@
 import { BRS } from '..'
 
-import {
-    getPublicKeyFromPassphrase,
-    getAccountId,
-    signBytes,
-    verifyBytes
-} from './encryption'
+import { getPublicKeyFromPassphrase, getAccountId, signBytes, verifyBytes } from './encryption'
 
 import { parseAmountToNQT } from './numbers'
 
-import {
-    translateServerError
-} from './util'
+import { translateServerError } from './util'
 
 import { showRawTransactionModal } from '../modals/advanced'
 import { verifyTransactionBytes } from './verify_transaction'
 import { AjaxResponse } from '../typings'
 
-export function setSavedPassword (password: string) {
+export function setSavedPassword(password: string) {
     BRS._password = password
 }
 
-export function getSavedPassword () {
+export function getSavedPassword() {
     return BRS._password
 }
 
-function convertNxtToNqt (data: any) {
+function convertNxtToNqt(data: any) {
     // convert NXT to NQT...
     let field: string
     const nxtFields = ['feeNXT', 'amountNXT', 'priceNXT', 'refundNXT', 'discountNXT', 'minActivationAmountNXT']
@@ -42,12 +35,7 @@ function convertNxtToNqt (data: any) {
     }
 }
 
-export function sendRequest (
-    requestType: string,
-    data: any,
-    callback: (response: any, inData: any) => void,
-    async: boolean = true
-) {
+export function sendRequest(requestType: string, data: any, callback: (response: any, inData: any) => void, async: boolean = true) {
     for (const key in data) {
         if (key !== 'secretPhrase' && typeof data[key] === 'string') {
             data[key] = data[key].trim()
@@ -56,10 +44,13 @@ export function sendRequest (
 
     const errorMessage = convertNxtToNqt(data)
     if (errorMessage) {
-        callback({
-            errorCode: 1,
-            errorDescription: errorMessage
-        }, data)
+        callback(
+            {
+                errorCode: 1,
+                errorDescription: errorMessage,
+            },
+            data,
+        )
         return
     }
 
@@ -74,10 +65,13 @@ export function sendRequest (
     if ('secretPhrase' in data) {
         const accountId = getAccountId(getSavedPassword() || data.secretPhrase)
         if (accountId !== BRS.account) {
-            callback({
-                errorCode: 1,
-                errorDescription: $.t('error_passphrase_incorrect')
-            }, data)
+            callback(
+                {
+                    errorCode: 1,
+                    errorDescription: $.t('error_passphrase_incorrect'),
+                },
+                data,
+            )
             return
         }
     }
@@ -85,12 +79,7 @@ export function sendRequest (
     processAjaxRequest(requestType, data, callback, async)
 }
 
-export function processAjaxRequest (
-    requestType: string,
-    data: any,
-    callback: (response: any, inData: any) => void,
-    async: boolean
-) {
+export function processAjaxRequest(requestType: string, data: any, callback: (response: any, inData: any) => void, async: boolean) {
     let extra: any = null
     if (data._extra) {
         extra = data._extra
@@ -105,7 +94,7 @@ export function processAjaxRequest (
         currentPageAndSubPage = BRS.currentPage + BRS.currentSubPage
     }
 
-    let type = (('secretPhrase' in data) || (data.broadcast === 'false')) ? 'POST' : 'GET'
+    let type = 'secretPhrase' in data || data.broadcast === 'false' ? 'POST' : 'GET'
     const url = BRS.server + '/burst?requestType=' + requestType
 
     if (type === 'GET') {
@@ -117,21 +106,27 @@ export function processAjaxRequest (
     let secretPhrase = ''
 
     // unknown account..
-    if (type === 'POST' && (BRS.accountInfo.errorCode && BRS.accountInfo.errorCode === 5)) {
-        callback({
-            errorCode: 2,
-            errorDescription: $.t('error_new_account')
-        }, data)
+    if (type === 'POST' && BRS.accountInfo.errorCode && BRS.accountInfo.errorCode === 5) {
+        callback(
+            {
+                errorCode: 2,
+                errorDescription: $.t('error_new_account'),
+            },
+            data,
+        )
         return
     }
 
     if (data.referencedTransactionFullHash) {
         if (!/^[a-z0-9]{64}$/.test(data.referencedTransactionFullHash)) {
             const errorMessage = $.t('error_invalid_referenced_transaction_hash')
-            callback({
-                errorCode: -1,
-                errorDescription: errorMessage
-            }, data)
+            callback(
+                {
+                    errorCode: -1,
+                    errorDescription: errorMessage,
+                },
+                data,
+            )
             return
         }
     }
@@ -165,7 +160,7 @@ export function processAjaxRequest (
         type = 'POST'
     }
 
-    async = (async === undefined ? true : async)
+    async = async === undefined ? true : async
     if (async === false && type === 'GET') {
         const client = new XMLHttpRequest()
         client.open('GET', url + '&' + $.param(data), false)
@@ -183,92 +178,100 @@ export function processAjaxRequest (
         timeout: 30000,
         async: true,
         currentPageAndSubPage,
-        maxRetries: (type === 'GET' ? 2 : 0),
-        data
-    }).done(function (response: AjaxResponse) {
-        if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode && !response.error) {
-            const publicKey = getPublicKeyFromPassphrase(secretPhrase)
-            const signature = signBytes(response.unsignedTransactionBytes, secretPhrase)
-            if (!verifyBytes(signature, response.unsignedTransactionBytes, publicKey)) {
-                const errorMessage = $.t('error_signature_verification_client')
-                if (extra) {
-                    data._extra = extra
-                }
-                callback({
-                    errorCode: 1,
-                    errorDescription: errorMessage
-                }, data)
-                return
-            }
-            const payload = verifyTransactionBytes(response.unsignedTransactionBytes, signature, requestType, data)
-            if (payload.length === 0) {
-                const errorMessage = $.t('error_signature_verification_server')
-                if (extra) {
-                    data._extra = extra
-                }
-                callback({
-                    errorCode: 1,
-                    errorDescription: errorMessage
-                }, data)
-                return
-            }
-            if (data.broadcast === 'false') {
-                showRawTransactionModal(response, payload)
-                return
-            }
-            if (extra) {
-                data._extra = extra
-            }
-            broadcastTransactionBytes(payload, callback, response, data)
-            return
-        }
-        // Request sucessfull but there was an error in response.
-        if (response.errorCode || response.errorDescription || response.errorMessage || response.error) {
-            response.errorDescription = translateServerError(response)
-            delete response.fullHash
-            if (!response.errorCode) {
-                response.errorCode = -1
-            }
-        }
-        if (response.broadcasted === false) {
-            showRawTransactionModal(response, '')
-        } else {
-            if (extra) {
-                data._extra = extra
-            }
-            callback(response, data)
-            if (data.referencedTransactionFullHash && !response.errorCode) {
-                $.notify($.t('info_referenced_transaction_hash'), { type: 'info' })
-            }
-        }
-    }).fail(function (xhr: JQueryXHR, textStatus: string, error: string) {
-        if (error === 'abort') {
-            return
-        }
-        if ((error === 'error' || textStatus === 'error') &&
-            (xhr.status === 404 || xhr.status === 0) &&
-            type === 'POST'
-        ) {
-            $.notify($.t('error_server_connect'), { type: 'danger' })
-        }
-        if (error === 'timeout') {
-            error = $.t('error_request_timeout')
-        }
-        if (extra) {
-            data._extra = extra
-        }
-        callback({
-            errorCode: -1,
-            errorDescription: error
-        }, data)
+        maxRetries: type === 'GET' ? 2 : 0,
+        data,
     })
+        .done(function (response: AjaxResponse) {
+            if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode && !response.error) {
+                const publicKey = getPublicKeyFromPassphrase(secretPhrase)
+                const signature = signBytes(response.unsignedTransactionBytes, secretPhrase)
+                if (!verifyBytes(signature, response.unsignedTransactionBytes, publicKey)) {
+                    const errorMessage = $.t('error_signature_verification_client')
+                    if (extra) {
+                        data._extra = extra
+                    }
+                    callback(
+                        {
+                            errorCode: 1,
+                            errorDescription: errorMessage,
+                        },
+                        data,
+                    )
+                    return
+                }
+                const payload = verifyTransactionBytes(response.unsignedTransactionBytes, signature, requestType, data)
+                if (payload.length === 0) {
+                    const errorMessage = $.t('error_signature_verification_server')
+                    if (extra) {
+                        data._extra = extra
+                    }
+                    callback(
+                        {
+                            errorCode: 1,
+                            errorDescription: errorMessage,
+                        },
+                        data,
+                    )
+                    return
+                }
+                if (data.broadcast === 'false') {
+                    showRawTransactionModal(response, payload)
+                    return
+                }
+                if (extra) {
+                    data._extra = extra
+                }
+                broadcastTransactionBytes(payload, callback, response, data)
+                return
+            }
+            // Request sucessfull but there was an error in response.
+            if (response.errorCode || response.errorDescription || response.errorMessage || response.error) {
+                response.errorDescription = translateServerError(response)
+                delete response.fullHash
+                if (!response.errorCode) {
+                    response.errorCode = -1
+                }
+            }
+            if (response.broadcasted === false) {
+                showRawTransactionModal(response, '')
+            } else {
+                if (extra) {
+                    data._extra = extra
+                }
+                callback(response, data)
+                if (data.referencedTransactionFullHash && !response.errorCode) {
+                    $.notify($.t('info_referenced_transaction_hash'), { type: 'info' })
+                }
+            }
+        })
+        .fail(function (xhr: JQueryXHR, textStatus: string, error: string) {
+            if (error === 'abort') {
+                return
+            }
+            if ((error === 'error' || textStatus === 'error') && (xhr.status === 404 || xhr.status === 0) && type === 'POST') {
+                $.notify($.t('error_server_connect'), { type: 'danger' })
+            }
+            if (error === 'timeout') {
+                error = $.t('error_request_timeout')
+            }
+            if (extra) {
+                data._extra = extra
+            }
+            callback(
+                {
+                    errorCode: -1,
+                    errorDescription: error,
+                },
+                data,
+            )
+        })
 }
 
-export function broadcastTransactionBytes (
+export function broadcastTransactionBytes(
     transactionData: string,
     callback: (response: any, inData: any) => void,
     originalResponse: AjaxResponse,
-    originalData: any
+    originalData: any,
 ) {
     $.ajax({
         url: BRS.server + '/burst?requestType=broadcastTransaction',
@@ -278,39 +281,44 @@ export function broadcastTransactionBytes (
         timeout: 30000,
         async: true,
         data: {
-            transactionBytes: transactionData
-        }
-    }).done(function (response) {
-        if (response.errorCode) {
-            if (!response.errorDescription) {
-                response.errorDescription = (response.errorMessage ? response.errorMessage : 'Unknown error occured.')
-            }
-            callback(response, originalData)
-            return
-        }
-        if (response.error) {
-            response.errorCode = 1
-            response.errorDescription = response.error
-            callback(response, originalData)
-            return
-        }
-        if ('transactionBytes' in originalResponse) {
-            delete originalResponse.transactionBytes
-        }
-        originalResponse.broadcasted = true
-        originalResponse.transaction = response.transaction
-        originalResponse.fullHash = response.fullHash
-        callback(originalResponse, originalData)
-        if (originalData.referencedTransactionFullHash) {
-            $.notify($.t('info_referenced_transaction_hash'), { type: 'info' })
-        }
-    }).fail(function (xhr, textStatus, error) {
-        if (error === 'timeout') {
-            error = $.t('error_request_timeout')
-        }
-        callback({
-            errorCode: -1,
-            errorDescription: error
-        }, {})
+            transactionBytes: transactionData,
+        },
     })
+        .done(function (response) {
+            if (response.errorCode) {
+                if (!response.errorDescription) {
+                    response.errorDescription = response.errorMessage ? response.errorMessage : 'Unknown error occured.'
+                }
+                callback(response, originalData)
+                return
+            }
+            if (response.error) {
+                response.errorCode = 1
+                response.errorDescription = response.error
+                callback(response, originalData)
+                return
+            }
+            if ('transactionBytes' in originalResponse) {
+                delete originalResponse.transactionBytes
+            }
+            originalResponse.broadcasted = true
+            originalResponse.transaction = response.transaction
+            originalResponse.fullHash = response.fullHash
+            callback(originalResponse, originalData)
+            if (originalData.referencedTransactionFullHash) {
+                $.notify($.t('info_referenced_transaction_hash'), { type: 'info' })
+            }
+        })
+        .fail(function (xhr, textStatus, error) {
+            if (error === 'timeout') {
+                error = $.t('error_request_timeout')
+            }
+            callback(
+                {
+                    errorCode: -1,
+                    errorDescription: error,
+                },
+                {},
+            )
+        })
 }

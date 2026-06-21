@@ -9,9 +9,7 @@ import { sha256 } from 'js-sha256'
 import curve25519 from '../../crypto/curve25519'
 import converters from '../../util/converters'
 
-import {
-    sendRequest
-} from './send_request'
+import { sendRequest } from './send_request'
 
 import {
     ByteArray,
@@ -19,13 +17,13 @@ import {
     DecryptedTransactionItem,
     GetAccountPublicKeyResponse,
     HexString,
-    Transaction
+    Transaction,
 } from '../typings'
 
 type CryptoOptions = {
-    nonce: HexString,
-    privateKey: HexString,
-    publicKey: HexString,
+    nonce: HexString
+    privateKey: HexString
+    publicKey: HexString
     isText: boolean
 }
 
@@ -54,23 +52,28 @@ export function setAccountPublicKeyToCache(account: string, publicKey: HexString
 
 // region Public Key
 
-export function getAccountPublicKey (account: string) {
+export function getAccountPublicKey(account: string) {
     const publicKeyInCache = getAccountPublicKeyFromCache(account)
     if (publicKeyInCache) {
         return publicKeyInCache
     }
     let publicKey = ''
     // synchronous!
-    sendRequest('getAccountPublicKey', {
-        account
-    }, function (response: GetAccountPublicKeyResponse, input) {
-        if (!response.publicKey) {
-            throw new Error($.t('error_no_public_key'))
-        } else {
-            publicKey = response.publicKey
-            setAccountPublicKeyToCache(input.account, response.publicKey)
-        }
-    }, false)
+    sendRequest(
+        'getAccountPublicKey',
+        {
+            account,
+        },
+        function (response: GetAccountPublicKeyResponse, input) {
+            if (!response.publicKey) {
+                throw new Error($.t('error_no_public_key'))
+            } else {
+                publicKey = response.publicKey
+                setAccountPublicKeyToCache(input.account, response.publicKey)
+            }
+        },
+        false,
+    )
     return publicKey
 }
 
@@ -78,7 +81,7 @@ export function getAccountPublicKey (account: string) {
  * @param {String} secretphrase in hexString format
  * @returns publicKey in hexString format
  */
-export function getPublicKeyFromPassphrase (secretphrase: string) : HexString {
+export function getPublicKeyFromPassphrase(secretphrase: string): HexString {
     const secretPhraseBytes = converters.stringToByteArray(secretphrase)
     const digest = sha256.digest(secretPhraseBytes)
     return converters.byteArrayToHexString(curve25519.keygen(digest).p)
@@ -86,9 +89,9 @@ export function getPublicKeyFromPassphrase (secretphrase: string) : HexString {
 
 // region Private Key
 
-async function getPrivateKey (secretPhrase: string) : Promise<HexString> {
-    const encoder = new TextEncoder();
-    const secretPhraseBytes = encoder.encode(secretPhrase);
+async function getPrivateKey(secretPhrase: string): Promise<HexString> {
+    const encoder = new TextEncoder()
+    const secretPhraseBytes = encoder.encode(secretPhrase)
     const pk = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', secretPhraseBytes)))
     curve25519.clamp(pk)
     return converters.byteArrayToHexString(pk)
@@ -96,7 +99,7 @@ async function getPrivateKey (secretPhrase: string) : Promise<HexString> {
 
 // region Accound ID
 
-export function fullHashToId (fullHash: HexString) {
+export function fullHashToId(fullHash: HexString) {
     if (fullHash.length < 16) {
         fullHash = fullHash.padEnd(16, '0')
     }
@@ -112,13 +115,13 @@ export function fullHashToId (fullHash: HexString) {
     return ret.toString(10)
 }
 
-export function getAccountId (secretPhrase: string) {
+export function getAccountId(secretPhrase: string) {
     const publicKey = getPublicKeyFromPassphrase(secretPhrase)
     const accountId = getAccountIdFromPublicKey(publicKey, false)
     return accountId
 }
 
-export function getAccountIdFromPublicKey (publicKey: HexString, isRSFormat: boolean) {
+export function getAccountIdFromPublicKey(publicKey: HexString, isRSFormat: boolean) {
     const accountBA = sha256.digest(converters.hexStringToByteArray(publicKey))
     const accountId = fullHashToId(converters.byteArrayToHexString(accountBA))
     if (isRSFormat) {
@@ -131,7 +134,7 @@ export function getAccountIdFromPublicKey (publicKey: HexString, isRSFormat: boo
 
 // region CryptoOption
 
-async function createCryptoOptions (otherUser: string, nonce: HexString, isText: boolean, secretPhrase?: string) : Promise<CryptoOptions> {
+async function createCryptoOptions(otherUser: string, nonce: HexString, isText: boolean, secretPhrase?: string): Promise<CryptoOptions> {
     const publicKey = getAccountPublicKey(otherUser)
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
@@ -142,16 +145,16 @@ async function createCryptoOptions (otherUser: string, nonce: HexString, isText:
         nonce,
         publicKey,
         privateKey,
-        isText
+        isText,
     }
 }
 
-export async function createEncryptionToOtherOptions (
+export async function createEncryptionToOtherOptions(
     otherAccount: string,
     otherPublicKey: HexString,
     isText: boolean,
-    secretPhrase?: string
-) : Promise<CryptoOptions> {
+    secretPhrase?: string,
+): Promise<CryptoOptions> {
     const publicKey = otherPublicKey || getAccountPublicKey(otherAccount)
     if (publicKey.length !== 64) {
         throw new Error($.t('error_public_key_not_specified'))
@@ -167,11 +170,11 @@ export async function createEncryptionToOtherOptions (
         publicKey,
         privateKey,
         isText,
-        nonce: converters.byteArrayToHexString(nonce)
+        nonce: converters.byteArrayToHexString(nonce),
     }
 }
 
-export async function createEncryptionToSelfOptions (isText: boolean, secretPhrase?: string) : Promise<CryptoOptions> {
+export async function createEncryptionToSelfOptions(isText: boolean, secretPhrase?: string): Promise<CryptoOptions> {
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
         throw new Error($.t('error_decryption_passphrase_required'))
@@ -184,20 +187,20 @@ export async function createEncryptionToSelfOptions (isText: boolean, secretPhra
         publicKey,
         privateKey,
         isText,
-        nonce: converters.byteArrayToHexString(nonce)
+        nonce: converters.byteArrayToHexString(nonce),
     }
 }
 
 // region Sign / Verify
 
-function doubleHash (data1: ByteArray, data2: ByteArray) {
+function doubleHash(data1: ByteArray, data2: ByteArray) {
     const combined = new Uint8Array(data1.length + data2.length)
     combined.set(data1)
     combined.set(data2, data1.length)
     return sha256.digest(combined)
 }
 
-function areByteArraysEqual (bytes1: ByteArray, bytes2: ByteArray) : boolean {
+function areByteArraysEqual(bytes1: ByteArray, bytes2: ByteArray): boolean {
     if (bytes1.length !== bytes2.length) {
         return false
     }
@@ -209,7 +212,7 @@ function areByteArraysEqual (bytes1: ByteArray, bytes2: ByteArray) : boolean {
     return true
 }
 
-export function signBytes (message: HexString, secretPhrase: string) : HexString {
+export function signBytes(message: HexString, secretPhrase: string): HexString {
     const messageBytes = converters.hexStringToByteArray(message)
     const secretPhraseBytes = converters.stringToByteArray(secretPhrase)
     const digest = sha256.digest(secretPhraseBytes)
@@ -226,7 +229,7 @@ export function signBytes (message: HexString, secretPhrase: string) : HexString
     return converters.byteArrayToHexString(v.concat(h))
 }
 
-export function verifyBytes (signature: HexString, message: HexString, publicKey: HexString) : boolean {
+export function verifyBytes(signature: HexString, message: HexString, publicKey: HexString): boolean {
     const signatureBytes = converters.hexStringToByteArray(signature)
     const messageBytes = converters.hexStringToByteArray(message)
     const publicKeyBytes = converters.hexStringToByteArray(publicKey)
@@ -240,19 +243,19 @@ export function verifyBytes (signature: HexString, message: HexString, publicKey
 
 // region Passphrase helper
 
-export function setEncryptionPassword (password: string) : void {
+export function setEncryptionPassword(password: string): void {
     BRS._password = password
 }
 
-export function getEncryptionPassword () : string {
+export function getEncryptionPassword(): string {
     return BRS._password
 }
 
-export function setDecryptionPassword (password: string) : void {
+export function setDecryptionPassword(password: string): void {
     BRS._decryptionPassword = password
 }
 
-export function getDecryptionPassword () : string | undefined {
+export function getDecryptionPassword(): string | undefined {
     if (BRS._password) {
         return BRS._password
     }
@@ -264,12 +267,12 @@ export function getDecryptionPassword () : string | undefined {
 
 // region Decryption cache
 
-export function addDecryptedTransactionToCache (txid: string, content: DecryptedTransactionItem) {
+export function addDecryptedTransactionToCache(txid: string, content: DecryptedTransactionItem) {
     if (!BRS._decryptedTransactions[txid]) {
         BRS._decryptedTransactions[txid] = content
     } else {
         // Merge content
-        Object.assign(BRS._decryptedTransactions[txid], content);
+        Object.assign(BRS._decryptedTransactions[txid], content)
     }
 }
 
@@ -277,7 +280,7 @@ export function addDecryptedTransactionToCache (txid: string, content: Decrypted
  * @param {TransactionID} TransactionID from blockchain
  * @returns {string|undefined} Decoded message, or undefined if no decoded message found
  */
-export function getDecryptedMessageFromCache (txid: string, field: DecryptedTransactionFields) : string | undefined {
+export function getDecryptedMessageFromCache(txid: string, field: DecryptedTransactionFields): string | undefined {
     if (!BRS._decryptedTransactions || !BRS._decryptedTransactions[txid] || !BRS._decryptedTransactions[txid][field]) {
         return undefined
     }
@@ -292,7 +295,7 @@ export function getDecryptedMessageFromCache (txid: string, field: DecryptedTran
  * @param {boolean} throwOnError - Set true to throw exception on error. If false, the error is returned as decoded message.
  * @param {string} password - User password
  * @returns {string} The message decrypted. If the message was not text, it returns the decoded hex string.
- * 
+ *
  * @description
  * * This function decrypts the encrypted message from a transaction using the provided password.
  * If the transaction already was decoded, return it.
@@ -300,7 +303,12 @@ export function getDecryptedMessageFromCache (txid: string, field: DecryptedTran
  * If the message is successfully decrypted, it updates the decrypted messages cache.
  * In case of an error during decryption, it can return the error, or, if throwOnError, throws an object with prop `brsError` with the error message.
  */
-export async function decryptAttachmentField (tx: Transaction, field: 'encryptedMessage' | 'encryptToSelfMessage', throwOnError: boolean, password: string) : Promise<string> {
+export async function decryptAttachmentField(
+    tx: Transaction,
+    field: 'encryptedMessage' | 'encryptToSelfMessage',
+    throwOnError: boolean,
+    password: string,
+): Promise<string> {
     const messageInCache = getDecryptedMessageFromCache(tx.transaction, field)
     if (messageInCache) {
         return messageInCache
@@ -323,12 +331,7 @@ export async function decryptAttachmentField (tx: Transaction, field: 'encrypted
         if (field === 'encryptedMessage') {
             recipientID = (tx.sender === BRS.account ? tx.recipient : tx.sender) as string
         }
-        const options = await createCryptoOptions(
-            recipientID,
-            tx.attachment[field].nonce,
-            tx.attachment[field].isText,
-            password
-        )
+        const options = await createCryptoOptions(recipientID, tx.attachment[field].nonce, tx.attachment[field].isText, password)
         const decoded = await decryptNote(tx.attachment[field].data, options)
         addDecryptedTransactionToCache(tx.transaction, { [field]: decoded })
         return decoded
@@ -336,7 +339,7 @@ export async function decryptAttachmentField (tx: Transaction, field: 'encrypted
         if (!err || !(err as Error).message) {
             const errorMessage = $.t('error_decryption_unknown')
             if (throwOnError) {
-                throw new Error (errorMessage)
+                throw new Error(errorMessage)
             }
             return errorMessage
         }
@@ -347,7 +350,7 @@ export async function decryptAttachmentField (tx: Transaction, field: 'encrypted
     }
 }
 
-async function decryptNote (message: HexString, options: CryptoOptions) : Promise<HexString> {
+async function decryptNote(message: HexString, options: CryptoOptions): Promise<HexString> {
     const decryptedData = await decryptData(converters.hexStringToByteArray(message), options)
     if (options.isText) {
         return converters.byteArrayToString(decryptedData)
@@ -355,22 +358,21 @@ async function decryptNote (message: HexString, options: CryptoOptions) : Promis
     return converters.byteArrayToHexString(decryptedData)
 }
 
-async function decryptData (data: ByteArray, options: CryptoOptions) : Promise<Uint8Array> {
+async function decryptData(data: ByteArray, options: CryptoOptions): Promise<Uint8Array> {
     const compressedDecrypted = await aesDecrypt(data, options)
     const decrypted = pako.inflate(compressedDecrypted)
     return decrypted
 }
 
-async function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) : Promise<Uint8Array> {
+async function aesDecrypt(ivCiphertext: ByteArray, options: CryptoOptions): Promise<Uint8Array> {
     if (ivCiphertext.length < 16 || ivCiphertext.length % 16 !== 0) {
         throw new Error('invalid_ciphertext')
     }
     const iv = new Uint8Array(ivCiphertext.slice(0, 16))
     const ciphertext = new Uint8Array(ivCiphertext.slice(16))
-    const sharedKey = new Uint8Array(curve25519.sharedkey(
-        converters.hexStringToByteArray(options.privateKey),
-        converters.hexStringToByteArray(options.publicKey)
-    ))
+    const sharedKey = new Uint8Array(
+        curve25519.sharedkey(converters.hexStringToByteArray(options.privateKey), converters.hexStringToByteArray(options.publicKey)),
+    )
     const nonce = converters.hexStringToByteArray(options.nonce)
 
     for (let i = 0; i < 32; i++) {
@@ -379,82 +381,68 @@ async function aesDecrypt (ivCiphertext: ByteArray, options: CryptoOptions) : Pr
     const ciphertextBuffer = new Uint8Array(ciphertext).buffer
     const ivBuffer = new Uint8Array(iv).buffer
     const keyBuffer = await window.crypto.subtle.digest('SHA-256', sharedKey.buffer)
-    const cryptoKey = await window.crypto.subtle.importKey(
-        'raw',
-        keyBuffer,
-        { name: 'AES-CBC' },
-        false,
-        ['decrypt']
-    )
+    const cryptoKey = await window.crypto.subtle.importKey('raw', keyBuffer, { name: 'AES-CBC' }, false, ['decrypt'])
     const decrypted = await window.crypto.subtle.decrypt(
         {
             name: 'AES-CBC',
-            iv: ivBuffer
+            iv: ivBuffer,
         },
         cryptoKey,
-        ciphertextBuffer
+        ciphertextBuffer,
     )
     return new Uint8Array(decrypted)
 }
 
 // region Encryption process
 
-export async function encryptNote (message: HexString, options: CryptoOptions) {
+export async function encryptNote(message: HexString, options: CryptoOptions) {
     try {
         const dataToEncrypt = options.isText ? converters.stringToByteArray(message) : converters.hexStringToByteArray(message)
         const encrypted = await encryptData(dataToEncrypt, options)
         return {
             message: converters.byteArrayToHexString(encrypted),
-            nonce: options.nonce
+            nonce: options.nonce,
         }
     } catch {
         throw new Error($.t('error_message_encryption'))
     }
 }
 
-async function encryptData (data: ByteArray, options: CryptoOptions) : Promise<ByteArray> {
+async function encryptData(data: ByteArray, options: CryptoOptions): Promise<ByteArray> {
     const compressedData = pako.gzip(new Uint8Array(data))
     const encrypted = await aesEncrypt(compressedData, options)
     return encrypted
 }
 
-async function aesEncrypt (plaintext: Uint8Array, options: CryptoOptions) : Promise<ByteArray> {
-    const sharedKey = new Uint8Array(curve25519.sharedkey(
-        converters.hexStringToByteArray(options.privateKey),
-        converters.hexStringToByteArray(options.publicKey)
-    ));
-    const nonceBA = converters.hexStringToByteArray(options.nonce);
+async function aesEncrypt(plaintext: Uint8Array, options: CryptoOptions): Promise<ByteArray> {
+    const sharedKey = new Uint8Array(
+        curve25519.sharedkey(converters.hexStringToByteArray(options.privateKey), converters.hexStringToByteArray(options.publicKey)),
+    )
+    const nonceBA = converters.hexStringToByteArray(options.nonce)
     for (let i = 0; i < 32; i++) {
-        sharedKey[i] ^= nonceBA[i];
+        sharedKey[i] ^= nonceBA[i]
     }
-    const keyBuffer = await window.crypto.subtle.digest('SHA-256', sharedKey.buffer);
+    const keyBuffer = await window.crypto.subtle.digest('SHA-256', sharedKey.buffer)
 
     // Generate a random initialization vector (IV)
-    const iv = new Uint8Array(16);
-    window.crypto.getRandomValues(iv);
-
+    const iv = new Uint8Array(16)
+    window.crypto.getRandomValues(iv)
 
     // Derive the encryption key using SHA-256
-    const cryptoKey = await window.crypto.subtle.importKey(
-        'raw',
-        keyBuffer,
-        { name: 'AES-CBC' },
-        false,
-        ['encrypt']
-    );
+    const cryptoKey = await window.crypto.subtle.importKey('raw', keyBuffer, { name: 'AES-CBC' }, false, ['encrypt'])
     const plaintextBuffer = new Uint8Array(plaintext).buffer
     // Encrypt the data using AES-CBC
     const encryptedBuffer = await window.crypto.subtle.encrypt(
         {
             name: 'AES-CBC',
-            iv: iv.buffer
+            iv: iv.buffer,
         },
         cryptoKey,
-        plaintextBuffer
-    );
+        plaintextBuffer,
+    )
 
     // Convert the IV and ciphertext to a single byte array
-    const ivOut = Array.from(iv);
-    const ciphertextOut = Array.from(new Uint8Array(encryptedBuffer));
-    return [...ivOut, ...ciphertextOut];
+    const ivOut = Array.from(iv)
+    const ciphertextOut = Array.from(new Uint8Array(encryptedBuffer))
+    return [...ivOut, ...ciphertextOut]
 }

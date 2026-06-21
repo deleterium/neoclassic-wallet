@@ -7,7 +7,7 @@ import { formatTimestampAsDateTime } from '../core/numbers'
 import { Escrow, GetEscrowTransactionResponse } from '../typings'
 import { getAccountTitleFromObject } from '../core/util'
 
-export function showEscrowDecisionModal (escrow: Escrow | string) {
+export function showEscrowDecisionModal(escrow: Escrow | string) {
     if (BRS.fetchingModalData) {
         return
     }
@@ -17,15 +17,19 @@ export function showEscrowDecisionModal (escrow: Escrow | string) {
     }
     // Fetch escrow details
     BRS.fetchingModalData = true
-    sendRequest('getEscrowTransaction', {
-        escrow
-    }, function (response: GetEscrowTransactionResponse) {
-        BRS.fetchingModalData = false
-        processEscrowDecisionModalData(response)
-    })
+    sendRequest(
+        'getEscrowTransaction',
+        {
+            escrow,
+        },
+        function (response: GetEscrowTransactionResponse) {
+            BRS.fetchingModalData = false
+            processEscrowDecisionModalData(response)
+        },
+    )
 }
 
-export function processEscrowDecisionModalData (escrow: Escrow) {
+export function processEscrowDecisionModalData(escrow: Escrow) {
     $('#escrow_decision_escrow').val(escrow.id)
     $('#escrow_decision_escrow_info').val(escrow.id)
     let decisions = ''
@@ -34,7 +38,9 @@ export function processEscrowDecisionModalData (escrow: Escrow) {
     }
     $('#escrow_decision_decisions').html(decisions)
     $('#escrow_decision_required').text($.t('number_of_required_signers') + ': ' + escrow.requiredSigners)
-    $('#escrow_decision_deadline').text($.t('escrow_deadline_action') + ': ' + $.t(escrow.deadlineAction) + ' -- ' + formatTimestampAsDateTime(escrow.deadline))
+    $('#escrow_decision_deadline').text(
+        $.t('escrow_deadline_action') + ': ' + $.t(escrow.deadlineAction) + ' -- ' + formatTimestampAsDateTime(escrow.deadline),
+    )
 
     $('#escrow_decision_modal').modal('show')
 }

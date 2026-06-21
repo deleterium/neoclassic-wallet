@@ -4,7 +4,7 @@ import { checkMinimumFee } from '../core/navigation'
 
 import { formatNQTAsAmount, parseAmountToNQT } from '../core/numbers'
 
-export function formRequestBurst (data: any) {
+export function formRequestBurst(data: any) {
     let amountNQT: string
     let feeNQT: string
     try {
@@ -22,7 +22,9 @@ export function formRequestBurst (data: any) {
         immutable = 'true'
         $('#request_burst_immutable_response').html($.t('yes'))
     }
-    $('#request_burst_qrcode_response').html(`<img src="${BRS.server}/burst?requestType=generateSendTransactionQRCode&receiverId=${receiverId}&amountNQT=${amountNQT}&feeNQT=${feeNQT}&immutable=${immutable}"/>`)
+    $('#request_burst_qrcode_response').html(
+        `<img src="${BRS.server}/burst?requestType=generateSendTransactionQRCode&receiverId=${receiverId}&amountNQT=${amountNQT}&feeNQT=${feeNQT}&immutable=${immutable}"/>`,
+    )
     $('#request_burst_fee_response').text(formatNQTAsAmount(feeNQT))
 
     $('#generate_qr_button').hide()

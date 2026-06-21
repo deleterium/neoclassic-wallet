@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { PostResponse } from '../typings'
 
-export function formsSetAccountInfoComplete (response: PostResponse, inputFormData: any) {
+export function formsSetAccountInfoComplete(response: PostResponse, inputFormData: any) {
     const name = inputFormData.name
     if (name) {
         $('#account_name').text(name).removeAttr('data-i18n')

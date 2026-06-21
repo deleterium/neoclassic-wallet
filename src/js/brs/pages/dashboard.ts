@@ -1,45 +1,41 @@
-import { BRS } from ".."
-import { Transaction, UNCONFIRMED_HEIGHT } from "../typings";
+import { BRS } from '..'
+import { Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 
-import {
-    formatNQTAsAmount,
-    formatNumber,
-    formatTimestampAsDateTime
-} from "../core/numbers"
+import { formatNQTAsAmount, formatNumber, formatTimestampAsDateTime } from '../core/numbers'
 
-import { getTransactionDetails } from "../tools/transactions"
+import { getTransactionDetails } from '../tools/transactions'
 
 export function incomingUpdateDashboardTransactions(newTransactions: Transaction[]) {
     if (!newTransactions.length) {
         return
     }
-    let hasConfirmed = false;
+    let hasConfirmed = false
 
     const rows = newTransactions.reduce((prev, currTr) => {
         if (currTr.height !== UNCONFIRMED_HEIGHT) {
-            hasConfirmed = true;
+            hasConfirmed = true
         }
-        return prev + getTransactionRowDashboardHTML(currTr);
-    }, '');
+        return prev + getTransactionRowDashboardHTML(currTr)
+    }, '')
 
     if (hasConfirmed) {
-        $('#dashboard_transactions_table tbody').empty().append(rows);
+        $('#dashboard_transactions_table tbody').empty().append(rows)
     } else {
-        $('#dashboard_transactions_table tbody tr.tentative').remove();
-        $('#dashboard_transactions_table tbody').prepend(rows);
+        $('#dashboard_transactions_table tbody tr.tentative').remove()
+        $('#dashboard_transactions_table tbody').prepend(rows)
     }
 
-    const $parent = $('#dashboard_transactions_table').parent();
+    const $parent = $('#dashboard_transactions_table').parent()
 
     if ($parent.hasClass('data-empty')) {
-        $parent.removeClass('data-empty');
+        $parent.removeClass('data-empty')
         if ($parent.data('no-padding')) {
-            $parent.parent().addClass('no-padding');
+            $parent.parent().addClass('no-padding')
         }
     }
 }
 
-function getTransactionRowDashboardHTML (transaction: Transaction) {
+function getTransactionRowDashboardHTML(transaction: Transaction) {
     const details = getTransactionDetails(transaction)
 
     let confirmationHTML = String(transaction.confirmations).escapeHTML()
@@ -49,8 +45,8 @@ function getTransactionRowDashboardHTML (transaction: Transaction) {
         confirmationHTML = '10+'
     }
 
-    const rowClass = transaction.height === UNCONFIRMED_HEIGHT ? 'tentative' : 'confirmed';
-    const messageIcon = details.hasMessage ? " + <i class='far fa-envelope-open'></i>&nbsp;" : '';
+    const rowClass = transaction.height === UNCONFIRMED_HEIGHT ? 'tentative' : 'confirmed'
+    const messageIcon = details.hasMessage ? " + <i class='far fa-envelope-open'></i>&nbsp;" : ''
 
     return `
         <tr class='${rowClass}'>
@@ -61,7 +57,7 @@ function getTransactionRowDashboardHTML (transaction: Transaction) {
             <td>${details.accountLink}</td>
             <td class='confirmations'>${confirmationHTML}</td>
         </tr>
-    `;
+    `
 }
 
 /**
@@ -117,4 +113,3 @@ export function updateConfirmationsInDashboardTransactions(numberToAdd: number) 
         $(this).text('10+')
     })
 }
-

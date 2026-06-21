@@ -1,29 +1,23 @@
 import { BRS } from '..'
 
-import {
-    reloadCurrentPage,
-} from '../core/navigation'
+import { reloadCurrentPage } from '../core/navigation'
 
-import {
-    dbGet,
-    dbPut,
-    deleteRecord
-} from '../core/database'
+import { dbGet, dbPut, deleteRecord } from '../core/database'
 
 import { DBContact } from '../typings'
 
-export function loadContactsFromDB () {
+export function loadContactsFromDB() {
     if (!BRS.databaseSupport) return
 
     dbGet('contacts', function (error, items: DBContact[]) {
         if (error) return
-        items.forEach(contact => {
+        items.forEach((contact) => {
             BRS.contacts[contact.accountRS] = contact
         })
     })
 }
 
-export function getContactByName (nameToFind: string) : DBContact | undefined {
+export function getContactByName(nameToFind: string): DBContact | undefined {
     for (const key in BRS.contacts) {
         if (BRS.contacts[key].name === nameToFind) {
             return BRS.contacts[key]
@@ -31,7 +25,7 @@ export function getContactByName (nameToFind: string) : DBContact | undefined {
     }
 }
 
-export function notifyContactOperationSuccess (message: string) {
+export function notifyContactOperationSuccess(message: string) {
     $.notify(message, { type: 'success' })
     if (BRS.currentPage === 'contacts') {
         reloadCurrentPage()
@@ -53,7 +47,7 @@ export function saveContactToDatabase(data: DBContact, message: string) {
         email: data.email,
         account: data.account,
         accountRS: data.accountRS,
-        description: data.description
+        description: data.description,
     }
     BRS.contacts[data.accountRS] = record
     if (!BRS.databaseSupport) {
@@ -66,7 +60,7 @@ export function saveContactToDatabase(data: DBContact, message: string) {
             return
         }
         setTimeout(notifyContactOperationSuccess, 50, message)
-    });
+    })
 }
 
 export function removeContactFromDB(accountRs: string) {

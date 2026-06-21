@@ -4,7 +4,7 @@ import { logout } from '../core/login'
 
 import { drop } from '../core/database'
 
-export function formsClearData (data: any) {
+export function formsClearData(data: any) {
     const onDropped = function (error: Error | null) {
         if (error !== null) {
             alert('Something wrong happened')

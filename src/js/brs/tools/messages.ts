@@ -1,6 +1,6 @@
-import { HexString, Transaction } from '../typings';
-import converters from '../../util/converters';
-import { getDecryptedMessageFromCache, decryptAttachmentField } from '../core/encryption';
+import { HexString, Transaction } from '../typings'
+import converters from '../../util/converters'
+import { getDecryptedMessageFromCache, decryptAttachmentField } from '../core/encryption'
 
 /**
  * Get plain message in a given transaction.
@@ -9,20 +9,20 @@ import { getDecryptedMessageFromCache, decryptAttachmentField } from '../core/en
  */
 export function getMessageTextFromTX(transaction: Transaction): string | undefined {
     if (!transaction.attachment) {
-        return;
+        return
     }
     if (!transaction.attachment['version.Message'] && transaction.attachment.message) {
         // Message version zero. Text are hex encoded by default.
-        return converters.hexStringToString(transaction.attachment.message);
+        return converters.hexStringToString(transaction.attachment.message)
     }
     if (transaction.attachment['version.Message'] === 1) {
         if (transaction.attachment.messageIsText) {
-            return transaction.attachment.message;
+            return transaction.attachment.message
         }
         // try to convert the data to string (Smart Contracts need this)
-        return converters.hexStringToString(transaction.attachment.message);
+        return converters.hexStringToString(transaction.attachment.message)
     }
-    return 'unsupported_message_version';
+    return 'unsupported_message_version'
 }
 
 /**
@@ -32,24 +32,24 @@ export function getMessageTextFromTX(transaction: Transaction): string | undefin
  */
 export function getMessageBytesFromTX(transaction: Transaction): HexString | undefined {
     if (!transaction.attachment) {
-        return;
+        return
     }
     if (!transaction.attachment['version.Message'] && transaction.attachment.message) {
         // Message version zero. Text are hex encoded by default.
-        return transaction.attachment.message;
+        return transaction.attachment.message
     }
     if (transaction.attachment['version.Message'] === 1) {
         if (transaction.attachment.messageIsText) {
-            return converters.stringToHexString(transaction.attachment.message);
+            return converters.stringToHexString(transaction.attachment.message)
         }
         // Already hex string
-        return transaction.attachment.message;
+        return transaction.attachment.message
     }
-    return 'unsupported_message_version';
+    return 'unsupported_message_version'
 }
 
 interface GetEncryptedMessage {
-    message: string;
+    message: string
     isDecrypted: boolean
 }
 
@@ -64,19 +64,19 @@ interface GetEncryptedMessage {
  */
 export function getEncryptedMessageFromTX(transaction): GetEncryptedMessage | undefined {
     if (!transaction.attachment || !transaction.attachment.encryptedMessage) {
-        return;
+        return
     }
-    const cachedMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptedMessage');
+    const cachedMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptedMessage')
     if (cachedMessage) {
         return {
             message: cachedMessage,
-            isDecrypted: true
-        };
+            isDecrypted: true,
+        }
     }
     return {
         message: '',
-        isDecrypted: false
-    };
+        isDecrypted: false,
+    }
 }
 
 /**
@@ -90,28 +90,28 @@ export function getEncryptedMessageFromTX(transaction): GetEncryptedMessage | un
  */
 export function getEncryptToSelfMessageFromTX(transaction: Transaction): GetEncryptedMessage | undefined {
     if (!transaction.attachment || !transaction.attachment.encryptToSelfMessage) {
-        return;
+        return
     }
-    const cachedMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptToSelfMessage');
+    const cachedMessage = getDecryptedMessageFromCache(transaction.transaction, 'encryptToSelfMessage')
     if (cachedMessage) {
         return {
             message: cachedMessage,
-            isDecrypted: true
-        };
+            isDecrypted: true,
+        }
     }
     return {
         message: '',
-        isDecrypted: false
-    };
+        isDecrypted: false,
+    }
 }
 
 export async function decryptAttachmentFieldAndUpdateSelector(
     transaction: Transaction,
-    field: "encryptedMessage" | "encryptToSelfMessage",
+    field: 'encryptedMessage' | 'encryptToSelfMessage',
     passphrase: string,
-    querySelector: string
+    querySelector: string,
 ) {
-    const itemID = '#' + querySelector;
-    const decoded = await decryptAttachmentField(transaction, field, false, passphrase);
-    $(itemID).html(decoded.escapeHTML().nl2br());
+    const itemID = '#' + querySelector
+    const decoded = await decryptAttachmentField(transaction, field, false, passphrase)
+    $(itemID).html(decoded.escapeHTML().nl2br())
 }

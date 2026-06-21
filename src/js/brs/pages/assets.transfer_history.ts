@@ -1,30 +1,33 @@
-import { BRS } from '..';
-import { GetAssetTransfersResponse } from '../typings';
-import { formatTimestampAsDateTime, formatQNTAsQuantity } from '../core/numbers';
-import { sendRequest } from '../core/send_request';
-import { getAccountRSFromObject, getAccountTitleFromObject, dataLoaded } from '../core/util';
+import { BRS } from '..'
+import { GetAssetTransfersResponse } from '../typings'
+import { formatTimestampAsDateTime, formatQNTAsQuantity } from '../core/numbers'
+import { sendRequest } from '../core/send_request'
+import { getAccountRSFromObject, getAccountTitleFromObject, dataLoaded } from '../core/util'
 
 export function pagesTransferHistory() {
-    sendRequest('getAssetTransfers+', {
-        account: BRS.accountRS,
-        firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
-        lastIndex: BRS.pageSize * BRS.pageNumber
-    }, function (response: GetAssetTransfersResponse) {
-        if (response.transfers && response.transfers.length) {
-            if (response.transfers.length > BRS.pageSize) {
-                BRS.hasMorePages = true;
-                response.transfers.pop();
-            }
-            if (response.errorCode) {
-                $.notify(response.errorDescription || "API getAssetTransfers error.")
-                dataLoaded();
-                return
-            }
-            const transfers = response.transfers;
-            let rows = '';
-            for (const transfer of transfers) {
-                const type = transfer.recipientRS === BRS.accountRS ? 'receive' : 'send';
-                rows += `
+    sendRequest(
+        'getAssetTransfers+',
+        {
+            account: BRS.accountRS,
+            firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
+            lastIndex: BRS.pageSize * BRS.pageNumber,
+        },
+        function (response: GetAssetTransfersResponse) {
+            if (response.transfers && response.transfers.length) {
+                if (response.transfers.length > BRS.pageSize) {
+                    BRS.hasMorePages = true
+                    response.transfers.pop()
+                }
+                if (response.errorCode) {
+                    $.notify(response.errorDescription || 'API getAssetTransfers error.')
+                    dataLoaded()
+                    return
+                }
+                const transfers = response.transfers
+                let rows = ''
+                for (const transfer of transfers) {
+                    const type = transfer.recipientRS === BRS.accountRS ? 'receive' : 'send'
+                    rows += `
                     <tr>
                       <td>
                         <a href='#' data-transaction='${String(transfer.assetTransfer).escapeHTML()}'>
@@ -50,11 +53,12 @@ export function pagesTransferHistory() {
                           ${getAccountTitleFromObject(transfer, 'sender')}
                         </a>
                       </td>
-                    </tr>`;
+                    </tr>`
+                }
+                dataLoaded(rows)
+            } else {
+                dataLoaded()
             }
-            dataLoaded(rows);
-        } else {
-            dataLoaded();
-        }
-    });
+        },
+    )
 }

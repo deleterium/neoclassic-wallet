@@ -1,15 +1,11 @@
-import { BRS } from '..';
-import { sendRequest } from './send_request';
+import { BRS } from '..'
+import { sendRequest } from './send_request'
 
-import {
-    incomingUpdateDashboardTransactions,
-    updateConfirmationsInDashboardTransactions,
-    updateDashboardBlocks
-} from '../pages/dashboard';
+import { incomingUpdateDashboardTransactions, updateConfirmationsInDashboardTransactions, updateDashboardBlocks } from '../pages/dashboard'
 
-import { getAndUpdateAccountDetails } from './check_incoming.account';
+import { getAndUpdateAccountDetails } from './check_incoming.account'
 
-import { cacheUserAssets, saveCachedAssets } from '../tools/assets';
+import { cacheUserAssets, saveCachedAssets } from '../tools/assets'
 
 import {
     GetAccountTransactionIdsResponse,
@@ -18,10 +14,10 @@ import {
     GetBlocksResponse,
     GetUnconfirmedTransactionsResponse,
     Transaction,
-    UnconfirmedTransaction
-} from '../typings';
+    UnconfirmedTransaction,
+} from '../typings'
 
-export function setCheckIncomingInterval (seconds : number ) : void {
+export function setCheckIncomingInterval(seconds: number): void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
         return
     }
@@ -46,21 +42,21 @@ export function checkIncomingNow() {
 }
 
 /**
- * Runs constantly to check blockchain details, conections 
- * @param callback 
+ * Runs constantly to check blockchain details, conections
+ * @param callback
  */
-function checkIncomingBlocksAndTransactions () : void {
+function checkIncomingBlocksAndTransactions(): void {
     BRS.checkIncoming.newBlock = false
     BRS.checkIncoming.newTransactions = false
     BRS.checkIncoming.unconfirmedChanged = false
     BRS.checkIncoming.forceDashboardUpdate = true
 
-    sendRequest('getBlockchainStatus', {}, function (response: GetBlochainStatusResponse ) {
+    sendRequest('getBlockchainStatus', {}, function (response: GetBlochainStatusResponse) {
         if (response.errorCode) {
             $.notify($.t('could_not_connect_to', { server: BRS.server }))
             return
         }
-        const previousLastBlock = BRS.blockchainStatus?.lastBlock ||  '0'
+        const previousLastBlock = BRS.blockchainStatus?.lastBlock || '0'
         BRS.blockchainStatus = response
         if (previousLastBlock !== BRS.blockchainStatus.lastBlock) {
             // New block in chain!
@@ -78,36 +74,40 @@ function checkIncomingBlocksAndTransactions () : void {
 /**
  * Called when it is detected a new block on blockchain. Checks sync progress and update dashboard information.
  */
-export function handleNewBlocks () {
-    sendRequest('getBlocks', {
-        firstIndex: 0,
-        lastIndex: 10
-    }, function (response: GetBlocksResponse) {
-        if (response.errorCode) {
-            return
-        }
-        if (!BRS.blocks || BRS.blocks.length === 0) {
-            // If first time, or if changed network type
+export function handleNewBlocks() {
+    sendRequest(
+        'getBlocks',
+        {
+            firstIndex: 0,
+            lastIndex: 10,
+        },
+        function (response: GetBlocksResponse) {
+            if (response.errorCode) {
+                return
+            }
+            if (!BRS.blocks || BRS.blocks.length === 0) {
+                // If first time, or if changed network type
+                BRS.blocks = response.blocks
+            }
+            const blockheightDiff = response.blocks[0].height - BRS.blocks[0].height
             BRS.blocks = response.blocks
-        }
-        const blockheightDiff = response.blocks[0].height - BRS.blocks[0].height
-        BRS.blocks = response.blocks
-        checkSyncProcess()
-        updateDashboardBlocks()
-        updateConfirmationsInDashboardTransactions(blockheightDiff)
-    })
+            checkSyncProcess()
+            updateDashboardBlocks()
+            updateConfirmationsInDashboardTransactions(blockheightDiff)
+        },
+    )
 }
 
 /**
  * Execute verifications for sync process, showing warnings and managing the interval to check it again.
- * @returns 
+ * @returns
  */
 function checkSyncProcess() {
     if (!BRS.blockchainStatus) return
 
     const secondsBehind = BRS.blockchainStatus.time - BRS.blocks[0].timestamp
 
-    if (secondsBehind > 60 * 60 * 24  * 4) {
+    if (secondsBehind > 60 * 60 * 24 * 4) {
         // RESYNC! Estimated that it is more than 1440 blocks behind
         setCheckIncomingInterval(30)
         BRS.downloadingBlockchain = true
@@ -137,7 +137,7 @@ function checkSyncProcess() {
     BRS.rescaningBlockchain = false
 
     // Check if it is on a fork
-    const onAFork = BRS.blocks.every(block => block.generator === BRS.blocks[0].generator)
+    const onAFork = BRS.blocks.every((block) => block.generator === BRS.blocks[0].generator)
     if (onAFork) {
         $.notify($.t('fork_warning'), { type: 'danger' })
     }
@@ -145,8 +145,8 @@ function checkSyncProcess() {
 
 /* Done only once at login */
 export function getInitialTransactions() {
-    BRS.checkIncoming.forceDashboardUpdate = true;
-    fetchAndHandleLatestTransactions();
+    BRS.checkIncoming.forceDashboardUpdate = true
+    fetchAndHandleLatestTransactions()
 }
 
 /* New block detected, start looking for transaction changes
@@ -154,35 +154,43 @@ export function getInitialTransactions() {
    not updated yet. */
 function getNewTransactions() {
     // check if there is a new transaction..
-    sendRequest('getAccountTransactionIds', {
-        account: BRS.account,
-        timestamp: BRS.blocks[0].timestamp + 1,
-        firstIndex: 0,
-        lastIndex: 0
-    }, function (response: GetAccountTransactionIdsResponse) {
-        if (response.transactionIds && response.transactionIds.length) {
-            BRS.checkIncoming.newTransactions = true;
-            fetchAndHandleLatestTransactions();
-            return
-        }
-        addUnconfirmedAndHandleIncoming([]);
-    });
+    sendRequest(
+        'getAccountTransactionIds',
+        {
+            account: BRS.account,
+            timestamp: BRS.blocks[0].timestamp + 1,
+            firstIndex: 0,
+            lastIndex: 0,
+        },
+        function (response: GetAccountTransactionIdsResponse) {
+            if (response.transactionIds && response.transactionIds.length) {
+                BRS.checkIncoming.newTransactions = true
+                fetchAndHandleLatestTransactions()
+                return
+            }
+            addUnconfirmedAndHandleIncoming([])
+        },
+    )
 }
 
 function fetchAndHandleLatestTransactions() {
-    sendRequest('getAccountTransactions', {
-        account: BRS.account,
-        firstIndex: 0,
-        lastIndex: 9,
-        includeIndirect: true
-    }, function (response: GetAccountTransactionsResponse ) {
-        if (response.transactions && response.transactions.length) {
-            BRS.checkIncoming.latestsTransactionsIds = response.transactions.map(tr => tr.transaction).join();
-            addUnconfirmedAndHandleIncoming(response.transactions);
-        } else {
-            addUnconfirmedAndHandleIncoming([]);
-        }
-    });
+    sendRequest(
+        'getAccountTransactions',
+        {
+            account: BRS.account,
+            firstIndex: 0,
+            lastIndex: 9,
+            includeIndirect: true,
+        },
+        function (response: GetAccountTransactionsResponse) {
+            if (response.transactions && response.transactions.length) {
+                BRS.checkIncoming.latestsTransactionsIds = response.transactions.map((tr) => tr.transaction).join()
+                addUnconfirmedAndHandleIncoming(response.transactions)
+            } else {
+                addUnconfirmedAndHandleIncoming([])
+            }
+        },
+    )
 }
 
 /* Define a function to transform UnconfirmedTransaction to Transaction.
@@ -195,48 +203,48 @@ export function mapUnconfirmedToTransaction(unconfirmed: UnconfirmedTransaction)
     return {
         ...unconfirmed,
         confirmations: -1,
-        block: "",
-        blockTimestamp: -1
-    };
+        block: '',
+        blockTimestamp: -1,
+    }
 }
 
 function addUnconfirmedAndHandleIncoming(confirmedTransactions: Transaction[]) {
-    sendRequest('getUnconfirmedTransactions', {
-        account: BRS.account,
-        includeIndirect: true
-    }, function (response: GetUnconfirmedTransactionsResponse) {
-        const sortedTransactions = response.unconfirmedTransactions?.sort((x, y) => y.timestamp - x.timestamp) || [];
-        const transactionIdString = sortedTransactions.map(t => t.transaction).join();
-        const ConfUnconfTransactions = sortedTransactions.map(mapUnconfirmedToTransaction);
+    sendRequest(
+        'getUnconfirmedTransactions',
+        {
+            account: BRS.account,
+            includeIndirect: true,
+        },
+        function (response: GetUnconfirmedTransactionsResponse) {
+            const sortedTransactions = response.unconfirmedTransactions?.sort((x, y) => y.timestamp - x.timestamp) || []
+            const transactionIdString = sortedTransactions.map((t) => t.transaction).join()
+            const ConfUnconfTransactions = sortedTransactions.map(mapUnconfirmedToTransaction)
 
-        BRS.checkIncoming.unconfirmedChanged = transactionIdString !== (BRS.checkIncoming.unconfirmedTransactionIds);
-        BRS.unconfirmedTransactions = ConfUnconfTransactions;
-        BRS.checkIncoming.unconfirmedTransactionIds = transactionIdString;
+            BRS.checkIncoming.unconfirmedChanged = transactionIdString !== BRS.checkIncoming.unconfirmedTransactionIds
+            BRS.unconfirmedTransactions = ConfUnconfTransactions
+            BRS.checkIncoming.unconfirmedTransactionIds = transactionIdString
 
-        handleIncomingTransactions(confirmedTransactions.concat(ConfUnconfTransactions));
-    });
+            handleIncomingTransactions(confirmedTransactions.concat(ConfUnconfTransactions))
+        },
+    )
 }
 
 function handleIncomingTransactions(transactions: Transaction[]) {
-
-    transactions.sort((x, y) => y.timestamp - x.timestamp);
+    transactions.sort((x, y) => y.timestamp - x.timestamp)
 
     if (BRS.checkIncoming.newTransactions) {
-        $.notify($.t('new_confirmed_transaction'));
+        $.notify($.t('new_confirmed_transaction'))
     }
     if (BRS.checkIncoming.unconfirmedChanged && !BRS.checkIncoming.newBlock) {
-        $.notify($.t('new_unconfirmed_transaction'));
+        $.notify($.t('new_unconfirmed_transaction'))
     }
 
-    if (BRS.checkIncoming.forceDashboardUpdate ||
-        BRS.checkIncoming.newTransactions ||
-        BRS.checkIncoming.unconfirmedChanged
-    ) {
-        incomingUpdateDashboardTransactions(transactions);
+    if (BRS.checkIncoming.forceDashboardUpdate || BRS.checkIncoming.newTransactions || BRS.checkIncoming.unconfirmedChanged) {
+        incomingUpdateDashboardTransactions(transactions)
     }
     if (BRS.checkIncoming.newBlock || BRS.checkIncoming.unconfirmedChanged) {
         if (BRS.incoming[BRS.currentPage]) {
-            BRS.incoming[BRS.currentPage](transactions);
+            BRS.incoming[BRS.currentPage](transactions)
         }
     }
 

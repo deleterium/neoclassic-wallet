@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-export function evSidebarContextOnContextmenu (e: JQuery.ContextMenuEvent<HTMLElement>) {
+export function evSidebarContextOnContextmenu(e: JQuery.ContextMenuEvent<HTMLElement>) {
     e.preventDefault()
     closeContextMenu()
     const clickedElement = $(e.currentTarget as HTMLElement)
@@ -26,15 +26,15 @@ export function evSidebarContextOnContextmenu (e: JQuery.ContextMenuEvent<HTMLEl
         $contextMenu.css({
             display: 'block',
             left: e.pageX,
-            top: e.pageY
+            top: e.pageY,
         })
     }
 }
 
-export function closeContextMenu () {
+export function closeContextMenu() {
     $('.context_menu').hide()
     if (BRS.selectedContext) {
-        BRS.selectedContext = null;
+        BRS.selectedContext = null
     }
     $(document).off('click.contextmenu')
 }

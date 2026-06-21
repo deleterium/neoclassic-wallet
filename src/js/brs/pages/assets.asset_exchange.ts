@@ -1,18 +1,10 @@
 import { BRS } from '..'
 
-import {
-    addPagination,
-    goToPage,
-    pageLoaded
-} from '../core/navigation'
+import { addPagination, goToPage, pageLoaded } from '../core/navigation'
 
-import {
-    sendRequest
-} from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
-import {
-    dbPut
-} from '../core/database'
+import { dbPut } from '../core/database'
 
 import {
     formatPriceNQTAsPriceQuantity,
@@ -22,33 +14,18 @@ import {
     formatQNTAsQuantity,
     formatNQTAsAmount,
     formatTimestampAsDateTime,
-    parsePriceQuantityToPriceNQT
+    parsePriceQuantityToPriceNQT,
 } from '../core/numbers'
 
-import {
-    getAccountTitleFromObject,
-    getAccountRSFromObject,
-    dataLoadFinished,
-} from '../core/util'
+import { getAccountTitleFromObject, getAccountRSFromObject, dataLoadFinished } from '../core/util'
 
-import {
-    closeContextMenu
-} from '../core/context_menu'
+import { closeContextMenu } from '../core/context_menu'
 
-import {
-    cacheAsset,
-    getAssetDetails
-} from '../tools/assets'
+import { cacheAsset, getAssetDetails } from '../tools/assets'
 
-import {
-    AnyAssetOrder,
-    DBAsset,
-    GetAssetResponse,
-    GetTradesResponse,
-    PostResponse
-} from '../typings'
+import { AnyAssetOrder, DBAsset, GetAssetResponse, GetTradesResponse, PostResponse } from '../typings'
 
-export function pagesAssetExchange (callback: () => void) {
+export function pagesAssetExchange(callback: () => void) {
     if (BRS.currentSubPage) {
         updateMiniTradeHistory()
         return
@@ -57,7 +34,7 @@ export function pagesAssetExchange (callback: () => void) {
     loadAssetExchangeSidebar(callback)
 }
 
-export function bookmarkAllUserAssets () {
+export function bookmarkAllUserAssets() {
     // check owned assets, adding all to bookmarks
     const assetsToBookmark: DBAsset[] = []
     const idsToFetchAndBookmark: string[] = []
@@ -66,7 +43,7 @@ export function bookmarkAllUserAssets () {
         return
     }
     for (const userAsset of BRS.accountInfo.unconfirmedAssetBalances) {
-        const foundAsset = BRS.assets.find(tkn => tkn.asset === userAsset.asset)
+        const foundAsset = BRS.assets.find((tkn) => tkn.asset === userAsset.asset)
         if (foundAsset) {
             assetsToBookmark.push(foundAsset)
         } else {
@@ -79,40 +56,46 @@ export function bookmarkAllUserAssets () {
 
     for (const eachAsset of idsToFetchAndBookmark) {
         // Not all are cached, so request info about missing.
-        sendRequest('getAsset+', {
-            asset: eachAsset
-        }, function (response: GetAssetResponse) {
-            if (!response.errorCode) {
-                cacheAsset(response)
-            }
-        })
+        sendRequest(
+            'getAsset+',
+            {
+                asset: eachAsset,
+            },
+            function (response: GetAssetResponse) {
+                if (!response.errorCode) {
+                    cacheAsset(response)
+                }
+            },
+        )
     }
     if (idsToFetchAndBookmark.length) {
         // TODO Add translation
-        $.notify('Some assets not bookmarked, because their details are still beeing processing. Try again in 10 seconds!', { type: 'danger' })
+        $.notify('Some assets not bookmarked, because their details are still beeing processing. Try again in 10 seconds!', {
+            type: 'danger',
+        })
     }
     // Finish with only cached assets.
     saveAssetBookmarks(assetsToBookmark, notifyAndGoToAsset)
 }
 
-export function formsAddAssetBookmark (data: any) {
+export function formsAddAssetBookmark(data: any) {
     data.id = data.id.trim()
 
     if (!data.id) {
         return {
-            error: $.t('error_asset_or_account_id_required')
+            error: $.t('error_asset_or_account_id_required'),
         }
     }
 
     if (!BRS.idRegEx.test(data.id)) {
         return {
-            error: $.t('no_asset_found')
+            error: $.t('no_asset_found'),
         }
     }
     const foundAsset = getAssetDetails(data.id)
     if (foundAsset === undefined) {
         return {
-            error: $.t('no_asset_found')
+            error: $.t('no_asset_found'),
         }
     }
     saveAssetBookmarks([foundAsset], notifyAndGoToAsset)
@@ -120,12 +103,15 @@ export function formsAddAssetBookmark (data: any) {
     return { stop: true, hide: true }
 }
 
-function notifyAndGoToAsset (newAssets: DBAsset[], submittedAssets: DBAsset[]) {
+function notifyAndGoToAsset(newAssets: DBAsset[], submittedAssets: DBAsset[]) {
     BRS.assetSearch = false
     if (newAssets.length === 0) {
-        $.notify($.t('error_asset_already_bookmarked', {
-            count: submittedAssets.length
-        }), { type: 'danger' })
+        $.notify(
+            $.t('error_asset_already_bookmarked', {
+                count: submittedAssets.length,
+            }),
+            { type: 'danger' },
+        )
         goToAsset(submittedAssets[0].asset)
     } else if (newAssets.length === 1) {
         $.notify($.t('success_asset_bookmarked'), { type: 'success' })
@@ -136,14 +122,11 @@ function notifyAndGoToAsset (newAssets: DBAsset[], submittedAssets: DBAsset[]) {
     }
 }
 
-export function saveAssetBookmarks (
-    assets: DBAsset[],
-    callback: (newAssets: DBAsset[], assets: DBAsset[]) => void
-) {
+export function saveAssetBookmarks(assets: DBAsset[], callback: (newAssets: DBAsset[], assets: DBAsset[]) => void) {
     const newAssets: DBAsset[] = []
 
     for (const asset of assets) {
-        const foundAsset = BRS.assets.find(Obj => Obj.asset === asset.asset)
+        const foundAsset = BRS.assets.find((Obj) => Obj.asset === asset.asset)
         if (foundAsset) {
             if (foundAsset.bookmarked === false) {
                 foundAsset.bookmarked = true
@@ -159,7 +142,7 @@ export function saveAssetBookmarks (
     }
 }
 
-function createBookmarkSidebarHTMLItem (asset: DBAsset, quantityHTML: string) {
+function createBookmarkSidebarHTMLItem(asset: DBAsset, quantityHTML: string) {
     if (quantityHTML === '0') {
         return asset.name + '<br>&nbsp;'
     }
@@ -167,7 +150,7 @@ function createBookmarkSidebarHTMLItem (asset: DBAsset, quantityHTML: string) {
 }
 
 /** It does not redraw, it only updates values */
-function updateQuantitiesInAssetExchangeSidebarContent () {
+function updateQuantitiesInAssetExchangeSidebarContent() {
     $('#asset_exchange_vtab  a').each(function () {
         const assetId = $(this).data('asset')
         if (!assetId) {
@@ -190,8 +173,8 @@ function updateQuantitiesInAssetExchangeSidebarContent () {
 }
 
 // called on opening the asset exchange page and automatic refresh
-export function loadAssetExchangeSidebar (callback?: () => void) {
-    const bookmarkedAssets = BRS.assets.filter(token => token.bookmarked === true)
+export function loadAssetExchangeSidebar(callback?: () => void) {
+    const bookmarkedAssets = BRS.assets.filter((token) => token.bookmarked === true)
     let rows = ''
 
     $('#asset_exchange_page').removeClass('no_assets')
@@ -225,7 +208,7 @@ export function loadAssetExchangeSidebar (callback?: () => void) {
 
         if (asset.groupName !== lastGroup) {
             lastGroup = asset.groupName
-            const to_check = (asset.groupName ? asset.groupName : 'undefined')
+            const to_check = asset.groupName ? asset.groupName : 'undefined'
             if (BRS.closedGroups.indexOf(to_check) !== -1) {
                 isClosedGroup = true
             } else {
@@ -294,7 +277,9 @@ export function loadAssetExchangeSidebar (callback?: () => void) {
             $('#asset_exchange_vtab a[data-asset=' + active + ']').addClass('active')
         } else if (BRS.assetSearch.length === 1) {
             // if there is only 1 search result, click it
-            $('#asset_exchange_vtab a[data-asset=' + BRS.assetSearch[0] + ']').addClass('active').trigger('click')
+            $('#asset_exchange_vtab a[data-asset=' + BRS.assetSearch[0] + ']')
+                .addClass('active')
+                .trigger('click')
         }
     } else if (active) {
         $('#asset_exchange_vtab a[data-asset=' + active + ']').addClass('active')
@@ -326,12 +311,12 @@ export function loadAssetExchangeSidebar (callback?: () => void) {
     pageLoaded(callback)
 }
 
-export function incomingAssetExchange () {
+export function incomingAssetExchange() {
     loadAsset(BRS.currentAsset, false, true)
     updateQuantitiesInAssetExchangeSidebarContent()
 }
 
-export function evAssetExchangeSidebarClick (e: JQuery.ClickEvent) {
+export function evAssetExchangeSidebarClick(e: JQuery.ClickEvent) {
     const element = e.currentTarget
     e.preventDefault()
 
@@ -373,7 +358,7 @@ export function evAssetExchangeSidebarClick (e: JQuery.ClickEvent) {
 
             dbPut('data', {
                 id: 'closed_groups',
-                contents: BRS.closedGroups.join('#')
+                contents: BRS.closedGroups.join('#'),
             })
         }
         return
@@ -383,18 +368,22 @@ export function evAssetExchangeSidebarClick (e: JQuery.ClickEvent) {
     if (foundAsset) {
         loadAsset(foundAsset, true, true)
     } else {
-        sendRequest('getAsset+', {
-            asset: BRS.currentAssetID
-        }, function (response: GetAssetResponse) {
-            if (!response.errorCode && response.asset === BRS.currentAssetID) {
-                const addedAsset = cacheAsset(response)
-                loadAsset(addedAsset, true, false)
-            }
-        })
+        sendRequest(
+            'getAsset+',
+            {
+                asset: BRS.currentAssetID,
+            },
+            function (response: GetAssetResponse) {
+                if (!response.errorCode && response.asset === BRS.currentAssetID) {
+                    const addedAsset = cacheAsset(response)
+                    loadAsset(addedAsset, true, false)
+                }
+            },
+        )
     }
 }
 
-function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) {
+function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) {
     if (!asset?.asset) {
         return
     }
@@ -408,11 +397,20 @@ function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean)
         $('#asset_exchange_vtab a[data-asset=' + assetId + ']').addClass('active')
 
         $('#no_asset_selected, #loading_asset_data, #no_assets_available, #no_asset_search_results').hide()
-        $('#asset_details').show().parent().animate({
-            scrollTop: 0
-        }, 0)
+        $('#asset_details').show().parent().animate(
+            {
+                scrollTop: 0,
+            },
+            0,
+        )
 
-        $('#asset_account').html("<a href='#' data-user='" + getAccountRSFromObject(asset, 'account') + "' class='user_info'>" + getAccountTitleFromObject(asset, 'account') + '</a>')
+        $('#asset_account').html(
+            "<a href='#' data-user='" +
+                getAccountRSFromObject(asset, 'account') +
+                "' class='user_info'>" +
+                getAccountTitleFromObject(asset, 'account') +
+                '</a>',
+        )
         $('#asset_id').html(assetId.escapeHTML())
         $('#asset_decimals').html(String(asset.decimals).escapeHTML())
         $('#asset_name').html(String(asset.name).escapeHTML())
@@ -422,14 +420,18 @@ function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean)
         $('.asset_name').html(String(asset.name).escapeHTML())
         $('#sell_asset_button').data('asset', assetId)
         $('#buy_asset_button').data('asset', assetId)
-        $('#sell_asset_for_burst').html($.t('sell_asset_for_burst', {
-            assetName: String(asset.name).escapeHTML(),
-            valueSuffix: BRS.valueSuffix
-        }))
-        $('#buy_asset_with_burst').html($.t('buy_asset_with_burst', {
-            assetName: String(asset.name).escapeHTML(),
-            valueSuffix: BRS.valueSuffix
-        }))
+        $('#sell_asset_for_burst').html(
+            $.t('sell_asset_for_burst', {
+                assetName: String(asset.name).escapeHTML(),
+                valueSuffix: BRS.valueSuffix,
+            }),
+        )
+        $('#buy_asset_with_burst').html(
+            $.t('buy_asset_with_burst', {
+                assetName: String(asset.name).escapeHTML(),
+                valueSuffix: BRS.valueSuffix,
+            }),
+        )
         $('#sell_asset_price, #buy_asset_price').val('')
         $('#sell_asset_quantity, #sell_asset_total, #buy_asset_quantity, #buy_asset_total').val('0')
 
@@ -454,9 +456,11 @@ function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean)
             }
         })
 
-        $('#asset_exchange_duplicates_warning').html($.t('asset_exchange_duplicates_warning', {
-            count: nrDuplicates
-        }))
+        $('#asset_exchange_duplicates_warning').html(
+            $.t('asset_exchange_duplicates_warning', {
+                count: nrDuplicates,
+            }),
+        )
 
         if (asset.bookmarked) {
             $('#asset_exchange_bookmark_this_asset').hide()
@@ -468,19 +472,23 @@ function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean)
     }
 
     if (refreshAsset) {
-        sendRequest('getAsset+', {
-            asset: assetId
-        }, function (response: GetAssetResponse) {
-            if (!response.errorCode) {
-                cacheAsset(response)
-                $('#asset_quantity').html(formatQNTAsQuantity(response.quantityCirculatingQNT, response.decimals))
-            } else {
-                $('#asset_exchange_vtab a.active').removeClass('active')
-                $('#no_asset_selected').show()
-                $('#asset_details, #no_assets_available, #no_asset_search_results').hide()
-                $.notify($.t('invalid_asset'), { type: 'danger' })
-            }
-        })
+        sendRequest(
+            'getAsset+',
+            {
+                asset: assetId,
+            },
+            function (response: GetAssetResponse) {
+                if (!response.errorCode) {
+                    cacheAsset(response)
+                    $('#asset_quantity').html(formatQNTAsQuantity(response.quantityCirculatingQNT, response.decimals))
+                } else {
+                    $('#asset_exchange_vtab a.active').removeClass('active')
+                    $('#no_asset_selected').show()
+                    $('#asset_details, #no_assets_available, #no_asset_search_results').hide()
+                    $.notify($.t('invalid_asset'), { type: 'danger' })
+                }
+            },
+        )
     }
 
     let userAssetBlance = '0'
@@ -499,7 +507,7 @@ function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean)
 
     window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: 'smooth',
     })
 
     loadAssetOrders('ask', assetId, refreshHTML || refreshAsset)
@@ -508,7 +516,7 @@ function loadAsset (asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean)
     updateMiniTradeHistory()
 }
 
-function showHideBookmarkAllAssetsButton () {
+function showHideBookmarkAllAssetsButton() {
     if (!BRS.accountInfo.assetBalances) {
         $('#asset_exchange_add_all_assets_bookmark').hide()
         return
@@ -524,27 +532,30 @@ function showHideBookmarkAllAssetsButton () {
     else $('#asset_exchange_add_all_assets_bookmark').hide()
 }
 
-export function updateMiniTradeHistory () {
+export function updateMiniTradeHistory() {
     const myTrades = $('#ae_show_my_trades_only').is(':checked')
-    sendRequest('getTrades+', {
-        asset: BRS.currentAsset.asset,
-        account: myTrades ? BRS.account : '',
-        firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
-        lastIndex: BRS.pageSize * BRS.pageNumber,
-    }, function (response: GetTradesResponse) {
-        if (!response.trades || !response.trades.length) {
-            $('#asset_exchange_trade_history_table tbody').empty()
-            dataLoadFinished($('#asset_exchange_trade_history_table'), true)
-            return
-        }
-        if (response.trades.length > BRS.pageSize) {
-            BRS.hasMorePages = true
-            response.trades.pop()
-        }
-        let rows = ''
-        for (const trade of response.trades) {
-            const totalNQT = calculateOrderTotalNQT(trade.priceNQT, trade.quantityQNT)
-            rows += `
+    sendRequest(
+        'getTrades+',
+        {
+            asset: BRS.currentAsset.asset,
+            account: myTrades ? BRS.account : '',
+            firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
+            lastIndex: BRS.pageSize * BRS.pageNumber,
+        },
+        function (response: GetTradesResponse) {
+            if (!response.trades || !response.trades.length) {
+                $('#asset_exchange_trade_history_table tbody').empty()
+                dataLoadFinished($('#asset_exchange_trade_history_table'), true)
+                return
+            }
+            if (response.trades.length > BRS.pageSize) {
+                BRS.hasMorePages = true
+                response.trades.pop()
+            }
+            let rows = ''
+            for (const trade of response.trades) {
+                const totalNQT = calculateOrderTotalNQT(trade.priceNQT, trade.quantityQNT)
+                rows += `
                 <tr>
                   <td>${formatTimestampAsDateTime(trade.timestamp)}</td>
                   <td>${formatQNTAsQuantity(trade.quantityQNT, BRS.currentAsset.decimals)}</td>
@@ -553,149 +564,156 @@ export function updateMiniTradeHistory () {
                   <td><a href='#' data-transaction='${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
                   <td><a href='#' data-transaction='${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
                 </tr>`
-        }
-        $('#asset_exchange_trade_history_table tbody').empty().append(rows)
-        dataLoadFinished($('#asset_exchange_trade_history_table'), true)
-        addPagination()
-    })
+            }
+            $('#asset_exchange_trade_history_table tbody').empty().append(rows)
+            dataLoadFinished($('#asset_exchange_trade_history_table'), true)
+            addPagination()
+        },
+    )
 }
 
-function loadAssetOrders (type: 'ask' | 'bid', assetId: string, refresh: boolean) {
-    sendRequest('get' + type.capitalize() + 'Orders+', {
-        asset: assetId,
-        firstIndex: 0,
-        lastIndex: 49
-    }, function (response: any) {
-        let orders: AnyAssetOrder[] = []
-        if (response[type + 'Orders']) {
-            orders = response[type + 'Orders']
-        }
-        let typeAction = 'buy'
-        if (type === 'ask') {
-            typeAction = 'sell'
-        }
+function loadAssetOrders(type: 'ask' | 'bid', assetId: string, refresh: boolean) {
+    sendRequest(
+        'get' + type.capitalize() + 'Orders+',
+        {
+            asset: assetId,
+            firstIndex: 0,
+            lastIndex: 49,
+        },
+        function (response: any) {
+            let orders: AnyAssetOrder[] = []
+            if (response[type + 'Orders']) {
+                orders = response[type + 'Orders']
+            }
+            let typeAction = 'buy'
+            if (type === 'ask') {
+                typeAction = 'sell'
+            }
 
-        if (BRS.unconfirmedTransactions.length) {
-            let added = false
+            if (BRS.unconfirmedTransactions.length) {
+                let added = false
 
-            for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
-                if (unconfirmedTransaction.type === 2 &&
-                    (type === 'ask' ? unconfirmedTransaction.subtype === 2 : unconfirmedTransaction.subtype === 3) &&
-                    unconfirmedTransaction.attachment.asset === assetId
-                ) {
-                    // transform the current pending transaction into a supposed order.
-                    // Note: height, name, decimals and price are incorrect!!!
-                    orders.push({
-                        order: unconfirmedTransaction.transaction,
-                        asset: unconfirmedTransaction.attachment.asset,
-                        account: unconfirmedTransaction.sender,
-                        accountRS: unconfirmedTransaction.senderRS,
-                        quantityQNT: unconfirmedTransaction.attachment.quantityQNT,
-                        priceNQT: unconfirmedTransaction.attachment.priceNQT,
-                        height: 0,
-                        name: '',
-                        decimals: -1,
-                        price: '',
-                        type: unconfirmedTransaction.subtype === 2 ? 'ask' : 'bid'
+                for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
+                    if (
+                        unconfirmedTransaction.type === 2 &&
+                        (type === 'ask' ? unconfirmedTransaction.subtype === 2 : unconfirmedTransaction.subtype === 3) &&
+                        unconfirmedTransaction.attachment.asset === assetId
+                    ) {
+                        // transform the current pending transaction into a supposed order.
+                        // Note: height, name, decimals and price are incorrect!!!
+                        orders.push({
+                            order: unconfirmedTransaction.transaction,
+                            asset: unconfirmedTransaction.attachment.asset,
+                            account: unconfirmedTransaction.sender,
+                            accountRS: unconfirmedTransaction.senderRS,
+                            quantityQNT: unconfirmedTransaction.attachment.quantityQNT,
+                            priceNQT: unconfirmedTransaction.attachment.priceNQT,
+                            height: 0,
+                            name: '',
+                            decimals: -1,
+                            price: '',
+                            type: unconfirmedTransaction.subtype === 2 ? 'ask' : 'bid',
+                        })
+                        added = true
+                    }
+                }
+
+                if (added) {
+                    orders.sort(function (a, b) {
+                        let invert = 1
+                        if (type === 'bid') {
+                            // highest price at the top
+                            invert = -1
+                        }
+                        const priceA = BigInt(a.priceNQT)
+                        const priceB = BigInt(b.priceNQT)
+                        if (priceA > priceB) return 1 * invert
+                        if (priceA < priceB) return -1 * invert
+                        return 0
                     })
-                    added = true
                 }
             }
 
-            if (added) {
-                orders.sort(function (a, b) {
-                    let invert = 1
-                    if (type === 'bid') {
-                        // highest price at the top
-                        invert = -1
-                    }
-                    const priceA = BigInt(a.priceNQT)
-                    const priceB = BigInt(b.priceNQT)
-                    if (priceA > priceB) return 1 * invert
-                    if (priceA < priceB) return -1 * invert
-                    return 0
-                })
-            }
-        }
-
-        if (orders.length === 0) {
-            $(`#asset_exchange_${type}_orders_table tbody`).empty()
-            if (!refresh) {
-                $(`#${typeAction}_asset_price`).val('0')
-            }
-            $(`#${typeAction}_orders_count`).html('')
-            dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
-            return
-        }
-
-        $(`#${typeAction}_orders_count`).html('(' + orders.length + (orders.length === 50 ? '+' : '') + ')')
-
-        let rows = ''
-        let first = true
-        for (const order of orders) {
-            const totalNQT = calculateOrderTotalNQT(order.quantityQNT, order.priceNQT)
-
-            if (first && !refresh) {
-                $(`#${typeAction}_asset_price`).val(formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals))
+            if (orders.length === 0) {
+                $(`#asset_exchange_${type}_orders_table tbody`).empty()
+                if (!refresh) {
+                    $(`#${typeAction}_asset_price`).val('0')
+                }
+                $(`#${typeAction}_orders_count`).html('')
+                dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
+                return
             }
 
-            const toBeCancelled = hasCancelOrder(order)
-            let className = '';
-            if (order.account === BRS.account) {
-                className += 'your-order';
-            }
-            if (order.height === 0) {
-                className += ' text-muted';
-            }
-            if (toBeCancelled) {
-                className += ' text-line-through';
-            }
+            $(`#${typeAction}_orders_count`).html('(' + orders.length + (orders.length === 50 ? '+' : '') + ')')
 
-            let accountHTML = ''
-            if (order.height === 0 || toBeCancelled) {
-                accountHTML = BRS.pendingTransactionHTML + '&nbsp;'
-            }
-            if (order.account === BRS.currentAsset.account) {
-                accountHTML += $.t('asset_issuer')
-            } else {
-                accountHTML += getAccountTitleFromObject(order, 'account')
-            }
-            accountHTML = `<a href='#' data-user='${getAccountRSFromObject(order, 'account')}' class='user_info'>${accountHTML}</a>`
+            let rows = ''
+            let first = true
+            for (const order of orders) {
+                const totalNQT = calculateOrderTotalNQT(order.quantityQNT, order.priceNQT)
 
-            rows += `
+                if (first && !refresh) {
+                    $(`#${typeAction}_asset_price`).val(formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals))
+                }
+
+                const toBeCancelled = hasCancelOrder(order)
+                let className = ''
+                if (order.account === BRS.account) {
+                    className += 'your-order'
+                }
+                if (order.height === 0) {
+                    className += ' text-muted'
+                }
+                if (toBeCancelled) {
+                    className += ' text-line-through'
+                }
+
+                let accountHTML = ''
+                if (order.height === 0 || toBeCancelled) {
+                    accountHTML = BRS.pendingTransactionHTML + '&nbsp;'
+                }
+                if (order.account === BRS.currentAsset.account) {
+                    accountHTML += $.t('asset_issuer')
+                } else {
+                    accountHTML += getAccountTitleFromObject(order, 'account')
+                }
+                accountHTML = `<a href='#' data-user='${getAccountRSFromObject(order, 'account')}' class='user_info'>${accountHTML}</a>`
+
+                rows += `
                 <tr class='${className}'
                   data-transaction='${order.order}'
                   data-quantity='${order.quantityQNT.toString()}'
                   data-price='${order.priceNQT.toString()}'>`
-            if (type === 'ask') {
-                rows += `
+                if (type === 'ask') {
+                    rows += `
                   <td class='bold red-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
                   <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
                   <td>${formatNQTAsAmount(totalNQT)}</td>
                   <td>${accountHTML}</td>
                 </tr>`
-            } else {
-                rows += `
+                } else {
+                    rows += `
                   <td>${accountHTML}</td>
                   <td>${formatNQTAsAmount(totalNQT)}</td>
                   <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
                   <td class='bold green-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
                 </tr>`
+                }
+                first = false
             }
-            first = false
-        }
 
-        $(`#asset_exchange_${type}_orders_table tbody`).html(rows)
-        dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
-    })
+            $(`#asset_exchange_${type}_orders_table tbody`).html(rows)
+            dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
+        },
+    )
 }
 
-function hasCancelOrder (order: AnyAssetOrder) {
+function hasCancelOrder(order: AnyAssetOrder) {
     if (!BRS.unconfirmedTransactions.length) {
         return false
     }
     for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
-        if (unconfirmedTransaction.type === 2 &&
+        if (
+            unconfirmedTransaction.type === 2 &&
             (order.type === 'ask' ? unconfirmedTransaction.subtype === 4 : unconfirmedTransaction.subtype === 5) &&
             unconfirmedTransaction.attachment.order === order.order
         ) {
@@ -705,7 +723,7 @@ function hasCancelOrder (order: AnyAssetOrder) {
     return false
 }
 
-export function evAssetExchangeSearchInput (e: JQuery.TriggeredEvent) {
+export function evAssetExchangeSearchInput(e: JQuery.TriggeredEvent) {
     let input: string = $(e.target).val()
     input = input.toUpperCase()
 
@@ -718,24 +736,28 @@ export function evAssetExchangeSearchInput (e: JQuery.TriggeredEvent) {
 
     BRS.assetSearch = []
     for (const asset of BRS.assets) {
-        if (asset.bookmarked === true &&
-            (asset.account === input || asset.asset === input || asset.name.toUpperCase().includes(input) || asset.accountRS.includes(input))
+        if (
+            asset.bookmarked === true &&
+            (asset.account === input ||
+                asset.asset === input ||
+                asset.name.toUpperCase().includes(input) ||
+                asset.accountRS.includes(input))
         ) {
             BRS.assetSearch.push(asset.asset)
         }
-    };
+    }
 
     loadAssetExchangeSidebar()
     $('#asset_exchange_clear_search').show()
 }
 
-export function evAssetExchangeOrdersTableClick (e: JQuery.ClickEvent) {
+export function evAssetExchangeOrdersTableClick(e: JQuery.ClickEvent) {
     const $target = $(e.target)
     if ($target.prop('tagName').toLowerCase() === 'a') {
         return
     }
 
-    const type = ($target.closest('table').attr('id') === 'asset_exchange_bid_orders_table' ? 'sell' : 'buy')
+    const type = $target.closest('table').attr('id') === 'asset_exchange_bid_orders_table' ? 'sell' : 'buy'
 
     const $tr = $target.closest('tr')
 
@@ -753,12 +775,12 @@ export function evAssetExchangeOrdersTableClick (e: JQuery.ClickEvent) {
         if (BigInt(totalNQT) > BigInt(balanceNQT)) {
             $('#' + type + '_asset_total').css({
                 background: '#ED4348',
-                color: 'white'
+                color: 'white',
             })
         } else {
             $('#' + type + '_asset_total').css({
                 background: '',
-                color: ''
+                color: '',
             })
         }
     }
@@ -771,10 +793,10 @@ export function evAssetExchangeOrdersTableClick (e: JQuery.ClickEvent) {
     }
 }
 
-export function evCalculatePricePreviewInput (e: JQuery.TriggeredEvent) {
+export function evCalculatePricePreviewInput(e: JQuery.TriggeredEvent) {
     const orderType = $(e.target).data('type').toLowerCase()
     $('#' + orderType + '_asset_total').val($.t('error'))
-    let quantityQNT:string
+    let quantityQNT: string
     let priceNQT: string
     try {
         quantityQNT = parseQuantityToQNT(String($('#' + orderType + '_asset_quantity').val()), BRS.currentAsset.decimals)
@@ -794,7 +816,7 @@ export function evCalculatePricePreviewInput (e: JQuery.TriggeredEvent) {
     $('#' + orderType + '_asset_total').val(total.toString())
 }
 
-export function formsOrderAssetComplete (response: PostResponse, data: any) {
+export function formsOrderAssetComplete(response: PostResponse, data: any) {
     let $table: JQuery<HTMLElement>
     if (data.requestType === 'placeBidOrder') {
         $table = $('#asset_exchange_bid_orders_table tbody')
@@ -855,7 +877,7 @@ export function formsOrderAssetComplete (response: PostResponse, data: any) {
     }
 }
 
-export function evAssetExchangeSidebarContextClick (e: JQuery.ClickEvent) {
+export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
     e.preventDefault()
 
     if (!BRS.selectedContext) return
@@ -865,7 +887,7 @@ export function evAssetExchangeSidebarContextClick (e: JQuery.ClickEvent) {
 
     closeContextMenu()
 
-    const asset = BRS.assets.find(tkn => tkn.asset === assetId)
+    const asset = BRS.assets.find((tkn) => tkn.asset === assetId)
     if (!asset) {
         console.error('OPA!')
         return
@@ -875,16 +897,16 @@ export function evAssetExchangeSidebarContextClick (e: JQuery.ClickEvent) {
         $('#asset_exchange_group_asset').val(assetId)
         $('#asset_exchange_group_title').html(String(asset.name).escapeHTML())
 
-        const groupNames = [...new Set(BRS.assets
-            .filter(tkn => tkn.groupName)
-            .map(tkn => tkn.groupName))]
+        const groupNames = [...new Set(BRS.assets.filter((tkn) => tkn.groupName).map((tkn) => tkn.groupName))]
         groupNames.sort((a, b) => a.localeCompare(b))
 
         const groupSelect = $('#asset_exchange_group_group')
         groupSelect.empty()
 
-        groupNames.forEach(groupName => {
-            groupSelect.append(`<option value='${groupName.escapeHTML()}' ${asset.groupName === groupName ? " selected='selected'" : ''}>${groupName.escapeHTML()}</option>`)
+        groupNames.forEach((groupName) => {
+            groupSelect.append(
+                `<option value='${groupName.escapeHTML()}' ${asset.groupName === groupName ? " selected='selected'" : ''}>${groupName.escapeHTML()}</option>`,
+            )
         })
 
         groupSelect.append("<option value='0'" + (!asset.groupName ? " selected='selected'" : '') + '></option>')
@@ -914,7 +936,7 @@ export function evAssetExchangeSidebarContextClick (e: JQuery.ClickEvent) {
     }
 }
 
-export function goToAsset (asset: string) {
+export function goToAsset(asset: string) {
     if (BRS.currentPage !== 'asset_exchange') {
         goToPage('asset_exchange')
     }
@@ -934,18 +956,22 @@ export function goToAsset (asset: string) {
         })
         return
     }
-    sendRequest('getAsset+', {
-        asset
-    }, function (response: GetAssetResponse) {
-        if (!response.errorCode) {
-            const addedAsset = cacheAsset(response)
-            loadAssetExchangeSidebar(function () {
-                loadAsset(addedAsset, true, false)
-            })
-            return
-        }
-        $.notify($.t('error_asset_not_found'), { type: 'danger' })
-        loadAssetExchangeSidebar()
-        $('#loading_asset_data').hide()
-    })
+    sendRequest(
+        'getAsset+',
+        {
+            asset,
+        },
+        function (response: GetAssetResponse) {
+            if (!response.errorCode) {
+                const addedAsset = cacheAsset(response)
+                loadAssetExchangeSidebar(function () {
+                    loadAsset(addedAsset, true, false)
+                })
+                return
+            }
+            $.notify($.t('error_asset_not_found'), { type: 'danger' })
+            loadAssetExchangeSidebar()
+            $('#loading_asset_data').hide()
+        },
+    )
 }

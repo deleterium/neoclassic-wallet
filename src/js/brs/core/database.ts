@@ -33,7 +33,7 @@ export function contactsMigration(event: IDBVersionChangeEvent): void {
     }
 
     getAllRequest.onerror = (e) => {
-        console.error('contactsMigration: failed to read old contacts', e);
+        console.error('contactsMigration: failed to read old contacts', e)
     }
 }
 
@@ -42,7 +42,7 @@ export function contactsMigration(event: IDBVersionChangeEvent): void {
  * Sets up database schema and loads existing data into memory.
  * @param {function} [callback] - Optional callback function to execute after database is created successfully.
  */
-export function createDatabase (callback: () => void): void {
+export function createDatabase(callback: () => void): void {
     const dbName = 'BRS_USER_DB'
     const dbVersion = 3
     const request = indexedDB.open(dbName, dbVersion)
@@ -93,10 +93,10 @@ export function createDatabase (callback: () => void): void {
  * When no query is provided (callback as second parameter), the callback's `result` will be:
  * - An array of all objects in the store
  */
-export function dbGet <T extends string | number> (
+export function dbGet<T extends string | number>(
     storeName: string,
     query: Record<string, T> | ((error: Error | null, result) => void) | null,
-    callback?: (error: Error | null, result) => void
+    callback?: (error: Error | null, result) => void,
 ): void {
     if (BRS.database === null) return
     if (typeof query === 'function') {
@@ -142,17 +142,17 @@ export function dbGet <T extends string | number> (
  * When an array of objects is provided as `data`, the callback's `result` will be:
  * - An array containing all inserted objects with their generated keys
  */
-export function dbPut <T extends object | Array<object>> (
+export function dbPut<T extends object | Array<object>>(
     storeName: string,
     data: T,
-    callback?: (error: Error | null, result: T) => void
+    callback?: (error: Error | null, result: T) => void,
 ): void {
     if (BRS.database === null) return
     const transaction = BRS.database.transaction(storeName, 'readwrite')
     const store = transaction.objectStore(storeName)
     const isArrayInput = Array.isArray(data)
-    const itemsToInsert = isArrayInput ? data as Array<object> : [data]
-    const requests: Promise<any>[] = (itemsToInsert as Array<object>).map(item => {
+    const itemsToInsert = isArrayInput ? (data as Array<object>) : [data]
+    const requests: Promise<any>[] = (itemsToInsert as Array<object>).map((item) => {
         return new Promise((resolve, reject) => {
             const request = store.put(item)
             request.onsuccess = () => {
@@ -165,7 +165,7 @@ export function dbPut <T extends object | Array<object>> (
         })
     })
     Promise.allSettled(requests)
-        .then(results => {
+        .then((results) => {
             if (!callback) return
             const errors = results.filter((r) => r.status === 'rejected')
             const successfulResults = results.filter((r) => r.status === 'fulfilled').map((r) => r.value)
@@ -176,7 +176,7 @@ export function dbPut <T extends object | Array<object>> (
                 callback(null, result as T)
             }
         })
-        .catch(error => {
+        .catch((error) => {
             if (callback) {
                 const errorMessage = (error.target as IDBRequest).error?.message || 'An unknown error occurred'
                 callback(new Error(errorMessage), {} as T)
@@ -192,10 +192,10 @@ export function dbPut <T extends object | Array<object>> (
  * @param {object} query - Query parameter to identify the record to delete (primary key)
  * @param {function} callback - Callback function(error)
  */
-export function deleteRecord <T extends string | number> (
+export function deleteRecord<T extends string | number>(
     storeName: string,
     query: Record<string, T>,
-    callback?: (error: Error | null) => void
+    callback?: (error: Error | null) => void,
 ): void {
     if (BRS.database === null) return
     const transaction = BRS.database.transaction(storeName, 'readwrite')

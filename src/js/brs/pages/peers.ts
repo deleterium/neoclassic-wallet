@@ -10,28 +10,31 @@ import { sendRequest } from '../core/send_request'
 
 import { formatVolume } from '../core/numbers'
 
-import {
-    dataLoaded
-} from '../core/util'
+import { dataLoaded } from '../core/util'
 
 import { GetPeerResponse, GetPeersResponse } from '../typings'
 
-export function pagesPeers () {
-    sendRequest('getPeers+', {
-        active: 'true'
-    }, function (response: GetPeersResponse) {
-        if (!response.peers || response.peers.length === 0) {
-            $('#peers_uploaded_volume, #peers_downloaded_volume, #peers_connected, #peers_up_to_date').html('0').removeClass('loading_dots')
-            dataLoaded()
-            return
-        }
+export function pagesPeers() {
+    sendRequest(
+        'getPeers+',
+        {
+            active: 'true',
+        },
+        function (response: GetPeersResponse) {
+            if (!response.peers || response.peers.length === 0) {
+                $('#peers_uploaded_volume, #peers_downloaded_volume, #peers_connected, #peers_up_to_date')
+                    .html('0')
+                    .removeClass('loading_dots')
+                dataLoaded()
+                return
+            }
 
-        const peers: Record<string, GetPeerResponse> = {}
-        let nrPeers = 0
+            const peers: Record<string, GetPeerResponse> = {}
+            let nrPeers = 0
 
-        let rows = ''
-        for (const peerIP of response.peers) {
-            rows += `
+            let rows = ''
+            for (const peerIP of response.peers) {
+                rows += `
                 <tr id='peer-${peerIP.replace(/\./g, '-')}'>
                   <td>${peerIP}</td>
                   <td>${BRS.pendingTransactionHTML}</td>
@@ -40,30 +43,33 @@ export function pagesPeers () {
                   <td>${BRS.pendingTransactionHTML}</td>
                 </tr>`
 
-            sendRequest('getPeer+', {
-                peer: peerIP
-            }, function (response2: GetPeerResponse, input: { peer: string}) {
-                if (BRS.currentPage !== 'peers') {
-                    return
-                }
+                sendRequest(
+                    'getPeer+',
+                    {
+                        peer: peerIP,
+                    },
+                    function (response2: GetPeerResponse, input: { peer: string }) {
+                        if (BRS.currentPage !== 'peers') {
+                            return
+                        }
 
-                nrPeers++
-                if (response2.errorCode) {
-                    if (nrPeers === response.peers.length) {
-                        peersFinished(peers)
-                    }
-                    return
-                }
+                        nrPeers++
+                        if (response2.errorCode) {
+                            if (nrPeers === response.peers.length) {
+                                peersFinished(peers)
+                            }
+                            return
+                        }
 
-                peers[input.peer] = response2
+                        peers[input.peer] = response2
 
-                // Append row dynamically as each peer is received
-                const peerData = response2
-                const versionToCompare = BRS.blockchainStatus?.version
-                const isUpToDate = versionCompare(peerData.version, versionToCompare)
-                const isConnected = peerData.state === 1
+                        // Append row dynamically as each peer is received
+                        const peerData = response2
+                        const versionToCompare = BRS.blockchainStatus?.version
+                        const isUpToDate = versionCompare(peerData.version, versionToCompare)
+                        const isConnected = peerData.state === 1
 
-                const row = `
+                        const row = `
                     <tr>
                       <td>
                         ${isConnected ? "<i class='fas fa-check-circle' style='color:#5cb85c' title='Connected'></i>" : "<i class='fas fa-times-circle' style='color:#f0ad4e' title='Disconnected'></i>"}
@@ -77,15 +83,17 @@ export function pagesPeers () {
                       </span></td>
                       <td>${peerData.platform ? String(peerData.platform).escapeHTML() : '?'}</td>
                     </tr>`
-                $('#peer-' + input.peer.replace(/\./g, '-')).replaceWith(row)
+                        $('#peer-' + input.peer.replace(/\./g, '-')).replaceWith(row)
 
-                if (nrPeers === response.peers.length) {
-                    peersFinished(peers)
-                }
-            })
-        }
-        dataLoaded(rows)
-    })
+                        if (nrPeers === response.peers.length) {
+                            peersFinished(peers)
+                        }
+                    },
+                )
+            }
+            dataLoaded(rows)
+        },
+    )
 }
 
 function peersFinished(peers: Record<string, GetPeerResponse>) {
@@ -115,35 +123,37 @@ function peersFinished(peers: Record<string, GetPeerResponse>) {
     $('#peers_uploaded_volume').text(formatVolume(uploaded)).removeClass('loading_dots')
     $('#peers_downloaded_volume').text(formatVolume(downloaded)).removeClass('loading_dots')
     $('#peers_connected').text(connected).removeClass('loading_dots')
-    $('#peers_up_to_date').text(upToDate + '/' + activePeers).removeClass('loading_dots')
+    $('#peers_up_to_date')
+        .text(upToDate + '/' + activePeers)
+        .removeClass('loading_dots')
 }
 
-export function incomingPeers () {
+export function incomingPeers() {
     reloadCurrentPage()
 }
 
 class PreleaseTag {
     priority: number
-    constructor (tag: string) {
+    constructor(tag: string) {
         switch (tag) {
-        case 'dev':
-            this.priority = 0
-            break
-        case 'alpha':
-            this.priority = 1
-            break
-        case 'beta':
-            this.priority = 2
-            break
-        case 'rc':
-            this.priority = 3
-            break
-        case '':
-            this.priority = 4
-            break
-        default:
-            this.priority = 5
-            break
+            case 'dev':
+                this.priority = 0
+                break
+            case 'alpha':
+                this.priority = 1
+                break
+            case 'beta':
+                this.priority = 2
+                break
+            case 'rc':
+                this.priority = 3
+                break
+            case '':
+                this.priority = 4
+                break
+            default:
+                this.priority = 5
+                break
         }
     }
 }
@@ -154,7 +164,7 @@ class Version {
     patch: number
     prereleaseTag: PreleaseTag
     prereleaseIteration: number
-    constructor (version: string) {
+    constructor(version: string) {
         version = version.replace('-', '.').toLowerCase()
         if (version.startsWith('v')) version = version.substring(1)
         const tokens = version.split('.')
@@ -173,7 +183,7 @@ class Version {
         }
     }
 
-    isGreaterThan (otherVersion: Version) {
+    isGreaterThan(otherVersion: Version) {
         if (this.major > otherVersion.major) return true
         if (this.major < otherVersion.major) return false
         if (this.minor > otherVersion.minor) return true
@@ -183,23 +193,23 @@ class Version {
         if (this.prereleaseTag.priority > otherVersion.prereleaseTag.priority) return true
         if (this.prereleaseTag.priority < otherVersion.prereleaseTag.priority) return false
         return this.prereleaseIteration > otherVersion.prereleaseIteration
-    };
+    }
 
-    isGreaterThanOrEqualTo (otherVersion: Version) {
+    isGreaterThanOrEqualTo(otherVersion: Version) {
         if (this.isGreaterThan(otherVersion)) return true
         return this.equals(otherVersion)
-    };
+    }
 
-    equals (version: Version) {
+    equals(version: Version) {
         if (this.major !== version.major) return false
         if (this.minor !== version.minor) return false
         if (this.patch !== version.patch) return false
         if (this.prereleaseIteration !== version.prereleaseIteration) return false
         return this.prereleaseTag.priority === version.prereleaseTag.priority
-    };
+    }
 }
 
-function versionCompare (v1?: string, v2?: string) {
+function versionCompare(v1?: string, v2?: string) {
     if (v2 === undefined || v2 === null) {
         return -1
     } else if (v1 === undefined || v1 === null) {

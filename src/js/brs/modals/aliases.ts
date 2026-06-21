@@ -2,22 +2,15 @@ import { BRS } from '..'
 
 import { NxtAddress } from '../../util/nxtaddress'
 
-import {
-    sendRequest
-} from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
-import {
-    formatNQTAsAmount,
-    formatTimestampAsDateTime
-} from '../core/numbers'
+import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
-import {
-    createInfoTable,
-} from '../core/util'
+import { createInfoTable } from '../core/util'
 
 import { GetAliasResponse, PostResponse, ShowBootstrapModalEvent } from '../typings'
 
-export function evAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
+export function evAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
     const modal = e.target
 
@@ -27,7 +20,7 @@ export function evAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
     $(modal).find('.alias_name_display').html(alias.escapeHTML())
 }
 
-export function formsSellAlias (data: any) {
+export function formsSellAlias(data: any) {
     let successMessage = ''
     let errorMessage = ''
 
@@ -47,8 +40,8 @@ export function formsSellAlias (data: any) {
             if (!data.recipient) {
                 return {
                     error: $.t('error_not_specified', {
-                        name: $.t('recipient').toLowerCase()
-                    }).capitalize()
+                        name: $.t('recipient').toLowerCase(),
+                    }).capitalize(),
                 }
             }
             delete data.sell_to_specific
@@ -57,13 +50,13 @@ export function formsSellAlias (data: any) {
             if (!data.priceNXT || data.priceNXT === '0') {
                 return {
                     error: $.t('error_not_specified', {
-                        name: $.t('price').toLowerCase()
-                    }).capitalize()
+                        name: $.t('price').toLowerCase(),
+                    }).capitalize(),
                 }
             }
             if (data.add_message && data.encrypt_message) {
                 return {
-                    error: $.t('error_recipient_no_public_key').capitalize()
+                    error: $.t('error_recipient_no_public_key').capitalize(),
                 }
             }
             delete data.recipient
@@ -75,11 +68,11 @@ export function formsSellAlias (data: any) {
     return {
         data,
         successMessage,
-        errorMessage
+        errorMessage,
     }
 }
 
-export function formsSellAliasComplete (response: PostResponse, data: any) {
+export function formsSellAliasComplete(response: PostResponse, data: any) {
     const $row = $('#aliases_table tr[data-alias=' + String(data.aliasName).toLowerCase().escapeHTML() + ']')
 
     $row.addClass('tentative')
@@ -101,7 +94,7 @@ export function formsSellAliasComplete (response: PostResponse, data: any) {
     }
 }
 
-export function evSellAliasSellToSpecificClick (e: JQuery.ClickEvent) {
+export function evSellAliasSellToSpecificClick(e: JQuery.ClickEvent) {
     const element = e.currentTarget
     const $form = $(element).closest('form')
     $form.find('.account_info').hide()
@@ -111,9 +104,9 @@ export function evSellAliasSellToSpecificClick (e: JQuery.ClickEvent) {
 
 /**
  * Called when showing "Buy Alias Modal". Invoker is "<a>" with "data-buy-alias" set. Fetches the alias details and shows them.
- * @param {*} e Event 
+ * @param {*} e Event
  */
-export function evBuyAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
+export function evBuyAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     const $modal = $(e.target)
     const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
 
@@ -121,39 +114,43 @@ export function evBuyAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
 
     const alias = String($invoker.data('buy-alias'))
 
-    sendRequest('getAlias', {
-        alias: alias
-    }, function (response: GetAliasResponse) {
-        BRS.fetchingModalData = false
+    sendRequest(
+        'getAlias',
+        {
+            alias: alias,
+        },
+        function (response: GetAliasResponse) {
+            BRS.fetchingModalData = false
 
-        if (response.errorCode) {
-            e.preventDefault()
-            $.notify($.t('error_alias_not_found'), { type: 'danger' })
-            return
-        }
-        if (!response.priceNQT) {
-            e.preventDefault()
-            $.notify($.t('error_alias_not_for_sale'), { type: 'danger' })
-            return
-        }
-        if (typeof response.buyer !== 'undefined' && response.buyer !== BRS.account) {
-            e.preventDefault()
-            $.notify($.t('error_alias_sale_different_account'), { type: 'danger' })
-            return
-        }
-        $modal.find('input[name=alias]').val(response.alias.escapeHTML())
-        $modal.find('.alias_id_display').html(response.alias.escapeHTML())
-        $modal.find('.alias_name_display').html(response.aliasName.escapeHTML())
-        $modal.find('.alias_tld_display').html(response.tldName.escapeHTML())
-        $modal.find('input[name=amountNXT]').val(formatNQTAsAmount(response.priceNQT)).prop('readonly', true)
-    })
+            if (response.errorCode) {
+                e.preventDefault()
+                $.notify($.t('error_alias_not_found'), { type: 'danger' })
+                return
+            }
+            if (!response.priceNQT) {
+                e.preventDefault()
+                $.notify($.t('error_alias_not_for_sale'), { type: 'danger' })
+                return
+            }
+            if (typeof response.buyer !== 'undefined' && response.buyer !== BRS.account) {
+                e.preventDefault()
+                $.notify($.t('error_alias_sale_different_account'), { type: 'danger' })
+                return
+            }
+            $modal.find('input[name=alias]').val(response.alias.escapeHTML())
+            $modal.find('.alias_id_display').html(response.alias.escapeHTML())
+            $modal.find('.alias_name_display').html(response.aliasName.escapeHTML())
+            $modal.find('.alias_tld_display').html(response.tldName.escapeHTML())
+            $modal.find('input[name=amountNXT]').val(formatNQTAsAmount(response.priceNQT)).prop('readonly', true)
+        },
+    )
 }
 
-export function formsBuyAliasError () {
+export function formsBuyAliasError() {
     $('#buy_alias_modal').find('input[name=priceNXT]').prop('readonly', false)
 }
 
-export function formsBuyAliasComplete (response: PostResponse, data: any) {
+export function formsBuyAliasComplete(response: PostResponse, data: any) {
     // Not needed if correct 'incoming' supporting pending transactions
     if (BRS.currentPage !== 'aliases') {
         return
@@ -172,13 +169,13 @@ export function formsBuyAliasComplete (response: PostResponse, data: any) {
             <a class='btn btn-xs btn-default' href='#'>${$.t('transfer')}</a> 
             <a class='btn btn-xs btn-default' href='#'>${$.t('sell')}</a>
           </td>
-        </tr>`);
+        </tr>`)
     if ($('#aliases_table').parent().hasClass('data-empty')) {
         $('#aliases_table').parent().removeClass('data-empty')
     }
 }
 
-export function evRegisterAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
+export function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
 
     const alias = $invoker.data('alias')
@@ -186,32 +183,37 @@ export function evRegisterAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
     if (alias) {
         BRS.fetchingModalData = true
 
-        sendRequest('getAlias', {
-            aliasName: alias
-        }, function (response: GetAliasResponse) {
-            BRS.fetchingModalData = false
-            if (response.errorCode) {
-                e.preventDefault()
-                $.notify($.t('error_alias_not_found'), { type: 'danger' })
-            } else {
-                let aliasURI: RegExpExecArray | null
-                const reg = /^https?:\/\//i
-                if (reg.test(response.aliasURI)) {
-                    setAliasType('uri', response.aliasURI)
-                } else if ((aliasURI = /acct:(.*)@burst/.exec(response.aliasURI)) || (aliasURI = /nacc:(.*)/.exec(response.aliasURI))) {
-                    setAliasType('account', response.aliasURI)
-                    response.aliasURI = String(aliasURI[1]).toUpperCase()
+        sendRequest(
+            'getAlias',
+            {
+                aliasName: alias,
+            },
+            function (response: GetAliasResponse) {
+                BRS.fetchingModalData = false
+                if (response.errorCode) {
+                    e.preventDefault()
+                    $.notify($.t('error_alias_not_found'), { type: 'danger' })
                 } else {
-                    setAliasType('general', response.aliasURI)
-                }
+                    let aliasURI: RegExpExecArray | null
+                    const reg = /^https?:\/\//i
+                    if (reg.test(response.aliasURI)) {
+                        setAliasType('uri', response.aliasURI)
+                    } else if ((aliasURI = /acct:(.*)@burst/.exec(response.aliasURI)) || (aliasURI = /nacc:(.*)/.exec(response.aliasURI))) {
+                        setAliasType('account', response.aliasURI)
+                        response.aliasURI = String(aliasURI[1]).toUpperCase()
+                    } else {
+                        setAliasType('general', response.aliasURI)
+                    }
 
-                $('#register_alias_modal h4.modal-title').html($.t('update_alias'))
-                $('#register_alias_modal .btn-primary').html($.t('update'))
-                $('#register_alias_alias').val(alias.escapeHTML()).hide()
-                $('#register_alias_alias_noneditable').html(alias.escapeHTML()).show()
-                $('#register_alias_alias_update').val(1)
-            }
-        }, false)
+                    $('#register_alias_modal h4.modal-title').html($.t('update_alias'))
+                    $('#register_alias_modal .btn-primary').html($.t('update'))
+                    $('#register_alias_alias').val(alias.escapeHTML()).hide()
+                    $('#register_alias_alias_noneditable').html(alias.escapeHTML()).show()
+                    $('#register_alias_alias_update').val(1)
+                }
+            },
+            false,
+        )
         return
     }
     // no alias given
@@ -230,7 +232,7 @@ export function evRegisterAliasModalOnShowBsModal (e: JQuery.TriggeredEvent) {
     setAliasType('uri', '')
 }
 
-export function formsSetAlias (data: any) {
+export function formsSetAlias(data: any) {
     data.aliasURI = data.aliasURI.toLowerCase().trim()
 
     if (data.type === 'account' && !/(acct:.*@burst|nacc:.*)/.test(data.aliasURI)) {
@@ -238,7 +240,7 @@ export function formsSetAlias (data: any) {
             const address = new NxtAddress(data.aliasURI)
             if (!address.isOk()) {
                 return {
-                    error: $.t('error_invalid_account_id')
+                    error: $.t('error_invalid_account_id'),
                 }
             }
             data.aliasURI = 'acct:' + data.aliasURI + '@burst'
@@ -246,7 +248,7 @@ export function formsSetAlias (data: any) {
             data.aliasURI = 'acct:' + data.aliasURI + '@burst'
         } else {
             return {
-                error: $.t('error_invalid_account_id')
+                error: $.t('error_invalid_account_id'),
             }
         }
     }
@@ -254,11 +256,11 @@ export function formsSetAlias (data: any) {
     delete data.type
 
     return {
-        data
+        data,
     }
 }
 
-export function setAliasType (type: string, uri: string) {
+export function setAliasType(type: string, uri: string) {
     $('#register_alias_type').val(type)
 
     if (type === 'uri') {
@@ -322,27 +324,34 @@ export function setAliasType (type: string, uri: string) {
     }
 }
 
-export function formsSetAliasError (response: PostResponse, data: any) {
+export function formsSetAliasError(response: PostResponse, data: any) {
     if (!response.errorCode || response.errorCode !== 8) {
         return
     }
 
     const errorDescription = String(response.errorDescription).escapeHTML()
 
-    sendRequest('getAlias', {
-        aliasName: data.aliasName
-    }, function (response: GetAliasResponse) {
-        if (response.errorCode) {
-            return
-        }
-        const message = getAliasStatus(response)
+    sendRequest(
+        'getAlias',
+        {
+            aliasName: data.aliasName,
+        },
+        function (response: GetAliasResponse) {
+            if (response.errorCode) {
+                return
+            }
+            const message = getAliasStatus(response)
 
-        $('#register_alias_modal').find('.error_message').html(errorDescription + '. ' + message)
-    }, false)
+            $('#register_alias_modal')
+                .find('.error_message')
+                .html(errorDescription + '. ' + message)
+        },
+        false,
+    )
 }
 
-export function formsSetAliasComplete (response: PostResponse, data: any) {
-    // Not needed if unconfirmed is handled in alias page 
+export function formsSetAliasComplete(response: PostResponse, data: any) {
+    // Not needed if unconfirmed is handled in alias page
     if (BRS.currentPage !== 'aliases') {
         return
     }
@@ -377,7 +386,22 @@ export function formsSetAliasComplete (response: PostResponse, data: any) {
     }
     const $rows = $table.find('tr')
 
-    const rowToAdd = "<tr class='tentative' data-alias='" + data.aliasName.toLowerCase() + "'><td class='alias'>" + data.aliasName + "</td><td class='uri'>" + (data.aliasURI && data.aliasURI.indexOf('http') === 0 ? "<a href='" + data.aliasURI + "' target='_blank'>" + data.shortAliasURI + '</a>' : data.shortAliasURI) + "</td><td>/</td><td style='white-space:nowrap'><a class='btn btn-xs btn-default' href='#'>" + $.t('edit') + "</a> <a class='btn btn-xs btn-default' href='#'>" + $.t('transfer') + "</a> <a class='btn btn-xs btn-default' href='#'>" + $.t('sell') + '</a></td></tr>'
+    const rowToAdd =
+        "<tr class='tentative' data-alias='" +
+        data.aliasName.toLowerCase() +
+        "'><td class='alias'>" +
+        data.aliasName +
+        "</td><td class='uri'>" +
+        (data.aliasURI && data.aliasURI.indexOf('http') === 0
+            ? "<a href='" + data.aliasURI + "' target='_blank'>" + data.shortAliasURI + '</a>'
+            : data.shortAliasURI) +
+        "</td><td>/</td><td style='white-space:nowrap'><a class='btn btn-xs btn-default' href='#'>" +
+        $.t('edit') +
+        "</a> <a class='btn btn-xs btn-default' href='#'>" +
+        $.t('transfer') +
+        "</a> <a class='btn btn-xs btn-default' href='#'>" +
+        $.t('sell') +
+        '</a></td></tr>'
 
     let rowAdded = false
 
@@ -409,9 +433,9 @@ export function formsSetAliasComplete (response: PostResponse, data: any) {
 /**
  * Opens a "Alias Modal" with the given alias.
  * @param {string|Alias} alias - If string, the alias ID to be requested and shown. If the object, just show it.
- * @returns 
+ * @returns
  */
-export function showAliasModal (alias: string | GetAliasResponse) {
+export function showAliasModal(alias: string | GetAliasResponse) {
     if (BRS.fetchingModalData) {
         return
     }
@@ -420,20 +444,23 @@ export function showAliasModal (alias: string | GetAliasResponse) {
         return
     }
     BRS.fetchingModalData = true
-    sendRequest('getAlias', {
-        alias: alias
-    }, function (response: GetAliasResponse) {
-        BRS.fetchingModalData = false
-        if (response.errorCode) {
-            $.notify(`${$.t('error_alias_not_found')} - ${String(alias).escapeHTML()}`)
-            return
-
-        }
-        aliasModalDataReady(response)
-    })
+    sendRequest(
+        'getAlias',
+        {
+            alias: alias,
+        },
+        function (response: GetAliasResponse) {
+            BRS.fetchingModalData = false
+            if (response.errorCode) {
+                $.notify(`${$.t('error_alias_not_found')} - ${String(alias).escapeHTML()}`)
+                return
+            }
+            aliasModalDataReady(response)
+        },
+    )
 }
 
-function getAliasStatus (alias: GetAliasResponse) {
+function getAliasStatus(alias: GetAliasResponse) {
     let message = ''
     if (!alias.priceNQT) {
         return $.t('alias_not_on_sale')
@@ -441,7 +468,7 @@ function getAliasStatus (alias: GetAliasResponse) {
     if (!alias.buyer) {
         message = $.t('alias_sale_indirect_offer', {
             burst: formatNQTAsAmount(alias.priceNQT),
-            valueSuffix: BRS.valueSuffix
+            valueSuffix: BRS.valueSuffix,
         })
         message += ` <a href='#' data-buy-alias='${alias.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
         return message
@@ -449,7 +476,7 @@ function getAliasStatus (alias: GetAliasResponse) {
     if (alias.buyer === BRS.account) {
         message = $.t('alias_sale_direct_offer', {
             burst: formatNQTAsAmount(alias.priceNQT),
-            valueSuffix: BRS.valueSuffix
+            valueSuffix: BRS.valueSuffix,
         })
         message += ` <a href='#' data-buy-alias='${alias.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
         return message
@@ -467,7 +494,7 @@ function aliasModalDataReady(response: GetAliasResponse) {
     const data = {
         account: response.accountRS,
         last_updated: formatTimestampAsDateTime(response.timestamp),
-        data_formatted_html: String(response.aliasURI)
+        data_formatted_html: String(response.aliasURI),
     }
     const aliasCallout = getAliasStatus(response)
     $('#alias_sale_callout').html(aliasCallout)

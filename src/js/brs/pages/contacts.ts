@@ -1,53 +1,52 @@
-import { BRS } from '..';
-import { DBContact } from '../typings';
-import { notifyContactOperationSuccess } from '../tools/contacts';
-import { dbGet, dbPut } from '../core/database';
-import { dataLoaded, getAccountRSFromObject } from '../core/util';
-
+import { BRS } from '..'
+import { DBContact } from '../typings'
+import { notifyContactOperationSuccess } from '../tools/contacts'
+import { dbGet, dbPut } from '../core/database'
+import { dataLoaded, getAccountRSFromObject } from '../core/util'
 
 export function pagesContacts() {
     if (!BRS.databaseSupport) {
-        let rows = '';
+        let rows = ''
         for (const key in BRS.contacts) {
-            rows += contactToHTMLRow(BRS.contacts[key]);
-            dataLoaded(rows);
+            rows += contactToHTMLRow(BRS.contacts[key])
+            dataLoaded(rows)
         }
-        return;
+        return
     }
 
-    $('#contacts_table_container').show();
-    $('#contact_page_database_error').hide();
+    $('#contacts_table_container').show()
+    $('#contact_page_database_error').hide()
 
     dbGet('contacts', function (error, contacts: DBContact[]) {
-        let rows = '';
+        let rows = ''
         if (error || !contacts) {
-            dataLoaded(rows);
-            return;
+            dataLoaded(rows)
+            return
         }
         contacts.sort(function (a, b) {
             if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
+                return 1
             } else if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
+                return -1
             } else {
-                return 0;
+                return 0
             }
-        });
+        })
 
         for (const contact of contacts) {
-            rows += contactToHTMLRow(contact);
+            rows += contactToHTMLRow(contact)
         }
 
-        dataLoaded(rows);
-    });
+        dataLoaded(rows)
+    })
 
     function contactToHTMLRow(contact: DBContact) {
-        let contactDescription = contact.description.escapeHTML();
+        let contactDescription = contact.description.escapeHTML()
         if (contactDescription.length > 100) {
-            contactDescription = contactDescription.substring(0, 97) + '...';
+            contactDescription = contactDescription.substring(0, 97) + '...'
         }
 
-        const cName = contact.name.escapeHTML();
+        const cName = contact.name.escapeHTML()
         return `
             <tr>
                 <td>
@@ -92,9 +91,8 @@ export function pagesContacts() {
                     </a>
                 </div>
                 </td>
-            </tr>`;
+            </tr>`
     }
-
 }
 
 export function exportContacts() {

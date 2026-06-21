@@ -4,52 +4,30 @@
 
 import { BRS } from '..'
 
-import {
-    checkLocationHash,
-} from './navigation'
+import { checkLocationHash } from './navigation'
 
 import { getAndUpdateAccountDetails } from './check_incoming.account'
 
-import {
-    updateSettings
-} from '../pages/settings'
+import { updateSettings } from '../pages/settings'
 
-import {
-    setSavedPassword,
-    sendRequest
-} from './send_request'
+import { setSavedPassword, sendRequest } from './send_request'
 
-import {
-    getContactByName
-} from '../tools/contacts'
+import { getContactByName } from '../tools/contacts'
 
-import {
-    getPublicKeyFromPassphrase,
-    getAccountId,
-    setEncryptionPassword,
-    setDecryptionPassword
-} from './encryption'
+import { getPublicKeyFromPassphrase, getAccountId, setEncryptionPassword, setDecryptionPassword } from './encryption'
 
-import {
-    convertNumericToRSAccountFormat,
-    setupClipboardFunctionality
-} from './util'
+import { convertNumericToRSAccountFormat, setupClipboardFunctionality } from './util'
 
-import {
-    cacheUserAssets
-} from '../tools/assets'
+import { cacheUserAssets } from '../tools/assets'
 
-import {
-    getInitialTransactions,
-    handleNewBlocks
-} from './check_incoming'
+import { getInitialTransactions, handleNewBlocks } from './check_incoming'
 
 import PassPhraseGenerator from './passphrase_generator'
 
 import { GetAccountPublicKeyResponse, GetAccountResponse } from '../typings'
 import { convertSecondsToDuration } from './numbers'
 
-export function showLoginOrWelcomeScreen () {
+export function showLoginOrWelcomeScreen() {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
         showLoginScreen()
     } else {
@@ -57,7 +35,7 @@ export function showLoginOrWelcomeScreen () {
     }
 }
 
-export function showLoginScreen () {
+export function showLoginScreen() {
     $('#account_phrase_custom_panel, #account_phrase_generator_panel, #welcome_panel, #custom_passphrase_link').hide()
     $('#account_phrase_custom_panel :input:not(:button):not([type=submit])').val('')
     $('#account_phrase_generator_panel :input:not(:button):not([type=submit])').val('')
@@ -68,12 +46,14 @@ export function showLoginScreen () {
     }, 10)
 }
 
-function showWelcomeScreen () {
-    $('#login_panel, account_phrase_custom_panel, #account_phrase_generator_panel, #account_phrase_custom_panel, #welcome_panel, #custom_passphrase_link').hide()
+function showWelcomeScreen() {
+    $(
+        '#login_panel, account_phrase_custom_panel, #account_phrase_generator_panel, #account_phrase_custom_panel, #welcome_panel, #custom_passphrase_link',
+    ).hide()
     $('#welcome_panel').show()
 }
 
-export function registerUserDefinedAccount () {
+export function registerUserDefinedAccount() {
     $('#account_phrase_generator_panel, #login_panel, #welcome_panel, #custom_passphrase_link').hide()
     $('#account_phrase_custom_panel :input:not(:button):not([type=submit])').val('')
     $('#account_phrase_generator_panel :input:not(:button):not([type=submit])').val('')
@@ -81,7 +61,7 @@ export function registerUserDefinedAccount () {
     $('#registration_password').trigger('focus')
 }
 
-export function registerAccount () {
+export function registerAccount() {
     $('#login_panel, #welcome_panel').hide()
     $('#account_phrase_generator_panel').show()
     $('#account_phrase_generator_panel .step_3 .callout').hide()
@@ -90,7 +70,7 @@ export function registerAccount () {
     PassPhraseGenerator.generatePassPhrase('#account_phrase_generator_panel')
 }
 
-export function verifyGeneratedPassphrase () {
+export function verifyGeneratedPassphrase() {
     const password = String($('#account_phrase_generator_panel .step_3 textarea').val()).trim()
 
     if (password !== PassPhraseGenerator.passPhrase) {
@@ -104,7 +84,7 @@ export function verifyGeneratedPassphrase () {
     }
 }
 
-export function evAccountPhraseCustomPanelSubmit (event) {
+export function evAccountPhraseCustomPanelSubmit(event) {
     event.preventDefault()
 
     const password = $('#registration_password').val() as string
@@ -128,7 +108,7 @@ export function evAccountPhraseCustomPanelSubmit (event) {
     loginWithPassphrase(password)
 }
 
-export function loginCommon () {
+export function loginCommon() {
     if (!BRS.settings.automatic_node_selection) {
         updateSettings('prefered_node', BRS.server)
     }
@@ -151,7 +131,7 @@ export function loginCommon () {
     handleNewBlocks()
 }
 
-function loginWithAccount (account: string) {
+function loginWithAccount(account: string) {
     account = account.trim()
     if (!account.length) {
         $.notify($.t('error_account_required_login'), { type: 'danger' })
@@ -166,48 +146,49 @@ function loginWithAccount (account: string) {
         if (foundContact) login = foundContact.accountRS
     }
     if (!login) {
-        $.notify(
-            $.t('name_not_in_contacts', { name: account }),
-            { type: 'danger' }
-        )
+        $.notify($.t('name_not_in_contacts', { name: account }), { type: 'danger' })
         return
     }
 
     // Get the account information for the given address
-    sendRequest('getAccount', {
-        account: login
-    }, function (response: GetAccountResponse) {
-        if (response.errorCode) {
-            if (BRS.rsRegEx.test(login) || BRS.idRegEx.test(login)) {
-                $.notify($.t('error_account_unknow_watch_only'), { type: 'danger' })
+    sendRequest(
+        'getAccount',
+        {
+            account: login,
+        },
+        function (response: GetAccountResponse) {
+            if (response.errorCode) {
+                if (BRS.rsRegEx.test(login) || BRS.idRegEx.test(login)) {
+                    $.notify($.t('error_account_unknow_watch_only'), { type: 'danger' })
+                    return
+                }
+                // Otherwise, show an error.  The address is in the right format perhaps, but
+                // an address does not exist on the blockchain so there's nothing to see.
+                $.notify('<strong>' + $.t('warning') + '</strong>: ' + response.errorDescription, {
+                    type: 'danger',
+                })
                 return
             }
-            // Otherwise, show an error.  The address is in the right format perhaps, but
-            // an address does not exist on the blockchain so there's nothing to see.
-            $.notify('<strong>' + $.t('warning') + '</strong>: ' + response.errorDescription, {
-                type: 'danger'
-            })
-            return
-        }
 
-        updateSettings('remember_account', $('#remember_account').is(':checked'))
-        updateSettings('last_remembered_account', account)
+            updateSettings('remember_account', $('#remember_account').is(':checked'))
+            updateSettings('last_remembered_account', account)
 
-        BRS.account = response.account
-        BRS.accountRS = response.accountRS
-        BRS.publicKey = response.publicKey
-        BRS.accountRSExtended = response.accountRSExtended
+            BRS.account = response.account
+            BRS.accountRS = response.accountRS
+            BRS.publicKey = response.publicKey
+            BRS.accountRSExtended = response.accountRSExtended
 
-        $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
-        $('#login_check_password_length').val(1)
-        $.notify($.t('success_login_watch_only'), { type: 'success' })
-        $('#account_id').html(String(BRS.accountRS).escapeHTML())
+            $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
+            $('#login_check_password_length').val(1)
+            $.notify($.t('success_login_watch_only'), { type: 'success' })
+            $('#account_id').html(String(BRS.accountRS).escapeHTML())
 
-        loginCommon()
-    })
+            loginCommon()
+        },
+    )
 }
 
-function loginWithPassphrase (passphrase: string) {
+function loginWithPassphrase(passphrase: string) {
     // Check passphrase
     if (!passphrase.length) {
         $.notify($.t('error_passphrase_required_login'), { type: 'danger' })
@@ -227,7 +208,7 @@ function loginWithPassphrase (passphrase: string) {
     }
     if (passwordNotice) {
         $.notify('<strong>' + $.t('warning') + '</strong>: ' + passwordNotice, {
-            type: 'danger'
+            type: 'danger',
         })
     }
 
@@ -244,31 +225,35 @@ function loginWithPassphrase (passphrase: string) {
     BRS.accountRSExtended = BRS.accountRS + '-' + BigInt(`0x${BRS.publicKey}`).toString(36).toUpperCase()
 
     // Get account details from blockchain
-    sendRequest('getAccountPublicKey', {
-        account: BRS.account
-    }, function (response: GetAccountPublicKeyResponse) {
-        // Verify if public key from blochchain is same from the passphrase
-        // Unlikey, only if there is a clash of IDs.
-        if (response && response.publicKey && response.publicKey !== BRS.publicKey) {
-            $.notify($.t('error_account_taken'), { type: 'danger' })
-            return
-        }
+    sendRequest(
+        'getAccountPublicKey',
+        {
+            account: BRS.account,
+        },
+        function (response: GetAccountPublicKeyResponse) {
+            // Verify if public key from blochchain is same from the passphrase
+            // Unlikey, only if there is a clash of IDs.
+            if (response && response.publicKey && response.publicKey !== BRS.publicKey) {
+                $.notify($.t('error_account_taken'), { type: 'danger' })
+                return
+            }
 
-        if (BRS.settings.remember_passphrase) {
-            $('#remember_password').prop('checked', false)
-            $('.secret_phrase, .show_secret_phrase').hide()
-            $('.hide_secret_phrase').show()
-        }
+            if (BRS.settings.remember_passphrase) {
+                $('#remember_password').prop('checked', false)
+                $('.secret_phrase, .show_secret_phrase').hide()
+                $('.hide_secret_phrase').show()
+            }
 
-        $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
-        $('#login_check_password_length').val(1)
-        $('#account_id').html(String(BRS.accountRS).escapeHTML())
+            $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
+            $('#login_check_password_length').val(1)
+            $('#account_id').html(String(BRS.accountRS).escapeHTML())
 
-        loginCommon()
-    })
+            loginCommon()
+        },
+    )
 }
 
-export function evLoginButtonClick (e?: JQuery.ClickEvent) {
+export function evLoginButtonClick(e?: JQuery.ClickEvent) {
     if (e) {
         e.preventDefault()
     }
@@ -287,7 +272,7 @@ export function evLoginButtonClick (e?: JQuery.ClickEvent) {
     loginWithAccount(account)
 }
 
-export function showLockscreen () {
+export function showLockscreen() {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
         setTimeout(function () {
             $('#login_password').trigger('focus')
@@ -300,7 +285,7 @@ export function showLockscreen () {
     $('#lockscreen_content').show()
 }
 
-function unlock () {
+function unlock() {
     if (BRS.hasLocalStorage && !localStorage.getItem('logged_in')) {
         localStorage.setItem('logged_in', 'true')
     }
@@ -335,7 +320,7 @@ function setHeaderClock(): void {
     $('#header_block_time').text(BRS.durationFormatter.format(duration))
 }
 
-export function logout () {
+export function logout() {
     setDecryptionPassword('')
     setEncryptionPassword('')
     setSavedPassword('')

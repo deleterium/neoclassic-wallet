@@ -11,7 +11,7 @@ import { dbGet, dbPut } from '../core/database'
 import { formatNQTAsAmount } from '../core/numbers'
 import { RequestController } from '../core/request_controller'
 
-export function pagesSettings () {
+export function pagesSettings() {
     $('#settings_language').val(BRS.settings.language)
     $('#settings_page_size').val(String(BRS.settings.page_size))
     $('#settings_rate_limiter').val(String(BRS.settings.rate_limiter))
@@ -26,29 +26,33 @@ export function pagesSettings () {
     pageLoaded()
 }
 
-export function loadSettingsFromDB () {
+export function loadSettingsFromDB() {
     if (!BRS.databaseSupport) {
         BRS.settings = BRS.defaultSettings
         applySettings('all')
         return
     }
-    dbGet('data', {
-        id: 'settings'
-    }, function (_error, result) {
-        if (result) {
-            BRS.settings = $.extend({}, BRS.defaultSettings, JSON.parse(result.contents))
-        } else {
-            dbPut('data', {
-                id: 'settings',
-                contents: JSON.stringify(BRS.defaultSettings)
-            })
-            BRS.settings = BRS.defaultSettings
-        }
-        applySettings('all')
-    })
+    dbGet(
+        'data',
+        {
+            id: 'settings',
+        },
+        function (_error, result) {
+            if (result) {
+                BRS.settings = $.extend({}, BRS.defaultSettings, JSON.parse(result.contents))
+            } else {
+                dbPut('data', {
+                    id: 'settings',
+                    contents: JSON.stringify(BRS.defaultSettings),
+                })
+                BRS.settings = BRS.defaultSettings
+            }
+            applySettings('all')
+        },
+    )
 }
 
-function applySettings (key: string) {
+function applySettings(key: string) {
     let applyAll = false
     if (key === 'all') applyAll = true
 
@@ -58,42 +62,45 @@ function applySettings (key: string) {
             $('[data-i18n]').localize()
         })
         if (BRS.inApp) {
-            parent.postMessage({
-                type: 'language',
-                version: BRS.settings.language
-            }, '*')
+            parent.postMessage(
+                {
+                    type: 'language',
+                    version: BRS.settings.language,
+                },
+                '*',
+            )
         }
         let parts = new Intl.NumberFormat(BRS.settings.language).formatToParts(1111.1)
-        BRS.decimalSign = parts.find(item => item.type === 'decimal')?.value || '.';
-        BRS.groupSeparator = parts.find(item => item.type === 'group')?.value || ','
-        BRS.durationFormatter = new Intl.DurationFormat(BRS.settings.language, { style: "short" });
+        BRS.decimalSign = parts.find((item) => item.type === 'decimal')?.value || '.'
+        BRS.groupSeparator = parts.find((item) => item.type === 'group')?.value || ','
+        BRS.durationFormatter = new Intl.DurationFormat(BRS.settings.language, { style: 'short' })
         BRS.volumeFormatter = new Intl.NumberFormat(BRS.settings.language, {
             maximumSignificantDigits: 3,
             minimumSignificantDigits: 1,
         })
-        parts = BRS.durationFormatter.formatToParts({ days: 1, hours: 1, minutes: 1, seconds: 1 });
-        parts.forEach(part => {
+        parts = BRS.durationFormatter.formatToParts({ days: 1, hours: 1, minutes: 1, seconds: 1 })
+        parts.forEach((part) => {
             if (part.type !== 'unit') return
             // @ts-expect-error Unit is included in parts for this format.
             switch (part.unit) {
-            case 'day':
-                BRS.timeUnits.day = part.value
-                break;
-            case 'hour':
-                BRS.timeUnits.hour = part.value
-                break;
-            case 'minute':
-                BRS.timeUnits.minute = part.value
-                break;
-            case 'second':
-                BRS.timeUnits.second = part.value
-                break;
+                case 'day':
+                    BRS.timeUnits.day = part.value
+                    break
+                case 'hour':
+                    BRS.timeUnits.hour = part.value
+                    break
+                case 'minute':
+                    BRS.timeUnits.minute = part.value
+                    break
+                case 'second':
+                    BRS.timeUnits.second = part.value
+                    break
             }
-        });
-        $('[data-i18n="day_abbr"]').text(BRS.timeUnits.day);
-        $('[data-i18n="hour_abbr"]').text(BRS.timeUnits.hour);
-        $('[data-i18n="minute_abbr"]').text(BRS.timeUnits.minute);
-        $('[data-i18n="second_abbr"]').text(BRS.timeUnits.second);
+        })
+        $('[data-i18n="day_abbr"]').text(BRS.timeUnits.day)
+        $('[data-i18n="hour_abbr"]').text(BRS.timeUnits.hour)
+        $('[data-i18n="minute_abbr"]').text(BRS.timeUnits.minute)
+        $('[data-i18n="second_abbr"]').text(BRS.timeUnits.second)
     }
 
     if (applyAll || key === 'submit_on_enter') {
@@ -169,12 +176,12 @@ function applySettings (key: string) {
  * @example
  * updateSettings('language', 'en');
  */
-export function updateSettings (key: string, value: string| number | boolean) {
+export function updateSettings(key: string, value: string | number | boolean) {
     BRS.settings[key] = value
     if (BRS.databaseSupport) {
         dbPut('data', {
             id: 'settings',
-            contents: JSON.stringify(BRS.settings)
+            contents: JSON.stringify(BRS.settings),
         })
     }
     applySettings(key)

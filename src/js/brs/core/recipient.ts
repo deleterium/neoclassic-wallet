@@ -12,15 +12,9 @@ import { getContactByName } from '../tools/contacts'
 
 import { getAccountIdFromPublicKey } from './encryption'
 
-import {
-    formatNQTAsAmount,
-    formatTimestampAsDateTime
-} from './numbers'
+import { formatNQTAsAmount, formatTimestampAsDateTime } from './numbers'
 
-import {
-    getAccountRSFromObject,
-    convertPublicKeyFromBase36ToBase16
-} from './util'
+import { getAccountRSFromObject, convertPublicKeyFromBase36ToBase16 } from './util'
 
 import { GetAccountResponse, GetAliasResponse } from '../typings'
 
@@ -28,8 +22,10 @@ import { evMultiOutSameAmountChange, evMultiOutAmountChange } from '../modals/se
 
 import { evCheckNumberInput } from './modals'
 
-export function automaticallyCheckRecipient () {
-    const $recipientFields = $('#add_contact_account_id, #update_contact_account_id, #buy_alias_recipient, #escrow_create_recipient, #inline_message_recipient, #reward_assignment_recipient, #sell_alias_recipient, #send_message_recipient, #send_money_recipient, #subscription_cancel_recipient, #subscription_create_recipient, #transfer_alias_recipient, #transfer_asset_recipient, #transfer_asset_multi_recipient')
+export function automaticallyCheckRecipient() {
+    const $recipientFields = $(
+        '#add_contact_account_id, #update_contact_account_id, #buy_alias_recipient, #escrow_create_recipient, #inline_message_recipient, #reward_assignment_recipient, #sell_alias_recipient, #send_message_recipient, #send_money_recipient, #subscription_cancel_recipient, #subscription_create_recipient, #transfer_alias_recipient, #transfer_asset_recipient, #transfer_asset_multi_recipient',
+    )
 
     $recipientFields.on('blur', function () {
         $(this).trigger('checkRecipientEvent')
@@ -48,126 +44,127 @@ export function automaticallyCheckRecipient () {
 
 /**
  * Checks the type of a given account. To be used when user enters an address and the modal shall be updated with the account info.
- * 
+ *
  * @param accountIdOrRs Account ID or RS.
  * @param callback Function to be called async with the response
  */
-function getAccountTypeAndMessage (
+function getAccountTypeAndMessage(
     accountIdOrRs: string,
     callback: (response: {
-        type: 'danger' | 'warning' | 'info';
-        message: string;
-        publicKeyNeeded: 'needed' | 'info' | 'hide';
-        account: GetAccountResponse | null;
-    }) => void
+        type: 'danger' | 'warning' | 'info'
+        message: string
+        publicKeyNeeded: 'needed' | 'info' | 'hide'
+        account: GetAccountResponse | null
+    }) => void,
 ) {
     if (accountIdOrRs === '0' || accountIdOrRs.endsWith('2222-2222-2222-22222')) {
         callback({
             type: 'warning',
             message: $.t('recipient_burning_address'),
             account: null,
-            publicKeyNeeded: 'hide'
+            publicKeyNeeded: 'hide',
         })
         return
     }
 
-    sendRequest('getAccount', {
-        account: accountIdOrRs
-    }, function (response: GetAccountResponse) {
-        if (response.errorCode) {
-            switch (response.errorCode) {
-            case 4:
+    sendRequest(
+        'getAccount',
+        {
+            account: accountIdOrRs,
+        },
+        function (response: GetAccountResponse) {
+            if (response.errorCode) {
+                switch (response.errorCode) {
+                    case 4:
+                        callback({
+                            type: 'danger',
+                            message: $.t('recipient_malformed'),
+                            account: null,
+                            publicKeyNeeded: 'hide',
+                        })
+                        return
+                    case 5:
+                        callback({
+                            type: 'warning',
+                            message: $.t('recipient_unknown_pka'),
+                            account: null,
+                            publicKeyNeeded: 'needed',
+                        })
+                        return
+                }
                 callback({
                     type: 'danger',
-                    message: $.t('recipient_malformed'),
+                    message: $.t('recipient_problem') + ' ' + String(response.errorDescription).escapeHTML(),
                     account: null,
-                    publicKeyNeeded: 'hide'
+                    publicKeyNeeded: 'hide',
                 })
                 return
-            case 5:
+            }
+            if (response.isAT) {
+                callback({
+                    type: 'info',
+                    message: $.t('recipient_smart_contract', {
+                        burst: formatNQTAsAmount(response.balanceNQT),
+                        valueSuffix: BRS.valueSuffix,
+                    }),
+                    account: response,
+                    publicKeyNeeded: 'hide',
+                })
+                return
+            }
+            if (response.isSecured === false) {
                 callback({
                     type: 'warning',
-                    message: $.t('recipient_unknown_pka'),
-                    account: null,
-                    publicKeyNeeded: 'needed'
+                    message: $.t('recipient_no_public_key', {
+                        burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
+                        valueSuffix: BRS.valueSuffix,
+                    }),
+                    account: response,
+                    publicKeyNeeded: 'needed',
                 })
                 return
             }
             callback({
-                type: 'danger',
-                message: $.t('recipient_problem') + ' ' + String(response.errorDescription).escapeHTML(),
-                account: null,
-                publicKeyNeeded: 'hide'
-            })
-            return
-        }
-        if (response.isAT) {
-            callback({
                 type: 'info',
-                message: $.t('recipient_smart_contract', {
-                    burst: formatNQTAsAmount(response.balanceNQT),
-                    valueSuffix: BRS.valueSuffix
-                }),
-                account: response,
-                publicKeyNeeded: 'hide'
-            })
-            return
-        }
-        if (response.isSecured === false) {
-            callback({
-                type: 'warning',
-                message: $.t('recipient_no_public_key', {
+                message: $.t('recipient_info', {
                     burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
-                    valueSuffix: BRS.valueSuffix
+                    valueSuffix: BRS.valueSuffix,
                 }),
                 account: response,
-                publicKeyNeeded: 'needed'
+                publicKeyNeeded: 'info',
             })
-            return
-        }
-        callback({
-            type: 'info',
-            message: $.t('recipient_info', {
-                burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
-                valueSuffix: BRS.valueSuffix
-            }),
-            account: response,
-            publicKeyNeeded: 'info'
-        })
-    })
+        },
+    )
 }
 
-export function evMalformedAddressClick (el: JQuery.ClickEvent) {
+export function evMalformedAddressClick(el: JQuery.ClickEvent) {
     $(el.currentTarget)
         .closest('form')
         .find('input[name=recipient],input[name=account_id]')
-        .val(
-            $(el.currentTarget).data('address')
-        ).trigger('blur')
+        .val($(el.currentTarget).data('address'))
+        .trigger('blur')
 }
 
-function formatRecipientPublicKey (
-    toType: 'needed' | 'info' | 'hide',
-    form: JQuery<HTMLFormElement>,
-    publicKey?: string
-) {
+function formatRecipientPublicKey(toType: 'needed' | 'info' | 'hide', form: JQuery<HTMLFormElement>, publicKey?: string) {
     switch (toType) {
-    case 'needed':
-        form.find('input[name=recipientPublicKey]').val('').prop('disabled', false)
-        form.find('.recipient_public_key').show()
-        break
-    case 'hide':
-        form.find('input[name=recipientPublicKey]').val('').prop('disabled', false)
-        form.find('.recipient_public_key').hide()
-        break
-    default:
-        // info
-        form.find('input[name=recipientPublicKey]').val(publicKey ?? '').prop('disabled', true)
-        form.find('.recipient_public_key').show()
+        case 'needed':
+            form.find('input[name=recipientPublicKey]').val('').prop('disabled', false)
+            form.find('.recipient_public_key').show()
+            break
+        case 'hide':
+            form.find('input[name=recipientPublicKey]').val('').prop('disabled', false)
+            form.find('.recipient_public_key').hide()
+            break
+        default:
+            // info
+            form.find('input[name=recipientPublicKey]')
+                .val(publicKey ?? '')
+                .prop('disabled', true)
+            form.find('.recipient_public_key').show()
     }
 }
 
-function checkRecipient (account: string, form: JQuery<HTMLFormElement>) {
+function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
     const callout = form.find('.account_info').first()
     const accountInputField = form.find('input[name=converted_account_id]')
     const merchantInfoField = form.find('input[name=merchant_info]')
@@ -188,7 +185,7 @@ function checkRecipient (account: string, form: JQuery<HTMLFormElement>) {
                 const checkRS = getAccountIdFromPublicKey(publicKey, true)
                 if (!checkRS.includes(accountParts[2])) {
                     // Public key does not match RS Address
-                    formatRecipientPublicKey("hide", form)
+                    formatRecipientPublicKey('hide', form)
                     updateCallout(callout, 'alert-danger', $.t('recipient_malformed'))
                     return
                 }
@@ -270,9 +267,10 @@ function checkRecipient (account: string, form: JQuery<HTMLFormElement>) {
         getAccountTypeAndMessage(contact.account, function (response) {
             formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
             checkForMerchant(response.account?.description, form)
-            const message = $.t('contact_account_link', { account_id: getAccountRSFromObject(contact, 'account') })
-                + ' '
-                + response.message.escapeHTML()
+            const message =
+                $.t('contact_account_link', { account_id: getAccountRSFromObject(contact, 'account') }) +
+                ' ' +
+                response.message.escapeHTML()
             updateCallout(callout, 'alert-' + response.type, message)
             if (response.type === 'info' || response.type === 'warning') {
                 accountInputField.val(contact.accountRS)
@@ -344,19 +342,15 @@ function checkRecipientAlias(account: string, form: JQuery<HTMLFormElement>) {
 }
 
 function updateCallout(callout: JQuery<HTMLElement>, alertClass: string, message: string) {
-    callout
-        .removeClass('alert-info alert-danger alert-warning')
-        .addClass(alertClass)
-        .html(message)
-        .show()
+    callout.removeClass('alert-info alert-danger alert-warning').addClass(alertClass).html(message).show()
     if (alertClass === 'alert-danger') {
-        callout.closest('form').find('input[name="recipient"]').addClass('is-invalid');
+        callout.closest('form').find('input[name="recipient"]').addClass('is-invalid')
     } else {
-        callout.closest('form').find('input[name="recipient"]').removeClass('is-invalid');
+        callout.closest('form').find('input[name="recipient"]').removeClass('is-invalid')
     }
 }
 
-function checkForMerchant (accountInfo: string | undefined, form: JQuery<HTMLFormElement>) {
+function checkForMerchant(accountInfo: string | undefined, form: JQuery<HTMLFormElement>) {
     if (!accountInfo) return
     const requestType = form.find('input[name=request_type]').val()
     if (requestType !== 'sendMoney' && requestType !== 'transferAsset') {
@@ -372,7 +366,7 @@ function checkForMerchant (accountInfo: string | undefined, form: JQuery<HTMLFor
     }
 }
 
-export function evSpanRecipientSelectorClickButton (event: JQuery.ClickEvent) {
+export function evSpanRecipientSelectorClickButton(event: JQuery.ClickEvent) {
     const element = event.target
     const $list = $(element).parent().find('ul')
     if (!Object.keys(BRS.contacts).length) {
@@ -396,19 +390,11 @@ export function evSpanRecipientSelectorClickButton (event: JQuery.ClickEvent) {
     }
 }
 
-export function evSpanRecipientSelectorClickUlLiA (e: JQuery.ClickEvent) {
+export function evSpanRecipientSelectorClickUlLiA(e: JQuery.ClickEvent) {
     const element = e.target
     e.preventDefault()
-    $(element)
-        .closest('form')
-        .find('input[name=converted_account_id]')
-        .val('')
-    $(element)
-        .closest('.input-group')
-        .find('input')
-        .not('[type=hidden]')
-        .val($(element).data('contact'))
-        .trigger('blur')
+    $(element).closest('form').find('input[name=converted_account_id]').val('')
+    $(element).closest('.input-group').find('input').not('[type=hidden]').val($(element).data('contact')).trigger('blur')
 }
 
 export function evAddRecipientsClick(e: JQuery.ClickEvent) {

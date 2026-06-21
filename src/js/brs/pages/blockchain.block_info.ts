@@ -1,9 +1,9 @@
-import { BRS } from '..';
-import { GetBlockResponse, Transaction } from '../typings';
-import { formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers';
-import { sendRequest } from '../core/send_request';
-import { getTransactionDetails } from '../tools/transactions';
-import { dataLoaded } from '../core/util';
+import { BRS } from '..'
+import { GetBlockResponse, Transaction } from '../typings'
+import { formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers'
+import { sendRequest } from '../core/send_request'
+import { getTransactionDetails } from '../tools/transactions'
+import { dataLoaded } from '../core/util'
 
 /**
  * Draws the page 'Blockchain' -> 'Blocks Info' with latest block available.
@@ -19,30 +19,37 @@ export function pagesBlockInfo() {
  */
 export function blockInfoLoad(blockheight: number | '') {
     if (blockheight === '') {
-        blockheight = BRS.blocks[0].height;
+        blockheight = BRS.blocks[0].height
     }
 
-    sendRequest('getBlock+', {
-        height: blockheight,
-        includeTransactions: true
-    }, function (response: GetBlockResponse) {
-        if (response.errorCode) {
-            $.notify($.t('invalid_blockheight'), { type: 'danger' });
-            dataLoaded('');
-            return;
-        }
-        $('#block_info_input_block').val(blockheight);
-        const rows = (response.transactions as Transaction[]).reduce((prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr as Transaction), '');
-        dataLoaded(rows);
-    });
+    sendRequest(
+        'getBlock+',
+        {
+            height: blockheight,
+            includeTransactions: true,
+        },
+        function (response: GetBlockResponse) {
+            if (response.errorCode) {
+                $.notify($.t('invalid_blockheight'), { type: 'danger' })
+                dataLoaded('')
+                return
+            }
+            $('#block_info_input_block').val(blockheight)
+            const rows = (response.transactions as Transaction[]).reduce(
+                (prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr as Transaction),
+                '',
+            )
+            dataLoaded(rows)
+        },
+    )
 }
 
 function getTransactionInBlocksRowHTML(transaction: Transaction) {
-    const details = getTransactionDetails(transaction);
-    const transactionId = String(transaction.transaction).escapeHTML();
-    const hasMessage = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '';
-    const timestamp = formatTimestampAsDateTime(transaction.timestamp);
-    const fee = formatNQTAsAmount(transaction.feeNQT);
+    const details = getTransactionDetails(transaction)
+    const transactionId = String(transaction.transaction).escapeHTML()
+    const hasMessage = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : ''
+    const timestamp = formatTimestampAsDateTime(transaction.timestamp)
+    const fee = formatNQTAsAmount(transaction.feeNQT)
 
     return `
         <tr>
@@ -55,5 +62,5 @@ function getTransactionInBlocksRowHTML(transaction: Transaction) {
           <td>${details.circleText}</td>
           <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
           <td>${fee}</td>
-        </tr>`;
+        </tr>`
 }

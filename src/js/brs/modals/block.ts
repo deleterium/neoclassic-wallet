@@ -9,29 +9,31 @@ import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount } from '../core/numbers'
 
-import {
-    createInfoTable
-} from '../core/util'
+import { createInfoTable } from '../core/util'
 
 import { getTransactionDetails } from '../tools/transactions'
 import { GetBlockResponse, Transaction } from '../typings'
 
-export function evBlocksTableClick (event: Event) {
+export function evBlocksTableClick(event: Event) {
     event.preventDefault()
     if (BRS.fetchingModalData) {
         return
     }
     BRS.fetchingModalData = true
     const blockHeight = $(event.target as HTMLElement).data('block')
-    sendRequest('getBlock+', {
-        height: blockHeight,
-        includeTransactions: 'true'
-    }, function (response: GetBlockResponse) {
-        showBlockModal(response)
-    })
+    sendRequest(
+        'getBlock+',
+        {
+            height: blockHeight,
+            includeTransactions: 'true',
+        },
+        function (response: GetBlockResponse) {
+            showBlockModal(response)
+        },
+    )
 }
 
-export function showBlockModal (block: GetBlockResponse) {
+export function showBlockModal(block: GetBlockResponse) {
     $('#block_info_modal_block').text(block.block)
     const blockDetails = $.extend({}, block) as any
     delete blockDetails.transactions
@@ -48,8 +50,8 @@ export function showBlockModal (block: GetBlockResponse) {
         return
     }
     $('#block_info_transactions_none').hide()
-    $('#block_info_transactions_table').show();
-    (block.transactions as Transaction[]).sort(function (a: Transaction, b: Transaction) {
+    $('#block_info_transactions_table').show()
+    ;(block.transactions as Transaction[]).sort(function (a: Transaction, b: Transaction) {
         return a.timestamp - b.timestamp
     })
     let rows = ''

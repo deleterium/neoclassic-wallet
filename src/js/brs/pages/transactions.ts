@@ -1,107 +1,107 @@
-import { BRS } from '..';
-import { getContactByName } from '../tools/contacts';
-import { sendRequest } from '../core/send_request';
-import { getUnconfirmedTransactionsFromCache, dataLoaded } from '../core/util';
-import { reloadCurrentPage } from '../core/navigation';
-import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers';
-import { getTransactionDetails } from '../tools/transactions';
-import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings';
-import { mapUnconfirmedToTransaction } from '../core/check_incoming';
+import { BRS } from '..'
+import { getContactByName } from '../tools/contacts'
+import { sendRequest } from '../core/send_request'
+import { getUnconfirmedTransactionsFromCache, dataLoaded } from '../core/util'
+import { reloadCurrentPage } from '../core/navigation'
+import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers'
+import { getTransactionDetails } from '../tools/transactions'
+import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
+import { mapUnconfirmedToTransaction } from '../core/check_incoming'
 
 export function pagesTransactions() {
     function getFrom() {
-        const from = $('input[name=transactions_from_account]:checked').val();
+        const from = $('input[name=transactions_from_account]:checked').val()
         if (from === 'me') {
-            return BRS.account;
+            return BRS.account
         }
         // from 'others'
-        const fromWho = ($('#transaction_from_account_account').val() as string).trim();
+        const fromWho = ($('#transaction_from_account_account').val() as string).trim()
         if (BRS.rsRegEx.test(fromWho) || BRS.idRegEx.test(fromWho)) {
-            return fromWho;
+            return fromWho
         }
-        const foundContact = getContactByName(fromWho);
+        const foundContact = getContactByName(fromWho)
         if (foundContact) {
-            return foundContact.accountRS;
+            return foundContact.accountRS
         }
-        return '';
+        return ''
     }
 
-    const account = getFrom();
+    const account = getFrom()
     if (!account) {
-        $.notify(
-            $.t('name_not_in_contacts', { name: account }),
-            { type: 'danger' }
-        );
-        return;
+        $.notify($.t('name_not_in_contacts', { name: account }), { type: 'danger' })
+        return
     }
 
     if (BRS.transactionsPageType === 'unconfirmed') {
-        displayUnconfirmedTransactions(account);
-        return;
+        displayUnconfirmedTransactions(account)
+        return
     }
 
-    let rows = '';
-    let unconfirmedTransactions: Transaction[] | undefined;
+    let rows = ''
+    let unconfirmedTransactions: Transaction[] | undefined
     const params: {
         account: string
-        firstIndex: number;
-        lastIndex: number;
-        includeIndirect: boolean;
-        type?: string;
+        firstIndex: number
+        lastIndex: number
+        includeIndirect: boolean
+        type?: string
         subtype?: string
     } = {
         account,
         firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
         lastIndex: BRS.pageSize * BRS.pageNumber,
-        includeIndirect: true
-    };
+        includeIndirect: true,
+    }
 
     if (BRS.transactionsPageType) {
         const types = BRS.transactionsPageType.split(':')
-        params.type = types[0];
-        params.subtype = types[1];
-        unconfirmedTransactions = getUnconfirmedTransactionsFromCache(Number(params.type), Number(params.subtype));
+        params.type = types[0]
+        params.subtype = types[1]
+        unconfirmedTransactions = getUnconfirmedTransactionsFromCache(Number(params.type), Number(params.subtype))
     } else {
-        unconfirmedTransactions = BRS.unconfirmedTransactions;
+        unconfirmedTransactions = BRS.unconfirmedTransactions
     }
 
     if (unconfirmedTransactions && BRS.pageNumber === 1) {
-        rows = unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '');
+        rows = unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '')
     }
 
     sendRequest('getAccountTransactions+', params, (response: GetAccountTransactionsResponse) => {
         if (response.transactions && response.transactions.length) {
             if (response.transactions.length > BRS.pageSize) {
-                BRS.hasMorePages = true;
-                response.transactions.pop();
+                BRS.hasMorePages = true
+                response.transactions.pop()
             }
-            rows += response.transactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '');
+            rows += response.transactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '')
         }
-        dataLoaded(rows);
-    });
+        dataLoaded(rows)
+    })
 }
 
 function displayUnconfirmedTransactions(viewAccount: string) {
     sendRequest('getUnconfirmedTransactions', {}, function (response: GetUnconfirmedTransactionsResponse) {
-        let rows = '';
+        let rows = ''
 
         if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
-            rows = response.unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(mapUnconfirmedToTransaction(currTr), viewAccount), '');
+            rows = response.unconfirmedTransactions.reduce(
+                (prev, currTr) => prev + getTransactionRowHTML(mapUnconfirmedToTransaction(currTr), viewAccount),
+                '',
+            )
         }
 
-        dataLoaded(rows);
-    });
+        dataLoaded(rows)
+    })
 }
 
 function getTransactionRowHTML(transaction: Transaction, viewAccount: string) {
-    const details = getTransactionDetails(transaction, viewAccount);
+    const details = getTransactionDetails(transaction, viewAccount)
 
-    let confirmationHTML = BRS.pendingTransactionHTML;
+    let confirmationHTML = BRS.pendingTransactionHTML
     if (transaction.height !== UNCONFIRMED_HEIGHT) {
         confirmationHTML = formatNumber(transaction.confirmations)
     }
-    const rowClass = (transaction.height === UNCONFIRMED_HEIGHT && details.toFromViewer) ? " class='tentative'" : '';
-    const messageIcon = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : '';
+    const rowClass = transaction.height === UNCONFIRMED_HEIGHT && details.toFromViewer ? " class='tentative'" : ''
+    const messageIcon = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : ''
 
     return `
         <tr ${rowClass}>

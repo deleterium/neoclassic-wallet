@@ -1,62 +1,70 @@
-import { BRS } from '..';
-import { AnyAssetOrder, GetTransactionResponse, UNCONFIRMED_HEIGHT } from '../typings';
-import { pageLoaded, reloadCurrentPage } from '../core/navigation';
-import { getAssetDetails } from '../tools/assets';
-import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from '../core/numbers';
-import { sendRequest } from '../core/send_request';
-import { dataLoadFinished } from '../core/util';
+import { BRS } from '..'
+import { AnyAssetOrder, GetTransactionResponse, UNCONFIRMED_HEIGHT } from '../typings'
+import { pageLoaded, reloadCurrentPage } from '../core/navigation'
+import { getAssetDetails } from '../tools/assets'
+import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from '../core/numbers'
+import { sendRequest } from '../core/send_request'
+import { dataLoadFinished } from '../core/util'
 
 export function pagesOpenOrders() {
-    let loaded = 0;
+    let loaded = 0
     function allLoaded() {
-        loaded++;
+        loaded++
         if (loaded === 2) {
-            pageLoaded();
+            pageLoaded()
         }
     }
-    getOpenOrders('ask', allLoaded);
-    getOpenOrders('bid', allLoaded);
+    getOpenOrders('ask', allLoaded)
+    getOpenOrders('bid', allLoaded)
 }
 
 function getOpenOrders(type: 'ask' | 'bid', callback: () => void) {
-    const getCurrentOrders = `getAccountCurrent${type.capitalize()}Orders+`;
-    const typeOrderName = `${type}Orders`;
+    const getCurrentOrders = `getAccountCurrent${type.capitalize()}Orders+`
+    const typeOrderName = `${type}Orders`
 
-    sendRequest(getCurrentOrders, {
-        account: BRS.account
-    }, function (response: any) {
-        if (response[typeOrderName] === undefined || response[typeOrderName].length === 0) {
-            drawOrdersTable(getUnconfirmedOrders(type), type, callback);
-            return;
-        }
-        const anyOrders: AnyAssetOrder[] = response[typeOrderName]
-        anyOrders.sort(function (a, b) {
-            if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                return 1;
+    sendRequest(
+        getCurrentOrders,
+        {
+            account: BRS.account,
+        },
+        function (response: any) {
+            if (response[typeOrderName] === undefined || response[typeOrderName].length === 0) {
+                drawOrdersTable(getUnconfirmedOrders(type), type, callback)
+                return
             }
-            if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                return -1;
-            }
-            if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
-                return 1;
-            }
-            if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
-                return -1;
-            }
-            return 0;
-        });
-        drawOrdersTable(response[typeOrderName].concat(getUnconfirmedOrders(type)), type, callback);
-        for (const order of response[typeOrderName] as AnyAssetOrder[]) {
-            sendRequest('getTransaction+', {
-                transaction: order.order
-            }, function (startingOrder: GetTransactionResponse) {
-                if (startingOrder.errorCode) {
-                    fillOrderDetails(order.order, order.decimals, order.quantityQNT)
+            const anyOrders: AnyAssetOrder[] = response[typeOrderName]
+            anyOrders.sort(function (a, b) {
+                if (a.name.toLowerCase() > b.name.toLowerCase()) {
+                    return 1
                 }
-                fillOrderDetails(order.order, order.decimals, order.quantityQNT, startingOrder.attachment.quantityQNT)
-            });
-        }
-    });
+                if (a.name.toLowerCase() < b.name.toLowerCase()) {
+                    return -1
+                }
+                if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
+                    return 1
+                }
+                if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
+                    return -1
+                }
+                return 0
+            })
+            drawOrdersTable(response[typeOrderName].concat(getUnconfirmedOrders(type)), type, callback)
+            for (const order of response[typeOrderName] as AnyAssetOrder[]) {
+                sendRequest(
+                    'getTransaction+',
+                    {
+                        transaction: order.order,
+                    },
+                    function (startingOrder: GetTransactionResponse) {
+                        if (startingOrder.errorCode) {
+                            fillOrderDetails(order.order, order.decimals, order.quantityQNT)
+                        }
+                        fillOrderDetails(order.order, order.decimals, order.quantityQNT, startingOrder.attachment.quantityQNT)
+                    },
+                )
+            }
+        },
+    )
 }
 
 function fillOrderDetails(orderId: string, decimals: number, currentQNT: string, startingQNT?: string) {
@@ -65,11 +73,11 @@ function fillOrderDetails(orderId: string, decimals: number, currentQNT: string,
         return
     }
     $(`#order${orderId}total`).text(formatQNTAsQuantity(startingQNT, decimals))
-    $(`#order${orderId}percent`).text((100n - (BigInt(currentQNT) * 100n / BigInt(startingQNT))).toString() + '%')
+    $(`#order${orderId}percent`).text((100n - (BigInt(currentQNT) * 100n) / BigInt(startingQNT)).toString() + '%')
 }
 
 function getUnconfirmedOrders(type: 'ask' | 'bid') {
-    const unconfirmedOrders: AnyAssetOrder[] = [];
+    const unconfirmedOrders: AnyAssetOrder[] = []
     for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
         if (unconfirmedTransaction.type === 2 && unconfirmedTransaction.subtype === (type === 'ask' ? 2 : 3)) {
             const foundAsset = getAssetDetails(unconfirmedTransaction.attachment.asset)
@@ -84,49 +92,51 @@ function getUnconfirmedOrders(type: 'ask' | 'bid') {
                 priceNQT: unconfirmedTransaction.attachment.priceNQT,
                 quantityQNT: unconfirmedTransaction.attachment.quantityQNT,
                 type,
-                price: ''
-            });
+                price: '',
+            })
         }
     }
-    return unconfirmedOrders;
+    return unconfirmedOrders
 }
 
 function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid', callback: () => void) {
     if (!orders.length) {
-        $('#open_' + type + '_orders_table tbody').empty();
-        dataLoadFinished($('#open_' + type + '_orders_table'));
+        $('#open_' + type + '_orders_table tbody').empty()
+        dataLoadFinished($('#open_' + type + '_orders_table'))
 
-        callback();
+        callback()
 
-        return;
+        return
     }
 
-    let rows = '';
+    let rows = ''
 
     for (const completeOrder of orders) {
-        let cancelled = false;
+        let cancelled = false
         for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
-            if (unconfirmedTransaction.type === 2 &&
+            if (
+                unconfirmedTransaction.type === 2 &&
                 unconfirmedTransaction.subtype === (type === 'ask' ? 4 : 5) &&
-                unconfirmedTransaction.attachment.order === completeOrder.order) {
-                cancelled = true;
-                break;
+                unconfirmedTransaction.attachment.order === completeOrder.order
+            ) {
+                cancelled = true
+                break
             }
         }
 
-        const totalNQT = calculateOrderTotalNQT(completeOrder.quantityQNT, completeOrder.priceNQT);
+        const totalNQT = calculateOrderTotalNQT(completeOrder.quantityQNT, completeOrder.priceNQT)
 
-        let rowClass = '';
+        let rowClass = ''
         if (cancelled) {
-            rowClass = "class='text-muted text-line-through'";
+            rowClass = "class='text-muted text-line-through'"
         } else {
             if (completeOrder.height === 0) {
-                rowClass = "class='text-muted'";
+                rowClass = "class='text-muted'"
             }
         }
-        let cancelText = '';
+        let cancelText = ''
         if (rowClass === '') {
-            cancelText = `<a href='#' data-toggle='modal' data-target='#cancel_order_modal' data-order='${completeOrder.order}' data-type='${type}'><i class="fas fa-trash"></i></a>`;
+            cancelText = `<a href='#' data-toggle='modal' data-target='#cancel_order_modal' data-order='${completeOrder.order}' data-type='${type}'><i class="fas fa-trash"></i></a>`
         } else {
             cancelText = BRS.pendingTransactionHTML
         }
@@ -139,18 +149,20 @@ function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid', callback:
                 <td>${formatPriceNQTAsPriceQuantity(completeOrder.priceNQT, completeOrder.decimals)}</td>
                 <td>${formatNQTAsAmount(totalNQT)}</td>
                 <td class='cancel'>${cancelText}</td>
-            </tr>`;
+            </tr>`
     }
 
-    $('#open_' + type + '_orders_table tbody').empty().append(rows);
+    $('#open_' + type + '_orders_table tbody')
+        .empty()
+        .append(rows)
 
-    dataLoadFinished($('#open_' + type + '_orders_table'));
+    dataLoadFinished($('#open_' + type + '_orders_table'))
 
-    callback();
+    callback()
 }
 
 export function incomingOpenOrders() {
     if (BRS.checkIncoming.newTransactions || BRS.checkIncoming.unconfirmedChanged) {
-        reloadCurrentPage();
+        reloadCurrentPage()
     }
 }

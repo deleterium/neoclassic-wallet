@@ -4,18 +4,11 @@
 
 import { BRS } from '..'
 
-import {
-    evSidebarClick,
-    reloadCurrentPage,
-    goToPage,
-    goToPageNumber
-} from './navigation'
+import { evSidebarClick, reloadCurrentPage, goToPage, goToPageNumber } from './navigation'
 
 import { autoSelectServer, getState } from './lockscreen'
 
-import {
-    updateSettings
-} from '../pages/settings'
+import { updateSettings } from '../pages/settings'
 
 import {
     showLoginOrWelcomeScreen,
@@ -25,12 +18,10 @@ import {
     verifyGeneratedPassphrase,
     evAccountPhraseCustomPanelSubmit,
     evLoginButtonClick,
-    logout
+    logout,
 } from './login'
 
-import {
-    blockInfoLoad
-} from '../pages/blockchain.block_info'
+import { blockInfoLoad } from '../pages/blockchain.block_info'
 
 import {
     evAliasModalOnShowBsModal,
@@ -38,33 +29,20 @@ import {
     evRegisterAliasModalOnShowBsModal,
     setAliasType,
     evSellAliasSellToSpecificClick,
-    showAliasModal
+    showAliasModal,
 } from '../modals/aliases'
 
 import { evAliasSearchSubmit } from '../pages/aliases'
 
-import {
-    evDeleteContactModalOnShowBsModal,
-    evUpdateContactModalOnShowBsModal
-} from '../modals/contacts'
+import { evDeleteContactModalOnShowBsModal, evUpdateContactModalOnShowBsModal } from '../modals/contacts'
 
-import {
-    exportContacts,
-    importContacts
-} from '../pages/contacts'
+import { exportContacts, importContacts } from '../pages/contacts'
 
-import {
-    submitForm
-} from './forms'
+import { submitForm } from './forms'
 
-import {
-    parseAmountToNQT,
-    formatNQTAsAmount
-} from './numbers'
+import { parseAmountToNQT, formatNQTAsAmount } from './numbers'
 
-import {
-    convertNumericToRSAccountFormat,
-} from './util'
+import { convertNumericToRSAccountFormat } from './util'
 
 import {
     bookmarkAllUserAssets,
@@ -75,42 +53,26 @@ import {
     evAssetExchangeOrdersTableClick,
     evCalculatePricePreviewInput,
     evAssetExchangeSidebarContextClick,
-    goToAsset
+    goToAsset,
 } from '../pages/assets.asset_exchange'
 
-import {
-    populateTransferAssetSelector,
-    evAssetOrderModalOnShowBsModal,
-    evAssetSelectorButtonClick
-} from '../modals/assets'
+import { populateTransferAssetSelector, evAssetOrderModalOnShowBsModal, evAssetSelectorButtonClick } from '../modals/assets'
 
-import {
-    evTransactionsPageTypeClick
-} from '../pages/transactions'
+import { evTransactionsPageTypeClick } from '../pages/transactions'
 
-import {
-    evSidebarContextOnContextmenu,
-    closeContextMenu
-} from './context_menu'
+import { evSidebarContextOnContextmenu, closeContextMenu } from './context_menu'
 
-import {
-    evMessagesSidebarClick,
-    evMessagesSidebarContextClick
-} from '../pages/messages'
+import { evMessagesSidebarClick, evMessagesSidebarContextClick } from '../pages/messages'
 
 import {
     sendMoneyCalculateTotal,
     resetModalMultiOut,
     evMultiOutSameAmountChange,
     evSameOutCheckboxChange,
-    evMultiOutFeeChange
- } from '../modals/sendmoney'
+    evMultiOutFeeChange,
+} from '../modals/sendmoney'
 
-import {
-    evAddRecipientsClick,
-    evSpanRecipientSelectorClickButton,
-    evSpanRecipientSelectorClickUlLiA
-} from './recipient'
+import { evAddRecipientsClick, evSpanRecipientSelectorClickButton, evSpanRecipientSelectorClickUlLiA } from './recipient'
 
 import {
     evModalOnShowBsModal,
@@ -118,40 +80,26 @@ import {
     evAdvancedInfoClick,
     removeDecryptionForm,
     decryptNoteFormSubmit,
-    evCheckNumberInput
+    evCheckNumberInput,
 } from './modals'
 
-import {
-    showAccountModal,
-    evShowBsTab
-} from '../modals/account'
+import { showAccountModal, evShowBsTab } from '../modals/account'
 
-import {
-    evBlocksTableClick
-} from '../modals/block'
+import { evBlocksTableClick } from '../modals/block'
 
-import {
-    showEscrowDecisionModal
-} from '../modals/escrow'
+import { showEscrowDecisionModal } from '../modals/escrow'
 
-import {
-    evBrsModalServerInfoOnShowBsModal
-} from '../modals/server_info'
+import { evBrsModalServerInfoOnShowBsModal } from '../modals/server_info'
 
-import {
-    showSubscriptionCancelModal
-} from '../modals/subscription'
+import { showSubscriptionCancelModal } from '../modals/subscription'
 
-import {
-    showTransactionModal
-} from '../modals/transaction'
+import { showTransactionModal } from '../modals/transaction'
 
 import { ShowBootstrapModalEvent } from '../typings'
 
 import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
 
-export function addEventListeners () {
-
+export function addEventListeners() {
     // from brs.js
     $('#prefered_node').on('blur', function () {
         getState()
@@ -172,11 +120,11 @@ export function addEventListeners () {
             $list.append("<li class='divider'></li>")
             return
         }
-        for (const server of BRS.nodes.filter(obj => obj.testnet === false)) {
+        for (const server of BRS.nodes.filter((obj) => obj.testnet === false)) {
             $list.append("<li><a class='dropdown-item' href='#' data-server='" + server.address + "'>" + server.address + '</a></li>')
         }
         $list.append("<li><hr class='dropdown-divider'></li>")
-        for (const server of BRS.nodes.filter(obj => obj.testnet === true)) {
+        for (const server of BRS.nodes.filter((obj) => obj.testnet === true)) {
             $list.append("<li><a class='dropdown-item' href='#' data-server='" + server.address + "'>" + server.address + '</a></li>')
         }
     })
@@ -252,7 +200,9 @@ export function addEventListeners () {
     // found on lockscreen.html
     $('#lockscreen_register1, #lockscreen_register2').on('click', registerAccount)
     $('#lockscreen_registration_cancel').on('click', showLoginScreen)
-    $('#lockscreen_registration_cancel2, #lockscreen_registration_cancel3, #lockscreen_registration_cancel4, #lockscreen_registration_cancel5').on('click', showLoginOrWelcomeScreen)
+    $(
+        '#lockscreen_registration_cancel2, #lockscreen_registration_cancel3, #lockscreen_registration_cancel4, #lockscreen_registration_cancel5',
+    ).on('click', showLoginOrWelcomeScreen)
     $('#lockscreen_next').on('click', function () {
         $('.step_2').hide()
         $('.step_3').show()
@@ -558,7 +508,9 @@ export function addEventListeners () {
     $('.advanced_info a').on('click', evAdvancedInfoClick)
 
     // from brs.modals.account.js
-    $('#blocks_table, #forged_blocks_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents').on('click', 'a[data-user]', function (e) {
+    $(
+        '#blocks_table, #forged_blocks_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents',
+    ).on('click', 'a[data-user]', function (e) {
         e.preventDefault()
         const account = $(this).data('user')
         showAccountModal(account)
@@ -577,7 +529,11 @@ export function addEventListeners () {
     })
 
     // from brs.modals.block.js
-    $('#blocks_table, #forged_blocks_table, #dashboard_blocks_table, #search_results_contents').on('click', 'a[data-block]', evBlocksTableClick)
+    $('#blocks_table, #forged_blocks_table, #dashboard_blocks_table, #search_results_contents').on(
+        'click',
+        'a[data-block]',
+        evBlocksTableClick,
+    )
     $('#block_info_modal_info_tab').tab('show')
     $('#block_info_modal').on('hide.bs.modal', function () {
         $('#block_info_modal_info_tab').tab('show')
@@ -639,7 +595,9 @@ export function addEventListeners () {
     })
 
     // from brs.modals.transaction.js
-    $('#transactions_table, #dashboard_transactions_table, #transfer_history_table, #asset_exchange_trade_history_table, #block_info_table, #block_info_transactions_table, #user_info_modal_transactions_table, #search_results_contents').on('click', 'a[data-transaction]', function (e) {
+    $(
+        '#transactions_table, #dashboard_transactions_table, #transfer_history_table, #asset_exchange_trade_history_table, #block_info_table, #block_info_transactions_table, #user_info_modal_transactions_table, #search_results_contents',
+    ).on('click', 'a[data-transaction]', function (e) {
         e.preventDefault()
         const transactionId = $(this).data('transaction')
         showTransactionModal(transactionId)

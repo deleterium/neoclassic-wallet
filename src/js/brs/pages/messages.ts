@@ -2,44 +2,25 @@ import hashicon from 'hashicon'
 
 import { BRS } from '..'
 
-import {
-    reloadCurrentPage,
-    pageLoaded
-} from '../core/navigation'
+import { reloadCurrentPage, pageLoaded } from '../core/navigation'
 
-import {
-    sendRequest
-} from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
-import {
-    getDecryptionPassword
-} from '../core/encryption'
+import { getDecryptionPassword } from '../core/encryption'
 
 import { formatTimestampAsDateTime } from '../core/numbers'
 
-import {
-    getAccountTitleFromObject,
-    getAccountRSFromObject,
-    getUnconfirmedTransactionsFromCache,
-} from '../core/util'
+import { getAccountTitleFromObject, getAccountRSFromObject, getUnconfirmedTransactionsFromCache } from '../core/util'
 
-import {
-    closeContextMenu
-} from '../core/context_menu'
+import { closeContextMenu } from '../core/context_menu'
 
-import {
-    showAccountModal
-} from '../modals/account'
+import { showAccountModal } from '../modals/account'
 
-import {
-    getMessageTextFromTX,
-    getEncryptedMessageFromTX,
-    decryptAttachmentFieldAndUpdateSelector
-} from '../tools/messages'
+import { getMessageTextFromTX, getEncryptedMessageFromTX, decryptAttachmentFieldAndUpdateSelector } from '../tools/messages'
 
 import { GetAccountTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 
-export function pagesMessages () {
+export function pagesMessages() {
     if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
         // we will refresh current chat box
         const chatMessages = buildChatMessages(BRS.currentSubPage)
@@ -59,38 +40,42 @@ export function pagesMessages () {
 
     BRS._messages = {}
 
-    sendRequest('getAccountTransactions+', {
-        account: BRS.account,
-        firstIndex: 0,
-        lastIndex: 74,
-        type: 1,
-        subtype: 0,
-        includeIndirect: false
-    }, function (response: GetAccountTransactionsResponse) {
-        if (response.transactions && response.transactions.length) {
-            for (const tx of response.transactions) {
-                const otherUser = (tx.recipient === BRS.account ? tx.sender : tx.recipient) as string
-                if (!(otherUser in BRS._messages)) {
-                    BRS._messages[otherUser] = []
+    sendRequest(
+        'getAccountTransactions+',
+        {
+            account: BRS.account,
+            firstIndex: 0,
+            lastIndex: 74,
+            type: 1,
+            subtype: 0,
+            includeIndirect: false,
+        },
+        function (response: GetAccountTransactionsResponse) {
+            if (response.transactions && response.transactions.length) {
+                for (const tx of response.transactions) {
+                    const otherUser = (tx.recipient === BRS.account ? tx.sender : tx.recipient) as string
+                    if (!(otherUser in BRS._messages)) {
+                        BRS._messages[otherUser] = []
+                    }
+                    BRS._messages[otherUser].push(tx)
                 }
-                BRS._messages[otherUser].push(tx)
+                displayMessageSidebar()
+            } else {
+                $('#no_message_selected').hide()
+                $('#no_messages_available').show()
             }
-            displayMessageSidebar()
-        } else {
-            $('#no_message_selected').hide()
-            $('#no_messages_available').show()
-        }
-        pageLoaded()
-    })
+            pageLoaded()
+        },
+    )
 }
 
-function displayMessageSidebar () {
+function displayMessageSidebar() {
     let rows = ''
 
     const sidebarUserList: {
-        timestamp: number;
-        user: string;
-        userRS: string;
+        timestamp: number
+        user: string
+        userRS: string
     }[] = []
 
     for (const otherUser in BRS._messages) {
@@ -98,21 +83,25 @@ function displayMessageSidebar () {
 
         // The otherUserRS variable is set to either the senderRS or recipientRS of the first message in the sorted list,
         // depending on whether otherUser matches the sender.
-        const otherUserRS = (otherUser === BRS._messages[otherUser][0].sender ? BRS._messages[otherUser][0].senderRS : BRS._messages[otherUser][0].recipientRS) as string
+        const otherUserRS = (
+            otherUser === BRS._messages[otherUser][0].sender
+                ? BRS._messages[otherUser][0].senderRS
+                : BRS._messages[otherUser][0].recipientRS
+        ) as string
 
         sidebarUserList.push({
             timestamp: BRS._messages[otherUser][BRS._messages[otherUser].length - 1].timestamp,
             user: otherUser,
-            userRS: otherUserRS
+            userRS: otherUserRS,
         })
     }
 
-    sidebarUserList.sort((a, b)  => a.timestamp - b.timestamp)
+    sidebarUserList.sort((a, b) => a.timestamp - b.timestamp)
 
     for (const sidebarUser of sidebarUserList) {
         let dataContact = ''
         if (sidebarUser.userRS in BRS.contacts) {
-            dataContact = ` data-contact="${getAccountTitleFromObject(sidebarUser, 'user')}"`;
+            dataContact = ` data-contact="${getAccountTitleFromObject(sidebarUser, 'user')}"`
         }
 
         rows += `
@@ -126,7 +115,7 @@ function displayMessageSidebar () {
               ${getAccountTitleFromObject(sidebarUser, 'user')}
               <br>
               <small>${formatTimestampAsDateTime(sidebarUser.timestamp)}</small>
-            </a>`;
+            </a>`
     }
 
     $('#messages_vtab').empty().append(rows)
@@ -136,24 +125,30 @@ function displayMessageSidebar () {
     }
 }
 
-export function incomingMessages (transactions: Transaction[]) {
+export function incomingMessages(transactions: Transaction[]) {
     if (!BRS.checkIncoming.newTransactions && !BRS.checkIncoming.unconfirmedChanged) {
         return
     }
     let reloadContent = false
     let reloadSidebar = false
-    const newUnconfMessages = transactions.filter(tx => tx.type === 1 && tx.subtype === 0 && tx.height === UNCONFIRMED_HEIGHT)
+    const newUnconfMessages = transactions.filter((tx) => tx.type === 1 && tx.subtype === 0 && tx.height === UNCONFIRMED_HEIGHT)
     if (newUnconfMessages.length > 0) {
         reloadContent = true
     }
-    const newMessagesTransactions = transactions.filter(tx => tx.type === 1 && tx.subtype === 0 && tx.height !== UNCONFIRMED_HEIGHT && (tx.sender === BRS.account || tx.recipient === BRS.account))
+    const newMessagesTransactions = transactions.filter(
+        (tx) =>
+            tx.type === 1 &&
+            tx.subtype === 0 &&
+            tx.height !== UNCONFIRMED_HEIGHT &&
+            (tx.sender === BRS.account || tx.recipient === BRS.account),
+    )
     for (const trans of newMessagesTransactions) {
         const chatTo = (trans.sender === BRS.account ? trans.recipient : trans.sender) as string
         if (BRS._messages[chatTo] === undefined) {
             reloadSidebar = true
             BRS._messages[chatTo] = [trans]
         } else {
-            if (BRS._messages[chatTo].find(tx => tx.transaction === trans.transaction)) {
+            if (BRS._messages[chatTo].find((tx) => tx.transaction === trans.transaction)) {
                 continue
             }
             BRS._messages[chatTo].push(trans)
@@ -163,10 +158,13 @@ export function incomingMessages (transactions: Transaction[]) {
             reloadContent = true
         }
         if (trans.sender !== BRS.account) {
-            $.notify($.t('you_received_message', {
-                account: getAccountRSFromObject(trans, 'sender'),
-                name: getAccountTitleFromObject(trans, 'sender')
-            }), { type: 'success' })
+            $.notify(
+                $.t('you_received_message', {
+                    account: getAccountRSFromObject(trans, 'sender'),
+                    name: getAccountTitleFromObject(trans, 'sender'),
+                }),
+                { type: 'success' },
+            )
         }
     }
 
@@ -180,7 +178,7 @@ export function incomingMessages (transactions: Transaction[]) {
     }
 }
 
-function buildChatMessages (account_id: string) {
+function buildChatMessages(account_id: string) {
     const msgFromTemplate = `
         <div class="direct-chat-msg %pendingClass%">
             <div class="direct-chat-infos clearfix">
@@ -205,7 +203,7 @@ function buildChatMessages (account_id: string) {
 
     const unconfirmedTransactions = getUnconfirmedTransactionsFromCache(1, 0, {
         recipient: account_id,
-        sender: account_id
+        sender: account_id,
     })
 
     if (unconfirmedTransactions) {
@@ -213,7 +211,6 @@ function buildChatMessages (account_id: string) {
     }
 
     for (const message of messages) {
-
         const containerID = 'message' + message.transaction
         const plainMessage: string | undefined = getMessageTextFromTX(message)
         let messageField = $.t('message_empty')
@@ -233,7 +230,9 @@ function buildChatMessages (account_id: string) {
                     setTimeout(decryptAttachmentFieldAndUpdateSelector, 10, message, 'encryptedMessage', passphrase, containerID)
                 } else {
                     // Show button for decryption
-                    messageField = "<i class='fas fa-exclamation-triangle'></i> " + '<button class="btn btn-warning unlock-messages"><i class="fas fa-key"></i></button>'
+                    messageField =
+                        "<i class='fas fa-exclamation-triangle'></i> " +
+                        '<button class="btn btn-warning unlock-messages"><i class="fas fa-key"></i></button>'
                 }
             }
         }
@@ -264,7 +263,7 @@ function buildChatMessages (account_id: string) {
     return output
 }
 
-export function evMessagesSidebarClick (e: JQuery.ClickEvent) {
+export function evMessagesSidebarClick(e: JQuery.ClickEvent) {
     e.preventDefault()
     const clickedElement = $(e.currentTarget)
 
@@ -292,11 +291,11 @@ export function evMessagesSidebarClick (e: JQuery.ClickEvent) {
     })
     window.scrollTo({
         top: 0,
-        behavior: 'smooth'
+        behavior: 'smooth',
     })
 }
 
-export function evMessagesSidebarContextClick (e: JQuery.ClickEvent) {
+export function evMessagesSidebarContextClick(e: JQuery.ClickEvent) {
     e.preventDefault()
     if (!BRS.selectedContext) return
 
