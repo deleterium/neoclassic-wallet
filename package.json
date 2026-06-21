@@ -5,7 +5,7 @@
   "main": "src/index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "npx eslint './src/js/brs/*' && npx prettier './src/html/**/*' -w --bracket-same-line --print-width 140",
+    "lint": "npx eslint './src/js/brs/*' && npx prettier './src/html/**/*' -w",
     "dev": "node buildIndexHtml.js && ./cpdev.sh && node esbuild.config.js && npm run start",
     "build": "./cpbuild.sh && node buildIndexHtml.js && node esbuild.config.js",
     "lang": "pushd ./lang && ./updateFiles.sh && popd",

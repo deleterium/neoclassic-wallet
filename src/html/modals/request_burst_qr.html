@@ -6,110 +6,105 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
       </div>
       <div class="modal-body">
-          <!-- form -->
-          <div id="request_burst_div">
-            <form role="form" autocomplete="off" name="form_request_burst">
-              <div class="form-group">
-                <label for="request_burst_account_id" data-i18n="recipient">RECIPIENT</label>
-                <div class="input-group">
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="recipient"
-                    id="request_burst_account_id"
-                    placeholder="Recipient Account"
-                    data-i18n="[placeholder]recipient_account"
-                    disabled />
-                  <span class="input-group-text" data-i18n="you">you</span>
-                </div>
+        <!-- form -->
+        <div id="request_burst_div">
+          <form role="form" autocomplete="off" name="form_request_burst">
+            <div class="form-group">
+              <label for="request_burst_account_id" data-i18n="recipient">RECIPIENT</label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  class="form-control"
+                  name="recipient"
+                  id="request_burst_account_id"
+                  placeholder="Recipient Account"
+                  data-i18n="[placeholder]recipient_account"
+                  disabled />
+                <span class="input-group-text" data-i18n="you">you</span>
               </div>
+            </div>
 
-              <!-- Amount template -->
-              <div class="form-group">
-                <label for="request_burst_amount" data-i18n="amount">amount</label>
-                <div class="input-group">
-                  <input
-                    type="text"
-                    name="amountNXT"
-                    id="request_burst_amount"
-                    class="form-control ev-check-number-input"
-                    min="0"
-                    placeholder="Amount"
-                    data-i18n="[placeholder]amount" />
-                  <span class="input-group-text" data-value-suffix=""></span>
-                </div>
+            <!-- Amount template -->
+            <div class="form-group">
+              <label for="request_burst_amount" data-i18n="amount">amount</label>
+              <div class="input-group">
+                <input
+                  type="text"
+                  name="amountNXT"
+                  id="request_burst_amount"
+                  class="form-control ev-check-number-input"
+                  min="0"
+                  placeholder="Amount"
+                  data-i18n="[placeholder]amount" />
+                <span class="input-group-text" data-value-suffix=""></span>
               </div>
+            </div>
 
-              <!-- Fee + deadline template -->
-          <div class="row">
-            <div class="col-8">
-              <div class="form-group has-suggested-fee-group">
-                <label data-i18n="fee">FEE</label>
-                <div class="input-group">
-                  <input
-                    type="text"
-                    name="feeNXT"
-                    id="request_burst_fee"
-                    class="form-control ev-check-number-input"
-                    min="0.01" />
-                  <span class="input-group-text" data-value-suffix=""></span>
-                </div>
-                <div>
-                  <span data-placement="top" data-html="true" data-i18n="[title]suggested_fee_help">
-                    <i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp;&nbsp;
-                  </span>
-                  <span class="suggested_fee_response"></span>
-                  <span class="suggested_fee_spinner">
-                    <i class="fa fa-spinner fa-spin fa-fw text-danger"></i>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-              <div class="form-group">
-                <input type="checkbox" name="immutable" id="request_burst_immutable" checked />
-                <label for="request_burst_immutable"> <span data-i18n="immutable;[title]immutable_title">immutable</span></label>
-              </div>
-              <div class="alert alert-danger error_message" style="display: none"></div>
-
-              <input type="hidden" name="request_type" value="requestBurst" />
-            </form>
-          </div>
-          <!-- end form -->
-          <!-- qr code response -->
-          <div id="request_burst_response_div">
-            <div class="row margin-bottom-10">
-              <div class="col-xs-12 col-sm-12 col-md-12 bold">
-                <span data-i18n="recipient">Recipient</span>:
-                <span id="request_burst_recipient_response" class="text-info"></span>
-              </div>
-            </div>
-            <div class="row margin-bottom-10">
-              <div class="col-xs-12 col-sm-12 col-md-12 bold">
-                <span data-i18n="amount">Amount</span>:
-                <span id="request_burst_amount_response" class="text-info"></span>
-              </div>
-            </div>
-            <div class="row margin-bottom-10">
-              <div class="col-xs-12 col-sm-12 col-md-12 bold">
-                <span data-i18n="fee">Fee</span>:
-                <span id="request_burst_fee_response" class="text-info"></span>
-              </div>
-            </div>
-            <div class="row margin-bottom-10">
-              <div class="col-xs-12 col-sm-12 col-md-12 bold">
-                <span data-i18n="immutable">Immutable</span>:
-                <span id="request_burst_immutable_response" class="text-info"></span>
-              </div>
-            </div>
+            <!-- Fee + deadline template -->
             <div class="row">
-              <div class="col-xs-12 col-sm-12 col-md-12 text-center">
-                <div class="" id="request_burst_qrcode_response"></div>
+              <div class="col-8">
+                <div class="form-group has-suggested-fee-group">
+                  <label data-i18n="fee">FEE</label>
+                  <div class="input-group">
+                    <input type="text" name="feeNXT" id="request_burst_fee" class="form-control ev-check-number-input" min="0.01" />
+                    <span class="input-group-text" data-value-suffix=""></span>
+                  </div>
+                  <div>
+                    <span data-placement="top" data-html="true" data-i18n="[title]suggested_fee_help">
+                      <i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp;&nbsp;
+                    </span>
+                    <span class="suggested_fee_response"></span>
+                    <span class="suggested_fee_spinner">
+                      <i class="fa fa-spinner fa-spin fa-fw text-danger"></i>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            <div class="form-group">
+              <input type="checkbox" name="immutable" id="request_burst_immutable" checked />
+              <label for="request_burst_immutable"> <span data-i18n="immutable;[title]immutable_title">immutable</span></label>
+            </div>
+            <div class="alert alert-danger error_message" style="display: none"></div>
+
+            <input type="hidden" name="request_type" value="requestBurst" />
+          </form>
+        </div>
+        <!-- end form -->
+        <!-- qr code response -->
+        <div id="request_burst_response_div">
+          <div class="row margin-bottom-10">
+            <div class="col-xs-12 col-sm-12 col-md-12 bold">
+              <span data-i18n="recipient">Recipient</span>:
+              <span id="request_burst_recipient_response" class="text-info"></span>
+            </div>
           </div>
-          <!-- end response -->
+          <div class="row margin-bottom-10">
+            <div class="col-xs-12 col-sm-12 col-md-12 bold">
+              <span data-i18n="amount">Amount</span>:
+              <span id="request_burst_amount_response" class="text-info"></span>
+            </div>
+          </div>
+          <div class="row margin-bottom-10">
+            <div class="col-xs-12 col-sm-12 col-md-12 bold">
+              <span data-i18n="fee">Fee</span>:
+              <span id="request_burst_fee_response" class="text-info"></span>
+            </div>
+          </div>
+          <div class="row margin-bottom-10">
+            <div class="col-xs-12 col-sm-12 col-md-12 bold">
+              <span data-i18n="immutable">Immutable</span>:
+              <span id="request_burst_immutable_response" class="text-info"></span>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 text-center">
+              <div class="" id="request_burst_qrcode_response"></div>
+            </div>
+          </div>
+        </div>
+        <!-- end response -->
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" id="new_qr_button" data-i18n="new_qr">New QR</button>

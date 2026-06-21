@@ -49,8 +49,16 @@
                 <label for="sign_message_data_is_hex" data-i18n="hex_encoded">hex_encoded</label>
               </div>
               <div class="form-group">
-                <label for="sign_message_parsed_transaction_or_signed_message" data-i18n="parsed_transaction_or_signed_message">parsed_transaction_or_signed_message</label>
-                <textarea class="form-control" name="parsed_transaction_or_signed_message" id="sign_message_parsed_transaction_or_signed_message" rows="5" readonly placeholder="If data is a hex string containing a transaction, the parsed transaction will be shown here. If not, the signed message will be shown."></textarea>
+                <label for="sign_message_parsed_transaction_or_signed_message" data-i18n="parsed_transaction_or_signed_message"
+                  >parsed_transaction_or_signed_message</label
+                >
+                <textarea
+                  class="form-control"
+                  name="parsed_transaction_or_signed_message"
+                  id="sign_message_parsed_transaction_or_signed_message"
+                  rows="5"
+                  readonly
+                  placeholder="If data is a hex string containing a transaction, the parsed transaction will be shown here. If not, the signed message will be shown."></textarea>
               </div>
 
               <!-- Passphrase template -->
@@ -98,7 +106,7 @@
                 <input type="checkbox" name="messageIsHex" id="verify_message_data_is_hex" />
                 <label for="verify_message_data_is_hex" data-i18n="hex_encoded">hex_encoded</label>
               </div>
-              <div class="form-group" style="display: none;">
+              <div class="form-group" style="display: none">
                 <label for="verify_message_public_key" data-i18n="signer_public_key"></label>
                 <input
                   type="text"
@@ -109,7 +117,7 @@
                   placeholder="hex_encoded"
                   value="" />
               </div>
-              <div class="form-group" style="display: none;">
+              <div class="form-group" style="display: none">
                 <label for="verify_message_signature" data-i18n="signature">signature</label>
                 <input
                   type="text"
