@@ -1,7 +1,3 @@
-/**
- * @depends {jquery}
- */
-
 export default {
     passPhrase: '',
     wordCount: 1626,

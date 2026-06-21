@@ -1,7 +1,3 @@
-/**
- * @depends {brs.js}
- */
-
 import { BRS } from '..'
 
 /**

@@ -1,8 +1,3 @@
-/**
- * @depends {3rdparty/bootstrap.min.js}
- * @depends {3rdparty/notify.min.js}
- */
-
 import { goToAsset } from '../pages/assets.asset_exchange'
 
 import { BRS } from '..'

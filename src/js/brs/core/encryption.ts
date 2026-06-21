@@ -1,7 +1,3 @@
-/**
- * @depends {brs.js}
- */
-
 import { BRS } from '..'
 import { NxtAddress } from '../../util/nxtaddress'
 import pako from 'pako'

@@ -1,9 +1,3 @@
-/**
- * @depends {brs.js}
- * @depends {brs.modals.js}
- */
-
-import converters from '../../util/converters'
 import { BRS } from '..'
 
 import { sendRequest } from '../core/send_request'

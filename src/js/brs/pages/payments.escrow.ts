@@ -1,7 +1,3 @@
-/**
- * @depends {brs.js}
- */
-
 import { BRS } from '..'
 
 import { sendRequest } from '../core/send_request'
