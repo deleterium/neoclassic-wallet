@@ -1,12 +1,12 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { GetAssetResponse, Alias, GetAccountResponse, GetAliasesResponse, GetAssetsByNameResponse } from '../typings';
-import { showAliasModal } from './brs.modals.alias';
-import { showAccountModal } from './brs.modals.account';
-import { showBlockModal } from './brs.modals.block';
-import { showTransactionModal } from './brs.modals.transaction';
-import { sendRequest } from './brs.sendRequest';
-import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from './brs.util';
-import { formatNQTAsAmount } from './brs.numbers';
+import { showAliasModal } from '../modals/aliases';
+import { showAccountModal } from '../modals/account';
+import { showBlockModal } from '../modals/block';
+import { showTransactionModal } from '../modals/transaction';
+import { sendRequest } from '../core/send_request';
+import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from '../core/util';
+import { formatNQTAsAmount } from '../core/numbers';
 
 /**
  * Draws the search results if found many accounts.

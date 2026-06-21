@@ -1,8 +1,8 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { GetAliasesResponse } from '../typings';
-import { goToPage, pageLoaded, reloadCurrentPage } from './brs.navigation';
-import { sendRequest } from './brs.sendRequest';
-import { getUnconfirmedTransactionsFromCache, dataLoadFinished } from './brs.util';
+import { goToPage, pageLoaded, reloadCurrentPage } from '../core/navigation';
+import { sendRequest } from '../core/send_request';
+import { getUnconfirmedTransactionsFromCache, dataLoadFinished } from '../core/util';
 
 export function pagesAliases() {
     sendRequest('getAliases+', {

@@ -1,9 +1,9 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { GetBlockResponse, Transaction } from '../typings';
-import { formatTimestampAsDateTime, formatNQTAsAmount } from './brs.numbers';
-import { sendRequest } from './brs.sendRequest';
-import { getTransactionDetails } from './brs.tx.tools';
-import { dataLoaded } from './brs.util';
+import { formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers';
+import { sendRequest } from '../core/send_request';
+import { getTransactionDetails } from '../tools/transactions';
+import { dataLoaded } from '../core/util';
 
 /**
  * Draws the page 'Blockchain' -> 'Blocks Info' with latest block available.

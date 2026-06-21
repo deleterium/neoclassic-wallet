@@ -1,19 +1,19 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { NxtAddress } from '../util/nxtaddress'
+import { NxtAddress } from '../../util/nxtaddress'
 
 import {
     formatQNTAsQuantity,
     formatNQTAsAmount,
-} from './brs.numbers'
+} from '../core/numbers'
 
 import {
     convertRSAccountToNumeric,
     getAccountLink,
     getAccountTitleFromObject
-} from './brs.util'
+} from '../core/util'
 
-import { getAssetDetails } from './brs.asset.tools'
+import { getAssetDetails } from '../tools/assets'
 
 import { DBAsset, Transaction } from '../typings'
 

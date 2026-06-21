@@ -1,18 +1,18 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     addPagination,
     goToPage,
     pageLoaded
-} from './brs.navigation'
+} from '../core/navigation'
 
 import {
     sendRequest
-} from './brs.sendRequest'
+} from '../core/send_request'
 
 import {
     dbPut
-} from './brs.database'
+} from '../core/database'
 
 import {
     formatPriceNQTAsPriceQuantity,
@@ -23,22 +23,22 @@ import {
     formatNQTAsAmount,
     formatTimestampAsDateTime,
     parsePriceQuantityToPriceNQT
-} from './brs.numbers'
+} from '../core/numbers'
 
 import {
     getAccountTitleFromObject,
     getAccountRSFromObject,
     dataLoadFinished,
-} from './brs.util'
+} from '../core/util'
 
 import {
     closeContextMenu
-} from './brs.contextmenu'
+} from '../core/context_menu'
 
 import {
     cacheAsset,
     getAssetDetails
-} from './brs.asset.tools'
+} from '../tools/assets'
 
 import {
     AnyAssetOrder,

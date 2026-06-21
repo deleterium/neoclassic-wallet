@@ -1,20 +1,20 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     getPublicKeyFromPassphrase,
     getAccountId,
     signBytes,
     verifyBytes
-} from './brs.encryption'
+} from './encryption'
 
-import { parseAmountToNQT } from './brs.numbers'
+import { parseAmountToNQT } from './numbers'
 
 import {
     translateServerError
-} from './brs.util'
+} from './util'
 
-import { showRawTransactionModal } from './brs.modals.advanced'
-import { verifyTransactionBytes } from './brs.verifytransaction'
+import { showRawTransactionModal } from '../modals/advanced'
+import { verifyTransactionBytes } from './verify_transaction'
 import { AjaxResponse } from '../typings'
 
 export function setSavedPassword (password: string) {

@@ -1,11 +1,11 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { sendRequest } from './brs.sendRequest'
+import { sendRequest } from '../core/send_request'
 
-import { formatTimestampAsDateTime } from './brs.numbers'
+import { formatTimestampAsDateTime } from '../core/numbers'
 
 import { Escrow, GetEscrowTransactionResponse } from '../typings'
-import { getAccountTitleFromObject } from './brs.util'
+import { getAccountTitleFromObject } from '../core/util'
 
 export function showEscrowDecisionModal (escrow: Escrow | string) {
     if (BRS.fetchingModalData) {

@@ -1,8 +1,8 @@
-import converters from '../util/converters'
+import converters from '../../util/converters'
 
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { getSavedPassword, sendRequest } from './brs.sendRequest'
+import { getSavedPassword, sendRequest } from '../core/send_request'
 
 import {
     getAccountIdFromPublicKey,
@@ -10,7 +10,7 @@ import {
     getPublicKeyFromPassphrase,
     signBytes,
     verifyBytes
-} from './brs.encryption'
+} from '../core/encryption'
 
 import { HexString, ParseTransactionResponse } from '../typings'
 

@@ -1,12 +1,12 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 import { AjaxResponse, AssetDetails, Transaction } from '../typings'
 
-import { NxtAddress } from '../util/nxtaddress'
+import { NxtAddress } from '../../util/nxtaddress'
 
-import { pageLoaded } from './brs.navigation'
+import { pageLoaded } from './navigation'
 
-import { formatQNTAsQuantity, formatNQTAsAmount } from './brs.numbers'
+import { formatQNTAsQuantity, formatNQTAsAmount } from './numbers'
 
 // region converter
 

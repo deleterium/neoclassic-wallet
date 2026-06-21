@@ -1,8 +1,8 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { checkMinimumFee } from './brs.navigation'
+import { checkMinimumFee } from '../core/navigation'
 
-import { formatNQTAsAmount, parseAmountToNQT } from './brs.numbers'
+import { formatNQTAsAmount, parseAmountToNQT } from '../core/numbers'
 
 export function formRequestBurst (data: any) {
     let amountNQT: string

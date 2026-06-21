@@ -3,30 +3,30 @@
  * @depends {brs.modals.js}
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     sendRequest
-} from './brs.sendRequest'
+} from '../core/send_request'
 
 import {
     calculatePercentage,
     formatQNTAsQuantity,
     formatNQTAsAmount,
     formatTimestampAsDateTime
-} from './brs.numbers'
+} from '../core/numbers'
 
 import {
     convertRSAccountToNumeric,
     getAccountTitle,
     dataLoadFinished
-} from './brs.util'
+} from '../core/util'
 
 import {
     getTransactionDetails
-} from './brs.tx.tools'
+} from '../tools/transactions'
 
-import { NxtAddress } from '../util/nxtaddress'
+import { NxtAddress } from '../../util/nxtaddress'
 
 import {
     GetAccountResponse,
@@ -36,7 +36,7 @@ import {
     GetAssetsByIssuerResponse
 } from '../typings'
 
-import { cacheAsset } from './brs.asset.tools'
+import { cacheAsset } from '../tools/assets'
 
 /** Start the process of showing an "Account Modal". 
  * @param {string|GetAccountResponse} account - Account to be shown.

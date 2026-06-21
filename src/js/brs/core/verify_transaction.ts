@@ -1,8 +1,8 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { Transaction } from '../typings';
-import converters from '../util/converters';
-import { NxtAddress } from '../util/nxtaddress';
-import { convertPublicKeyFromBase36ToBase16 } from './brs.util';
+import converters from '../../util/converters';
+import { NxtAddress } from '../../util/nxtaddress';
+import { convertPublicKeyFromBase36ToBase16 } from './util';
 
 interface AttachmentSpec {
     type: number;

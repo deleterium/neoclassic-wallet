@@ -1,27 +1,27 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     sendRequest
-} from './brs.sendRequest'
+} from './send_request'
 
 import {
     encryptNote,
     createEncryptionToOtherOptions,
     createEncryptionToSelfOptions
-} from './brs.encryption'
+} from './encryption'
 
 import {
     parseAmountToNQT,
     formatNQTAsAmount
-} from './brs.numbers'
+} from './numbers'
 
 import {
     getTranslatedFieldName
-} from './brs.util'
+} from './util'
 
-import { lockModal, unlockModal } from './brs.modal.lockablemodal'
+import { lockModal, unlockModal } from './lockable_modal'
 import { PostResponse, RequestType } from '../typings'
-import { checkIncomingNow } from './brs.checkincoming'
+import { checkIncomingNow } from './check_incoming'
 
 /**
  * There are the 'requestType' in forms that will check if node is in sync before proceed.

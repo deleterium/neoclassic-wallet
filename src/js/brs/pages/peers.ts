@@ -2,17 +2,17 @@
  * @depends {brs.js}
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { reloadCurrentPage } from './brs.navigation'
+import { reloadCurrentPage } from '../core/navigation'
 
-import { sendRequest } from './brs.sendRequest'
+import { sendRequest } from '../core/send_request'
 
-import { formatVolume } from './brs.numbers'
+import { formatVolume } from '../core/numbers'
 
 import {
     dataLoaded
-} from './brs.util'
+} from '../core/util'
 
 import { GetPeerResponse, GetPeersResponse } from '../typings'
 

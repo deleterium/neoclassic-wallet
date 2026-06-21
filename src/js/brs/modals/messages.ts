@@ -1,8 +1,8 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { PostResponse, Transaction } from '../typings';
-import { reloadCurrentPage } from './brs.navigation';
-import { addDecryptedTransactionToCache, getAccountId, setDecryptionPassword, decryptAttachmentField } from './brs.encryption';
-import { getAccountRSFromObject, getUnconfirmedTransactionsFromCache } from './brs.util';
+import { reloadCurrentPage } from '../core/navigation';
+import { addDecryptedTransactionToCache, getAccountId, setDecryptionPassword, decryptAttachmentField } from '../core/encryption';
+import { getAccountRSFromObject, getUnconfirmedTransactionsFromCache } from '../core/util';
 
 export function formsSendMessageComplete(response: PostResponse, data: any) {
     data.message = data._extra.message;

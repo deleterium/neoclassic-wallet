@@ -1,14 +1,14 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { PostResponse } from '../typings';
-import { getContactByName } from './brs.contacts.tools';
-import { evCheckNumberInput } from './brs.modals';
-import { parseAmountToNQT, formatNQTAsAmount } from './brs.numbers';
-import { convertRSAccountToNumeric, getAccountRSFromObject } from './brs.util';
+import { getContactByName } from '../tools/contacts';
+import { evCheckNumberInput } from '../core/modals';
+import { parseAmountToNQT, formatNQTAsAmount } from '../core/numbers';
+import { convertRSAccountToNumeric, getAccountRSFromObject } from '../core/util';
 
 import {
     evSpanRecipientSelectorClickButton,
     evSpanRecipientSelectorClickUlLiA
-} from './brs.recipient';
+} from '../core/recipient';
 
 export function formsSendMoneyComplete(_response: PostResponse, data: any) {
     if (!(data._extra && data._extra.convertedAccount) && !(data.recipient in BRS.contacts)) {

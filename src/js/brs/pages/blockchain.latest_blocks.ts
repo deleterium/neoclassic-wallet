@@ -1,16 +1,16 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     reloadCurrentPage,
-} from './brs.navigation'
+} from '../core/navigation'
 
 import {
     sendRequest
-} from './brs.sendRequest'
+} from '../core/send_request'
 
 import { GetBlocksResponse } from '../typings'
 
-import { drawBlocksInCurrentPage } from './brs.blockchain.tools'
+import { drawBlocksInCurrentPage } from '../tools/blockchain'
 
 /**
  * Draws the page 'Blockchain' -> 'Latest blocks'

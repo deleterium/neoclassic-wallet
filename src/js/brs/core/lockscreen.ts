@@ -1,12 +1,12 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { GetBlochainStatusResponse } from '../typings';
-import { loadClosedGroupsFromDB, loadAssetsFromDB } from './brs.asset.tools';
-import { loadContactsFromDB } from './brs.contacts.tools';
-import { loadSettingsFromDB } from './brs.settings.page';
-import { createDatabase } from './brs.database';
-import { showLockscreen } from './brs.login';
-import { automaticallyCheckRecipient } from './brs.recipient';
-import { sendRequest } from './brs.sendRequest';
+import { loadClosedGroupsFromDB, loadAssetsFromDB } from '../tools/assets';
+import { loadContactsFromDB } from '../tools/contacts';
+import { loadSettingsFromDB } from '../pages/settings';
+import { createDatabase } from './database';
+import { showLockscreen } from './login';
+import { automaticallyCheckRecipient } from './recipient';
+import { sendRequest } from './send_request';
 
 /**
  * Checks prefered node string in login panel. If changed, update BRS with blockchain details.

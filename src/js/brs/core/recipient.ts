@@ -2,31 +2,31 @@
  * @depends {brs.js}
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { NxtAddress } from '../util/nxtaddress'
+import { NxtAddress } from '../../util/nxtaddress'
 
-import { sendRequest } from './brs.sendRequest'
+import { sendRequest } from './send_request'
 
-import { getContactByName } from './brs.contacts.tools'
+import { getContactByName } from '../tools/contacts'
 
-import { getAccountIdFromPublicKey } from './brs.encryption'
+import { getAccountIdFromPublicKey } from './encryption'
 
 import {
     formatNQTAsAmount,
     formatTimestampAsDateTime
-} from './brs.numbers'
+} from './numbers'
 
 import {
     getAccountRSFromObject,
     convertPublicKeyFromBase36ToBase16
-} from './brs.util'
+} from './util'
 
 import { GetAccountResponse, GetAliasResponse } from '../typings'
 
-import { evMultiOutSameAmountChange, evMultiOutAmountChange } from './brs.modal.sendmoney'
+import { evMultiOutSameAmountChange, evMultiOutAmountChange } from '../modals/sendmoney'
 
-import { evCheckNumberInput } from './brs.modals'
+import { evCheckNumberInput } from './modals'
 
 export function automaticallyCheckRecipient () {
     const $recipientFields = $('#add_contact_account_id, #update_contact_account_id, #buy_alias_recipient, #escrow_create_recipient, #inline_message_recipient, #reward_assignment_recipient, #sell_alias_recipient, #send_message_recipient, #send_money_recipient, #subscription_cancel_recipient, #subscription_create_recipient, #transfer_alias_recipient, #transfer_asset_recipient, #transfer_asset_multi_recipient')

@@ -3,17 +3,17 @@
  * @depends {brs.modals.js}
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { sendRequest } from './brs.sendRequest'
+import { sendRequest } from '../core/send_request'
 
-import { formatNQTAsAmount } from './brs.numbers'
+import { formatNQTAsAmount } from '../core/numbers'
 
 import {
     createInfoTable
-} from './brs.util'
+} from '../core/util'
 
-import { getTransactionDetails } from './brs.tx.tools'
+import { getTransactionDetails } from '../tools/transactions'
 import { GetBlockResponse, Transaction } from '../typings'
 
 export function evBlocksTableClick (event: Event) {

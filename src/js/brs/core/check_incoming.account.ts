@@ -1,10 +1,10 @@
 import hashicon from 'hashicon';
-import { BRS } from '.';
+import { BRS } from '..';
 import { GetAccountResponse, AssetBalance } from '../typings';
-import { dbGet, dbPut } from './brs.database';
-import { formatQNTAsQuantity } from './brs.numbers';
-import { sendRequest } from './brs.sendRequest';
-import { formatStyledAmount } from './brs.util';
+import { dbGet, dbPut } from './database';
+import { formatQNTAsQuantity } from './numbers';
+import { sendRequest } from './send_request';
+import { formatStyledAmount } from './util';
 
 /**
  * Not only getAccountInfo, but checks and update coins and assets values. Called every new block was detected.

@@ -1,4 +1,4 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 export function evSidebarContextOnContextmenu (e: JQuery.ContextMenuEvent<HTMLElement>) {
     e.preventDefault()

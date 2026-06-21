@@ -1,10 +1,10 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { AnyAssetOrder, GetTransactionResponse, UNCONFIRMED_HEIGHT } from '../typings';
-import { pageLoaded, reloadCurrentPage } from './brs.navigation';
-import { getAssetDetails } from './brs.asset.tools';
-import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from './brs.numbers';
-import { sendRequest } from './brs.sendRequest';
-import { dataLoadFinished } from './brs.util';
+import { pageLoaded, reloadCurrentPage } from '../core/navigation';
+import { getAssetDetails } from '../tools/assets';
+import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from '../core/numbers';
+import { sendRequest } from '../core/send_request';
+import { dataLoadFinished } from '../core/util';
 
 export function pagesOpenOrders() {
     let loaded = 0;

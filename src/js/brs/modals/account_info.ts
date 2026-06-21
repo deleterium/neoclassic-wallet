@@ -1,4 +1,4 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 import { PostResponse } from '../typings'
 

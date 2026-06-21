@@ -1,19 +1,19 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { NxtAddress } from '../util/nxtaddress'
+import { NxtAddress } from '../../util/nxtaddress'
 
 import {
     sendRequest
-} from './brs.sendRequest'
+} from '../core/send_request'
 
 import {
     formatNQTAsAmount,
     formatTimestampAsDateTime
-} from './brs.numbers'
+} from '../core/numbers'
 
 import {
     createInfoTable,
-} from './brs.util'
+} from '../core/util'
 
 import { GetAliasResponse, PostResponse, ShowBootstrapModalEvent } from '../typings'
 

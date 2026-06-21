@@ -2,52 +2,52 @@
  * @depends {brs.js}
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     checkLocationHash,
-} from './brs.navigation'
+} from './navigation'
 
-import { getAndUpdateAccountDetails } from './brs.checkincoming.account'
+import { getAndUpdateAccountDetails } from './check_incoming.account'
 
 import {
     updateSettings
-} from './brs.settings.page'
+} from '../pages/settings'
 
 import {
     setSavedPassword,
     sendRequest
-} from './brs.sendRequest'
+} from './send_request'
 
 import {
     getContactByName
-} from './brs.contacts.tools'
+} from '../tools/contacts'
 
 import {
     getPublicKeyFromPassphrase,
     getAccountId,
     setEncryptionPassword,
     setDecryptionPassword
-} from './brs.encryption'
+} from './encryption'
 
 import {
     convertNumericToRSAccountFormat,
     setupClipboardFunctionality
-} from './brs.util'
+} from './util'
 
 import {
     cacheUserAssets
-} from './brs.asset.tools'
+} from '../tools/assets'
 
 import {
     getInitialTransactions,
     handleNewBlocks
-} from './brs.checkincoming'
+} from './check_incoming'
 
-import PassPhraseGenerator from './brs.passphrase.generator'
+import PassPhraseGenerator from './passphrase_generator'
 
 import { GetAccountPublicKeyResponse, GetAccountResponse } from '../typings'
-import { convertSecondsToDuration } from './brs.numbers'
+import { convertSecondsToDuration } from './numbers'
 
 export function showLoginOrWelcomeScreen () {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {

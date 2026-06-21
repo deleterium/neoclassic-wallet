@@ -1,14 +1,14 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     reloadCurrentPage,
-} from './brs.navigation'
+} from '../core/navigation'
 
 import {
     dbGet,
     dbPut,
     deleteRecord
-} from './brs.database'
+} from '../core/database'
 
 import { DBContact } from '../typings'
 

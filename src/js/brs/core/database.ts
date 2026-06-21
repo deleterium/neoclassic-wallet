@@ -2,7 +2,7 @@
  * @depends {brs.js}
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
 /**
  * This file provides a replacement for the deprecated WebDB implementation

@@ -15,7 +15,7 @@
  * Requires jQuery 3.5+
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
 interface RequestControllerOptions extends JQueryAjaxSettings {
     currentPageAndSubPage?: string;

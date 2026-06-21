@@ -1,8 +1,8 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { logout } from './brs.login'
+import { logout } from '../core/login'
 
-import { drop } from './brs.database'
+import { drop } from '../core/database'
 
 export function formsClearData (data: any) {
     const onDropped = function (error: Error | null) {

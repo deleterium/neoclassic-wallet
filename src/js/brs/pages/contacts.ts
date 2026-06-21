@@ -1,8 +1,8 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { DBContact } from '../typings';
-import { notifyContactOperationSuccess } from './brs.contacts.tools';
-import { dbGet, dbPut } from './brs.database';
-import { dataLoaded, getAccountRSFromObject } from './brs.util';
+import { notifyContactOperationSuccess } from '../tools/contacts';
+import { dbGet, dbPut } from '../core/database';
+import { dataLoaded, getAccountRSFromObject } from '../core/util';
 
 
 export function pagesContacts() {

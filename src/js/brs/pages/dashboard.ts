@@ -1,13 +1,13 @@
-import { BRS } from "."
+import { BRS } from ".."
 import { Transaction, UNCONFIRMED_HEIGHT } from "../typings";
 
 import {
     formatNQTAsAmount,
     formatNumber,
     formatTimestampAsDateTime
-} from "./brs.numbers"
+} from "../core/numbers"
 
-import { getTransactionDetails } from "./brs.tx.tools"
+import { getTransactionDetails } from "../tools/transactions"
 
 export function incomingUpdateDashboardTransactions(newTransactions: Transaction[]) {
     if (!newTransactions.length) {

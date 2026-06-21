@@ -1,6 +1,6 @@
 import { HexString, ParseTransactionResponse, PostResponse } from '../typings'
 
-import { createInfoTable } from './brs.util'
+import { createInfoTable } from '../core/util'
 
 export function showRawTransactionModal (transaction: PostResponse, signedTransactionBytes: HexString) {
     $('#raw_transaction_modal_unsigned_transaction_bytes').val(transaction.unsignedTransactionBytes)

@@ -1,7 +1,7 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { BlockDetails } from '../typings';
-import { formatTimestampAsDateTime, formatNQTAsAmount, formatNumber, formatVolume, parseAmountToNQT } from './brs.numbers';
-import { getAccountRSFromObject, getAccountTitleFromObject, formatStyledAmount, dataLoaded } from './brs.util';
+import { formatTimestampAsDateTime, formatNQTAsAmount, formatNumber, formatVolume, parseAmountToNQT } from '../core/numbers';
+import { getAccountRSFromObject, getAccountTitleFromObject, formatStyledAmount, dataLoaded } from '../core/util';
 
 /**
  * Draws the page 'Blockchain' -> 'Latest blocks' or the page 'Mining' -> 'Forged blocks'

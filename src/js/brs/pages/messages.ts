@@ -1,41 +1,41 @@
 import hashicon from 'hashicon'
 
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     reloadCurrentPage,
     pageLoaded
-} from './brs.navigation'
+} from '../core/navigation'
 
 import {
     sendRequest
-} from './brs.sendRequest'
+} from '../core/send_request'
 
 import {
     getDecryptionPassword
-} from './brs.encryption'
+} from '../core/encryption'
 
-import { formatTimestampAsDateTime } from './brs.numbers'
+import { formatTimestampAsDateTime } from '../core/numbers'
 
 import {
     getAccountTitleFromObject,
     getAccountRSFromObject,
     getUnconfirmedTransactionsFromCache,
-} from './brs.util'
+} from '../core/util'
 
 import {
     closeContextMenu
-} from './brs.contextmenu'
+} from '../core/context_menu'
 
 import {
     showAccountModal
-} from './brs.modals.account'
+} from '../modals/account'
 
 import {
     getMessageTextFromTX,
     getEncryptedMessageFromTX,
     decryptAttachmentFieldAndUpdateSelector
-} from './brs.messages.tools'
+} from '../tools/messages'
 
 import { GetAccountTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 

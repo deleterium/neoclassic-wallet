@@ -1,8 +1,8 @@
-import { BRS } from '.';
-import { reloadCurrentPage } from './brs.navigation';
-import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from './brs.numbers';
-import { sendRequest } from './brs.sendRequest';
-import { dataLoaded } from './brs.util';
+import { BRS } from '..';
+import { reloadCurrentPage } from '../core/navigation';
+import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from '../core/numbers';
+import { sendRequest } from '../core/send_request';
+import { dataLoaded } from '../core/util';
 import { GetAskOrdersResponse, GetAssetResponse, GetBidOrdersResponse, MyAssetDetails } from '../typings';
 
 export function pagesMyAssets() {

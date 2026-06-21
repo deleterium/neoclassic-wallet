@@ -2,20 +2,20 @@
  * @depends {brs.js}
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     evSidebarClick,
     reloadCurrentPage,
     goToPage,
     goToPageNumber
-} from './brs.navigation'
+} from './navigation'
 
-import { autoSelectServer, getState } from './brs.lockscreen'
+import { autoSelectServer, getState } from './lockscreen'
 
 import {
     updateSettings
-} from './brs.settings.page'
+} from '../pages/settings'
 
 import {
     showLoginOrWelcomeScreen,
@@ -26,11 +26,11 @@ import {
     evAccountPhraseCustomPanelSubmit,
     evLoginButtonClick,
     logout
-} from './brs.login'
+} from './login'
 
 import {
     blockInfoLoad
-} from './brs.blockchain.page.blockInfo'
+} from '../pages/blockchain.block_info'
 
 import {
     evAliasModalOnShowBsModal,
@@ -39,32 +39,32 @@ import {
     setAliasType,
     evSellAliasSellToSpecificClick,
     showAliasModal
-} from './brs.modals.alias'
+} from '../modals/aliases'
 
-import { evAliasSearchSubmit } from './brs.alias.page'
+import { evAliasSearchSubmit } from '../pages/aliases'
 
 import {
     evDeleteContactModalOnShowBsModal,
     evUpdateContactModalOnShowBsModal
-} from './brs.modals.contacts'
+} from '../modals/contacts'
 
 import {
     exportContacts,
     importContacts
-} from './brs.contacts.page'
+} from '../pages/contacts'
 
 import {
     submitForm
-} from './brs.forms'
+} from './forms'
 
 import {
     parseAmountToNQT,
     formatNQTAsAmount
-} from './brs.numbers'
+} from './numbers'
 
 import {
     convertNumericToRSAccountFormat,
-} from './brs.util'
+} from './util'
 
 import {
     bookmarkAllUserAssets,
@@ -76,27 +76,27 @@ import {
     evCalculatePricePreviewInput,
     evAssetExchangeSidebarContextClick,
     goToAsset
-} from './brs.asset.page.assetexchange'
+} from '../pages/assets.asset_exchange'
 
 import {
     populateTransferAssetSelector,
     evAssetOrderModalOnShowBsModal,
     evAssetSelectorButtonClick
-} from './brs.modals.assets'
+} from '../modals/assets'
 
 import {
     evTransactionsPageTypeClick
-} from './brs.tx.pages.transactions'
+} from '../pages/transactions'
 
 import {
     evSidebarContextOnContextmenu,
     closeContextMenu
-} from './brs.contextmenu'
+} from './context_menu'
 
 import {
     evMessagesSidebarClick,
     evMessagesSidebarContextClick
-} from './brs.messages.page'
+} from '../pages/messages'
 
 import {
     sendMoneyCalculateTotal,
@@ -104,13 +104,13 @@ import {
     evMultiOutSameAmountChange,
     evSameOutCheckboxChange,
     evMultiOutFeeChange
- } from './brs.modal.sendmoney'
+ } from '../modals/sendmoney'
 
 import {
     evAddRecipientsClick,
     evSpanRecipientSelectorClickButton,
     evSpanRecipientSelectorClickUlLiA
-} from './brs.recipient'
+} from './recipient'
 
 import {
     evModalOnShowBsModal,
@@ -119,36 +119,36 @@ import {
     removeDecryptionForm,
     decryptNoteFormSubmit,
     evCheckNumberInput
-} from './brs.modals'
+} from './modals'
 
 import {
     showAccountModal,
     evShowBsTab
-} from './brs.modals.account'
+} from '../modals/account'
 
 import {
     evBlocksTableClick
-} from './brs.modals.block'
+} from '../modals/block'
 
 import {
     showEscrowDecisionModal
-} from './brs.modals.escrow'
+} from '../modals/escrow'
 
 import {
     evBrsModalServerInfoOnShowBsModal
-} from './brs.modals.serverinfo'
+} from '../modals/server_info'
 
 import {
     showSubscriptionCancelModal
-} from './brs.modals.subscription'
+} from '../modals/subscription'
 
 import {
     showTransactionModal
-} from './brs.modals.transaction'
+} from '../modals/transaction'
 
 import { ShowBootstrapModalEvent } from '../typings'
 
-import { evVerifyMessageDataIsTransactionClick } from './brs.modals.signmessage'
+import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
 
 export function addEventListeners () {
 

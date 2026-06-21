@@ -1,15 +1,15 @@
-import { BRS } from '.';
-import { sendRequest } from './brs.sendRequest';
+import { BRS } from '..';
+import { sendRequest } from './send_request';
 
 import {
     incomingUpdateDashboardTransactions,
     updateConfirmationsInDashboardTransactions,
     updateDashboardBlocks
-} from './brs.dashboard.page';
+} from '../pages/dashboard';
 
-import { getAndUpdateAccountDetails } from './brs.checkincoming.account';
+import { getAndUpdateAccountDetails } from './check_incoming.account';
 
-import { cacheUserAssets, saveCachedAssets } from './brs.asset.tools';
+import { cacheUserAssets, saveCachedAssets } from '../tools/assets';
 
 import {
     GetAccountTransactionIdsResponse,

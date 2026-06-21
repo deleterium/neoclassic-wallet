@@ -1,8 +1,8 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { GetAssetTransfersResponse } from '../typings';
-import { formatTimestampAsDateTime, formatQNTAsQuantity } from './brs.numbers';
-import { sendRequest } from './brs.sendRequest';
-import { getAccountRSFromObject, getAccountTitleFromObject, dataLoaded } from './brs.util';
+import { formatTimestampAsDateTime, formatQNTAsQuantity } from '../core/numbers';
+import { sendRequest } from '../core/send_request';
+import { getAccountRSFromObject, getAccountTitleFromObject, dataLoaded } from '../core/util';
 
 export function pagesTransferHistory() {
     sendRequest('getAssetTransfers+', {

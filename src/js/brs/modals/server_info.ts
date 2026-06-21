@@ -3,15 +3,15 @@
  * @depends {brs.modals.js}
  */
 
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { sendRequest } from './brs.sendRequest'
+import { sendRequest } from '../core/send_request'
 
 import {
     formatVolume,
     formatNQTAsAmount,
     formatTimestampAsDateTime
-} from './brs.numbers'
+} from '../core/numbers'
 
 import { GetStateResponse } from '../typings'
 

@@ -1,7 +1,7 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { DBAsset, GetAssetResponse } from '../typings';
-import { dbGet, dbPut } from './brs.database';
-import { sendRequest } from './brs.sendRequest';
+import { dbGet, dbPut } from '../core/database';
+import { sendRequest } from '../core/send_request';
 
 export function loadClosedGroupsFromDB() {
     if (!BRS.databaseSupport) return;

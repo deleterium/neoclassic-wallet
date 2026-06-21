@@ -2,7 +2,7 @@
  * Check file ./doc.md for values conventions: Amount, Quantity, NQT, QNT, PriceNQT and PriceQuantity
  */
 
-import { BRS } from ".";
+import { BRS } from "..";
 
 interface ParsedNumberObject {
     integer: string;

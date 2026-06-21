@@ -3,16 +3,16 @@
  * @depends {brs.modals.js}
  */
 
-import converters from '../util/converters'
-import { BRS } from '.'
+import converters from '../../util/converters'
+import { BRS } from '..'
 
-import { sendRequest } from './brs.sendRequest'
+import { sendRequest } from '../core/send_request'
 
 import {
     fullHashToId,
     getDecryptedMessageFromCache,
     getDecryptionPassword
-} from './brs.encryption'
+} from '../core/encryption'
 
 import {
     formatPriceNQTAsPriceQuantity,
@@ -23,7 +23,7 @@ import {
     formatOrderTotal,
     formatNumber,
     convertSecondsToDuration
-} from './brs.numbers'
+} from '../core/numbers'
 
 import {
     convertNumericToRSAccountFormat,
@@ -31,19 +31,19 @@ import {
     getAccountTitle,
     getAccountRSFromObject,
     createInfoTable,
-} from './brs.util'
+} from '../core/util'
 
-import { removeDecryptionForm } from './brs.modals'
+import { removeDecryptionForm } from '../core/modals'
 
-import { getAssetDetails } from './brs.asset.tools'
+import { getAssetDetails } from '../tools/assets'
 
-import { getTransactionDetails } from './brs.tx.tools'
+import { getTransactionDetails } from '../tools/transactions'
 
 import {
     decryptAttachmentFieldAndUpdateSelector,
     getMessageBytesFromTX,
     getMessageTextFromTX,
-} from './brs.messages.tools'
+} from '../tools/messages'
 
 import { DBAsset, GetIndirectIncomingResponse, Transaction } from '../typings'
 

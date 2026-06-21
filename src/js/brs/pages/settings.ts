@@ -1,15 +1,15 @@
 import i18next from 'i18next'
 
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { pageLoaded } from './brs.navigation'
+import { pageLoaded } from '../core/navigation'
 
-import { submitForm } from './brs.forms'
+import { submitForm } from '../core/forms'
 
-import { dbGet, dbPut } from './brs.database'
+import { dbGet, dbPut } from '../core/database'
 
-import { formatNQTAsAmount } from './brs.numbers'
-import { RequestController } from './brs.requestcontroller'
+import { formatNQTAsAmount } from '../core/numbers'
+import { RequestController } from '../core/request_controller'
 
 export function pagesSettings () {
     $('#settings_language').val(BRS.settings.language)

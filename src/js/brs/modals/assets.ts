@@ -1,10 +1,10 @@
-import { BRS } from '.';
+import { BRS } from '..';
 import { PostResponse, ShowBootstrapModalEvent } from '../typings';
-import { reloadCurrentPage } from './brs.navigation';
-import { loadAssetExchangeSidebar } from './brs.asset.page.assetexchange';
-import { dbPut } from './brs.database';
-import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from './brs.numbers';
-import { getTranslatedFieldName } from './brs.util';
+import { reloadCurrentPage } from '../core/navigation';
+import { loadAssetExchangeSidebar } from '../pages/assets.asset_exchange';
+import { dbPut } from '../core/database';
+import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from '../core/numbers';
+import { getTranslatedFieldName } from '../core/util';
 
 export function populateTransferAssetSelector($invoker: JQuery<HTMLElement>) {
     const assetId = $invoker.data('asset') ?? '';

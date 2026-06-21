@@ -1,22 +1,22 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
 import {
     parseAmountToNQT,
     formatNQTAsAmount
-} from './brs.numbers'
+} from './numbers'
 
-import { drawAttachmentMessages } from './brs.modals.transaction'
+import { drawAttachmentMessages } from '../modals/transaction'
 
 import {
     getAccountId,
     setDecryptionPassword
-} from './brs.encryption'
+} from './encryption'
 
-import { resetModalMultiOut } from './brs.modal.sendmoney'
+import { resetModalMultiOut } from '../modals/sendmoney'
 
-import { unlockModal } from './brs.modal.lockablemodal'
+import { unlockModal } from './lockable_modal'
 import { SuggestFee } from '../typings'
-import { sendRequest } from './brs.sendRequest'
+import { sendRequest } from './send_request'
 
 /**
  * @param {JQuery.TriggeredEvent} e

@@ -11,18 +11,18 @@ import '../util/string.extensions'
 
 import {
     pagesSettings
-} from './brs.settings.page'
+} from './pages/settings'
 
 import {
     pagesLatestBlocks,
     incomingLatestBlocks
-} from './brs.blockchain.page.latestBlocks'
+} from './pages/blockchain.latest_blocks'
 
-import { pagesForgedBlocks } from './brs.mining.page.forgedBlocks'
+import { pagesForgedBlocks } from './pages/mining.forged_blocks'
 
 import {
     pagesBlockInfo
-} from './brs.blockchain.page.blockInfo'
+} from './pages/blockchain.block_info'
 
 import {
     formsSellAlias,
@@ -32,39 +32,39 @@ import {
     formsSetAlias,
     formsSetAliasError,
     formsSetAliasComplete
-} from './brs.modals.alias'
+} from './modals/aliases'
 
 import {
     pagesAliases,
     incomingAliases
-} from './brs.alias.page'
+} from './pages/aliases'
 
-import { pagesAt } from './brs.payment.page.at'
+import { pagesAt } from './pages/payments.at'
 
 import {
     formsAddContact,
     formsUpdateContact,
     formsDeleteContact
-} from './brs.modals.contacts'
+} from './modals/contacts'
 
-import { pagesContacts } from './brs.contacts.page'
+import { pagesContacts } from './pages/contacts'
 
-import { formsSendMoneyEscrow, pagesEscrow } from './brs.payment.page.escrow'
+import { formsSendMoneyEscrow, pagesEscrow } from './pages/payments.escrow'
 
 import {
     formsAddCommitment
-} from './brs.forms'
+} from './core/forms'
 
-import { addEventListeners } from './brs.eventlisteners'
+import { addEventListeners } from './core/event_listeners'
 
 import {
     pagesAssetExchange,
     formsAddAssetBookmark,
     incomingAssetExchange,
     formsOrderAssetComplete
-} from './brs.asset.page.assetexchange'
+} from './pages/assets.asset_exchange'
 
-import { pagesTransferHistory } from './brs.asset.page.transferhistory'
+import { pagesTransferHistory } from './pages/assets.transfer_history'
 
 import {
     formsOrderAsset,
@@ -76,69 +76,69 @@ import {
     formsTransferAssetComplete,
     formsCancelOrder,
     formsCancelOrderComplete
-} from './brs.modals.assets'
+} from './modals/assets'
 
 import {
     pagesOpenOrders,
     incomingOpenOrders
-} from './brs.asset.page.openorders'
+} from './pages/assets.open_orders'
 
 import {
     pagesMyAssets,
     incomingMyAssets
-} from './brs.asset.page.myassets'
+} from './pages/assets.my_assets'
 
 import {
     pagesTransactions
-} from './brs.tx.pages.transactions'
+} from './pages/transactions'
 
 import {
     pagesMessages,
     incomingMessages
-} from './brs.messages.page'
+} from './pages/messages'
 
 import {
     formsSendMessageComplete,
     formsDecryptMessages
-} from './brs.modals.messages'
+} from './modals/messages'
 
 import {
     pagesPeers,
     incomingPeers
-} from './brs.peers.page'
+} from './pages/peers'
 
 import {
     formsSendMoneyComplete,
     formsSendMoneyMulti
-} from './brs.modal.sendmoney'
+} from './modals/sendmoney'
 
 import {
     pagesSubscription
-} from './brs.payment.page.subscription'
+} from './pages/payments.subscription'
 
 import {
     formsSetAccountInfoComplete
-} from './brs.modals.accountinfo'
+} from './modals/account_info'
 
 import {
     formsBroadcastTransactionComplete,
     formsParseTransactionComplete,
     formsParseTransactionError
-} from './brs.modals.advanced'
+} from './modals/advanced'
 
 import {
     formsSignModalButtonClicked,
     formsSignMessage,
     formsVerifyMessage
-} from './brs.modals.signmessage'
+} from './modals/sign_message'
 
-import { reloadCurrentPage } from './brs.navigation'
+import { reloadCurrentPage } from './core/navigation'
 
-import { init } from './brs.lockscreen'
+import { init } from './core/lockscreen'
 
-import { pagesSearchResults } from './brs.searchResults.page'
+import { pagesSearchResults } from './pages/search_results.page'
 
-import { formsClearData } from './brs.modal.cleardata'
+import { formsClearData } from './modals/clear_data'
 
 import {
     BlockchainStatus,
@@ -150,11 +150,11 @@ import {
     GetAssetResponse,
     GetBlockResponse,
     Transaction,
-} from '../typings'
+} from './typings'
 
-import { formRequestBurst } from './brs.modals.request'
+import { formRequestBurst } from './modals/request_coins'
 
-import { RequestController } from './brs.requestcontroller'
+import { RequestController } from './core/request_controller'
 
 export const BRS = {
     version: '1.0.0',

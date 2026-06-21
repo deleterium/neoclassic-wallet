@@ -1,11 +1,11 @@
-import { BRS } from '.'
+import { BRS } from '..'
 
-import { sendRequest } from './brs.sendRequest'
+import { sendRequest } from '../core/send_request'
 
 import {
     formatNQTAsAmount,
     formatTimestampAsDateTime
-} from './brs.numbers'
+} from '../core/numbers'
 
 import { Subscription, GetSubscriptionResponse } from '../typings'
 

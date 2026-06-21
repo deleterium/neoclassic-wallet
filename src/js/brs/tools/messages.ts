@@ -1,6 +1,6 @@
 import { HexString, Transaction } from '../typings';
-import converters from '../util/converters';
-import { getDecryptedMessageFromCache, decryptAttachmentField } from './brs.encryption';
+import converters from '../../util/converters';
+import { getDecryptedMessageFromCache, decryptAttachmentField } from '../core/encryption';
 
 /**
  * Get plain message in a given transaction.

@@ -1,12 +1,12 @@
-import { BRS } from '.';
-import { getContactByName } from './brs.contacts.tools';
-import { sendRequest } from './brs.sendRequest';
-import { getUnconfirmedTransactionsFromCache, dataLoaded } from './brs.util';
-import { reloadCurrentPage } from './brs.navigation';
-import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from './brs.numbers';
-import { getTransactionDetails } from './brs.tx.tools';
+import { BRS } from '..';
+import { getContactByName } from '../tools/contacts';
+import { sendRequest } from '../core/send_request';
+import { getUnconfirmedTransactionsFromCache, dataLoaded } from '../core/util';
+import { reloadCurrentPage } from '../core/navigation';
+import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers';
+import { getTransactionDetails } from '../tools/transactions';
 import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings';
-import { mapUnconfirmedToTransaction } from './brs.checkincoming';
+import { mapUnconfirmedToTransaction } from '../core/check_incoming';
 
 export function pagesTransactions() {
     function getFrom() {

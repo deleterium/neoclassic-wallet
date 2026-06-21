@@ -5,9 +5,9 @@
 
 import {
     goToAsset
-} from './brs.asset.page.assetexchange'
+} from '../pages/assets.asset_exchange'
 
-import { BRS } from '.'
+import { BRS } from '..'
 
 /**
  * Handles clicks in sidebar, changing current page if needed
