@@ -11,14 +11,18 @@ export function pagesForgedBlocks() {
         'getAccountBlocks+',
         {
             account: BRS.account,
-            firstIndex: 0,
-            lastIndex: BRS.pageSize,
+            firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
+            lastIndex: BRS.pageSize * BRS.pageNumber,
             timestamp: 0,
         },
         function (response: GetAccountBlocksResponse) {
             if (!response.blocks || response.blocks.length === 0) {
                 drawBlocksInCurrentPage([])
                 return
+            }
+            if (response.blocks.length > BRS.pageSize) {
+                BRS.hasMorePages = true
+                response.blocks.pop()
             }
             // We have blocks!
             drawBlocksInCurrentPage(response.blocks)
