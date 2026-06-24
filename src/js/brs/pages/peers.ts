@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { reloadCurrentPage } from '../core/navigation'
 
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 import { formatVolume } from '../core/numbers'
 
@@ -10,86 +10,76 @@ import { dataLoaded } from '../core/util'
 
 import { GetPeerResponse, GetPeersResponse } from '../typings'
 
-export function pagesPeers() {
-    sendRequest(
-        'getPeers+',
-        {
-            active: 'true',
-        },
-        function (response: GetPeersResponse) {
-            if (!response.peers || response.peers.length === 0) {
-                $('#peers_uploaded_volume, #peers_downloaded_volume, #peers_connected, #peers_up_to_date')
-                    .html('0')
-                    .removeClass('loading_dots')
-                dataLoaded()
+export async function pagesPeers() {
+    const response: GetPeersResponse = await sendRequestA('getPeers+', {
+        active: 'true',
+    })
+
+    if (!response.peers || response.peers.length === 0) {
+        $('#peers_uploaded_volume, #peers_downloaded_volume, #peers_connected, #peers_up_to_date').html('0').removeClass('loading_dots')
+        dataLoaded()
+        return
+    }
+
+    const peers: Record<string, GetPeerResponse> = {}
+    let nrPeers = 0
+
+    let rows = ''
+    for (const peerIP of response.peers) {
+        rows += `
+            <tr id='peer-${peerIP.replace(/\./g, '-')}'>
+              <td>${peerIP}</td>
+              <td>${BRS.pendingTransactionHTML}</td>
+              <td>${BRS.pendingTransactionHTML}</td>
+              <td>${BRS.pendingTransactionHTML}</td>
+              <td>${BRS.pendingTransactionHTML}</td>
+            </tr>`
+
+        sendRequestA('getPeer+', {
+            peer: peerIP,
+        }).then((response2: GetPeerResponse) => {
+            if (BRS.currentPage !== 'peers') {
                 return
             }
 
-            const peers: Record<string, GetPeerResponse> = {}
-            let nrPeers = 0
-
-            let rows = ''
-            for (const peerIP of response.peers) {
-                rows += `
-                <tr id='peer-${peerIP.replace(/\./g, '-')}'>
-                  <td>${peerIP}</td>
-                  <td>${BRS.pendingTransactionHTML}</td>
-                  <td>${BRS.pendingTransactionHTML}</td>
-                  <td>${BRS.pendingTransactionHTML}</td>
-                  <td>${BRS.pendingTransactionHTML}</td>
-                </tr>`
-
-                sendRequest(
-                    'getPeer+',
-                    {
-                        peer: peerIP,
-                    },
-                    function (response2: GetPeerResponse, input: { peer: string }) {
-                        if (BRS.currentPage !== 'peers') {
-                            return
-                        }
-
-                        nrPeers++
-                        if (response2.errorCode) {
-                            if (nrPeers === response.peers.length) {
-                                peersFinished(peers)
-                            }
-                            return
-                        }
-
-                        peers[input.peer] = response2
-
-                        // Append row dynamically as each peer is received
-                        const peerData = response2
-                        const versionToCompare = BRS.blockchainStatus?.version
-                        const isUpToDate = versionCompare(peerData.version, versionToCompare)
-                        const isConnected = peerData.state === 1
-
-                        const row = `
-                    <tr>
-                      <td>
-                        ${isConnected ? "<i class='fas fa-check-circle' style='color:#5cb85c' title='Connected'></i>" : "<i class='fas fa-times-circle' style='color:#f0ad4e' title='Disconnected'></i>"}
-                        &nbsp;&nbsp;
-                        ${peerData.announcedAddress ? String(peerData.announcedAddress).escapeHTML() : 'No name'}
-                      </td>
-                      <td>${formatVolume(peerData.downloadedVolume)}</td>
-                      <td>${formatVolume(peerData.uploadedVolume)}</td>
-                      <td><span class='label label-${isUpToDate ? 'success' : 'danger'}'>
-                        ${peerData.application && peerData.version ? String(peerData.application).escapeHTML() + ' ' + String(peerData.version).escapeHTML() : '?'}
-                      </span></td>
-                      <td>${peerData.platform ? String(peerData.platform).escapeHTML() : '?'}</td>
-                    </tr>`
-                        $('#peer-' + input.peer.replace(/\./g, '-')).replaceWith(row)
-
-                        if (nrPeers === response.peers.length) {
-                            peersFinished(peers)
-                        }
-                    },
-                )
+            nrPeers++
+            if (response2.errorCode) {
+                if (nrPeers === response.peers.length) {
+                    peersFinished(peers)
+                }
+                return
             }
-            dataLoaded(rows)
-        },
-    )
+
+            peers[peerIP] = response2
+
+            // Append row dynamically as each peer is received
+            const peerData = response2
+            const versionToCompare = BRS.blockchainStatus?.version
+            const isUpToDate = versionCompare(peerData.version, versionToCompare)
+            const isConnected = peerData.state === 1
+
+            const row = `
+                <tr>
+                  <td>
+                    ${isConnected ? "<i class='fas fa-check-circle' style='color:#5cb85c' title='Connected'></i>" : "<i class='fas fa-times-circle' style='color:#f0ad4e' title='Disconnected'></i>"}
+                    &nbsp;&nbsp;
+                    ${peerData.announcedAddress ? String(peerData.announcedAddress).escapeHTML() : 'No name'}
+                  </td>
+                  <td>${formatVolume(peerData.downloadedVolume)}</td>
+                  <td>${formatVolume(peerData.uploadedVolume)}</td>
+                  <td><span class='label label-${isUpToDate ? 'success' : 'danger'}'>
+                    ${peerData.application && peerData.version ? String(peerData.application).escapeHTML() + ' ' + String(peerData.version).escapeHTML() : '?'}
+                  </span></td>
+                  <td>${peerData.platform ? String(peerData.platform).escapeHTML() : '?'}</td>
+                </tr>`
+            $('#peer-' + peerIP.replace(/\./g, '-')).replaceWith(row)
+
+            if (nrPeers === response.peers.length) {
+                peersFinished(peers)
+            }
+        })
+    }
+    dataLoaded(rows)
 }
 
 function peersFinished(peers: Record<string, GetPeerResponse>) {

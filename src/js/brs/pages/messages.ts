@@ -4,7 +4,7 @@ import { BRS } from '..'
 
 import { reloadCurrentPage, pageLoaded } from '../core/navigation'
 
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 import { getDecryptionPassword } from '../core/encryption'
 
@@ -20,7 +20,7 @@ import { getMessageTextFromTX, getEncryptedMessageFromTX, decryptAttachmentField
 
 import { GetAccountTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 
-export function pagesMessages() {
+export async function pagesMessages() {
     if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
         // we will refresh current chat box
         const chatMessages = buildChatMessages(BRS.currentSubPage)
@@ -40,33 +40,29 @@ export function pagesMessages() {
 
     BRS._messages = {}
 
-    sendRequest(
-        'getAccountTransactions+',
-        {
-            account: BRS.account,
-            firstIndex: 0,
-            lastIndex: 74,
-            type: 1,
-            subtype: 0,
-            includeIndirect: false,
-        },
-        function (response: GetAccountTransactionsResponse) {
-            if (response.transactions && response.transactions.length) {
-                for (const tx of response.transactions) {
-                    const otherUser = (tx.recipient === BRS.account ? tx.sender : tx.recipient) as string
-                    if (!(otherUser in BRS._messages)) {
-                        BRS._messages[otherUser] = []
-                    }
-                    BRS._messages[otherUser].push(tx)
-                }
-                displayMessageSidebar()
-            } else {
-                $('#no_message_selected').hide()
-                $('#no_messages_available').show()
+    const response: GetAccountTransactionsResponse = await sendRequestA('getAccountTransactions+', {
+        account: BRS.account,
+        firstIndex: 0,
+        lastIndex: 74,
+        type: 1,
+        subtype: 0,
+        includeIndirect: false,
+    })
+
+    if (response.transactions && response.transactions.length) {
+        for (const tx of response.transactions) {
+            const otherUser = (tx.recipient === BRS.account ? tx.sender : tx.recipient) as string
+            if (!(otherUser in BRS._messages)) {
+                BRS._messages[otherUser] = []
             }
-            pageLoaded()
-        },
-    )
+            BRS._messages[otherUser].push(tx)
+        }
+        displayMessageSidebar()
+    } else {
+        $('#no_message_selected').hide()
+        $('#no_messages_available').show()
+    }
+    pageLoaded()
 }
 
 function displayMessageSidebar() {

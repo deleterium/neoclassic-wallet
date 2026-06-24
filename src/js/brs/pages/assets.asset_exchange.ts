@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { addPagination, goToPage, pageLoaded } from '../core/navigation'
 
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 import { dbPut } from '../core/database'
 
@@ -56,17 +56,13 @@ export function bookmarkAllUserAssets() {
 
     for (const eachAsset of idsToFetchAndBookmark) {
         // Not all are cached, so request info about missing.
-        sendRequest(
-            'getAsset+',
-            {
-                asset: eachAsset,
-            },
-            function (response: GetAssetResponse) {
-                if (!response.errorCode) {
-                    cacheAsset(response)
-                }
-            },
-        )
+        sendRequestA('getAsset+', {
+            asset: eachAsset,
+        }).then((response: GetAssetResponse) => {
+            if (!response.errorCode) {
+                cacheAsset(response)
+            }
+        })
     }
     if (idsToFetchAndBookmark.length) {
         // TODO Add translation
@@ -316,7 +312,7 @@ export function incomingAssetExchange() {
     updateQuantitiesInAssetExchangeSidebarContent()
 }
 
-export function evAssetExchangeSidebarClick(e: JQuery.ClickEvent) {
+export async function evAssetExchangeSidebarClick(e: JQuery.ClickEvent) {
     const element = e.currentTarget
     e.preventDefault()
 
@@ -368,18 +364,14 @@ export function evAssetExchangeSidebarClick(e: JQuery.ClickEvent) {
     if (foundAsset) {
         loadAsset(foundAsset, true, true)
     } else {
-        sendRequest(
-            'getAsset+',
-            {
-                asset: BRS.currentAssetID,
-            },
-            function (response: GetAssetResponse) {
-                if (!response.errorCode && response.asset === BRS.currentAssetID) {
-                    const addedAsset = cacheAsset(response)
-                    loadAsset(addedAsset, true, false)
-                }
-            },
-        )
+        const response: GetAssetResponse = await sendRequestA('getAsset+', {
+            asset: BRS.currentAssetID,
+        })
+
+        if (!response.errorCode && response.asset === BRS.currentAssetID) {
+            const addedAsset = cacheAsset(response)
+            loadAsset(addedAsset, true, false)
+        }
     }
 }
 
@@ -472,23 +464,19 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
     }
 
     if (refreshAsset) {
-        sendRequest(
-            'getAsset+',
-            {
-                asset: assetId,
-            },
-            function (response: GetAssetResponse) {
-                if (!response.errorCode) {
-                    cacheAsset(response)
-                    $('#asset_quantity').html(formatQNTAsQuantity(response.quantityCirculatingQNT, response.decimals))
-                } else {
-                    $('#asset_exchange_vtab a.active').removeClass('active')
-                    $('#no_asset_selected').show()
-                    $('#asset_details, #no_assets_available, #no_asset_search_results').hide()
-                    $.notify($.t('invalid_asset'), { type: 'danger' })
-                }
-            },
-        )
+        sendRequestA('getAsset+', {
+            asset: assetId,
+        }).then((response: GetAssetResponse) => {
+            if (!response.errorCode) {
+                cacheAsset(response)
+                $('#asset_quantity').html(formatQNTAsQuantity(response.quantityCirculatingQNT, response.decimals))
+            } else {
+                $('#asset_exchange_vtab a.active').removeClass('active')
+                $('#no_asset_selected').show()
+                $('#asset_details, #no_assets_available, #no_asset_search_results').hide()
+                $.notify($.t('invalid_asset'), { type: 'danger' })
+            }
+        })
     }
 
     let userAssetBlance = '0'
@@ -532,179 +520,171 @@ function showHideBookmarkAllAssetsButton() {
     else $('#asset_exchange_add_all_assets_bookmark').hide()
 }
 
-export function updateMiniTradeHistory() {
+export async function updateMiniTradeHistory() {
     const myTrades = $('#ae_show_my_trades_only').is(':checked')
-    sendRequest(
-        'getTrades+',
-        {
-            asset: BRS.currentAsset.asset,
-            account: myTrades ? BRS.account : '',
-            firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
-            lastIndex: BRS.pageSize * BRS.pageNumber,
-        },
-        function (response: GetTradesResponse) {
-            if (!response.trades || !response.trades.length) {
-                $('#asset_exchange_trade_history_table tbody').empty()
-                dataLoadFinished($('#asset_exchange_trade_history_table'), true)
-                return
-            }
-            if (response.trades.length > BRS.pageSize) {
-                BRS.hasMorePages = true
-                response.trades.pop()
-            }
-            let rows = ''
-            for (const trade of response.trades) {
-                const totalNQT = calculateOrderTotalNQT(trade.priceNQT, trade.quantityQNT)
-                rows += `
-                <tr>
-                  <td>${formatTimestampAsDateTime(trade.timestamp)}</td>
-                  <td>${formatQNTAsQuantity(trade.quantityQNT, BRS.currentAsset.decimals)}</td>
-                  <td class='asset_price'>${formatPriceNQTAsPriceQuantity(trade.priceNQT, BRS.currentAsset.decimals)}</td>
-                  <td>${formatNQTAsAmount(totalNQT)}</td>
-                  <td><a href='#' data-transaction='${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
-                  <td><a href='#' data-transaction='${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
-                </tr>`
-            }
-            $('#asset_exchange_trade_history_table tbody').empty().append(rows)
-            dataLoadFinished($('#asset_exchange_trade_history_table'), true)
-            addPagination()
-        },
-    )
+    const response: GetTradesResponse = await sendRequestA('getTrades+', {
+        asset: BRS.currentAsset.asset,
+        account: myTrades ? BRS.account : '',
+        firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
+        lastIndex: BRS.pageSize * BRS.pageNumber,
+    })
+
+    if (!response.trades || !response.trades.length) {
+        $('#asset_exchange_trade_history_table tbody').empty()
+        dataLoadFinished($('#asset_exchange_trade_history_table'), true)
+        return
+    }
+    if (response.trades.length > BRS.pageSize) {
+        BRS.hasMorePages = true
+        response.trades.pop()
+    }
+    let rows = ''
+    for (const trade of response.trades) {
+        const totalNQT = calculateOrderTotalNQT(trade.priceNQT, trade.quantityQNT)
+        rows += `
+            <tr>
+              <td>${formatTimestampAsDateTime(trade.timestamp)}</td>
+              <td>${formatQNTAsQuantity(trade.quantityQNT, BRS.currentAsset.decimals)}</td>
+              <td class='asset_price'>${formatPriceNQTAsPriceQuantity(trade.priceNQT, BRS.currentAsset.decimals)}</td>
+              <td>${formatNQTAsAmount(totalNQT)}</td>
+              <td><a href='#' data-transaction='${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
+              <td><a href='#' data-transaction='${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
+            </tr>`
+    }
+    $('#asset_exchange_trade_history_table tbody').empty().append(rows)
+    dataLoadFinished($('#asset_exchange_trade_history_table'), true)
+    addPagination()
 }
 
-function loadAssetOrders(type: 'ask' | 'bid', assetId: string, refresh: boolean) {
-    sendRequest(
-        'get' + type.capitalize() + 'Orders+',
-        {
-            asset: assetId,
-            firstIndex: 0,
-            lastIndex: 49,
-        },
-        function (response: any) {
-            let orders: AnyAssetOrder[] = []
-            if (response[type + 'Orders']) {
-                orders = response[type + 'Orders']
+async function loadAssetOrders(type: 'ask' | 'bid', assetId: string, refresh: boolean) {
+    const response: any = await sendRequestA('get' + type.capitalize() + 'Orders+', {
+        asset: assetId,
+        firstIndex: 0,
+        lastIndex: 49,
+    })
+
+    let orders: AnyAssetOrder[] = []
+    if (response[type + 'Orders']) {
+        orders = response[type + 'Orders']
+    }
+    let typeAction = 'buy'
+    if (type === 'ask') {
+        typeAction = 'sell'
+    }
+
+    if (BRS.unconfirmedTransactions.length) {
+        let added = false
+
+        for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
+            if (
+                unconfirmedTransaction.type === 2 &&
+                (type === 'ask' ? unconfirmedTransaction.subtype === 2 : unconfirmedTransaction.subtype === 3) &&
+                unconfirmedTransaction.attachment.asset === assetId
+            ) {
+                // transform the current pending transaction into a supposed order.
+                // Note: height, name, decimals and price are incorrect!!!
+                orders.push({
+                    order: unconfirmedTransaction.transaction,
+                    asset: unconfirmedTransaction.attachment.asset,
+                    account: unconfirmedTransaction.sender,
+                    accountRS: unconfirmedTransaction.senderRS,
+                    quantityQNT: unconfirmedTransaction.attachment.quantityQNT,
+                    priceNQT: unconfirmedTransaction.attachment.priceNQT,
+                    height: 0,
+                    name: '',
+                    decimals: -1,
+                    price: '',
+                    type: unconfirmedTransaction.subtype === 2 ? 'ask' : 'bid',
+                })
+                added = true
             }
-            let typeAction = 'buy'
-            if (type === 'ask') {
-                typeAction = 'sell'
-            }
+        }
 
-            if (BRS.unconfirmedTransactions.length) {
-                let added = false
-
-                for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
-                    if (
-                        unconfirmedTransaction.type === 2 &&
-                        (type === 'ask' ? unconfirmedTransaction.subtype === 2 : unconfirmedTransaction.subtype === 3) &&
-                        unconfirmedTransaction.attachment.asset === assetId
-                    ) {
-                        // transform the current pending transaction into a supposed order.
-                        // Note: height, name, decimals and price are incorrect!!!
-                        orders.push({
-                            order: unconfirmedTransaction.transaction,
-                            asset: unconfirmedTransaction.attachment.asset,
-                            account: unconfirmedTransaction.sender,
-                            accountRS: unconfirmedTransaction.senderRS,
-                            quantityQNT: unconfirmedTransaction.attachment.quantityQNT,
-                            priceNQT: unconfirmedTransaction.attachment.priceNQT,
-                            height: 0,
-                            name: '',
-                            decimals: -1,
-                            price: '',
-                            type: unconfirmedTransaction.subtype === 2 ? 'ask' : 'bid',
-                        })
-                        added = true
-                    }
+        if (added) {
+            orders.sort(function (a, b) {
+                let invert = 1
+                if (type === 'bid') {
+                    // highest price at the top
+                    invert = -1
                 }
+                const priceA = BigInt(a.priceNQT)
+                const priceB = BigInt(b.priceNQT)
+                if (priceA > priceB) return 1 * invert
+                if (priceA < priceB) return -1 * invert
+                return 0
+            })
+        }
+    }
 
-                if (added) {
-                    orders.sort(function (a, b) {
-                        let invert = 1
-                        if (type === 'bid') {
-                            // highest price at the top
-                            invert = -1
-                        }
-                        const priceA = BigInt(a.priceNQT)
-                        const priceB = BigInt(b.priceNQT)
-                        if (priceA > priceB) return 1 * invert
-                        if (priceA < priceB) return -1 * invert
-                        return 0
-                    })
-                }
-            }
+    if (orders.length === 0) {
+        $(`#asset_exchange_${type}_orders_table tbody`).empty()
+        if (!refresh) {
+            $(`#${typeAction}_asset_price`).val('0')
+        }
+        $(`#${typeAction}_orders_count`).html('')
+        dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
+        return
+    }
 
-            if (orders.length === 0) {
-                $(`#asset_exchange_${type}_orders_table tbody`).empty()
-                if (!refresh) {
-                    $(`#${typeAction}_asset_price`).val('0')
-                }
-                $(`#${typeAction}_orders_count`).html('')
-                dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
-                return
-            }
+    $(`#${typeAction}_orders_count`).html('(' + orders.length + (orders.length === 50 ? '+' : '') + ')')
 
-            $(`#${typeAction}_orders_count`).html('(' + orders.length + (orders.length === 50 ? '+' : '') + ')')
+    let rows = ''
+    let first = true
+    for (const order of orders) {
+        const totalNQT = calculateOrderTotalNQT(order.quantityQNT, order.priceNQT)
 
-            let rows = ''
-            let first = true
-            for (const order of orders) {
-                const totalNQT = calculateOrderTotalNQT(order.quantityQNT, order.priceNQT)
+        if (first && !refresh) {
+            $(`#${typeAction}_asset_price`).val(formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals))
+        }
 
-                if (first && !refresh) {
-                    $(`#${typeAction}_asset_price`).val(formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals))
-                }
+        const toBeCancelled = hasCancelOrder(order)
+        let className = ''
+        if (order.account === BRS.account) {
+            className += 'your-order'
+        }
+        if (order.height === 0) {
+            className += ' text-muted'
+        }
+        if (toBeCancelled) {
+            className += ' text-line-through'
+        }
 
-                const toBeCancelled = hasCancelOrder(order)
-                let className = ''
-                if (order.account === BRS.account) {
-                    className += 'your-order'
-                }
-                if (order.height === 0) {
-                    className += ' text-muted'
-                }
-                if (toBeCancelled) {
-                    className += ' text-line-through'
-                }
+        let accountHTML = ''
+        if (order.height === 0 || toBeCancelled) {
+            accountHTML = BRS.pendingTransactionHTML + '&nbsp;'
+        }
+        if (order.account === BRS.currentAsset.account) {
+            accountHTML += $.t('asset_issuer')
+        } else {
+            accountHTML += getAccountTitleFromObject(order, 'account')
+        }
+        accountHTML = `<a href='#' data-user='${getAccountRSFromObject(order, 'account')}' class='user_info'>${accountHTML}</a>`
 
-                let accountHTML = ''
-                if (order.height === 0 || toBeCancelled) {
-                    accountHTML = BRS.pendingTransactionHTML + '&nbsp;'
-                }
-                if (order.account === BRS.currentAsset.account) {
-                    accountHTML += $.t('asset_issuer')
-                } else {
-                    accountHTML += getAccountTitleFromObject(order, 'account')
-                }
-                accountHTML = `<a href='#' data-user='${getAccountRSFromObject(order, 'account')}' class='user_info'>${accountHTML}</a>`
+        rows += `
+            <tr class='${className}'
+              data-transaction='${order.order}'
+              data-quantity='${order.quantityQNT.toString()}'
+              data-price='${order.priceNQT.toString()}'>`
+        if (type === 'ask') {
+            rows += `
+              <td class='bold red-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
+              <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
+              <td>${formatNQTAsAmount(totalNQT)}</td>
+              <td>${accountHTML}</td>
+            </tr>`
+        } else {
+            rows += `
+              <td>${accountHTML}</td>
+              <td>${formatNQTAsAmount(totalNQT)}</td>
+              <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
+              <td class='bold green-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
+            </tr>`
+        }
+        first = false
+    }
 
-                rows += `
-                <tr class='${className}'
-                  data-transaction='${order.order}'
-                  data-quantity='${order.quantityQNT.toString()}'
-                  data-price='${order.priceNQT.toString()}'>`
-                if (type === 'ask') {
-                    rows += `
-                  <td class='bold red-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
-                  <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
-                  <td>${formatNQTAsAmount(totalNQT)}</td>
-                  <td>${accountHTML}</td>
-                </tr>`
-                } else {
-                    rows += `
-                  <td>${accountHTML}</td>
-                  <td>${formatNQTAsAmount(totalNQT)}</td>
-                  <td>${formatQNTAsQuantity(order.quantityQNT, BRS.currentAsset.decimals)}</td>
-                  <td class='bold green-asset'>${formatPriceNQTAsPriceQuantity(order.priceNQT, BRS.currentAsset.decimals)}</td>
-                </tr>`
-                }
-                first = false
-            }
-
-            $(`#asset_exchange_${type}_orders_table tbody`).html(rows)
-            dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
-        },
-    )
+    $(`#asset_exchange_${type}_orders_table tbody`).html(rows)
+    dataLoadFinished($(`#asset_exchange_${type}_orders_table`), !refresh)
 }
 
 function hasCancelOrder(order: AnyAssetOrder) {
@@ -936,7 +916,7 @@ export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
     }
 }
 
-export function goToAsset(asset: string) {
+export async function goToAsset(asset: string) {
     if (BRS.currentPage !== 'asset_exchange') {
         goToPage('asset_exchange')
     }
@@ -956,22 +936,17 @@ export function goToAsset(asset: string) {
         })
         return
     }
-    sendRequest(
-        'getAsset+',
-        {
-            asset,
-        },
-        function (response: GetAssetResponse) {
-            if (!response.errorCode) {
-                const addedAsset = cacheAsset(response)
-                loadAssetExchangeSidebar(function () {
-                    loadAsset(addedAsset, true, false)
-                })
-                return
-            }
-            $.notify($.t('error_asset_not_found'), { type: 'danger' })
-            loadAssetExchangeSidebar()
-            $('#loading_asset_data').hide()
-        },
-    )
+    const response: GetAssetResponse = await sendRequestA('getAsset+', {
+        asset,
+    })
+    if (!response.errorCode) {
+        const addedAsset = cacheAsset(response)
+        loadAssetExchangeSidebar(function () {
+            loadAsset(addedAsset, true, false)
+        })
+        return
+    }
+    $.notify($.t('error_asset_not_found'), { type: 'danger' })
+    loadAssetExchangeSidebar()
+    $('#loading_asset_data').hide()
 }

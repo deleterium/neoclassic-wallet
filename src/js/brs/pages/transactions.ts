@@ -1,6 +1,6 @@
 import { BRS } from '..'
 import { getContactByName } from '../tools/contacts'
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 import { getUnconfirmedTransactionsFromCache, dataLoaded } from '../core/util'
 import { reloadCurrentPage } from '../core/navigation'
 import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers'
@@ -8,7 +8,7 @@ import { getTransactionDetails } from '../tools/transactions'
 import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 import { mapUnconfirmedToTransaction } from '../core/check_incoming'
 
-export function pagesTransactions() {
+export async function pagesTransactions() {
     function getFrom() {
         const from = $('input[name=transactions_from_account]:checked').val()
         if (from === 'me') {
@@ -66,31 +66,30 @@ export function pagesTransactions() {
         rows = unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '')
     }
 
-    sendRequest('getAccountTransactions+', params, (response: GetAccountTransactionsResponse) => {
-        if (response.transactions && response.transactions.length) {
-            if (response.transactions.length > BRS.pageSize) {
-                BRS.hasMorePages = true
-                response.transactions.pop()
-            }
-            rows += response.transactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '')
+    const response: GetAccountTransactionsResponse = await sendRequestA('getAccountTransactions+', params)
+
+    if (response.transactions && response.transactions.length) {
+        if (response.transactions.length > BRS.pageSize) {
+            BRS.hasMorePages = true
+            response.transactions.pop()
         }
-        dataLoaded(rows)
-    })
+        rows += response.transactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '')
+    }
+    dataLoaded(rows)
 }
 
-function displayUnconfirmedTransactions(viewAccount: string) {
-    sendRequest('getUnconfirmedTransactions', {}, function (response: GetUnconfirmedTransactionsResponse) {
-        let rows = ''
+async function displayUnconfirmedTransactions(viewAccount: string) {
+    const response: GetUnconfirmedTransactionsResponse = await sendRequestA('getUnconfirmedTransactions', {})
 
-        if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
-            rows = response.unconfirmedTransactions.reduce(
-                (prev, currTr) => prev + getTransactionRowHTML(mapUnconfirmedToTransaction(currTr), viewAccount),
-                '',
-            )
-        }
+    let rows = ''
+    if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {
+        rows = response.unconfirmedTransactions.reduce(
+            (prev, currTr) => prev + getTransactionRowHTML(mapUnconfirmedToTransaction(currTr), viewAccount),
+            '',
+        )
+    }
 
-        dataLoaded(rows)
-    })
+    dataLoaded(rows)
 }
 
 function getTransactionRowHTML(transaction: Transaction, viewAccount: string) {

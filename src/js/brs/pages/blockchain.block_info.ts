@@ -1,7 +1,7 @@
 import { BRS } from '..'
 import { GetBlockResponse, Transaction } from '../typings'
 import { formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers'
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 import { getTransactionDetails } from '../tools/transactions'
 import { dataLoaded } from '../core/util'
 
@@ -17,31 +17,27 @@ export function pagesBlockInfo() {
  * Draws the page 'Blockchain' -> 'Blocks Info'
  * @param blockheight Block to show
  */
-export function blockInfoLoad(blockheight: number | '') {
+export async function blockInfoLoad(blockheight: number | '') {
     if (blockheight === '') {
         blockheight = BRS.blocks[0].height
     }
 
-    sendRequest(
-        'getBlock+',
-        {
-            height: blockheight,
-            includeTransactions: true,
-        },
-        function (response: GetBlockResponse) {
-            if (response.errorCode) {
-                $.notify($.t('invalid_blockheight'), { type: 'danger' })
-                dataLoaded('')
-                return
-            }
-            $('#block_info_input_block').val(blockheight)
-            const rows = (response.transactions as Transaction[]).reduce(
-                (prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr as Transaction),
-                '',
-            )
-            dataLoaded(rows)
-        },
+    const response: GetBlockResponse = await sendRequestA('getBlock+', {
+        height: blockheight,
+        includeTransactions: true,
+    })
+
+    if (response.errorCode) {
+        $.notify($.t('invalid_blockheight'), { type: 'danger' })
+        dataLoaded('')
+        return
+    }
+    $('#block_info_input_block').val(blockheight)
+    const rows = (response.transactions as Transaction[]).reduce(
+        (prev, currTr) => prev + getTransactionInBlocksRowHTML(currTr as Transaction),
+        '',
     )
+    dataLoaded(rows)
 }
 
 function getTransactionInBlocksRowHTML(transaction: Transaction) {

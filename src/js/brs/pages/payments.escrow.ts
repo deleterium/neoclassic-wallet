@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 import { formatNQTAsAmount, parseAmountToNumber } from '../core/numbers'
 
@@ -10,37 +10,33 @@ import { GetAccountEscrowTransactionsResponse } from '../typings'
 
 import { recipientToId } from '../modals/sendmoney'
 
-export function pagesEscrow() {
-    sendRequest(
-        'getAccountEscrowTransactions',
-        {
-            account: BRS.account,
-        },
-        function (response: GetAccountEscrowTransactionsResponse) {
-            if (!response.escrows || response.escrows.length === 0) {
-                dataLoaded()
-                return
-            }
-            let rows = ''
-            for (const escrow of response.escrows) {
-                rows += `
-                <tr>
-                  <td><a href='#' data-escrow='${escrow.id.escapeHTML()}'>${escrow.id.escapeHTML()}</a></td>
-                  <td>${getAccountTitleFromObject(escrow, 'sender')}</td>
-                  <td>${getAccountTitleFromObject(escrow, 'recipient')}</td>
-                  <td>`
-                for (let i = 0; i < escrow.signers.length; i++) {
-                    if (i !== 0) rows += '<br>'
-                    rows += getAccountTitleFromObject(escrow.signers[i], 'id')
-                }
-                rows += `
-                  </td>
-                  <td>${formatNQTAsAmount(escrow.amountNQT)}</td>
-                </tr>`
-            }
-            dataLoaded(rows)
-        },
-    )
+export async function pagesEscrow() {
+    const response: GetAccountEscrowTransactionsResponse = await sendRequestA('getAccountEscrowTransactions', {
+        account: BRS.account,
+    })
+
+    if (!response.escrows || response.escrows.length === 0) {
+        dataLoaded()
+        return
+    }
+    let rows = ''
+    for (const escrow of response.escrows) {
+        rows += `
+            <tr>
+              <td><a href='#' data-escrow='${escrow.id.escapeHTML()}'>${escrow.id.escapeHTML()}</a></td>
+              <td>${getAccountTitleFromObject(escrow, 'sender')}</td>
+              <td>${getAccountTitleFromObject(escrow, 'recipient')}</td>
+              <td>`
+        for (let i = 0; i < escrow.signers.length; i++) {
+            if (i !== 0) rows += '<br>'
+            rows += getAccountTitleFromObject(escrow.signers[i], 'id')
+        }
+        rows += `
+              </td>
+              <td>${formatNQTAsAmount(escrow.amountNQT)}</td>
+            </tr>`
+    }
+    dataLoaded(rows)
 }
 
 export function formsSendMoneyEscrow(data: any) {
