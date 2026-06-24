@@ -322,3 +322,27 @@ export function broadcastTransactionBytes(
             )
         })
 }
+
+/**
+ * Sends an asynchronous request to the server and returns a Promise with the response.
+ *
+ * This function simplifies the process of making async requests by allowing the use of 'await'
+ * to retrieve the response. It internally calls `sendRequest` with the appropriate parameters
+ * and resolves the Promise with the response data.
+ *
+ * @param {string} requestType - The type of request to be sent (e.g., 'getBlockchainStatus', 'sendMoney').
+ * @param {any} data - The data payload to be sent with the request.
+ * @returns {Promise<any>} A Promise that resolves with the response from the server.
+ */
+export async function sendRequestA(requestType: string, data: any): Promise<any> {
+    return new Promise((resolve) => {
+        sendRequest(
+            requestType,
+            data,
+            (response: any) => {
+                resolve(response)
+            },
+            true,
+        )
+    })
+}
