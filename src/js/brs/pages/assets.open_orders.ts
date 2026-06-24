@@ -3,68 +3,65 @@ import { AnyAssetOrder, GetTransactionResponse, UNCONFIRMED_HEIGHT } from '../ty
 import { pageLoaded, reloadCurrentPage } from '../core/navigation'
 import { getAssetDetails } from '../tools/assets'
 import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from '../core/numbers'
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 import { dataLoadFinished } from '../core/util'
 
-export function pagesOpenOrders() {
-    let loaded = 0
-    function allLoaded() {
-        loaded++
-        if (loaded === 2) {
-            pageLoaded()
-        }
-    }
-    getOpenOrders('ask', allLoaded)
-    getOpenOrders('bid', allLoaded)
+export async function pagesOpenOrders() {
+    const askOrders = await getOpenOrders('ask')
+    const bidOrders = await getOpenOrders('bid')
+
+    pageLoaded()
+
+    const allOrders = [...askOrders, ...bidOrders]
+    fetchAllTransactionDetails(allOrders)
 }
 
-function getOpenOrders(type: 'ask' | 'bid', callback: () => void) {
+async function getOpenOrders(type: 'ask' | 'bid') {
     const getCurrentOrders = `getAccountCurrent${type.capitalize()}Orders+`
     const typeOrderName = `${type}Orders`
 
-    sendRequest(
-        getCurrentOrders,
-        {
-            account: BRS.account,
-        },
-        function (response: any) {
-            if (response[typeOrderName] === undefined || response[typeOrderName].length === 0) {
-                drawOrdersTable(getUnconfirmedOrders(type), type, callback)
-                return
-            }
-            const anyOrders: AnyAssetOrder[] = response[typeOrderName]
-            anyOrders.sort(function (a, b) {
-                if (a.name.toLowerCase() > b.name.toLowerCase()) {
-                    return 1
-                }
-                if (a.name.toLowerCase() < b.name.toLowerCase()) {
-                    return -1
-                }
-                if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
-                    return 1
-                }
-                if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
-                    return -1
-                }
-                return 0
-            })
-            drawOrdersTable(response[typeOrderName].concat(getUnconfirmedOrders(type)), type, callback)
-            for (const order of response[typeOrderName] as AnyAssetOrder[]) {
-                sendRequest(
-                    'getTransaction+',
-                    {
-                        transaction: order.order,
-                    },
-                    function (startingOrder: GetTransactionResponse) {
-                        if (startingOrder.errorCode) {
-                            fillOrderDetails(order.order, order.decimals, order.quantityQNT)
-                        }
-                        fillOrderDetails(order.order, order.decimals, order.quantityQNT, startingOrder.attachment.quantityQNT)
-                    },
-                )
-            }
-        },
-    )
+    const response = await sendRequestA(getCurrentOrders, {
+        account: BRS.account,
+    })
+
+    if (response[typeOrderName] === undefined || response[typeOrderName].length === 0) {
+        drawOrdersTable(getUnconfirmedOrders(type), type)
+        return []
+    }
+
+    const anyOrders: AnyAssetOrder[] = response[typeOrderName]
+    anyOrders.sort(function (a, b) {
+        if (a.name.toLowerCase() > b.name.toLowerCase()) {
+            return 1
+        }
+        if (a.name.toLowerCase() < b.name.toLowerCase()) {
+            return -1
+        }
+        if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
+            return 1
+        }
+        if (BigInt(a.priceNQT) > BigInt(b.priceNQT)) {
+            return -1
+        }
+        return 0
+    })
+
+    drawOrdersTable(response[typeOrderName].concat(getUnconfirmedOrders(type)), type)
+    return anyOrders
+}
+
+async function fetchAllTransactionDetails(orders: AnyAssetOrder[]) {
+    orders.forEach(async (order) => {
+        const startingOrder: GetTransactionResponse = await sendRequestA('getTransaction+', {
+            transaction: order.order,
+        })
+        fillOrderDetails(
+            order.order,
+            order.decimals,
+            order.quantityQNT,
+            startingOrder.errorCode ? undefined : startingOrder.attachment.quantityQNT,
+        )
+    })
 }
 
 function fillOrderDetails(orderId: string, decimals: number, currentQNT: string, startingQNT?: string) {
@@ -99,13 +96,10 @@ function getUnconfirmedOrders(type: 'ask' | 'bid') {
     return unconfirmedOrders
 }
 
-function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid', callback: () => void) {
+function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid') {
     if (!orders.length) {
         $('#open_' + type + '_orders_table tbody').empty()
         dataLoadFinished($('#open_' + type + '_orders_table'))
-
-        callback()
-
         return
     }
 
@@ -157,8 +151,6 @@ function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid', callback:
         .append(rows)
 
     dataLoadFinished($('#open_' + type + '_orders_table'))
-
-    callback()
 }
 
 export function incomingOpenOrders() {
