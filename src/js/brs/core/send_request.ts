@@ -182,6 +182,8 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
         data,
     })
         .done(function (response: AjaxResponse) {
+            // This is executed on POST response, but not on POST 'broadcastTransaction'
+            // and only if there was no error in response.
             if (secretPhrase && response.unsignedTransactionBytes && !response.errorCode && !response.error) {
                 const publicKey = getPublicKeyFromPassphrase(secretPhrase)
                 const signature = signBytes(response.unsignedTransactionBytes, secretPhrase)
@@ -224,7 +226,7 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 broadcastTransactionBytes(payload, callback, response, data)
                 return
             }
-            // Request sucessfull but there was an error in response.
+            // There was an error in response. It can be in POST or GET
             if (response.errorCode || response.errorDescription || response.errorMessage || response.error) {
                 response.errorDescription = translateServerError(response)
                 delete response.fullHash
@@ -233,8 +235,10 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 }
             }
             if (response.broadcasted === false) {
+                // Only in POST and if "broadcast: false"
                 showRawTransactionModal(response, '')
             } else {
+                // Regular GET response, or POST 'broadcastTransaction'
                 if (extra) {
                     data._extra = extra
                 }
