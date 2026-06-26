@@ -10,7 +10,7 @@ import { setSavedPassword, sendRequestA } from './send_request'
 
 import { getContactByName } from '../tools/contacts'
 
-import { getPublicKeyFromPassphrase, getAccountId, setEncryptionPassword, setDecryptionPassword } from './encryption'
+import { getPublicKeyFromPassphrase, getAccountId, setEncryptionPassword, setDecryptionPassword, getAccountPublicKey } from './encryption'
 
 import { convertNumericToRSAccountFormat, setupClipboardFunctionality } from './util'
 
@@ -20,7 +20,7 @@ import { getInitialTransactions, handleNewBlocks } from './check_incoming'
 
 import PassPhraseGenerator from './passphrase_generator'
 
-import { GetAccountPublicKeyResponse, GetAccountResponse } from '../typings'
+import { GetAccountResponse } from '../typings'
 import { convertSecondsToDuration } from './numbers'
 
 export function showLoginOrWelcomeScreen() {
@@ -215,15 +215,16 @@ async function loginWithPassphrase(passphrase: string) {
     BRS.accountRSExtended = BRS.accountRS + '-' + BigInt(`0x${BRS.publicKey}`).toString(36).toUpperCase()
 
     // Get account details from blockchain
-    const response: GetAccountPublicKeyResponse = await sendRequestA('getAccountPublicKey', {
-        account: BRS.account,
-    })
-
-    // Verify if public key from blochchain is same from the passphrase
-    // Unlikey, only if there is a clash of IDs.
-    if (response && response.publicKey && response.publicKey !== BRS.publicKey) {
-        $.notify($.t('error_account_taken'), { type: 'danger' })
-        return
+    try {
+        const publicKey = await getAccountPublicKey(BRS.account)
+        // Verify if public key from blochchain is same from the passphrase
+        // Unlikey, only if there is a clash of IDs.
+        if (publicKey !== BRS.publicKey) {
+            $.notify($.t('error_account_taken'), { type: 'danger' })
+            return
+        }
+    } catch {
+        /* No problem if there is no public key on blockchain, it can be a new account. */
     }
 
     if (BRS.settings.remember_passphrase) {

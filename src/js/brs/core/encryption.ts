@@ -5,7 +5,7 @@ import { sha256 } from 'js-sha256'
 import curve25519 from '../../crypto/curve25519'
 import converters from '../../util/converters'
 
-import { sendRequest } from './send_request'
+import { sendRequestA } from './send_request'
 
 import {
     ByteArray,
@@ -48,29 +48,21 @@ export function setAccountPublicKeyToCache(account: string, publicKey: HexString
 
 // region Public Key
 
-export function getAccountPublicKey(account: string) {
+export async function getAccountPublicKey(account: string) {
     const publicKeyInCache = getAccountPublicKeyFromCache(account)
     if (publicKeyInCache) {
         return publicKeyInCache
     }
-    let publicKey = ''
-    // synchronous!
-    sendRequest(
-        'getAccountPublicKey',
-        {
-            account,
-        },
-        function (response: GetAccountPublicKeyResponse, input) {
-            if (!response.publicKey) {
-                throw new Error($.t('error_no_public_key'))
-            } else {
-                publicKey = response.publicKey
-                setAccountPublicKeyToCache(input.account, response.publicKey)
-            }
-        },
-        false,
-    )
-    return publicKey
+
+    const response: GetAccountPublicKeyResponse = await sendRequestA('getAccountPublicKey', {
+        account,
+    })
+
+    if (!response.publicKey) {
+        throw new Error($.t('error_no_public_key'))
+    }
+    setAccountPublicKeyToCache(account, response.publicKey)
+    return response.publicKey
 }
 
 /**
@@ -131,7 +123,7 @@ export function getAccountIdFromPublicKey(publicKey: HexString, isRSFormat: bool
 // region CryptoOption
 
 async function createCryptoOptions(otherUser: string, nonce: HexString, isText: boolean, secretPhrase?: string): Promise<CryptoOptions> {
-    const publicKey = getAccountPublicKey(otherUser)
+    const publicKey = await getAccountPublicKey(otherUser)
     const password = secretPhrase || getDecryptionPassword()
     if (!password) {
         throw new Error($.t('error_decryption_passphrase_required'))
@@ -151,7 +143,7 @@ export async function createEncryptionToOtherOptions(
     isText: boolean,
     secretPhrase?: string,
 ): Promise<CryptoOptions> {
-    const publicKey = otherPublicKey || getAccountPublicKey(otherAccount)
+    const publicKey = otherPublicKey || (await getAccountPublicKey(otherAccount))
     if (publicKey.length !== 64) {
         throw new Error($.t('error_public_key_not_specified'))
     }

@@ -65,7 +65,7 @@ export function formsSignMessage() {
     return { stop: true, hide: false }
 }
 
-export function formsVerifyMessage() {
+export async function formsVerifyMessage() {
     const isHex = $('#verify_message_data_is_hex').is(':checked')
     const data = $('#verify_message_data').val() as string
     const signature = String($('#verify_message_signature').val()).trim()
@@ -84,7 +84,7 @@ export function formsVerifyMessage() {
     }
     try {
         const signedMessage = parseSignedMessage(data, isHex)
-        publicKey = getAccountPublicKey(signedMessage.user)
+        publicKey = await getAccountPublicKey(signedMessage.user)
         const blockchainID = getAccountIdFromPublicKey(publicKey, true)
         if (signedMessage.user !== blockchainID) {
             return { error: $.t('error_public_key_different_account_id') }
