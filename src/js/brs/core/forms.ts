@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequest } from './send_request'
+import { sendRequestA } from './send_request'
 
 import { encryptNote, createEncryptionToOtherOptions, createEncryptionToSelfOptions } from './encryption'
 
@@ -461,71 +461,70 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     delete data.converted_account_id
     delete data.merchant_info
 
-    sendRequest(requestType, data, function (response: PostResponse) {
-        // todo check again.. response.error
-        let formFunctionComplete: undefined | ((response: any, data: any) => void)
-        if (response.errorCode) {
-            $form.find('.error_message').html(String(response.errorDescription).escapeHTML()).show()
-            if (formFunctionError) {
-                formFunctionError(response, data)
-            }
-            unlockModal($modal, $btn, false)
-            return
+    const response: PostResponse = await sendRequestA(requestType, data)
+
+    let formFunctionComplete: undefined | ((response: any, data: any) => void)
+    if (response.errorCode) {
+        $form.find('.error_message').html(String(response.errorDescription).escapeHTML()).show()
+        if (formFunctionError) {
+            formFunctionError(response, data)
         }
-        if (response.fullHash) {
-            // fullHash only present if the message was signed.
-            unlockModal($modal, $btn, false)
+        unlockModal($modal, $btn, false)
+        return
+    }
+    if (response.fullHash) {
+        // fullHash only present if the message was signed.
+        unlockModal($modal, $btn, false)
 
-            if (!$modal.hasClass('modal-no-hide')) {
-                $modal.modal('hide')
-            }
+        if (!$modal.hasClass('modal-no-hide')) {
+            $modal.modal('hide')
+        }
 
-            if (successMessage) {
-                $.notify(successMessage.escapeHTML(), { type: 'success' })
-            }
+        if (successMessage) {
+            $.notify(successMessage.escapeHTML(), { type: 'success' })
+        }
 
+        formFunctionComplete = BRS.forms[originalRequestType + 'Complete']
+
+        if (typeof formFunctionComplete === 'function' && response.broadcasted) {
+            data.requestType = requestType
+            formFunctionComplete(response, data)
+        }
+
+        // Adds the new unconfirmed message in pages
+        checkIncomingNow()
+
+        if (BRS.accountInfo && !BRS.accountInfo.publicKey) {
+            $('#dashboard_message').hide()
+        }
+    } else {
+        // no errorCode but response was not signed. Is this part executed?
+        let sentToFunction = false
+
+        if (!errorMessage) {
             formFunctionComplete = BRS.forms[originalRequestType + 'Complete']
 
-            if (typeof formFunctionComplete === 'function' && response.broadcasted) {
+            if (typeof formFunctionComplete === 'function') {
+                sentToFunction = true
                 data.requestType = requestType
-                formFunctionComplete(response, data)
-            }
 
-            // Adds the new unconfirmed message in pages
-            checkIncomingNow()
+                unlockModal($modal, $btn, false)
 
-            if (BRS.accountInfo && !BRS.accountInfo.publicKey) {
-                $('#dashboard_message').hide()
-            }
-        } else {
-            // no errorCode but response was not signed. Is this part executed?
-            let sentToFunction = false
-
-            if (!errorMessage) {
-                formFunctionComplete = BRS.forms[originalRequestType + 'Complete']
-
-                if (typeof formFunctionComplete === 'function') {
-                    sentToFunction = true
-                    data.requestType = requestType
-
-                    unlockModal($modal, $btn, false)
-
-                    if (!$modal.hasClass('modal-no-hide')) {
-                        $modal.modal('hide')
-                    }
-                    formFunctionComplete(response, data)
-                } else {
-                    errorMessage = $.t('error_unknown')
+                if (!$modal.hasClass('modal-no-hide')) {
+                    $modal.modal('hide')
                 }
-            }
-
-            if (!sentToFunction) {
-                unlockModal($modal, $btn, true)
-
-                $.notify(errorMessage.escapeHTML(), { type: 'danger' })
+                formFunctionComplete(response, data)
+            } else {
+                errorMessage = $.t('error_unknown')
             }
         }
-    })
+
+        if (!sentToFunction) {
+            unlockModal($modal, $btn, true)
+
+            $.notify(errorMessage.escapeHTML(), { type: 'danger' })
+        }
+    }
 }
 
 export function formsAddCommitment(data: any) {

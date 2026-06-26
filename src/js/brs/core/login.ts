@@ -6,7 +6,7 @@ import { getAndUpdateAccountDetails } from './check_incoming.account'
 
 import { updateSettings } from '../pages/settings'
 
-import { setSavedPassword, sendRequest } from './send_request'
+import { setSavedPassword, sendRequestA } from './send_request'
 
 import { getContactByName } from '../tools/contacts'
 
@@ -127,7 +127,7 @@ export function loginCommon() {
     handleNewBlocks()
 }
 
-function loginWithAccount(account: string) {
+async function loginWithAccount(account: string) {
     account = account.trim()
     if (!account.length) {
         $.notify($.t('error_account_required_login'), { type: 'danger' })
@@ -147,44 +147,38 @@ function loginWithAccount(account: string) {
     }
 
     // Get the account information for the given address
-    sendRequest(
-        'getAccount',
-        {
-            account: login,
-        },
-        function (response: GetAccountResponse) {
-            if (response.errorCode) {
-                if (BRS.rsRegEx.test(login) || BRS.idRegEx.test(login)) {
-                    $.notify($.t('error_account_unknow_watch_only'), { type: 'danger' })
-                    return
-                }
-                // Otherwise, show an error.  The address is in the right format perhaps, but
-                // an address does not exist on the blockchain so there's nothing to see.
-                $.notify('<strong>' + $.t('warning') + '</strong>: ' + response.errorDescription, {
-                    type: 'danger',
-                })
-                return
-            }
+    const response: GetAccountResponse = await sendRequestA('getAccount', { account: login })
 
-            updateSettings('remember_account', $('#remember_account').is(':checked'))
-            updateSettings('last_remembered_account', account)
+    if (response.errorCode) {
+        if (BRS.rsRegEx.test(login) || BRS.idRegEx.test(login)) {
+            $.notify($.t('error_account_unknow_watch_only'), { type: 'danger' })
+            return
+        }
+        // Otherwise, show an error.  The address is in the right format perhaps, but
+        // an address does not exist on the blockchain so there's nothing to see.
+        $.notify('<strong>' + $.t('warning') + '</strong>: ' + response.errorDescription, {
+            type: 'danger',
+        })
+        return
+    }
 
-            BRS.account = response.account
-            BRS.accountRS = response.accountRS
-            BRS.publicKey = response.publicKey
-            BRS.accountRSExtended = response.accountRSExtended
+    updateSettings('remember_account', $('#remember_account').is(':checked'))
+    updateSettings('last_remembered_account', account)
 
-            $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
-            $('#login_check_password_length').val(1)
-            $.notify($.t('success_login_watch_only'), { type: 'success' })
-            $('#account_id').html(String(BRS.accountRS).escapeHTML())
+    BRS.account = response.account
+    BRS.accountRS = response.accountRS
+    BRS.publicKey = response.publicKey
+    BRS.accountRSExtended = response.accountRSExtended
 
-            loginCommon()
-        },
-    )
+    $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
+    $('#login_check_password_length').val(1)
+    $.notify($.t('success_login_watch_only'), { type: 'success' })
+    $('#account_id').html(String(BRS.accountRS).escapeHTML())
+
+    loginCommon()
 }
 
-function loginWithPassphrase(passphrase: string) {
+async function loginWithPassphrase(passphrase: string) {
     // Check passphrase
     if (!passphrase.length) {
         $.notify($.t('error_passphrase_required_login'), { type: 'danger' })
@@ -221,32 +215,28 @@ function loginWithPassphrase(passphrase: string) {
     BRS.accountRSExtended = BRS.accountRS + '-' + BigInt(`0x${BRS.publicKey}`).toString(36).toUpperCase()
 
     // Get account details from blockchain
-    sendRequest(
-        'getAccountPublicKey',
-        {
-            account: BRS.account,
-        },
-        function (response: GetAccountPublicKeyResponse) {
-            // Verify if public key from blochchain is same from the passphrase
-            // Unlikey, only if there is a clash of IDs.
-            if (response && response.publicKey && response.publicKey !== BRS.publicKey) {
-                $.notify($.t('error_account_taken'), { type: 'danger' })
-                return
-            }
+    const response: GetAccountPublicKeyResponse = await sendRequestA('getAccountPublicKey', {
+        account: BRS.account,
+    })
 
-            if (BRS.settings.remember_passphrase) {
-                $('#remember_password').prop('checked', false)
-                $('.secret_phrase, .show_secret_phrase').hide()
-                $('.hide_secret_phrase').show()
-            }
+    // Verify if public key from blochchain is same from the passphrase
+    // Unlikey, only if there is a clash of IDs.
+    if (response && response.publicKey && response.publicKey !== BRS.publicKey) {
+        $.notify($.t('error_account_taken'), { type: 'danger' })
+        return
+    }
 
-            $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
-            $('#login_check_password_length').val(1)
-            $('#account_id').html(String(BRS.accountRS).escapeHTML())
+    if (BRS.settings.remember_passphrase) {
+        $('#remember_password').prop('checked', false)
+        $('.secret_phrase, .show_secret_phrase').hide()
+        $('.hide_secret_phrase').show()
+    }
 
-            loginCommon()
-        },
-    )
+    $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
+    $('#login_check_password_length').val(1)
+    $('#account_id').html(String(BRS.accountRS).escapeHTML())
+
+    loginCommon()
 }
 
 export function evLoginButtonClick(e?: JQuery.ClickEvent) {

@@ -6,7 +6,7 @@ import { loadSettingsFromDB } from '../pages/settings'
 import { createDatabase } from './database'
 import { showLockscreen } from './login'
 import { automaticallyCheckRecipient } from './recipient'
-import { sendRequest } from './send_request'
+import { sendRequestA } from './send_request'
 
 /**
  * Checks prefered node string in login panel. If changed, update BRS with blockchain details.
@@ -27,7 +27,7 @@ export function checkSelectedNode(): void {
         $('#prefered_node').addClass('is-invalid')
 
         // Server changed, get new network details
-        sendRequest('getConstants+', {}, function (response) {
+        sendRequestA('getConstants+', {}).then((response) => {
             if (response.errorCode) {
                 return
             }
@@ -89,29 +89,30 @@ export function autoSelectServer(): void {
  * Runs in lockscreen, while not logged.
  * @param callback
  */
-export function getState(): void {
+export async function getState() {
     checkSelectedNode()
-    sendRequest('getBlockchainStatus+', {}, function (response: GetBlochainStatusResponse) {
-        if (response.errorCode) {
-            if (BRS.settings.automatic_node_selection) {
-                autoSelectServer()
-                return
-            }
-            $('#node_alert').show()
-            $('#node_alert').html($.t('could_not_connect_to', { server: BRS.server }))
-            $('#brs_version, #brs_version_dashboard').html(BRS.loadingDotsHTML).removeClass('loading_dots')
-            $('#prefered_node').addClass('is-invalid')
+
+    const response: GetBlochainStatusResponse = await sendRequestA('getBlockchainStatus+', {})
+
+    if (response.errorCode) {
+        if (BRS.settings.automatic_node_selection) {
+            autoSelectServer()
             return
         }
-        $('#node_alert').hide()
-        BRS.blockchainStatus = response
-        $('#brs_version')
-            .html(response.version + ' on ' + BRS.server)
-            .removeClass('loading_dots')
-        $('#brs_version_dashboard').html(response.version).removeClass('loading_dots')
-        $('#header_current_block').html('#' + response.numberOfBlocks)
-        $('#prefered_node').removeClass('is-invalid')
-    })
+        $('#node_alert').show()
+        $('#node_alert').html($.t('could_not_connect_to', { server: BRS.server }))
+        $('#brs_version, #brs_version_dashboard').html(BRS.loadingDotsHTML).removeClass('loading_dots')
+        $('#prefered_node').addClass('is-invalid')
+        return
+    }
+    $('#node_alert').hide()
+    BRS.blockchainStatus = response
+    $('#brs_version')
+        .html(response.version + ' on ' + BRS.server)
+        .removeClass('loading_dots')
+    $('#brs_version_dashboard').html(response.version).removeClass('loading_dots')
+    $('#header_current_block').html('#' + response.numberOfBlocks)
+    $('#prefered_node').removeClass('is-invalid')
 }
 
 export function init(): void {
