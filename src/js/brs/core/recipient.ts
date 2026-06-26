@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { NxtAddress } from '../../util/nxtaddress'
 
-import { sendRequest } from './send_request'
+import { sendRequestA } from './send_request'
 
 import { getContactByName } from '../tools/contacts'
 
@@ -44,93 +44,78 @@ export function automaticallyCheckRecipient() {
  * @param accountIdOrRs Account ID or RS.
  * @param callback Function to be called async with the response
  */
-function getAccountTypeAndMessage(
-    accountIdOrRs: string,
-    callback: (response: {
-        type: 'danger' | 'warning' | 'info'
-        message: string
-        publicKeyNeeded: 'needed' | 'info' | 'hide'
-        account: GetAccountResponse | null
-    }) => void,
-) {
+async function getAccountTypeAndMessage(accountIdOrRs: string): Promise<{
+    type: 'danger' | 'warning' | 'info'
+    message: string
+    publicKeyNeeded: 'needed' | 'info' | 'hide'
+    account: GetAccountResponse | null
+}> {
     if (accountIdOrRs === '0' || accountIdOrRs.endsWith('2222-2222-2222-22222')) {
-        callback({
+        return {
             type: 'warning',
             message: $.t('recipient_burning_address'),
             account: null,
             publicKeyNeeded: 'hide',
-        })
-        return
+        }
     }
 
-    sendRequest(
-        'getAccount',
-        {
-            account: accountIdOrRs,
-        },
-        function (response: GetAccountResponse) {
-            if (response.errorCode) {
-                switch (response.errorCode) {
-                    case 4:
-                        callback({
-                            type: 'danger',
-                            message: $.t('recipient_malformed'),
-                            account: null,
-                            publicKeyNeeded: 'hide',
-                        })
-                        return
-                    case 5:
-                        callback({
-                            type: 'warning',
-                            message: $.t('recipient_unknown_pka'),
-                            account: null,
-                            publicKeyNeeded: 'needed',
-                        })
-                        return
-                }
-                callback({
+    const response: GetAccountResponse = await sendRequestA('getAccount', { account: accountIdOrRs })
+
+    if (response.errorCode) {
+        switch (response.errorCode) {
+            case 4:
+                return {
                     type: 'danger',
-                    message: $.t('recipient_problem') + ' ' + String(response.errorDescription).escapeHTML(),
+                    message: $.t('recipient_malformed'),
                     account: null,
                     publicKeyNeeded: 'hide',
-                })
-                return
-            }
-            if (response.isAT) {
-                callback({
-                    type: 'info',
-                    message: $.t('recipient_smart_contract', {
-                        burst: formatNQTAsAmount(response.balanceNQT),
-                        valueSuffix: BRS.valueSuffix,
-                    }),
-                    account: response,
-                    publicKeyNeeded: 'hide',
-                })
-                return
-            }
-            if (response.isSecured === false) {
-                callback({
+                }
+            case 5:
+                return {
                     type: 'warning',
-                    message: $.t('recipient_no_public_key', {
-                        burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
-                        valueSuffix: BRS.valueSuffix,
-                    }),
-                    account: response,
+                    message: $.t('recipient_unknown_pka'),
+                    account: null,
                     publicKeyNeeded: 'needed',
-                })
-                return
-            }
-            callback({
-                type: 'info',
-                message: $.t('recipient_info', {
-                    burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
-                    valueSuffix: BRS.valueSuffix,
-                }),
-                account: response,
-                publicKeyNeeded: 'info',
-            })
-        },
-    )
+                }
+        }
+        return {
+            type: 'danger',
+            message: $.t('recipient_problem') + ' ' + String(response.errorDescription).escapeHTML(),
+            account: null,
+            publicKeyNeeded: 'hide',
+        }
+    }
+    if (response.isAT) {
+        return {
+            type: 'info',
+            message: $.t('recipient_smart_contract', {
+                burst: formatNQTAsAmount(response.balanceNQT),
+                valueSuffix: BRS.valueSuffix,
+            }),
+            account: response,
+            publicKeyNeeded: 'hide',
+        }
+    }
+    if (response.isSecured === false) {
+        return {
+            type: 'warning',
+            message: $.t('recipient_no_public_key', {
+                burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
+                valueSuffix: BRS.valueSuffix,
+            }),
+            account: response,
+            publicKeyNeeded: 'needed',
+        }
+    }
+    return {
+        type: 'info',
+        message: $.t('recipient_info', {
+            burst: formatNQTAsAmount(response.unconfirmedBalanceNQT),
+            valueSuffix: BRS.valueSuffix,
+        }),
+        account: response,
+        publicKeyNeeded: 'info',
+    }
 }
 
 export function evMalformedAddressClick(el: JQuery.ClickEvent) {
@@ -160,7 +145,7 @@ function formatRecipientPublicKey(toType: 'needed' | 'info' | 'hide', form: JQue
     }
 }
 
-function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
+async function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
     const callout = form.find('.account_info').first()
     const accountInputField = form.find('input[name=converted_account_id]')
     const merchantInfoField = form.find('input[name=merchant_info]')
@@ -186,33 +171,31 @@ function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
                     return
                 }
                 // Address matches given public key!
-                getAccountTypeAndMessage(address.getAccountId(), (response) => {
-                    if (!response.account) {
-                        // Expected if first time sending funds to a new account
-                        formatRecipientPublicKey('info', form, publicKey)
-                        updateCallout(callout, 'alert-' + response.type, $.t('recipient_info_extended') + ' ' + response.message)
-                        return
-                    }
-                    if (response.account.publicKey && response.account.publicKey !== publicKey) {
-                        // Rare, same id but two different public keys
-                        formatRecipientPublicKey('hide', form)
-                        updateCallout(callout, 'alert-danger', $.t('error_public_key_different_account_id'))
-                        return
-                    }
-                    // Given public key matches the registered public key.
-                    checkForMerchant(response.account?.description, form)
+                const response = await getAccountTypeAndMessage(address.getAccountId())
+                if (!response.account) {
+                    // Expected if first time sending funds to a new account
                     formatRecipientPublicKey('info', form, publicKey)
                     updateCallout(callout, 'alert-' + response.type, $.t('recipient_info_extended') + ' ' + response.message)
-                })
+                    return
+                }
+                if (response.account.publicKey && response.account.publicKey !== publicKey) {
+                    // Rare, same id but two different public keys
+                    formatRecipientPublicKey('hide', form)
+                    updateCallout(callout, 'alert-danger', $.t('error_public_key_different_account_id'))
+                    return
+                }
+                // Given public key matches the registered public key.
+                checkForMerchant(response.account?.description, form)
+                formatRecipientPublicKey('info', form, publicKey)
+                updateCallout(callout, 'alert-' + response.type, $.t('recipient_info_extended') + ' ' + response.message)
                 return
             }
 
             // Account has no extended address.
-            getAccountTypeAndMessage(address.getAccountId(), (response) => {
-                formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
-                checkForMerchant(response.account?.description, form)
-                updateCallout(callout, 'alert-' + response.type, response.message)
-            })
+            const response = await getAccountTypeAndMessage(address.getAccountId())
+            formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
+            checkForMerchant(response.account?.description, form)
+            updateCallout(callout, 'alert-' + response.type, response.message)
             return
         }
 
@@ -244,10 +227,9 @@ function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
 
     if (BRS.idRegEx.test(account)) {
         // Account matches numeric ID
-        getAccountTypeAndMessage(account, function (response) {
-            formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
-            updateCallout(callout, 'alert-' + response.type, response.message.escapeHTML())
-        })
+        const response = await getAccountTypeAndMessage(account)
+        formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
+        updateCallout(callout, 'alert-' + response.type, response.message.escapeHTML())
         return
     }
 
@@ -260,18 +242,15 @@ function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
     const contact = getContactByName(account)
     if (contact) {
         // Account found in the contacts!
-        getAccountTypeAndMessage(contact.account, function (response) {
-            formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
-            checkForMerchant(response.account?.description, form)
-            const message =
-                $.t('contact_account_link', { account_id: getAccountRSFromObject(contact, 'account') }) +
-                ' ' +
-                response.message.escapeHTML()
-            updateCallout(callout, 'alert-' + response.type, message)
-            if (response.type === 'info' || response.type === 'warning') {
-                accountInputField.val(contact.accountRS)
-            }
-        })
+        const response = await getAccountTypeAndMessage(contact.account)
+        formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
+        checkForMerchant(response.account?.description, form)
+        const message =
+            $.t('contact_account_link', { account_id: getAccountRSFromObject(contact, 'account') }) + ' ' + response.message.escapeHTML()
+        updateCallout(callout, 'alert-' + response.type, message)
+        if (response.type === 'info' || response.type === 'warning') {
+            accountInputField.val(contact.accountRS)
+        }
         return
     }
 
@@ -280,61 +259,60 @@ function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
     updateCallout(callout, 'alert-danger', msg)
 }
 
-function checkRecipientAlias(account: string, form: JQuery<HTMLFormElement>) {
+async function checkRecipientAlias(account: string, form: JQuery<HTMLFormElement>) {
     const callout = form.find('.account_info').first()
     const accountInputField = form.find('input[name=converted_account_id]')
 
     accountInputField.val('')
 
-    sendRequest('getAlias', { aliasName: account }, (response: GetAliasResponse) => {
-        if (response.errorCode) {
-            updateCallout(callout, 'alert-danger', $.t('error_invalid_alias_name'))
-            return
-        }
+    const response: GetAliasResponse = await sendRequestA('getAlias', { aliasName: account })
 
-        if (response.aliasURI) {
-            const alias = String(response.aliasURI)
-            const timestamp = response.timestamp
+    if (response.errorCode) {
+        updateCallout(callout, 'alert-danger', $.t('error_invalid_alias_name'))
+        return
+    }
 
-            const regex_1 = /acct:(.*)@burst/
-            const regex_2 = /nacc:(.*)/
-            const match = alias.match(regex_1) || alias.match(regex_2)
+    if (response.aliasURI) {
+        const alias = String(response.aliasURI)
+        const timestamp = response.timestamp
 
-            if (match && match[1]) {
-                const address = new NxtAddress(String(match[1]).toUpperCase())
-                if (!address.isOk()) {
-                    updateCallout(callout, 'alert-danger', $.t('invalid_account_alias'))
-                    return
-                }
+        const regex_1 = /acct:(.*)@burst/
+        const regex_2 = /nacc:(.*)/
+        const match = alias.match(regex_1) || alias.match(regex_2)
 
-                getAccountTypeAndMessage(address.getAccountId(), (response) => {
-                    formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
-                    checkForMerchant(response.account?.description, form)
-
-                    accountInputField.val(address.getAccountRS(BRS.prefix))
-                    let text = $.t('alias_account_link', { account_id: address.getAccountRS(BRS.prefix) })
-                    text += '.<br>'
-                    text += $.t('alias_last_adjusted', { timestamp: formatTimestampAsDateTime(timestamp) })
-                    text += `<br>${response.message}`
-                    updateCallout(callout, 'alert-' + response.type, text)
-                })
+        if (match && match[1]) {
+            const address = new NxtAddress(String(match[1]).toUpperCase())
+            if (!address.isOk()) {
+                updateCallout(callout, 'alert-danger', $.t('invalid_account_alias'))
                 return
             }
 
-            let msg = $.t('alias_account_no_link')
-            msg += !alias ? $.t('error_uri_empty') : $.t('uri_is', { uri: String(alias).escapeHTML() })
-            updateCallout(callout, 'alert-danger', msg)
+            const response2 = await getAccountTypeAndMessage(address.getAccountId())
+            formatRecipientPublicKey(response2.publicKeyNeeded, form, response2.account?.publicKey)
+            checkForMerchant(response2.account?.description, form)
+
+            accountInputField.val(address.getAccountRS(BRS.prefix))
+            let text = $.t('alias_account_link', { account_id: address.getAccountRS(BRS.prefix) })
+            text += '.<br>'
+            text += $.t('alias_last_adjusted', { timestamp: formatTimestampAsDateTime(timestamp) })
+            text += `<br>${response2.message}`
+            updateCallout(callout, 'alert-' + response2.type, text)
             return
         }
 
-        if (response.aliasName) {
-            updateCallout(callout, 'alert-danger', $.t('error_alias_empty_uri'))
-            return
-        }
-
-        const msg = response.errorDescription ? $.t('error') + ': ' + response.errorDescription : $.t('error_alias')
+        let msg = $.t('alias_account_no_link')
+        msg += !alias ? $.t('error_uri_empty') : $.t('uri_is', { uri: String(alias).escapeHTML() })
         updateCallout(callout, 'alert-danger', msg)
-    })
+        return
+    }
+
+    if (response.aliasName) {
+        updateCallout(callout, 'alert-danger', $.t('error_alias_empty_uri'))
+        return
+    }
+
+    const msg = response.errorDescription ? $.t('error') + ': ' + response.errorDescription : $.t('error_alias')
+    updateCallout(callout, 'alert-danger', msg)
 }
 
 function updateCallout(callout: JQuery<HTMLElement>, alertClass: string, message: string) {
