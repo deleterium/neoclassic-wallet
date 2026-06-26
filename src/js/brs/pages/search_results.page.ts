@@ -1,10 +1,19 @@
 import { BRS } from '..'
-import { GetAssetResponse, Alias, GetAccountResponse, GetAliasesResponse, GetAssetsByNameResponse } from '../typings'
+import {
+    GetAssetResponse,
+    Alias,
+    GetAccountResponse,
+    GetAliasesResponse,
+    GetAssetsByNameResponse,
+    GetTransactionResponse,
+    GetBlockResponse,
+    GetAccountsWithNameResponse,
+} from '../typings'
 import { showAliasModal } from '../modals/aliases'
 import { showAccountModal } from '../modals/account'
 import { showBlockModal } from '../modals/block'
 import { showTransactionModal } from '../modals/transaction'
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from '../core/util'
 import { formatNQTAsAmount } from '../core/numbers'
 
@@ -107,23 +116,19 @@ function showAliasesSearchResults(aliases: Alias[]) {
  * Page shown when a search is started.
  * @returns
  */
-export function pagesSearchResults() {
-    function requestAccountAndShow(accountValue: string) {
-        sendRequest(
-            'getAccount',
-            {
-                account: accountValue,
-                getCommittedAmount: 'true',
-            },
-            function (response: GetAccountResponse) {
-                if (response.errorCode) {
-                    dataLoaded($.t('error_search_no_results'))
-                    return
-                }
-                showAccountModal(response)
-                showAccountSearchResults([response.account])
-            },
-        )
+export async function pagesSearchResults() {
+    async function requestAccountAndShow(accountValue: string) {
+        const response: GetAccountResponse = await sendRequestA('getAccount', {
+            account: accountValue,
+            getCommittedAmount: 'true',
+        })
+
+        if (response.errorCode) {
+            dataLoaded($.t('error_search_no_results'))
+            return
+        }
+        showAccountModal(response)
+        showAccountSearchResults([response.account])
     }
 
     const userInput = ($('#search_box input').val() as string).trim()
@@ -141,25 +146,20 @@ export function pagesSearchResults() {
         return
     }
     if (BRS.idRegEx.test(searchText)) {
-        sendRequest(
-            'getTransaction',
-            {
-                transaction: searchText,
-            },
-            function (response) {
-                if (response.errorCode) {
-                    dataLoaded($.t('no_transactions_found'))
-                    return
-                }
-                showTransactionModal(response)
-                const htmlResult = `
+        const response: GetTransactionResponse = await sendRequestA('getTransaction', {
+            transaction: searchText,
+        })
+        if (response.errorCode) {
+            dataLoaded($.t('no_transactions_found'))
+            return
+        }
+        showTransactionModal(response)
+        const htmlResult = `
                 <strong>${$.t('transaction')}:</strong>
                 <ul>
                   <li><a href="#" data-transaction="${response.transaction}">${response.transaction}</a></li>
                 </ul>`
-                dataLoaded(htmlResult)
-            },
-        )
+        dataLoaded(htmlResult)
         return
     }
     const splitted = searchText.split(':')
@@ -173,80 +173,64 @@ export function pagesSearchResults() {
             requestAccountAndShow(splitted[1].trim())
             return
         case 'b':
-        case 'block':
-            sendRequest(
-                'getBlock',
-                {
-                    height: splitted[1].trim(),
-                    includeTransactions: 'true',
-                },
-                function (response) {
-                    if (response.errorCode) {
-                        dataLoaded($.t('error_search_no_results'))
-                        return
-                    }
-                    showBlockModal(response)
-                    const htmlResult = `
+        case 'block': {
+            const response: GetBlockResponse = await sendRequestA('getBlock', {
+                height: splitted[1].trim(),
+                includeTransactions: 'true',
+            })
+            if (response.errorCode) {
+                dataLoaded($.t('error_search_no_results'))
+                return
+            }
+            showBlockModal(response)
+            const htmlResult = `
                 <strong>${$.t('block')}:</strong>
                 <ul>
                   <li><a href="#" data-block="${response.height}">${response.height}</a></li>
                 </ul>`
-                    dataLoaded(htmlResult)
-                },
-            )
+            dataLoaded(htmlResult)
             return
-        case 'alias':
-            sendRequest(
-                'getAliasesByName',
-                {
-                    aliasName: splitted[1].trim(),
-                },
-                function (response: GetAliasesResponse) {
-                    if (response.errorCode || !response.aliases || response.aliases.length === 0) {
-                        dataLoaded($.t('error_search_no_results'))
-                        return
-                    }
-                    if (response.aliases.length === 1) {
-                        showAliasModal(response.aliases[0])
-                    }
-                    showAliasesSearchResults(response.aliases)
-                },
-            )
+        }
+        case 'alias': {
+            const response: GetAliasesResponse = await sendRequestA('getAliasesByName', {
+                aliasName: splitted[1].trim(),
+            })
+            if (response.errorCode || !response.aliases || response.aliases.length === 0) {
+                dataLoaded($.t('error_search_no_results'))
+                return
+            }
+            if (response.aliases.length === 1) {
+                showAliasModal(response.aliases[0])
+            }
+            showAliasesSearchResults(response.aliases)
             return
-        case 'name':
-            sendRequest(
-                'getAccountsWithName',
-                {
-                    name: splitted[1].trim(),
-                },
-                function (response) {
-                    if (response.errorCode || !response.accounts || response.accounts.length === 0) {
-                        dataLoaded($.t('error_search_no_results'))
-                        return
-                    }
-                    if (response.accounts.length === 1) {
-                        requestAccountAndShow(response.accounts[0])
-                        return
-                    }
-                    showAccountSearchResults(response.accounts)
-                },
-            )
+        }
+        case 'name': {
+            const response: GetAccountsWithNameResponse = await sendRequestA('getAccountsWithName', {
+                name: splitted[1].trim(),
+            })
+            if (response.errorCode || !response.accounts || response.accounts.length === 0) {
+                dataLoaded($.t('error_search_no_results'))
+                return
+            }
+            if (response.accounts.length === 1) {
+                requestAccountAndShow(response.accounts[0])
+                return
+            }
+            showAccountSearchResults(response.accounts)
             return
-        case 'token':
-            sendRequest(
-                'getAssetsByName',
-                {
-                    name: splitted[1].trim(),
-                },
-                function (response: GetAssetsByNameResponse) {
-                    if (response.errorCode || !response.assets || response.assets.length === 0) {
-                        dataLoaded($.t('error_search_no_results'))
-                        return
-                    }
-                    showAssetSearchResults(response.assets)
-                },
-            )
+        }
+        case 'token': {
+            const response: GetAssetsByNameResponse = await sendRequestA('getAssetsByName', {
+                name: splitted[1].trim(),
+            })
+            if (response.errorCode || !response.assets || response.assets.length === 0) {
+                dataLoaded($.t('error_search_no_results'))
+                return
+            }
+            showAssetSearchResults(response.assets)
             return
+        }
         default:
             dataLoaded('')
     }

@@ -279,6 +279,13 @@ export interface GetAccountSubscriptionsResponse {
     errorDescription?: string
 }
 
+export interface GetAccountsWithNameResponse {
+    accounts: string[]
+    requestProcessingTime: number
+    errorCode?: number
+    errorDescription?: string
+}
+
 // region Blockchain
 
 export interface BlockchainStatus {
