@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 import { fullHashToId, getDecryptedMessageFromCache, getDecryptionPassword } from '../core/encryption'
 
@@ -25,9 +25,9 @@ import { getTransactionDetails } from '../tools/transactions'
 
 import { decryptAttachmentFieldAndUpdateSelector, getMessageBytesFromTX, getMessageTextFromTX } from '../tools/messages'
 
-import { DBAsset, GetIndirectIncomingResponse, Transaction } from '../typings'
+import { DBAsset, GetAliasResponse, GetIndirectIncomingResponse, GetTransactionResponse, Transaction } from '../typings'
 
-export function showTransactionModal(transaction: Transaction | string) {
+export async function showTransactionModal(transaction: Transaction | string) {
     if (BRS.fetchingModalData) {
         return
     }
@@ -39,15 +39,10 @@ export function showTransactionModal(transaction: Transaction | string) {
     $('#transaction_info_table tbody').empty()
 
     if (typeof transaction !== 'object') {
-        sendRequest(
-            'getTransaction',
-            {
-                transaction,
-            },
-            function (response: Transaction) {
-                processTransactionModalData(response)
-            },
-        )
+        const response: Transaction = await sendRequestA('getTransaction', {
+            transaction,
+        })
+        processTransactionModalData(response)
     } else {
         processTransactionModalData(transaction)
     }
@@ -124,22 +119,19 @@ interface fnGetTransactionDetails {
     colorClass: string
 }
 
-function processTransactionModalData(transaction: Transaction) {
+async function processTransactionModalData(transaction: Transaction) {
     let data: DataTable
-    let async = false
     let assetDetails: DBAsset | undefined
     let helperStr: string
     let details: fnGetTransactionDetails
 
-    function processTransactionModalDataMain() {
+    async function processTransactionModalDataMain() {
         processInfoDetails()
         processButtons()
         processDefaultProperties()
-        processExceptionProperties()
+        await processExceptionProperties()
         processMessage()
-        if (async === false) {
-            transactionEndLoad()
-        }
+        transactionEndLoad()
     }
 
     function processInfoDetails() {
@@ -195,19 +187,19 @@ function processTransactionModalData(transaction: Transaction) {
         BRS.fetchingModalData = false
     }
 
-    function processExceptionProperties() {
+    async function processExceptionProperties() {
         switch (transaction.type) {
             case 0:
                 pePayment()
                 return
             case 1:
-                peMessaging()
+                await peMessaging()
                 return
             case 2:
-                peColoredCoins()
+                await peColoredCoins()
                 return
             case 3:
-                peDigitalGoods()
+                await peDigitalGoods()
                 return
             case 4:
                 if (transaction.subtype === 0) {
@@ -277,7 +269,7 @@ function processTransactionModalData(transaction: Transaction) {
         }
     }
 
-    function peMessaging() {
+    async function peMessaging() {
         switch (transaction.subtype) {
             case 1:
                 // alias assignment
@@ -288,7 +280,7 @@ function processTransactionModalData(transaction: Transaction) {
                 // alias sale/transfer/sale cancelation
                 data.alias_name = transaction.attachment.alias
                 if (details.nameOfTransaction === $.t('alias_sale')) {
-                    peMessagingAliasSale()
+                    await peMessagingAliasSale()
                 }
                 return
             case 7:
@@ -299,59 +291,52 @@ function processTransactionModalData(transaction: Transaction) {
         }
     }
 
-    function peMessagingAliasSale() {
+    async function peMessagingAliasSale() {
         let message = ''
         let messageStyle = 'info'
         data.price = transaction.attachment.priceNQT
-        async = true
-        sendRequest(
-            'getAlias',
-            {
-                aliasName: transaction.attachment.alias,
-            },
-            function (response) {
-                BRS.fetchingModalData = false
-                if (!response.errorCode) {
-                    if (transaction.recipient !== response.buyer || transaction.attachment.priceNQT !== response.priceNQT) {
-                        message = $.t('alias_sale_info_outdated')
-                        messageStyle = 'danger'
-                    } else if (transaction.recipient === BRS.account) {
-                        message =
-                            $.t('alias_sale_direct_offer', {
-                                burst: formatNQTAsAmount(transaction.attachment.priceNQT),
-                            }) +
-                            " <a href='#' data-alias='" +
-                            String(transaction.attachment.alias).escapeHTML() +
-                            "' data-toggle='modal' data-target='#buy_alias_modal'>" +
-                            $.t('buy_it_q') +
-                            '</a>'
-                    } else if (typeof transaction.recipient === 'undefined') {
-                        message =
-                            $.t('alias_sale_indirect_offer', {
-                                burst: formatNQTAsAmount(transaction.attachment.priceNQT),
-                            }) +
-                            " <a href='#' data-alias='" +
-                            String(transaction.attachment.alias).escapeHTML() +
-                            "' data-toggle='modal' data-target='#buy_alias_modal'>" +
-                            $.t('buy_it_q') +
-                            '</a>'
-                    } else if (transaction.senderRS === BRS.accountRS) {
-                        if (transaction.attachment.priceNQT !== '0') {
-                            message =
-                                $.t('your_alias_sale_offer') +
-                                " <a href='#' data-alias='" +
-                                String(transaction.attachment.alias).escapeHTML() +
-                                "' data-toggle='modal' data-target='#cancel_alias_sale_modal'>" +
-                                $.t('cancel_sale_q') +
-                                '</a>'
-                        }
-                    } else {
-                        message = $.t('error_alias_sale_different_account')
-                    }
+        const response: GetAliasResponse = await sendRequestA('getAlias', {
+            aliasName: transaction.attachment.alias,
+        })
+
+        if (!response.errorCode) {
+            if (transaction.recipient !== response.buyer || transaction.attachment.priceNQT !== response.priceNQT) {
+                message = $.t('alias_sale_info_outdated')
+                messageStyle = 'danger'
+            } else if (transaction.recipient === BRS.account) {
+                message =
+                    $.t('alias_sale_direct_offer', {
+                        burst: formatNQTAsAmount(transaction.attachment.priceNQT),
+                    }) +
+                    " <a href='#' data-alias='" +
+                    String(transaction.attachment.alias).escapeHTML() +
+                    "' data-toggle='modal' data-target='#buy_alias_modal'>" +
+                    $.t('buy_it_q') +
+                    '</a>'
+            } else if (typeof transaction.recipient === 'undefined') {
+                message =
+                    $.t('alias_sale_indirect_offer', {
+                        burst: formatNQTAsAmount(transaction.attachment.priceNQT),
+                    }) +
+                    " <a href='#' data-alias='" +
+                    String(transaction.attachment.alias).escapeHTML() +
+                    "' data-toggle='modal' data-target='#buy_alias_modal'>" +
+                    $.t('buy_it_q') +
+                    '</a>'
+            } else if (transaction.senderRS === BRS.accountRS) {
+                if (transaction.attachment.priceNQT !== '0') {
+                    message =
+                        $.t('your_alias_sale_offer') +
+                        " <a href='#' data-alias='" +
+                        String(transaction.attachment.alias).escapeHTML() +
+                        "' data-toggle='modal' data-target='#cancel_alias_sale_modal'>" +
+                        $.t('cancel_sale_q') +
+                        '</a>'
                 }
-                transactionEndLoad()
-            },
-        )
+            } else {
+                message = $.t('error_alias_sale_different_account')
+            }
+        }
 
         if (message.length) {
             $('#transaction_info_bottom')
@@ -360,15 +345,15 @@ function processTransactionModalData(transaction: Transaction) {
         }
     }
 
-    function peColoredCoins() {
+    async function peColoredCoins() {
         switch (transaction.subtype) {
             case 0:
                 // asset issuance
-                assetDetails = getAssetDetails(fullHashToId(transaction.fullHash))
+                assetDetails = await getAssetDetails(fullHashToId(transaction.fullHash))
                 if (!assetDetails) return
                 data.asset_name_formatted_html = getAssetLink(assetDetails)
                 data.description = transaction.attachment.description.escapeHTML()
-                data.quantity = [transaction.attachment.quantityQNT, transaction.attachment.decimals]
+                data.quantity = transaction.attachment.quantityQNT
                 data.decimals = transaction.attachment.decimals
                 if (transaction.attachment.mintable === true) {
                     data.mintable = $.t('yes')
@@ -378,21 +363,23 @@ function processTransactionModalData(transaction: Transaction) {
                 break
             case 1:
                 // asset transfer
-                assetDetails = getAssetDetails(transaction.attachment.asset)
+                assetDetails = await getAssetDetails(transaction.attachment.asset)
                 if (!assetDetails) {
                     break
                 }
                 data.asset_name_formatted_html = getAssetLink(assetDetails)
-                data.quantity = [transaction.attachment.quantityQNT, assetDetails.decimals]
+                data.quantity = transaction.attachment.quantityQNT
+                data.decimals = assetDetails.decimals
                 break
             case 2:
                 // ask order placement
-                assetDetails = getAssetDetails(transaction.attachment.asset)
+                assetDetails = await getAssetDetails(transaction.attachment.asset)
                 if (!assetDetails) {
                     break
                 }
                 data.asset_name_formatted_html = getAssetLink(assetDetails)
-                data.quantity = [transaction.attachment.quantityQNT, assetDetails.decimals]
+                data.quantity_formatted_html =
+                    formatQNTAsQuantity(transaction.attachment.quantityQNT, assetDetails.decimals) + ' ' + assetDetails.name
                 data.price_formatted_html =
                     formatPriceNQTAsPriceQuantity(transaction.attachment.priceNQT, assetDetails.decimals) + ' ' + BRS.valueSuffix
                 data.total_formatted_html =
@@ -400,66 +387,60 @@ function processTransactionModalData(transaction: Transaction) {
                 break
             case 3:
                 // bid order placement
-                assetDetails = getAssetDetails(transaction.attachment.asset)
+                assetDetails = await getAssetDetails(transaction.attachment.asset)
                 if (!assetDetails) {
                     break
                 }
                 data.asset_name_formatted_html = getAssetLink(assetDetails)
-                data.quantity = [transaction.attachment.quantityQNT, assetDetails.decimals]
+                data.quantity_formatted_html =
+                    formatQNTAsQuantity(transaction.attachment.quantityQNT, assetDetails.decimals) + ' ' + assetDetails.name
                 data.price_formatted_html =
                     formatPriceNQTAsPriceQuantity(transaction.attachment.priceNQT, assetDetails.decimals) + ' ' + BRS.valueSuffix
                 data.total_formatted_html =
                     formatOrderTotal(transaction.attachment.quantityQNT, transaction.attachment.priceNQT) + ' ' + BRS.valueSuffix
                 break
             case 4:
-            case 5:
+            case 5: {
                 // ask order cancellation
                 // bid order cancellation
-                async = true
-                sendRequest(
-                    'getTransaction',
-                    {
-                        transaction: transaction.attachment.order,
-                    },
-                    function (transactionII) {
-                        if (transactionII.errorCode) {
-                            return
-                        }
-                        const asset = getAssetDetails(transactionII.attachment.asset)
-                        if (!asset) {
-                            return
-                        }
-                        data.asset_name_formatted_html = getAssetLink(asset)
-                        data.quantity = [transactionII.attachment.quantityQNT, asset.decimals]
-                        data.price_formatted_html =
-                            formatPriceNQTAsPriceQuantity(transactionII.attachment.priceNQT, asset.decimals) + ' ' + BRS.valueSuffix
-                        data.total_formatted_html =
-                            formatNQTAsAmount(
-                                calculateOrderTotalNQT(transactionII.attachment.quantityQNT, transactionII.attachment.priceNQT),
-                            ) +
-                            ' ' +
-                            BRS.valueSuffix
-                        transactionEndLoad()
-                    },
-                )
+                const transactionII: GetTransactionResponse = await sendRequestA('getTransaction', {
+                    transaction: transaction.attachment.order,
+                })
+                if (transactionII.errorCode) {
+                    return
+                }
+                const asset = await getAssetDetails(transactionII.attachment.asset)
+                if (!asset) {
+                    return
+                }
+                data.asset_name_formatted_html = getAssetLink(asset)
+                data.quantity_formatted_html = formatQNTAsQuantity(transactionII.attachment.quantityQNT, asset.decimals) + ' ' + asset.name
+                data.price_formatted_html =
+                    formatPriceNQTAsPriceQuantity(transactionII.attachment.priceNQT, asset.decimals) + ' ' + BRS.valueSuffix
+                data.total_formatted_html =
+                    formatNQTAsAmount(calculateOrderTotalNQT(transactionII.attachment.quantityQNT, transactionII.attachment.priceNQT)) +
+                    ' ' +
+                    BRS.valueSuffix
                 break
+            }
             case 6:
-                assetDetails = getAssetDetails(transaction.attachment.asset)
+                assetDetails = await getAssetDetails(transaction.attachment.asset)
                 if (!assetDetails) {
                     break
                 }
                 data.asset_name_formatted_html = getAssetLink(assetDetails)
-                data.quantity = [transaction.attachment.quantityQNT, assetDetails.decimals]
+                data.quantity_formatted_html =
+                    formatQNTAsQuantity(transaction.attachment.quantityQNT, assetDetails.decimals) + ' ' + assetDetails.name
                 break
             case 7:
-                assetDetails = getAssetDetails(fullHashToId(transaction.referencedTransactionFullHash || ''))
+                assetDetails = await getAssetDetails(fullHashToId(transaction.referencedTransactionFullHash || ''))
                 if (!assetDetails) {
                     break
                 }
                 data.asset_name_formatted_html = getAssetLink(assetDetails)
                 break
             case 8:
-                peColoredCoinsDistributeToHolders()
+                await peColoredCoinsDistributeToHolders()
                 break
             case 9:
                 helperStr = ''
@@ -467,7 +448,7 @@ function processTransactionModalData(transaction: Transaction) {
                     if (i !== 0) {
                         helperStr += '<br>'
                     }
-                    const foundAsset = getAssetDetails(transaction.attachment.assetIds[i])
+                    const foundAsset = await getAssetDetails(transaction.attachment.assetIds[i])
                     if (foundAsset) {
                         helperStr += `${formatQNTAsQuantity(transaction.attachment.quantitiesQNT[i], foundAsset.decimals)} ${getAssetLink(foundAsset)}`
                     } else {
@@ -479,57 +460,51 @@ function processTransactionModalData(transaction: Transaction) {
         }
     }
 
-    function peColoredCoinsDistributeToHolders() {
-        async = true
+    async function peColoredCoinsDistributeToHolders() {
         data.to_holders_of_formatted_html = transaction.attachment.asset
         data.distributing_asset_formatted_html = transaction.attachment.assetToDistribute
         data.distributing_quantity = transaction.attachment.quantityQNT
         data.you_received = $.t('no')
-        sendRequest(
-            'getIndirectIncoming',
-            {
-                transaction: transaction.transaction,
-                account: BRS.account,
-            },
-            function (transactionII: GetIndirectIncomingResponse) {
-                let userQuantity = '0'
-                let userAmount = '0'
-                if (transactionII.errorCode === undefined) {
-                    userQuantity = transactionII.quantityQNT
-                    userAmount = transactionII.amountNQT
-                    data.you_received = $.t('yes')
+        const transactionII: GetIndirectIncomingResponse = await sendRequestA('getIndirectIncoming', {
+            transaction: transaction.transaction,
+            account: BRS.account,
+        })
+        let userQuantity = '0'
+        let userAmount = '0'
+        if (transactionII.errorCode === undefined) {
+            userQuantity = transactionII.quantityQNT
+            userAmount = transactionII.amountNQT
+            data.you_received = $.t('yes')
+        }
+        const foundAsset = await getAssetDetails(transaction.attachment.asset)
+        if (foundAsset) {
+            data.to_holders_of_formatted_html = getAssetLink(foundAsset)
+        }
+        if (userAmount !== '0') {
+            data.amount_to_you = formatNQTAsAmount(userAmount) + ' ' + BRS.valueSuffix
+        }
+        if (transaction.attachment.assetToDistribute === '0') {
+            data.distributing_asset_formatted_html = $.t('no')
+            delete data.distributing_quantity
+        } else {
+            const foundAsset2 = await getAssetDetails(transaction.attachment.assetToDistribute)
+            if (foundAsset2) {
+                data.distributing_asset_formatted_html = getAssetLink(foundAsset2)
+                data.distributing_quantity =
+                    formatQNTAsQuantity(String(data.distributing_quantity), foundAsset2.decimals) + ' ' + foundAsset2.name
+                if (userQuantity !== '0') {
+                    data.quantity_to_you = formatQNTAsQuantity(userQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
                 }
-                const foundAsset = getAssetDetails(transaction.attachment.asset)
-                if (foundAsset) {
-                    data.to_holders_of_formatted_html = getAssetLink(foundAsset)
+            } else {
+                if (userQuantity !== '0') {
+                    data.quantity_to_you = formatQNTAsQuantity(userQuantity, 0) + ' [QNT]'
                 }
-                if (userAmount !== '0') {
-                    data.amount_to_you = formatNQTAsAmount(userAmount) + ' ' + BRS.valueSuffix
-                }
-                if (transaction.attachment.assetToDistribute === '0') {
-                    data.distributing_asset_formatted_html = $.t('no')
-                    delete data.distributing_quantity
-                } else {
-                    const foundAsset2 = getAssetDetails(transaction.attachment.assetToDistribute)
-                    if (foundAsset2) {
-                        data.distributing_asset_formatted_html = getAssetLink(foundAsset2)
-                        data.distributing_quantity =
-                            formatQNTAsQuantity(String(data.distributing_quantity), foundAsset2.decimals) + ' ' + foundAsset2.name
-                        if (userQuantity !== '0') {
-                            data.quantity_to_you = formatQNTAsQuantity(userQuantity, foundAsset2.decimals) + ' ' + foundAsset2.name
-                        }
-                    } else {
-                        if (userQuantity !== '0') {
-                            data.quantity_to_you = formatQNTAsQuantity(userQuantity, 0) + ' [QNT]'
-                        }
-                    }
-                }
-                transactionEndLoad()
-            },
-        )
+            }
+        }
     }
 
-    function peDigitalGoods() {
+    async function peDigitalGoods() {
+        let goods: any
         switch (transaction.subtype) {
             case 0:
                 // marketplace listing
@@ -543,281 +518,206 @@ function processTransactionModalData(transaction: Transaction) {
             case 1:
                 // marketplace removal
                 delete data.sender_formatted_html
-                async = true
-                sendRequest(
-                    'getDGSGood',
-                    {
-                        goods: transaction.attachment.goods,
-                    },
-                    function (goods) {
-                        data.seller = getAccountRSFromObject(goods, 'seller')
-                        data.item_name = goods.name
-                        transactionEndLoad()
-                    },
-                )
+                goods = await sendRequestA('getDGSGood', {
+                    goods: transaction.attachment.goods,
+                })
+                data.seller = getAccountRSFromObject(goods, 'seller')
+                data.item_name = goods.name
                 break
             case 2:
                 // marketplace item price change
                 delete data.sender_formatted_html
-                async = true
-                sendRequest(
-                    'getDGSGood',
-                    {
-                        goods: transaction.attachment.goods,
-                    },
-                    function (goods) {
-                        data.seller = getAccountRSFromObject(goods, 'seller')
-                        data.item_name = goods.name
-                        data.new_price_formatted_html = formatNQTAsAmount(transaction.attachment.priceNQT) + ' ' + BRS.valueSuffix
-                        transactionEndLoad()
-                    },
-                )
+                goods = await sendRequestA('getDGSGood', {
+                    goods: transaction.attachment.goods,
+                })
+                data.seller = getAccountRSFromObject(goods, 'seller')
+                data.item_name = goods.name
+                data.new_price_formatted_html = formatNQTAsAmount(transaction.attachment.priceNQT) + ' ' + BRS.valueSuffix
                 break
             case 3:
                 // marketplace item quantity change
                 delete data.sender_formatted_html
-                async = true
-                sendRequest(
-                    'getDGSGood',
-                    {
-                        goods: transaction.attachment.goods,
-                    },
-                    function (goods) {
-                        data.seller = getAccountRSFromObject(goods, 'seller')
-                        data.item_name = goods.name
-                        data.delta_quantity = transaction.attachment.deltaQuantity
-                        transactionEndLoad()
-                    },
-                )
+                goods = await sendRequestA('getDGSGood', {
+                    goods: transaction.attachment.goods,
+                })
+                data.seller = getAccountRSFromObject(goods, 'seller')
+                data.item_name = goods.name
+                data.delta_quantity = transaction.attachment.deltaQuantity
                 break
             case 4:
-                peDigitalGoodsPurchase()
+                await peDigitalGoodsPurchase()
                 break
             case 5:
-                peDigitalGoodsDelivery()
+                await peDigitalGoodsDelivery()
                 break
             case 6:
-                peDigitalGoodsFeedback()
+                await peDigitalGoodsFeedback()
                 break
-            case 7:
+            case 7: {
                 delete data.sender_formatted_html
                 delete data.recipient_formatted_html
-                async = true
-                sendRequest(
-                    'getDGSPurchase',
-                    {
-                        purchase: transaction.attachment.purchase,
-                    },
-                    function (purchase) {
-                        data.seller = getAccountRSFromObject(purchase, 'seller')
-                        data.buyer = getAccountRSFromObject(purchase, 'buyer')
-                        sendRequest(
-                            'getDGSGood',
-                            {
-                                goods: purchase.goods,
-                            },
-                            function (goods) {
-                                data.item_name = goods.name
-                                data.order_total_formatted_html =
-                                    formatOrderTotal(purchase.quantity, purchase.priceNQT) + ' ' + BRS.valueSuffix
-                                data.refund = transaction.attachment.refundNQT
-                                transactionEndLoad()
-                            },
-                        )
-                    },
-                )
+                const purchase = await sendRequestA('getDGSPurchase', {
+                    purchase: transaction.attachment.purchase,
+                })
+                data.seller = getAccountRSFromObject(purchase, 'seller')
+                data.buyer = getAccountRSFromObject(purchase, 'buyer')
+                goods = await sendRequestA('getDGSGood', {
+                    goods: purchase.goods,
+                })
+                data.item_name = goods.name
+                data.order_total_formatted_html = formatOrderTotal(purchase.quantity, purchase.priceNQT) + ' ' + BRS.valueSuffix
+                data.refund = transaction.attachment.refundNQT
                 break
+            }
         }
     }
 
-    function peDigitalGoodsPurchase() {
+    async function peDigitalGoodsPurchase() {
         // marketplace purchase
         delete data.sender_formatted_html
         delete data.recipient_formatted_html
-        async = true
-        sendRequest(
-            'getDGSGood',
-            {
-                goods: transaction.attachment.goods,
-            },
-            function (goods) {
-                data.buyer = getAccountRSFromObject(transaction, 'sender')
-                data.seller = getAccountRSFromObject(goods, 'seller')
-                data.item_name = goods.name
-                data.price = transaction.attachment.priceNQT
-                data.quantity_formatted_html = formatNumber(transaction.attachment.quantity)
-                sendRequest(
-                    'getDGSPurchase',
-                    {
-                        purchase: transaction.transaction,
-                    },
-                    function (purchase) {
-                        let callout = ''
-                        if (purchase.errorCode) {
-                            if (purchase.errorCode === 4) {
-                                callout = $.t('incorrect_purchase')
-                            } else {
-                                callout = String(purchase.errorDescription).escapeHTML()
-                            }
-                        } else {
-                            if (BRS.account === transaction.recipient || BRS.account === transaction.sender) {
-                                if (purchase.pending) {
-                                    if (BRS.account === transaction.recipient) {
-                                        callout =
-                                            "<a href='#' data-toggle='modal' data-target='#dgs_delivery_modal' data-purchase='" +
-                                            String(transaction.transaction).escapeHTML() +
-                                            "'>" +
-                                            $.t('deliver_goods_q') +
-                                            '</a>'
-                                    } else {
-                                        callout = $.t('waiting_on_seller')
-                                    }
-                                } else {
-                                    if (purchase.refundNQT) {
-                                        callout = $.t('purchase_refunded')
-                                    } else {
-                                        callout = $.t('purchase_delivered')
-                                    }
-                                }
-                            }
-                        }
-                        if (callout) {
-                            $('#transaction_info_bottom')
-                                .html(
-                                    "<div class='callout " +
-                                        (purchase.errorCode ? 'callout-danger' : 'callout-info') +
-                                        " callout-bottom'>" +
-                                        callout +
-                                        '</div>',
-                                )
-                                .show()
-                        }
-                        transactionEndLoad()
-                    },
+        const goods = await sendRequestA('getDGSGood', {
+            goods: transaction.attachment.goods,
+        })
+        data.buyer = getAccountRSFromObject(transaction, 'sender')
+        data.seller = getAccountRSFromObject(goods, 'seller')
+        data.item_name = goods.name
+        data.price = transaction.attachment.priceNQT
+        data.quantity_formatted_html = formatNumber(transaction.attachment.quantity)
+        const purchase = await sendRequestA('getDGSPurchase', {
+            purchase: transaction.transaction,
+        })
+        let callout = ''
+        if (purchase.errorCode) {
+            if (purchase.errorCode === 4) {
+                callout = $.t('incorrect_purchase')
+            } else {
+                callout = String(purchase.errorDescription).escapeHTML()
+            }
+        } else {
+            if (BRS.account === transaction.recipient || BRS.account === transaction.sender) {
+                if (purchase.pending) {
+                    if (BRS.account === transaction.recipient) {
+                        callout =
+                            "<a href='#' data-toggle='modal' data-target='#dgs_delivery_modal' data-purchase='" +
+                            String(transaction.transaction).escapeHTML() +
+                            "'>" +
+                            $.t('deliver_goods_q') +
+                            '</a>'
+                    } else {
+                        callout = $.t('waiting_on_seller')
+                    }
+                } else {
+                    if (purchase.refundNQT) {
+                        callout = $.t('purchase_refunded')
+                    } else {
+                        callout = $.t('purchase_delivered')
+                    }
+                }
+            }
+        }
+        if (callout) {
+            $('#transaction_info_bottom')
+                .html(
+                    "<div class='callout " +
+                        (purchase.errorCode ? 'callout-danger' : 'callout-info') +
+                        " callout-bottom'>" +
+                        callout +
+                        '</div>',
                 )
-            },
-        )
+                .show()
+        }
     }
 
-    function peDigitalGoodsFeedback() {
+    async function peDigitalGoodsFeedback() {
         // marketplace feedback
         delete data.sender_formatted_html
         delete data.recipient_formatted_html
-        async = true
-        sendRequest(
-            'getDGSPurchase',
-            {
-                purchase: transaction.attachment.purchase,
-            },
-            function (purchase) {
-                data.seller = getAccountRSFromObject(purchase, 'seller')
-                data.buyer = getAccountRSFromObject(purchase, 'buyer')
-                sendRequest(
-                    'getDGSGood',
-                    {
-                        goods: purchase.goods,
-                    },
-                    function (goods) {
-                        data.item_name = goods.name
-                        if (purchase.seller !== BRS.account && purchase.buyer !== BRS.account) {
-                            transactionEndLoad()
-                            return
-                        }
-                        sendRequest(
-                            'getDGSPurchase',
-                            {
-                                purchase: transaction.attachment.purchase,
-                            },
-                            function (purchase) {
-                                let callout
-                                if (purchase.buyer === BRS.account) {
-                                    if (purchase.refundNQT) {
-                                        callout = $.t('purchase_refunded')
-                                    }
-                                } else {
-                                    if (!purchase.refundNQT) {
-                                        callout =
-                                            "<a href='#' data-toggle='modal' data-target='#dgs_refund_modal' data-purchase='" +
-                                            String(transaction.attachment.purchase).escapeHTML() +
-                                            "'>" +
-                                            $.t('refund_this_purchase_q') +
-                                            '</a>'
-                                    } else {
-                                        callout = $.t('purchase_refunded')
-                                    }
-                                }
-                                if (callout) {
-                                    $('#transaction_info_bottom')
-                                        .append("<div class='callout callout-info callout-bottom'>" + callout + '</div>')
-                                        .show()
-                                }
-                                transactionEndLoad()
-                            },
-                        )
-                    },
-                )
-            },
-        )
+        const purchase = await sendRequestA('getDGSPurchase', {
+            purchase: transaction.attachment.purchase,
+        })
+        data.seller = getAccountRSFromObject(purchase, 'seller')
+        data.buyer = getAccountRSFromObject(purchase, 'buyer')
+        const goods = await sendRequestA('getDGSGood', {
+            goods: purchase.goods,
+        })
+        data.item_name = goods.name
+        if (purchase.seller !== BRS.account && purchase.buyer !== BRS.account) {
+            return
+        }
+        const purchase2 = await sendRequestA('getDGSPurchase', {
+            purchase: transaction.attachment.purchase,
+        })
+        let callout = ''
+        if (purchase2.buyer === BRS.account) {
+            if (purchase2.refundNQT) {
+                callout = $.t('purchase_refunded')
+            }
+        } else {
+            if (!purchase2.refundNQT) {
+                callout =
+                    "<a href='#' data-toggle='modal' data-target='#dgs_refund_modal' data-purchase='" +
+                    String(transaction.attachment.purchase).escapeHTML() +
+                    "'>" +
+                    $.t('refund_this_purchase_q') +
+                    '</a>'
+            } else {
+                callout = $.t('purchase_refunded')
+            }
+        }
+        if (callout) {
+            $('#transaction_info_bottom')
+                .append("<div class='callout callout-info callout-bottom'>" + callout + '</div>')
+                .show()
+        }
     }
 
-    function peDigitalGoodsDelivery() {
+    async function peDigitalGoodsDelivery() {
         // marketplace delivery
         delete data.sender_formatted_html
         delete data.recipient_formatted_html
-        async = true
-        sendRequest(
-            'getDGSPurchase',
-            {
-                purchase: transaction.attachment.purchase,
-            },
-            function (purchase) {
-                data.seller = getAccountRSFromObject(purchase, 'seller')
-                data.buyer = getAccountRSFromObject(purchase, 'buyer')
-                sendRequest(
-                    'getDGSGood',
-                    {
-                        goods: purchase.goods,
-                    },
-                    function (goods) {
-                        data.item_name = goods.name
-                        data.price = purchase.priceNQT
-                        data.quantity_formatted_html = formatNumber(purchase.quantity)
-                        if (purchase.quantity !== 1) {
-                            data.total_formatted_html = formatOrderTotal(purchase.quantity, purchase.priceNQT) + ' ' + BRS.valueSuffix
-                        }
-                        if (transaction.attachment.discountNQT) {
-                            data.discount = transaction.attachment.discountNQT
-                        }
-                        if (transaction.attachment.goodsData) {
-                            // Removed legacy decryption operation
-                            data.data = 'encrypted_goods_data_is_unsupported_in_neoclassic'
-                        }
-                        let callout
-                        if (BRS.account === purchase.buyer) {
-                            if (purchase.refundNQT) {
-                                callout = $.t('purchase_refunded')
-                            } else if (!purchase.feedbackNote) {
-                                callout =
-                                    $.t('goods_received') +
-                                    " <a href='#' data-toggle='modal' data-target='#dgs_feedback_modal' data-purchase='" +
-                                    String(transaction.attachment.purchase).escapeHTML() +
-                                    "'>" +
-                                    $.t('give_feedback_q') +
-                                    '</a>'
-                            }
-                        } else if (BRS.account === purchase.seller && purchase.refundNQT) {
-                            callout = $.t('purchase_refunded')
-                        }
-                        if (callout) {
-                            $('#transaction_info_bottom')
-                                .append("<div class='callout callout-info callout-bottom'>" + callout + '</div>')
-                                .show()
-                        }
-                        transactionEndLoad()
-                    },
-                )
-            },
-        )
+        const purchase = await sendRequestA('getDGSPurchase', {
+            purchase: transaction.attachment.purchase,
+        })
+        data.seller = getAccountRSFromObject(purchase, 'seller')
+        data.buyer = getAccountRSFromObject(purchase, 'buyer')
+        const goods = await sendRequestA('getDGSGood', {
+            goods: purchase.goods,
+        })
+        data.item_name = goods.name
+        data.price = purchase.priceNQT
+        data.quantity_formatted_html = formatNumber(purchase.quantity)
+        if (purchase.quantity !== 1) {
+            data.total_formatted_html = formatOrderTotal(purchase.quantity, purchase.priceNQT) + ' ' + BRS.valueSuffix
+        }
+        if (transaction.attachment.discountNQT) {
+            data.discount = transaction.attachment.discountNQT
+        }
+        if (transaction.attachment.goodsData) {
+            // Removed legacy decryption operation
+            data.data = 'encrypted_goods_data_is_unsupported_in_neoclassic'
+        }
+        let callout = ''
+        if (BRS.account === purchase.buyer) {
+            if (purchase.refundNQT) {
+                callout = $.t('purchase_refunded')
+            } else if (!purchase.feedbackNote) {
+                callout =
+                    $.t('goods_received') +
+                    " <a href='#' data-toggle='modal' data-target='#dgs_feedback_modal' data-purchase='" +
+                    String(transaction.attachment.purchase).escapeHTML() +
+                    "'>" +
+                    $.t('give_feedback_q') +
+                    '</a>'
+            }
+        } else if (BRS.account === purchase.seller && purchase.refundNQT) {
+            callout = $.t('purchase_refunded')
+        }
+        if (callout) {
+            $('#transaction_info_bottom')
+                .append("<div class='callout callout-info callout-bottom'>" + callout + '</div>')
+                .show()
+        }
     }
 
     function peMining() {
