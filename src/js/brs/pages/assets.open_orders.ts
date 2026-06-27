@@ -25,7 +25,7 @@ async function getOpenOrders(type: 'ask' | 'bid') {
     })
 
     if (response[typeOrderName] === undefined || response[typeOrderName].length === 0) {
-        drawOrdersTable(getUnconfirmedOrders(type), type)
+        drawOrdersTable(await getUnconfirmedOrders(type), type)
         return []
     }
 
@@ -73,11 +73,11 @@ function fillOrderDetails(orderId: string, decimals: number, currentQNT: string,
     $(`#order${orderId}percent`).text((100n - (BigInt(currentQNT) * 100n) / BigInt(startingQNT)).toString() + '%')
 }
 
-function getUnconfirmedOrders(type: 'ask' | 'bid') {
+async function getUnconfirmedOrders(type: 'ask' | 'bid') {
     const unconfirmedOrders: AnyAssetOrder[] = []
     for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
         if (unconfirmedTransaction.type === 2 && unconfirmedTransaction.subtype === (type === 'ask' ? 2 : 3)) {
-            const foundAsset = getAssetDetails(unconfirmedTransaction.attachment.asset)
+            const foundAsset = await getAssetDetails(unconfirmedTransaction.attachment.asset)
             unconfirmedOrders.push({
                 account: unconfirmedTransaction.sender,
                 accountRS: unconfirmedTransaction.senderRS,

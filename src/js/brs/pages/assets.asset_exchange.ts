@@ -74,7 +74,7 @@ export function bookmarkAllUserAssets() {
     saveAssetBookmarks(assetsToBookmark, notifyAndGoToAsset)
 }
 
-export function formsAddAssetBookmark(data: any) {
+export async function formsAddAssetBookmark(data: any) {
     data.id = data.id.trim()
 
     if (!data.id) {
@@ -88,7 +88,7 @@ export function formsAddAssetBookmark(data: any) {
             error: $.t('no_asset_found'),
         }
     }
-    const foundAsset = getAssetDetails(data.id)
+    const foundAsset = await getAssetDetails(data.id)
     if (foundAsset === undefined) {
         return {
             error: $.t('no_asset_found'),
@@ -148,23 +148,25 @@ function createBookmarkSidebarHTMLItem(asset: DBAsset, quantityHTML: string) {
 /** It does not redraw, it only updates values */
 function updateQuantitiesInAssetExchangeSidebarContent() {
     $('#asset_exchange_vtab  a').each(function () {
-        const assetId = $(this).data('asset')
+        const $eachElement = $(this)
+        const assetId = $eachElement.data('asset')
         if (!assetId) {
             return
         }
-        const asset = getAssetDetails(assetId)
-        if (!asset) {
-            return
-        }
-        const accountAsset = BRS.accountInfo.assetBalances?.find((Obj) => Obj.asset === asset.asset)
-        const userAssetQuantity = accountAsset === undefined ? '0' : formatQNTAsQuantity(accountAsset.balanceQNT, asset.decimals)
+        getAssetDetails(assetId).then((asset) => {
+            if (!asset) {
+                return
+            }
+            const accountAsset = BRS.accountInfo.assetBalances?.find((Obj) => Obj.asset === asset.asset)
+            const userAssetQuantity = accountAsset === undefined ? '0' : formatQNTAsQuantity(accountAsset.balanceQNT, asset.decimals)
 
-        $(this).html(createBookmarkSidebarHTMLItem(asset, userAssetQuantity))
-        if (userAssetQuantity === '0') {
-            $(this).addClass('not_owns_asset').removeClass('owns_asset')
-        } else {
-            $(this).addClass('owns_asset').removeClass('not_owns_asset')
-        }
+            $eachElement.html(createBookmarkSidebarHTMLItem(asset, userAssetQuantity))
+            if (userAssetQuantity === '0') {
+                $eachElement.addClass('not_owns_asset').removeClass('owns_asset')
+            } else {
+                $eachElement.addClass('owns_asset').removeClass('not_owns_asset')
+            }
+        })
     })
 }
 

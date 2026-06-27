@@ -1,7 +1,7 @@
 import { BRS } from '..'
 import { DBAsset, GetAssetResponse } from '../typings'
 import { dbGet, dbPut } from '../core/database'
-import { sendRequest } from '../core/send_request'
+import { sendRequest, sendRequestA } from '../core/send_request'
 
 export function loadClosedGroupsFromDB() {
     if (!BRS.databaseSupport) return
@@ -71,23 +71,23 @@ export function saveCachedAssets() {
  * @returns {AssetDetails}
  * @error returns undefined
  */
-export function getAssetDetails(assetId: string): DBAsset | undefined {
-    const async = false
+export async function getAssetDetails(assetId: string): Promise<DBAsset | undefined> {
     const asset = BRS.assets.find((tkn) => tkn.asset === assetId)
     if (asset) return asset
-    sendRequest(
-        'getAsset',
-        {
-            asset: assetId,
-        },
-        function (response: GetAssetResponse) {
-            if (!response.errorCode) {
-                cacheAsset(response)
-            }
-        },
-        async,
-    )
-    return BRS.assets.find((tkn) => tkn.asset === assetId)
+
+    const response: GetAssetResponse = await sendRequestA('getAsset', {
+        asset: assetId,
+    })
+
+    if (response.errorCode) {
+        return
+    }
+    return cacheAsset(response)
+}
+
+export function getAssetFromCache(assetId: string): DBAsset | undefined {
+    const asset = BRS.assets.find((tkn) => tkn.asset === assetId)
+    if (asset) return asset
 }
 
 export function cacheUserAssets() {

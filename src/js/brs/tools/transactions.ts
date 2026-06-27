@@ -6,7 +6,7 @@ import { formatQNTAsQuantity, formatNQTAsAmount } from '../core/numbers'
 
 import { convertRSAccountToNumeric, getAccountLink, getAccountTitleFromObject } from '../core/util'
 
-import { getAssetDetails } from '../tools/assets'
+import { getAssetFromCache } from '../tools/assets'
 
 import { DBAsset, Transaction } from '../typings'
 
@@ -140,7 +140,7 @@ export function getTransactionDetails(transaction: Transaction, viewingAccount: 
                         nameOfTransaction = $.t('asset_mint')
                         senderOrRecipientOrMultiple = 'sender'
                     }
-                    foundAsset = getAssetDetails(transaction.attachment.asset)
+                    foundAsset = getAssetFromCache(transaction.attachment.asset)
                     newAmountText = ''
                     if (foundAsset) {
                         newAmountText = `${formatQNTAsQuantity(transaction.attachment.quantityQNT, foundAsset.decimals)} ${foundAsset.name}`
@@ -194,7 +194,7 @@ export function getTransactionDetails(transaction: Transaction, viewingAccount: 
                         if (i !== 0) {
                             amountToFromViewerHTML += '<br>'
                         }
-                        foundAsset = getAssetDetails(transaction.attachment.assetIds[i])
+                        foundAsset = getAssetFromCache(transaction.attachment.assetIds[i])
                         if (foundAsset) {
                             amountToFromViewerHTML += `${formatQNTAsQuantity(transaction.attachment.quantitiesQNT[i], foundAsset.decimals)} ${foundAsset.name}`
                         } else {
