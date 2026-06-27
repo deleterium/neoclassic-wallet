@@ -249,7 +249,7 @@ export function createInfoTable(data: object) {
             if ('decimals' in data) {
                 value = formatQNTAsQuantity(value, data['decimals'] as number)
             } else {
-                value = formatQNTAsQuantity(value, 0)
+                value = formatQNTAsQuantity(value, 0) + 'QNT'
             }
         } else if (key === 'price' || key === 'total' || key === 'amount' || key === 'fee' || key === 'refund' || key === 'discount') {
             value = formatNQTAsAmount(value) + ' ' + BRS.valueSuffix
