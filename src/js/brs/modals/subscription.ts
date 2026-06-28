@@ -1,34 +1,29 @@
 import { BRS } from '..'
 
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
 import { Subscription, GetSubscriptionResponse } from '../typings'
 
-export function showSubscriptionCancelModal(subscription: string | Subscription) {
+export async function showSubscriptionCancelModal(subscription: string | Subscription) {
     if (BRS.fetchingModalData) {
         return
     }
-    if (typeof subscription !== 'object') {
-        BRS.fetchingModalData = true
-        sendRequest(
-            'getSubscription',
-            {
-                subscription,
-            },
-            function (response: GetSubscriptionResponse) {
-                BRS.fetchingModalData = false
-                if (response.errorCode) {
-                    $.notify($.t('no_transactions_found'))
-                    return
-                }
-                processSubscriptionCancelModalData(response)
-            },
-        )
+    if (typeof subscription === 'object') {
+        processSubscriptionCancelModalData(subscription)
         return
     }
-    processSubscriptionCancelModalData(subscription)
+    BRS.fetchingModalData = true
+    const response: GetSubscriptionResponse = await sendRequestA('getSubscription', {
+        subscription,
+    })
+    BRS.fetchingModalData = false
+    if (response.errorCode) {
+        $.notify($.t('no_transactions_found'))
+        return
+    }
+    processSubscriptionCancelModalData(response)
 }
 
 function processSubscriptionCancelModalData(subscription: Subscription) {
