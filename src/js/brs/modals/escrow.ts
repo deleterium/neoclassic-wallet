@@ -1,13 +1,13 @@
 import { BRS } from '..'
 
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 import { formatTimestampAsDateTime } from '../core/numbers'
 
 import { Escrow, GetEscrowTransactionResponse } from '../typings'
 import { getAccountTitleFromObject } from '../core/util'
 
-export function showEscrowDecisionModal(escrow: Escrow | string) {
+export async function showEscrowDecisionModal(escrow: Escrow | string) {
     if (BRS.fetchingModalData) {
         return
     }
@@ -17,16 +17,11 @@ export function showEscrowDecisionModal(escrow: Escrow | string) {
     }
     // Fetch escrow details
     BRS.fetchingModalData = true
-    sendRequest(
-        'getEscrowTransaction',
-        {
-            escrow,
-        },
-        function (response: GetEscrowTransactionResponse) {
-            BRS.fetchingModalData = false
-            processEscrowDecisionModalData(response)
-        },
-    )
+    const response: GetEscrowTransactionResponse = await sendRequestA('getEscrowTransaction', {
+        escrow,
+    })
+    BRS.fetchingModalData = false
+    processEscrowDecisionModalData(response)
 }
 
 export function processEscrowDecisionModalData(escrow: Escrow) {
