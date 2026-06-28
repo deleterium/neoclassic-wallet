@@ -2,7 +2,7 @@ import converters from '../../util/converters'
 
 import { BRS } from '..'
 
-import { getSavedPassword, sendRequest } from '../core/send_request'
+import { getSavedPassword, sendRequestA } from '../core/send_request'
 
 import { getAccountIdFromPublicKey, getAccountPublicKey, getPublicKeyFromPassphrase, signBytes, verifyBytes } from '../core/encryption'
 
@@ -16,7 +16,7 @@ export function formsSignModalButtonClicked() {
     }
 }
 
-export function formsSignMessage() {
+export async function formsSignMessage() {
     $('#sign_message_output').hide()
     const isHex = $('#sign_message_data_is_hex').is(':checked')
     const inputData = $('#sign_message_data').val() as string
@@ -36,32 +36,28 @@ export function formsSignMessage() {
     } else {
         hexData = inputData.replace(/[\n\s\r\t]/g, '')
     }
-    sendRequest(
-        'parseTransaction',
-        { transactionBytes: hexData },
-        function (result: ParseTransactionResponse) {
-            const signature = signBytes(hexData, passphrase)
-            if (!result.errorCode) {
-                // Detected as transaction bytes
-                $('#sign_message_error').text($.t('warning_sign_transaction'))
-                $('#sign_message_error').show()
-                $('#sign_message_parsed_transaction_or_signed_message').val(JSON.stringify(result, null, 2))
-                const signedTransaction = hexData.slice(0, 192) + signature + hexData.slice(320)
-                $('#sign_message_output_signed_transaction').text(signedTransaction).show()
-                $('#sign_message_output_signature').text(signature).show()
-                $('#sign_message_output_public_key').text(publicKey).show()
-                $('#sign_message_output').show()
-            } else {
-                $('#sign_message_error').hide()
-                $('#sign_message_parsed_transaction_or_signed_message').val(createSignedMessage(account, inputData, signature, isHex))
-                $('#sign_message_output_signed_transaction').text('').hide()
-                $('#sign_message_output_signature').hide()
-                $('#sign_message_output_public_key').hide()
-                $('#sign_message_output').hide()
-            }
-        },
-        false,
-    )
+
+    const result: ParseTransactionResponse = await sendRequestA('parseTransaction', { transactionBytes: hexData })
+
+    const signature = signBytes(hexData, passphrase)
+    if (!result.errorCode) {
+        // Detected as transaction bytes
+        $('#sign_message_error').text($.t('warning_sign_transaction'))
+        $('#sign_message_error').show()
+        $('#sign_message_parsed_transaction_or_signed_message').val(JSON.stringify(result, null, 2))
+        const signedTransaction = hexData.slice(0, 192) + signature + hexData.slice(320)
+        $('#sign_message_output_signed_transaction').text(signedTransaction).show()
+        $('#sign_message_output_signature').text(signature).show()
+        $('#sign_message_output_public_key').text(publicKey).show()
+        $('#sign_message_output').show()
+    } else {
+        $('#sign_message_error').hide()
+        $('#sign_message_parsed_transaction_or_signed_message').val(createSignedMessage(account, inputData, signature, isHex))
+        $('#sign_message_output_signed_transaction').text('').hide()
+        $('#sign_message_output_signature').hide()
+        $('#sign_message_output_public_key').hide()
+        $('#sign_message_output').hide()
+    }
     return { stop: true, hide: false }
 }
 
