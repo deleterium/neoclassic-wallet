@@ -1,7 +1,7 @@
 import { BRS } from '..'
 import { DBAsset, GetAssetResponse } from '../typings'
 import { dbGet, dbPut } from '../core/database'
-import { sendRequest, sendRequestA } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 export function loadClosedGroupsFromDB() {
     if (!BRS.databaseSupport) return
@@ -95,20 +95,7 @@ export function cacheUserAssets() {
         return
     }
     BRS.accountInfo.assetBalances.forEach((userAssetTuple) => {
-        const foundAsset = BRS.assets.find((tkn) => tkn.asset === userAssetTuple.asset)
-        if (!foundAsset) {
-            sendRequest(
-                'getAsset',
-                {
-                    asset: userAssetTuple.asset,
-                },
-                function (response: GetAssetResponse) {
-                    if (!response.errorCode) {
-                        cacheAsset(response)
-                    }
-                },
-            )
-        }
+        getAssetDetails(userAssetTuple.asset)
     })
 }
 
