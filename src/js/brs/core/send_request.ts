@@ -35,7 +35,7 @@ function convertNxtToNqt(data: any) {
     }
 }
 
-export function sendRequest(requestType: string, data: any, callback: (response: any, inData: any) => void, async: boolean = true) {
+export function sendRequest(requestType: string, data: any, callback: (response: any, inData: any) => void) {
     for (const key in data) {
         if (key !== 'secretPhrase' && typeof data[key] === 'string') {
             data[key] = data[key].trim()
@@ -76,10 +76,10 @@ export function sendRequest(requestType: string, data: any, callback: (response:
         }
     }
 
-    processAjaxRequest(requestType, data, callback, async)
+    processAjaxRequest(requestType, data, callback)
 }
 
-export function processAjaxRequest(requestType: string, data: any, callback: (response: any, inData: any) => void, async: boolean) {
+export function processAjaxRequest(requestType: string, data: any, callback: (response: any, inData: any) => void) {
     let extra: any = null
     if (data._extra) {
         extra = data._extra
@@ -160,16 +160,6 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
         type = 'POST'
     }
 
-    async = async === undefined ? true : async
-    if (async === false && type === 'GET') {
-        const client = new XMLHttpRequest()
-        client.open('GET', url + '&' + $.param(data), false)
-        client.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8')
-        client.send()
-        const response = JSON.parse(client.responseText)
-        callback(response, data)
-        return
-    }
     ajaxCall({
         url,
         crossDomain: true,
@@ -340,13 +330,8 @@ export function broadcastTransactionBytes(
  */
 export async function sendRequestA(requestType: string, data: any): Promise<any> {
     return new Promise((resolve) => {
-        sendRequest(
-            requestType,
-            data,
-            (response: any) => {
-                resolve(response)
-            },
-            true,
-        )
+        sendRequest(requestType, data, (response: any) => {
+            resolve(response)
+        })
     })
 }
