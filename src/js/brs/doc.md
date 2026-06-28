@@ -60,19 +60,11 @@ If a request has a plus at the end, indicate that the request can be aborted if 
 This is done in `ajaxmultiqueue` file, checking current page. If the page has changed, the queued request is not done and any ongoing is aborted.
 #### `data: Object`
 The object containing the fields and values to be sent.
-* Field `_extra`:
-This is a special field that is removed from the request, but it is included again when calling the next argument, the `callback function`.
-#### `callback(response: Object, input: Object)`
-Server response is analyzed and then the callback is executed.
-* Argument `response`
-The server response is forwarded.
-If there is an error, then a response with error is created.
-* Argument `input`
-The `data` received is also passed to the callback to the used if needed.
-A common pattern is to include a custom object as `_extra` field in the request to be used in the callback function, avoiding to use variables from the caller.
-#### `async: boolean`
-Most of times it is not used, indicating that the request will be asynchronous.
-But if set to `true`, the request is done with `XMLHttpRequest`, a deprecated way sending requests that blocks the main thread.
+### Return object
+`sendRequest` returns a promise with the response.
+The promise never fails, instead the response will have the properties `errorCode` and `errorDescription`.
+Error code '-1' is used if there was an error in the ajax request, like the server is down or request timed out.
+Positive error codes are the the ones that the signum node respond.
 
 ## Modals
 
@@ -92,12 +84,13 @@ Notes:
 ### formFunction
 Form functions can handle the html form data and process it.
 Some simple cases doesn't need the form, when the fields can be passed directly to the API.
-Function names are created by 'form' + 'requestType' and shall be added to `BRS.forms`
+Function names are created by 'form' + 'requestType' and shall be added to `BRS.forms`.
+The formFunction optionally can return a Promise.
 #### Argument `data`
 The `data` object will have all the fields from the form.
 You can add or delete fields, but remember to delete the ones that cannot be submitted to the API.
 #### Return object
-It is expected that the return object has the fields:
+It is expected that the return object has the fields, or a Promise with these fields:
 * `error?: string`
 Adds the error message to the modal callout and do not submit.
 The modal will be kept open.
