@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequest } from '../core/send_request'
+import { sendRequestA } from '../core/send_request'
 
 import { formatNQTAsAmount } from '../core/numbers'
 
@@ -16,16 +16,12 @@ export function evBlocksTableClick(event: Event) {
     }
     BRS.fetchingModalData = true
     const blockHeight = $(event.target as HTMLElement).data('block')
-    sendRequest(
-        'getBlock+',
-        {
-            height: blockHeight,
-            includeTransactions: 'true',
-        },
-        function (response: GetBlockResponse) {
-            showBlockModal(response)
-        },
-    )
+    sendRequestA('getBlock+', {
+        height: blockHeight,
+        includeTransactions: 'true',
+    }).then((response: GetBlockResponse) => {
+        showBlockModal(response)
+    })
 }
 
 export function showBlockModal(block: GetBlockResponse) {
