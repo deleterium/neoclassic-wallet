@@ -91,13 +91,6 @@ async function addMessageData(data: any, requestType: string) {
         delete data.add_note_to_self
     }
 
-    data._extra = {
-        message: data.message,
-        note_to_self: data.note_to_self,
-        message_is_text: data.message_is_text,
-        note_to_self_is_text: data.note_to_self_is_text,
-    }
-
     if (data.add_message && data.message) {
         if (data.encrypt_message) {
             let account = ''
@@ -384,9 +377,6 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
         if (BRS.idRegEx.test(data.recipient) === false && BRS.rsRegEx.test(data.recipient) === false) {
             if (data.converted_account_id && (BRS.idRegEx.test(data.converted_account_id) || BRS.rsRegEx.test(data.converted_account_id))) {
                 data.recipient = data.converted_account_id
-                data._extra = {
-                    convertedAccount: true,
-                }
             } else {
                 endWithError($.t('error_account_id'))
                 return

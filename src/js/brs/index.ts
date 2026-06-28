@@ -65,7 +65,7 @@ import { pagesTransactions } from './pages/transactions'
 
 import { pagesMessages, incomingMessages } from './pages/messages'
 
-import { formsSendMessageComplete, formsDecryptMessages } from './modals/messages'
+import { formsDecryptMessages } from './modals/messages'
 
 import { pagesPeers, incomingPeers } from './pages/peers'
 
@@ -227,7 +227,6 @@ export const BRS = {
         sendMoneyComplete: formsSendMoneyComplete,
         sendMoneyMulti: formsSendMoneyMulti,
         sendMoneyEscrow: formsSendMoneyEscrow,
-        sendMessageComplete: formsSendMessageComplete,
         decryptMessages: formsDecryptMessages,
         setAccountInfoComplete: formsSetAccountInfoComplete,
         clearData: formsClearData,

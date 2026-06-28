@@ -1,29 +1,12 @@
 import { BRS } from '..'
-import { PostResponse } from '../typings'
 import { getContactByName } from '../tools/contacts'
 import { evCheckNumberInput } from '../core/modals'
 import { parseAmountToNQT, formatNQTAsAmount } from '../core/numbers'
-import { convertRSAccountToNumeric, getAccountRSFromObject } from '../core/util'
+import { convertRSAccountToNumeric } from '../core/util'
 
 import { evSpanRecipientSelectorClickButton, evSpanRecipientSelectorClickUlLiA } from '../core/recipient'
 
-export function formsSendMoneyComplete(_response: PostResponse, data: any) {
-    if (!(data._extra && data._extra.convertedAccount) && !(data.recipient in BRS.contacts)) {
-        $.notify(
-            `${$.t('success_sendMoney', { valueSuffix: BRS.valueSuffix })}
-            <a href='#'
-              data-account='${getAccountRSFromObject(data, 'recipient')}'
-              data-toggle='modal'
-              data-target='#add_contact_modal'
-              style='text-decoration:underline'>
-              ${$.t('add_recipient_to_contacts_q')}
-            </a>`,
-            {
-                type: 'success',
-            },
-        )
-        return
-    }
+export function formsSendMoneyComplete() {
     $.notify($.t('success_sendMoney', { valueSuffix: BRS.valueSuffix }), { type: 'success' })
 }
 

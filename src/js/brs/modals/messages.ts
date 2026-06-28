@@ -1,36 +1,8 @@
 import { BRS } from '..'
-import { PostResponse, Transaction } from '../typings'
+import { Transaction } from '../typings'
 import { reloadCurrentPage } from '../core/navigation'
-import { addDecryptedTransactionToCache, getAccountId, setDecryptionPassword, decryptAttachmentField } from '../core/encryption'
-import { getAccountRSFromObject, getUnconfirmedTransactionsFromCache } from '../core/util'
-
-export function formsSendMessageComplete(response: PostResponse, data: any) {
-    data.message = data._extra.message
-
-    if (!(data._extra && data._extra.convertedAccount)) {
-        $.notify(
-            $.t('success_message_sent') +
-                " <a href='#' data-account='" +
-                getAccountRSFromObject(data, 'recipient') +
-                "' data-toggle='modal' data-target='#add_contact_modal' style='text-decoration:underline'>" +
-                $.t('add_recipient_to_contacts_q') +
-                '</a>',
-            { type: 'success' },
-        )
-    } else {
-        $.notify($.t('success_message_sent'), { type: 'success' })
-    }
-
-    if (data.message && data.encryptedMessageData) {
-        addDecryptedTransactionToCache(response.transaction, {
-            encryptedMessage: String(data._extra.message),
-        })
-    }
-
-    if (BRS.currentPage === 'messages') {
-        reloadCurrentPage()
-    }
-}
+import { getAccountId, setDecryptionPassword, decryptAttachmentField } from '../core/encryption'
+import { getUnconfirmedTransactionsFromCache } from '../core/util'
 
 export async function formsDecryptMessages(data: any) {
     const accountId = getAccountId(data.secretPhrase)

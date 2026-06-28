@@ -80,12 +80,6 @@ export function sendRequest(requestType: string, data: any, callback: (response:
 }
 
 export function processAjaxRequest(requestType: string, data: any, callback: (response: any, inData: any) => void) {
-    let extra: any = null
-    if (data._extra) {
-        extra = data._extra
-        delete data._extra
-    }
-
     let currentPageAndSubPage: string | undefined
 
     // means it is a page request, not a global request.. Page requests can be aborted if user changes the page.
@@ -179,9 +173,6 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 const signature = signBytes(response.unsignedTransactionBytes, secretPhrase)
                 if (!verifyBytes(signature, response.unsignedTransactionBytes, publicKey)) {
                     const errorMessage = $.t('error_signature_verification_client')
-                    if (extra) {
-                        data._extra = extra
-                    }
                     callback(
                         {
                             errorCode: 1,
@@ -194,9 +185,6 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 const payload = verifyTransactionBytes(response.unsignedTransactionBytes, signature, requestType, data)
                 if (payload.length === 0) {
                     const errorMessage = $.t('error_signature_verification_server')
-                    if (extra) {
-                        data._extra = extra
-                    }
                     callback(
                         {
                             errorCode: 1,
@@ -209,9 +197,6 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 if (data.broadcast === 'false') {
                     showRawTransactionModal(response, payload)
                     return
-                }
-                if (extra) {
-                    data._extra = extra
                 }
                 broadcastTransactionBytes(payload, callback, response, data)
                 return
@@ -229,9 +214,6 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 showRawTransactionModal(response, '')
             } else {
                 // Regular GET response, or POST 'broadcastTransaction'
-                if (extra) {
-                    data._extra = extra
-                }
                 callback(response, data)
                 if (data.referencedTransactionFullHash && !response.errorCode) {
                     $.notify($.t('info_referenced_transaction_hash'), { type: 'info' })
@@ -247,9 +229,6 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
             }
             if (error === 'timeout') {
                 error = $.t('error_request_timeout')
-            }
-            if (extra) {
-                data._extra = extra
             }
             callback(
                 {
