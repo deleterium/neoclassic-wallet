@@ -35,7 +35,7 @@ function convertNxtToNqt(data: any) {
     }
 }
 
-export function sendRequest(requestType: string, data: any, callback: (response: any, inData: any) => void) {
+export function sendRequest(requestType: string, data: any, callback: (response: any) => void) {
     for (const key in data) {
         if (key !== 'secretPhrase' && typeof data[key] === 'string') {
             data[key] = data[key].trim()
@@ -44,13 +44,10 @@ export function sendRequest(requestType: string, data: any, callback: (response:
 
     const errorMessage = convertNxtToNqt(data)
     if (errorMessage) {
-        callback(
-            {
-                errorCode: 1,
-                errorDescription: errorMessage,
-            },
-            data,
-        )
+        callback({
+            errorCode: 1,
+            errorDescription: errorMessage,
+        })
         return
     }
 
@@ -65,13 +62,10 @@ export function sendRequest(requestType: string, data: any, callback: (response:
     if ('secretPhrase' in data) {
         const accountId = getAccountId(getSavedPassword() || data.secretPhrase)
         if (accountId !== BRS.account) {
-            callback(
-                {
-                    errorCode: 1,
-                    errorDescription: $.t('error_passphrase_incorrect'),
-                },
-                data,
-            )
+            callback({
+                errorCode: 1,
+                errorDescription: $.t('error_passphrase_incorrect'),
+            })
             return
         }
     }
@@ -79,7 +73,7 @@ export function sendRequest(requestType: string, data: any, callback: (response:
     processAjaxRequest(requestType, data, callback)
 }
 
-export function processAjaxRequest(requestType: string, data: any, callback: (response: any, inData: any) => void) {
+export function processAjaxRequest(requestType: string, data: any, callback: (response: any) => void) {
     let currentPageAndSubPage: string | undefined
 
     // means it is a page request, not a global request.. Page requests can be aborted if user changes the page.
@@ -101,26 +95,20 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
 
     // unknown account..
     if (type === 'POST' && BRS.accountInfo.errorCode && BRS.accountInfo.errorCode === 5) {
-        callback(
-            {
-                errorCode: 2,
-                errorDescription: $.t('error_new_account'),
-            },
-            data,
-        )
+        callback({
+            errorCode: 2,
+            errorDescription: $.t('error_new_account'),
+        })
         return
     }
 
     if (data.referencedTransactionFullHash) {
         if (!/^[a-z0-9]{64}$/.test(data.referencedTransactionFullHash)) {
             const errorMessage = $.t('error_invalid_referenced_transaction_hash')
-            callback(
-                {
-                    errorCode: -1,
-                    errorDescription: errorMessage,
-                },
-                data,
-            )
+            callback({
+                errorCode: -1,
+                errorDescription: errorMessage,
+            })
             return
         }
     }
@@ -173,25 +161,19 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 const signature = signBytes(response.unsignedTransactionBytes, secretPhrase)
                 if (!verifyBytes(signature, response.unsignedTransactionBytes, publicKey)) {
                     const errorMessage = $.t('error_signature_verification_client')
-                    callback(
-                        {
-                            errorCode: 1,
-                            errorDescription: errorMessage,
-                        },
-                        data,
-                    )
+                    callback({
+                        errorCode: 1,
+                        errorDescription: errorMessage,
+                    })
                     return
                 }
                 const payload = verifyTransactionBytes(response.unsignedTransactionBytes, signature, requestType, data)
                 if (payload.length === 0) {
                     const errorMessage = $.t('error_signature_verification_server')
-                    callback(
-                        {
-                            errorCode: 1,
-                            errorDescription: errorMessage,
-                        },
-                        data,
-                    )
+                    callback({
+                        errorCode: 1,
+                        errorDescription: errorMessage,
+                    })
                     return
                 }
                 if (data.broadcast === 'false') {
@@ -214,7 +196,7 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 showRawTransactionModal(response, '')
             } else {
                 // Regular GET response, or POST 'broadcastTransaction'
-                callback(response, data)
+                callback(response)
                 if (data.referencedTransactionFullHash && !response.errorCode) {
                     $.notify($.t('info_referenced_transaction_hash'), { type: 'info' })
                 }
@@ -230,13 +212,10 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
             if (error === 'timeout') {
                 error = $.t('error_request_timeout')
             }
-            callback(
-                {
-                    errorCode: -1,
-                    errorDescription: error,
-                },
-                data,
-            )
+            callback({
+                errorCode: -1,
+                errorDescription: error,
+            })
         })
 }
 
