@@ -8,7 +8,7 @@ import { getDecryptedMessageFromCache, decryptAttachmentField } from '../core/en
  * @returns The message, if any, or undefined if not present
  */
 export function getMessageTextFromTX(transaction: Transaction): string | undefined {
-    if (!transaction.attachment) {
+    if (!transaction.attachment || !transaction.attachment.message) {
         return
     }
     if (!transaction.attachment['version.Message'] && transaction.attachment.message) {
@@ -31,7 +31,7 @@ export function getMessageTextFromTX(transaction: Transaction): string | undefin
  * @returns The message, if any, or undefined if not present
  */
 export function getMessageBytesFromTX(transaction: Transaction): HexString | undefined {
-    if (!transaction.attachment) {
+    if (!transaction.attachment || !transaction.attachment.message) {
         return
     }
     if (!transaction.attachment['version.Message'] && transaction.attachment.message) {
