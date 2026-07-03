@@ -96,6 +96,7 @@ import {
     GetAccountResponse,
     GetAssetResponse,
     GetBlockResponse,
+    Note,
     Transaction,
 } from './typings'
 
@@ -173,6 +174,9 @@ export const BRS = {
     showPageNumbers: false,
     hasMorePages: false,
 
+    // Used for notifications
+    _notifications: [] as Note[],
+
     pages: {
         settings: pagesSettings,
         forged_blocks: pagesForgedBlocks,
@@ -202,6 +206,7 @@ export const BRS = {
         transactions: reloadCurrentPage,
         peers: incomingPeers,
         messages: incomingMessages,
+        notifications: reloadCurrentPage,
     },
     forms: {
         sellAlias: formsSellAlias,

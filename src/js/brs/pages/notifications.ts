@@ -1,22 +1,26 @@
-// import { BRS } from '..'
+import { BRS } from '..'
 
+import { getNotifications } from '../core/notifications'
 import { dataLoaded } from '../core/util'
 
-export async function pagesNotifications() {
-    // getNotifications
-    const notifications = ['a']
-
-    if (!notifications.length) {
+export function pagesNotifications() {
+    const notes = getNotifications(BRS.pageSize * (BRS.pageNumber - 1), BRS.pageSize * BRS.pageNumber)
+    if (!notes.length) {
         dataLoaded('')
     }
+    if (notes.length > BRS.pageSize) {
+        BRS.hasMorePages = true
+        notes.pop()
+    }
     let rows = ''
-    //for (const notification of notifications) {
-    rows += `
-        <tr>
-            <td>${'Data'}</td>
-            <td>${'Type'}</td>
-            <td>${'Notification text'}</td>
-        </tr>`
-    // }
+    for (const note of notes) {
+        const date = new Date(note.timestamp)
+        rows += `
+            <tr>
+              <td>${date.toLocaleString(BRS.settings.language)}</td>
+              <td>${note.type}</td>
+              <td>${note.message}</td>
+            </tr>`
+    }
     dataLoaded(rows)
 }

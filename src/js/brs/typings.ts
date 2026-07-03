@@ -28,6 +28,12 @@ export type ByteArray = number[] | Uint8Array
 
 export type HexString = string
 
+export interface Note {
+    timestamp: number
+    message: string
+    type: 'success' | 'warning' | 'danger' | 'info'
+}
+
 export type BrsSettings = {
     submit_on_enter: boolean
     fee_warning: string
