@@ -258,3 +258,8 @@
 .text-line-through {
     text-decoration: line-through;  
 }
+
+.custom-toast {
+    margin: 3em;
+    min-width: 20em;
+}

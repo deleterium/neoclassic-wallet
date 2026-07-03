@@ -24,6 +24,5 @@
   "include": ["src/**/*"],
   "exclude": [
     "node_modules",
-    "src/js/3rdparty/*"
   ]
 }

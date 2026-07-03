@@ -18,7 +18,7 @@ export function pagesNotifications() {
         rows += `
             <tr>
               <td>${date.toLocaleString(BRS.settings.language)}</td>
-              <td>${note.type}</td>
+              <td>${$.t(note.type)}</td>
               <td>${note.message}</td>
             </tr>`
     }

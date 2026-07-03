@@ -7,7 +7,7 @@ import { createDatabase } from './database'
 import { showLockscreen } from './login'
 import { automaticallyCheckRecipient } from './recipient'
 import { sendRequestA } from './send_request'
-import { notify, setNotifications } from './notifications'
+import { notify } from './notifications'
 
 /**
  * Checks prefered node string in login panel. If changed, update BRS with blockchain details.
@@ -126,8 +126,6 @@ export function init(): void {
     }
 
     $('#neoclassic_version').html(BRS.version)
-
-    setNotifications()
 
     // Browser support required
     if (!window.crypto || !window.crypto.subtle) {

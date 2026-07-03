@@ -12,19 +12,6 @@ interface JQueryStatic {
     t(key: string, options?: any): string
 
     /**
-     * Displays a notification message.
-     * @param message - The message to display in the notification.
-     * @param options - Optional configuration for the notification.
-     */
-    notify(message: string, options?: any): void
-
-    /**
-     * Sets default options for notifications.
-     * @param options - Default options for notifications.
-     */
-    notifyDefaults(options?: any): void
-
-    /**
      * Checks if a translation key exists in the i18next store.
      * @param key - The translation key to check.
      * @returns A boolean indicating if the key exists.
