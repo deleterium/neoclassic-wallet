@@ -11,6 +11,7 @@ import { getTranslatedFieldName } from './util'
 import { lockModal, unlockModal } from './lockable_modal'
 import { PostResponse, RequestType } from '../typings'
 import { checkIncomingNow } from './check_incoming'
+import { notify } from './notifications'
 
 /**
  * There are the 'requestType' in forms that will check if node is in sync before proceed.
@@ -471,7 +472,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
         }
 
         if (successMessage) {
-            $.notify(successMessage.escapeHTML(), { type: 'success' })
+            notify(successMessage.escapeHTML(), { type: 'success' })
         }
 
         formFunctionComplete = BRS.forms[originalRequestType + 'Complete']
@@ -512,7 +513,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
         if (!sentToFunction) {
             unlockModal($modal, $btn, true)
 
-            $.notify(errorMessage.escapeHTML(), { type: 'danger' })
+            notify(errorMessage.escapeHTML(), { type: 'danger' })
         }
     }
 }

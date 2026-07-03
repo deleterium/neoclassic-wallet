@@ -5,9 +5,10 @@ import { parseAmountToNQT, formatNQTAsAmount } from '../core/numbers'
 import { convertRSAccountToNumeric } from '../core/util'
 
 import { evSpanRecipientSelectorClickButton, evSpanRecipientSelectorClickUlLiA } from '../core/recipient'
+import { notify } from '../core/notifications'
 
 export function formsSendMoneyComplete() {
-    $.notify($.t('success_sendMoney', { valueSuffix: BRS.valueSuffix }), { type: 'success' })
+    notify($.t('success_sendMoney', { valueSuffix: BRS.valueSuffix }), { type: 'success' })
 }
 
 /**

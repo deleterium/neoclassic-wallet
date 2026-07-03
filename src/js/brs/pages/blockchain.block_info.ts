@@ -4,6 +4,7 @@ import { formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers'
 import { sendRequestA } from '../core/send_request'
 import { getTransactionDetails } from '../tools/transactions'
 import { dataLoaded } from '../core/util'
+import { notify } from '../core/notifications'
 
 /**
  * Draws the page 'Blockchain' -> 'Blocks Info' with latest block available.
@@ -28,7 +29,7 @@ export async function blockInfoLoad(blockheight: number | '') {
     })
 
     if (response.errorCode) {
-        $.notify($.t('invalid_blockheight'), { type: 'danger' })
+        notify($.t('invalid_blockheight'), { type: 'danger' })
         dataLoaded('')
         return
     }

@@ -19,6 +19,7 @@ import { showAccountModal } from '../modals/account'
 import { getMessageTextFromTX, getEncryptedMessageFromTX, decryptAttachmentFieldAndUpdateSelector } from '../tools/messages'
 
 import { GetAccountTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
+import { notify } from '../core/notifications'
 
 export async function pagesMessages() {
     if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
@@ -154,7 +155,7 @@ export function incomingMessages(transactions: Transaction[]) {
             reloadContent = true
         }
         if (trans.sender !== BRS.account) {
-            $.notify(
+            notify(
                 $.t('you_received_message', {
                     account: getAccountRSFromObject(trans, 'sender'),
                     name: getAccountTitleFromObject(trans, 'sender'),

@@ -5,6 +5,7 @@ import { reloadCurrentPage } from '../core/navigation'
 import { dbGet, dbPut, deleteRecord } from '../core/database'
 
 import { DBContact } from '../typings'
+import { notify } from '../core/notifications'
 
 export function loadContactsFromDB() {
     if (!BRS.databaseSupport) return
@@ -26,7 +27,7 @@ export function getContactByName(nameToFind: string): DBContact | undefined {
 }
 
 export function notifyContactOperationSuccess(message: string) {
-    $.notify(message, { type: 'success' })
+    notify(message, { type: 'success' })
     if (BRS.currentPage === 'contacts') {
         reloadCurrentPage()
         return
@@ -51,12 +52,12 @@ export function saveContactToDatabase(data: DBContact, message: string) {
     }
     BRS.contacts[data.accountRS] = record
     if (!BRS.databaseSupport) {
-        $.notify(message + ' ' + $.t('contacts_no_db_warning'), { type: 'warning' })
+        notify(message + ' ' + $.t('contacts_no_db_warning'), { type: 'warning' })
         return
     }
     dbPut('contacts', record, function (error) {
         if (error) {
-            $.notify($.t('error_save_db'))
+            notify($.t('error_save_db'))
             return
         }
         setTimeout(notifyContactOperationSuccess, 50, message)

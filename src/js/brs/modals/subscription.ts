@@ -5,6 +5,7 @@ import { sendRequestA } from '../core/send_request'
 import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
 import { Subscription, GetSubscriptionResponse } from '../typings'
+import { notify } from '../core/notifications'
 
 export async function showSubscriptionCancelModal(subscription: string | Subscription) {
     if (BRS.fetchingModalData) {
@@ -20,7 +21,7 @@ export async function showSubscriptionCancelModal(subscription: string | Subscri
     })
     BRS.fetchingModalData = false
     if (response.errorCode) {
-        $.notify($.t('no_transactions_found'))
+        notify($.t('no_transactions_found'))
         return
     }
     processSubscriptionCancelModalData(response)

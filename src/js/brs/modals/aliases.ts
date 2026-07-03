@@ -9,6 +9,7 @@ import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 import { createInfoTable } from '../core/util'
 
 import { GetAliasResponse, PostResponse, ShowBootstrapModalEvent } from '../typings'
+import { notify } from '../core/notifications'
 
 export function evAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
@@ -121,17 +122,17 @@ export async function evBuyAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
 
     if (response.errorCode) {
         e.preventDefault()
-        $.notify($.t('error_alias_not_found'), { type: 'danger' })
+        notify($.t('error_alias_not_found'), { type: 'danger' })
         return
     }
     if (!response.priceNQT) {
         e.preventDefault()
-        $.notify($.t('error_alias_not_for_sale'), { type: 'danger' })
+        notify($.t('error_alias_not_for_sale'), { type: 'danger' })
         return
     }
     if (typeof response.buyer !== 'undefined' && response.buyer !== BRS.account) {
         e.preventDefault()
-        $.notify($.t('error_alias_sale_different_account'), { type: 'danger' })
+        notify($.t('error_alias_sale_different_account'), { type: 'danger' })
         return
     }
     $modal.find('input[name=alias]').val(response.alias.escapeHTML())
@@ -183,7 +184,7 @@ export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent
         BRS.fetchingModalData = false
         if (response.errorCode) {
             e.preventDefault()
-            $.notify($.t('error_alias_not_found'), { type: 'danger' })
+            notify($.t('error_alias_not_found'), { type: 'danger' })
         } else {
             let aliasURI: RegExpExecArray | null
             const reg = /^https?:\/\//i
@@ -371,7 +372,7 @@ export function formsSetAliasComplete(response: PostResponse, data: any) {
             $row.find('td.uri').html(data.shortAliasURI)
         }
 
-        $.notify($.t('success_alias_update'), { type: 'success' })
+        notify($.t('success_alias_update'), { type: 'success' })
         return
     }
     const $rows = $table.find('tr')
@@ -417,7 +418,7 @@ export function formsSetAliasComplete(response: PostResponse, data: any) {
         $('#aliases_table').parent().removeClass('data-empty')
     }
 
-    $.notify($.t('success_alias_register'), { type: 'success' })
+    notify($.t('success_alias_register'), { type: 'success' })
 }
 
 /**
@@ -439,7 +440,7 @@ export async function showAliasModal(alias: string | GetAliasResponse) {
     })
     BRS.fetchingModalData = false
     if (response.errorCode) {
-        $.notify(`${$.t('error_alias_not_found')} - ${String(alias).escapeHTML()}`)
+        notify(`${$.t('error_alias_not_found')} - ${String(alias).escapeHTML()}`)
         return
     }
     aliasModalDataReady(response)

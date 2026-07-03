@@ -7,7 +7,7 @@ import { createDatabase } from './database'
 import { showLockscreen } from './login'
 import { automaticallyCheckRecipient } from './recipient'
 import { sendRequestA } from './send_request'
-import { setNotifications } from './notifications'
+import { notify, setNotifications } from './notifications'
 
 /**
  * Checks prefered node string in login panel. If changed, update BRS with blockchain details.
@@ -131,7 +131,7 @@ export function init(): void {
 
     // Browser support required
     if (!window.crypto || !window.crypto.subtle) {
-        $.notify($.t('error_encryption_browser_support'))
+        notify($.t('error_encryption_browser_support'))
         return
     }
 

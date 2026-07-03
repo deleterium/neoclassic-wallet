@@ -5,6 +5,7 @@ import { dbGet, dbPut } from './database'
 import { formatQNTAsQuantity } from './numbers'
 import { sendRequestA } from './send_request'
 import { formatStyledAmount } from './util'
+import { notify } from './notifications'
 
 /**
  * Not only getAccountInfo, but checks and update coins and assets values. Called every new block was detected.
@@ -73,7 +74,7 @@ export async function getAndUpdateAccountDetails(firstRun: boolean, callback?: (
         }
     } else {
         if (BRS.accountRS && BRS.accountInfo.accountRS !== BRS.accountRS) {
-            $.notify('Generated Reed Solomon address different from the one in the blockchain!', { type: 'danger' })
+            notify('Generated Reed Solomon address different from the one in the blockchain!', { type: 'danger' })
             BRS.accountRS = BRS.accountInfo.accountRS
         }
 
@@ -227,7 +228,7 @@ async function checkAssetDifferences(current_balances: AssetBalance[], previous_
                 quantity = formatQNTAsQuantity(difference, asset.decimals)
 
                 if (quantity !== '0') {
-                    $.notify(
+                    notify(
                         $.t('you_received_assets', {
                             asset: String(asset.asset).escapeHTML(),
                             name: String(asset.name).escapeHTML(),
@@ -242,7 +243,7 @@ async function checkAssetDifferences(current_balances: AssetBalance[], previous_
                 quantity = formatQNTAsQuantity(difference, asset.decimals)
 
                 if (quantity !== '0') {
-                    $.notify(
+                    notify(
                         $.t('you_sold_assets', {
                             asset: String(asset.asset).escapeHTML(),
                             name: String(asset.name).escapeHTML(),
@@ -255,5 +256,5 @@ async function checkAssetDifferences(current_balances: AssetBalance[], previous_
         }
         return
     }
-    $.notify($.t('multiple_assets_differences'), { type: 'success' })
+    notify($.t('multiple_assets_differences'), { type: 'success' })
 }

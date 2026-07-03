@@ -22,6 +22,7 @@ import PassPhraseGenerator from './passphrase_generator'
 
 import { GetAccountResponse } from '../typings'
 import { convertSecondsToDuration } from './numbers'
+import { notify } from './notifications'
 
 export function showLoginOrWelcomeScreen() {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
@@ -130,7 +131,7 @@ export function loginCommon() {
 async function loginWithAccount(account: string) {
     account = account.trim()
     if (!account.length) {
-        $.notify($.t('error_account_required_login'), { type: 'danger' })
+        notify($.t('error_account_required_login'), { type: 'danger' })
         return
     }
 
@@ -142,7 +143,7 @@ async function loginWithAccount(account: string) {
         if (foundContact) login = foundContact.accountRS
     }
     if (!login) {
-        $.notify($.t('name_not_in_contacts', { name: account }), { type: 'danger' })
+        notify($.t('name_not_in_contacts', { name: account }), { type: 'danger' })
         return
     }
 
@@ -151,12 +152,12 @@ async function loginWithAccount(account: string) {
 
     if (response.errorCode) {
         if (BRS.rsRegEx.test(login) || BRS.idRegEx.test(login)) {
-            $.notify($.t('error_account_unknow_watch_only'), { type: 'danger' })
+            notify($.t('error_account_unknow_watch_only'), { type: 'danger' })
             return
         }
         // Otherwise, show an error.  The address is in the right format perhaps, but
         // an address does not exist on the blockchain so there's nothing to see.
-        $.notify('<strong>' + $.t('warning') + '</strong>: ' + response.errorDescription, {
+        notify('<strong>' + $.t('warning') + '</strong>: ' + response.errorDescription, {
             type: 'danger',
         })
         return
@@ -172,7 +173,7 @@ async function loginWithAccount(account: string) {
 
     $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
     $('#login_check_password_length').val(1)
-    $.notify($.t('success_login_watch_only'), { type: 'success' })
+    notify($.t('success_login_watch_only'), { type: 'success' })
     $('#account_id').html(String(BRS.accountRS).escapeHTML())
 
     loginCommon()
@@ -181,7 +182,7 @@ async function loginWithAccount(account: string) {
 async function loginWithPassphrase(passphrase: string) {
     // Check passphrase
     if (!passphrase.length) {
-        $.notify($.t('error_passphrase_required_login'), { type: 'danger' })
+        notify($.t('error_passphrase_required_login'), { type: 'danger' })
         return
     }
     if (!BRS.isTestNet && passphrase.length < 12 && $('#login_check_password_length').val() === '1') {
@@ -197,7 +198,7 @@ async function loginWithPassphrase(passphrase: string) {
         passwordNotice = $.t('error_passphrase_strength_secure')
     }
     if (passwordNotice) {
-        $.notify('<strong>' + $.t('warning') + '</strong>: ' + passwordNotice, {
+        notify('<strong>' + $.t('warning') + '</strong>: ' + passwordNotice, {
             type: 'danger',
         })
     }
@@ -220,7 +221,7 @@ async function loginWithPassphrase(passphrase: string) {
         // Verify if public key from blochchain is same from the passphrase
         // Unlikey, only if there is a clash of IDs.
         if (publicKey !== BRS.publicKey) {
-            $.notify($.t('error_account_taken'), { type: 'danger' })
+            notify($.t('error_account_taken'), { type: 'danger' })
             return
         }
     } catch {
@@ -246,7 +247,7 @@ export function evLoginButtonClick(e?: JQuery.ClickEvent) {
     }
 
     if (!BRS.blockchainStatus) {
-        $.notify($.t('could_not_connect_to', { server: BRS.server }))
+        notify($.t('could_not_connect_to', { server: BRS.server }))
         return
     }
 

@@ -3,6 +3,7 @@ import { GetAssetTransfersResponse } from '../typings'
 import { formatTimestampAsDateTime, formatQNTAsQuantity } from '../core/numbers'
 import { sendRequestA } from '../core/send_request'
 import { getAccountRSFromObject, getAccountTitleFromObject, dataLoaded } from '../core/util'
+import { notify } from '../core/notifications'
 
 export async function pagesTransferHistory() {
     const response: GetAssetTransfersResponse = await sendRequestA('getAssetTransfers+', {
@@ -17,7 +18,7 @@ export async function pagesTransferHistory() {
             response.transfers.pop()
         }
         if (response.errorCode) {
-            $.notify(response.errorDescription || 'API getAssetTransfers error.')
+            notify(response.errorDescription || 'API getAssetTransfers error.')
             dataLoaded()
             return
         }

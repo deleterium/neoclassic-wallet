@@ -7,6 +7,7 @@ import { NxtAddress } from '../../util/nxtaddress'
 import { pageLoaded } from './navigation'
 
 import { formatQNTAsQuantity, formatNQTAsAmount } from './numbers'
+import { notify } from './notifications'
 
 // region converter
 
@@ -128,7 +129,7 @@ export function setupClipboardFunctionality() {
                 '*',
             )
 
-            $.notify($.t('success_clipboard_copy'), { type: 'success' })
+            notify($.t('success_clipboard_copy'), { type: 'success' })
         })
     } else {
         // Handle click events directly
@@ -138,12 +139,12 @@ export function setupClipboardFunctionality() {
             navigator.clipboard
                 .writeText(text)
                 .then(() => {
-                    $.notify($.t('success_clipboard_copy'), { type: 'success' })
+                    notify($.t('success_clipboard_copy'), { type: 'success' })
                 })
                 .catch((err) => {
                     $('#asset_id_dropdown .dropdown-menu').remove()
                     $('#asset_id').data('toggle', '')
-                    $.notify($.t('error_clipboard_copy'), { type: 'danger' })
+                    notify($.t('error_clipboard_copy'), { type: 'danger' })
                     console.error('Failed to copy: ', err)
                 })
         })

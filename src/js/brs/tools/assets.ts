@@ -2,6 +2,7 @@ import { BRS } from '..'
 import { DBAsset, GetAssetResponse } from '../typings'
 import { dbGet, dbPut } from '../core/database'
 import { sendRequestA } from '../core/send_request'
+import { notify } from '../core/notifications'
 
 export function loadClosedGroupsFromDB() {
     if (!BRS.databaseSupport) return
@@ -38,7 +39,7 @@ export function saveCachedAssets() {
     const assetsToUpdate: DBAsset[] = []
     dbGet('assets', function (error: Error | null, dbAssets: DBAsset[]) {
         if (error) {
-            $.notify($.t('error_assets_save_db'), { type: 'danger' })
+            notify($.t('error_assets_save_db'), { type: 'danger' })
             return
         }
         for (const cachedAsset of BRS.assets) {
@@ -60,7 +61,7 @@ export function saveCachedAssets() {
 
         dbPut('assets', assetsToUpdate, function (error) {
             if (error) {
-                $.notify($.t('error_assets_save_db'), { type: 'danger' })
+                notify($.t('error_assets_save_db'), { type: 'danger' })
             }
         })
     })

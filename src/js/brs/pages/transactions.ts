@@ -7,6 +7,7 @@ import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from '../c
 import { getTransactionDetails } from '../tools/transactions'
 import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 import { mapUnconfirmedToTransaction } from '../core/check_incoming'
+import { notify } from '../core/notifications'
 
 export async function pagesTransactions() {
     function getFrom() {
@@ -28,7 +29,7 @@ export async function pagesTransactions() {
 
     const account = getFrom()
     if (!account) {
-        $.notify($.t('name_not_in_contacts', { name: account }), { type: 'danger' })
+        notify($.t('name_not_in_contacts', { name: account }), { type: 'danger' })
         return
     }
 

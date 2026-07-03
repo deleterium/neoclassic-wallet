@@ -3,6 +3,7 @@ import { DBContact } from '../typings'
 import { notifyContactOperationSuccess } from '../tools/contacts'
 import { dbGet, dbPut } from '../core/database'
 import { dataLoaded, getAccountRSFromObject } from '../core/util'
+import { notify } from '../core/notifications'
 
 export function pagesContacts() {
     if (!BRS.databaseSupport) {
@@ -146,7 +147,7 @@ function isValidImport(jsonObj: any): boolean {
 export function importContacts(imported_contacts: any) {
     if (!isValidImport(imported_contacts)) {
         // TODO TRANSLATION
-        $.notify("File does not match 'contacts' requirements.", { type: 'danger' })
+        notify("File does not match 'contacts' requirements.", { type: 'danger' })
         return
     }
 
@@ -158,7 +159,7 @@ export function importContacts(imported_contacts: any) {
 
     dbPut('contacts', Object.values(imported_contacts), function (error) {
         if (error) {
-            $.notify($.t('error_save_db'), { type: 'danger' })
+            notify($.t('error_save_db'), { type: 'danger' })
             return
         }
         notifyContactOperationSuccess($.t('success_contact_add'))

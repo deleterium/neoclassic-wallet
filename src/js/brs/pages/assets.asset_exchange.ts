@@ -24,6 +24,7 @@ import { closeContextMenu } from '../core/context_menu'
 import { cacheAsset, getAssetDetails } from '../tools/assets'
 
 import { AnyAssetOrder, DBAsset, GetAssetResponse, GetTradesResponse, PostResponse } from '../typings'
+import { notify } from '../core/notifications'
 
 export function pagesAssetExchange(callback: () => void) {
     if (BRS.currentSubPage) {
@@ -66,7 +67,7 @@ export function bookmarkAllUserAssets() {
     }
     if (idsToFetchAndBookmark.length) {
         // TODO Add translation
-        $.notify('Some assets not bookmarked, because their details are still beeing processing. Try again in 10 seconds!', {
+        notify('Some assets not bookmarked, because their details are still beeing processing. Try again in 10 seconds!', {
             type: 'danger',
         })
     }
@@ -102,7 +103,7 @@ export async function formsAddAssetBookmark(data: any) {
 function notifyAndGoToAsset(newAssets: DBAsset[], submittedAssets: DBAsset[]) {
     BRS.assetSearch = false
     if (newAssets.length === 0) {
-        $.notify(
+        notify(
             $.t('error_asset_already_bookmarked', {
                 count: submittedAssets.length,
             }),
@@ -110,10 +111,10 @@ function notifyAndGoToAsset(newAssets: DBAsset[], submittedAssets: DBAsset[]) {
         )
         goToAsset(submittedAssets[0].asset)
     } else if (newAssets.length === 1) {
-        $.notify($.t('success_asset_bookmarked'), { type: 'success' })
+        notify($.t('success_asset_bookmarked'), { type: 'success' })
         goToAsset(newAssets[0].asset)
     } else {
-        $.notify($.t('success_asset_bookmarked_plural'), { type: 'success' })
+        notify($.t('success_asset_bookmarked_plural'), { type: 'success' })
         goToAsset(newAssets[0].asset)
     }
 }
@@ -476,7 +477,7 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
                 $('#asset_exchange_vtab a.active').removeClass('active')
                 $('#no_asset_selected').show()
                 $('#asset_details, #no_assets_available, #no_asset_search_results').hide()
-                $.notify($.t('invalid_asset'), { type: 'danger' })
+                notify($.t('invalid_asset'), { type: 'danger' })
             }
         })
     }
@@ -784,14 +785,14 @@ export function evCalculatePricePreviewInput(e: JQuery.TriggeredEvent) {
         quantityQNT = parseQuantityToQNT(String($('#' + orderType + '_asset_quantity').val()), BRS.currentAsset.decimals)
     } catch (e) {
         $('#' + orderType + '_asset_quantity').addClass('is-invalid')
-        $.notify((e as Error).message)
+        notify((e as Error).message)
         return
     }
     try {
         priceNQT = parsePriceQuantityToPriceNQT($('#' + orderType + '_asset_price').val(), BRS.currentAsset.decimals)
     } catch (e) {
         $('#' + orderType + '_asset_price').addClass('is-invalid')
-        $.notify((e as Error).message)
+        notify((e as Error).message)
         return
     }
     const total = formatOrderTotal(quantityQNT, priceNQT)
@@ -899,21 +900,21 @@ export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
         asset.groupName = ''
         dbPut('assets', asset, function (error) {
             if (error) {
-                $.notify($.t('error_save_db'), { type: 'danger' })
+                notify($.t('error_save_db'), { type: 'danger' })
                 return
             }
             loadAssetExchangeSidebar()
-            $.notify($.t('success_asset_group_removal'), { type: 'success' })
+            notify($.t('success_asset_group_removal'), { type: 'success' })
         })
     } else if (option === 'remove_from_bookmarks') {
         asset.bookmarked = false
         dbPut('assets', asset, function (error) {
             if (error) {
-                $.notify($.t('error_save_db'), { type: 'danger' })
+                notify($.t('error_save_db'), { type: 'danger' })
                 return
             }
             loadAssetExchangeSidebar()
-            $.notify($.t('success_asset_bookmark_removal'), { type: 'success' })
+            notify($.t('success_asset_bookmark_removal'), { type: 'success' })
         })
     }
 }
@@ -948,7 +949,7 @@ export async function goToAsset(asset: string) {
         })
         return
     }
-    $.notify($.t('error_asset_not_found'), { type: 'danger' })
+    notify($.t('error_asset_not_found'), { type: 'danger' })
     loadAssetExchangeSidebar()
     $('#loading_asset_data').hide()
 }

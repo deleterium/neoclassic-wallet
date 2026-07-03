@@ -5,6 +5,7 @@ import { loadAssetExchangeSidebar } from '../pages/assets.asset_exchange'
 import { dbPut } from '../core/database'
 import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from '../core/numbers'
 import { getTranslatedFieldName } from '../core/util'
+import { notify } from '../core/notifications'
 
 export function populateTransferAssetSelector($invoker: JQuery<HTMLElement>) {
     const assetId = $invoker.data('asset') ?? ''
@@ -173,9 +174,9 @@ export function formsCancelOrder(data: any) {
 
 export function formsCancelOrderComplete(response: PostResponse, data: any) {
     if (data.requestType === 'cancelAskOrder') {
-        $.notify($.t('success_cancelSellOrder'), { type: 'success' })
+        notify($.t('success_cancelSellOrder'), { type: 'success' })
     } else {
-        $.notify($.t('success_cancelBuyOrder'), { type: 'success' })
+        notify($.t('success_cancelBuyOrder'), { type: 'success' })
     }
     $('#open_orders_page tr[data-order=' + String(data.order).escapeHTML() + ']')
         .addClass('text-muted text-line-through')
@@ -188,9 +189,9 @@ export function formsAssetExchangeGroup(data: any) {
         setTimeout(function () {
             loadAssetExchangeSidebar()
             if (!groupName) {
-                $.notify($.t('success_asset_group_removal'), { type: 'success' })
+                notify($.t('success_asset_group_removal'), { type: 'success' })
             } else {
-                $.notify($.t('success_asset_group_add'), { type: 'success' })
+                notify($.t('success_asset_group_add'), { type: 'success' })
             }
         }, 50)
     }
@@ -290,7 +291,7 @@ export function formsAssetExchangeChangeGroupName(data: any) {
     })
 
     if (!BRS.databaseSupport) {
-        $.notify($.t('success_group_name_update'), { type: 'success' })
+        notify($.t('success_group_name_update'), { type: 'success' })
         loadAssetExchangeSidebar()
         return {
             stop: true,
@@ -300,11 +301,11 @@ export function formsAssetExchangeChangeGroupName(data: any) {
 
     dbPut('assets', itemsToUpdate, function (error) {
         if (error) {
-            $.notify($.t('error_save_db'), { type: 'danger' })
+            notify($.t('error_save_db'), { type: 'danger' })
             return
         }
         loadAssetExchangeSidebar()
-        $.notify($.t('success_group_name_update'), { type: 'success' })
+        notify($.t('success_group_name_update'), { type: 'success' })
     })
 
     return {
@@ -330,12 +331,12 @@ export function evAssetOrderModalOnShowBsModal(e: JQuery.TriggeredEvent) {
         priceNQT = parsePriceQuantityToPriceNQT(String($('#' + orderType + '_asset_price').val()), BRS.currentAsset.decimals)
         totalNXT = formatOrderTotal(quantityQNT, priceNQT)
     } catch {
-        $.notify('Invalid input.', { type: 'danger' })
+        notify('Invalid input.', { type: 'danger' })
         return e.preventDefault()
     }
 
     if (priceNQT === '0' || quantityQNT === '0') {
-        $.notify($.t('error_amount_price_required'), { type: 'danger' })
+        notify($.t('error_amount_price_required'), { type: 'danger' })
         return e.preventDefault()
     }
 

@@ -17,6 +17,8 @@ import {
     UnconfirmedTransaction,
 } from '../typings'
 
+import { notify } from './notifications'
+
 export function setCheckIncomingInterval(seconds: number): void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
         return
@@ -54,7 +56,7 @@ async function checkIncomingBlocksAndTransactions() {
     const response: GetBlochainStatusResponse = await sendRequestA('getBlockchainStatus', {})
 
     if (response.errorCode) {
-        $.notify($.t('could_not_connect_to', { server: BRS.server }))
+        notify($.t('could_not_connect_to', { server: BRS.server }))
         return
     }
     const previousLastBlock = BRS.blockchainStatus?.lastBlock || '0'
@@ -135,7 +137,7 @@ function checkSyncProcess() {
     // Check if it is on a fork
     const onAFork = BRS.blocks.every((block) => block.generator === BRS.blocks[0].generator)
     if (onAFork) {
-        $.notify($.t('fork_warning'), { type: 'danger' })
+        notify($.t('fork_warning'), { type: 'danger' })
     }
 }
 
@@ -217,10 +219,10 @@ function handleIncomingTransactions(transactions: Transaction[]) {
     transactions.sort((x, y) => y.timestamp - x.timestamp)
 
     if (BRS.checkIncoming.newTransactions) {
-        $.notify($.t('new_confirmed_transaction'))
+        notify($.t('new_confirmed_transaction'))
     }
     if (BRS.checkIncoming.unconfirmedChanged && !BRS.checkIncoming.newBlock) {
-        $.notify($.t('new_unconfirmed_transaction'))
+        notify($.t('new_unconfirmed_transaction'))
     }
 
     if (BRS.checkIncoming.forceDashboardUpdate || BRS.checkIncoming.newTransactions || BRS.checkIncoming.unconfirmedChanged) {

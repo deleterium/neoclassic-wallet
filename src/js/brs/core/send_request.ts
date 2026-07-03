@@ -9,6 +9,7 @@ import { translateServerError } from './util'
 import { showRawTransactionModal } from '../modals/advanced'
 import { verifyTransactionBytes } from './verify_transaction'
 import { AjaxResponse } from '../typings'
+import { notify } from './notifications'
 
 export function setSavedPassword(password: string) {
     BRS._password = password
@@ -198,7 +199,7 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 // Regular GET response, or POST 'broadcastTransaction'
                 callback(response)
                 if (data.referencedTransactionFullHash && !response.errorCode) {
-                    $.notify($.t('info_referenced_transaction_hash'), { type: 'info' })
+                    notify($.t('info_referenced_transaction_hash'), { type: 'info' })
                 }
             }
         })
@@ -207,7 +208,7 @@ export function processAjaxRequest(requestType: string, data: any, callback: (re
                 return
             }
             if ((error === 'error' || textStatus === 'error') && (xhr.status === 404 || xhr.status === 0) && type === 'POST') {
-                $.notify($.t('error_server_connect'), { type: 'danger' })
+                notify($.t('error_server_connect'), { type: 'danger' })
             }
             if (error === 'timeout') {
                 error = $.t('error_request_timeout')
@@ -258,7 +259,7 @@ export function broadcastTransactionBytes(
             originalResponse.fullHash = response.fullHash
             callback(originalResponse, originalData)
             if (originalData.referencedTransactionFullHash) {
-                $.notify($.t('info_referenced_transaction_hash'), { type: 'info' })
+                notify($.t('info_referenced_transaction_hash'), { type: 'info' })
             }
         })
         .fail(function (xhr, textStatus, error) {

@@ -3,6 +3,7 @@ import { Transaction } from '../typings'
 import { reloadCurrentPage } from '../core/navigation'
 import { getAccountId, setDecryptionPassword, decryptAttachmentField } from '../core/encryption'
 import { getUnconfirmedTransactionsFromCache } from '../core/util'
+import { notify } from '../core/notifications'
 
 export async function formsDecryptMessages(data: any) {
     const accountId = getAccountId(data.secretPhrase)
@@ -50,7 +51,7 @@ export async function formsDecryptMessages(data: any) {
         }
     }
 
-    $.notify($.t('success_messages_decrypt'), { type: 'success' })
+    notify($.t('success_messages_decrypt'), { type: 'success' })
 
     reloadCurrentPage()
 

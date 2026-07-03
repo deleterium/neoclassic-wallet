@@ -19,6 +19,7 @@ import {
 } from '../typings'
 
 import { cacheAsset, getAssetDetails } from '../tools/assets'
+import { notify } from '../core/notifications'
 
 /** Start the process of showing an "Account Modal".
  * @param {string|GetAccountResponse} account - Account to be shown.
@@ -48,7 +49,7 @@ export async function showAccountModal(account: string | GetAccountResponse) {
         })
         BRS.fetchingModalData = false
         if (response.errorCode) {
-            $.notify($.t('error_account_id'))
+            notify($.t('error_account_id'))
             return
         }
         BRS.userInfoModal = {

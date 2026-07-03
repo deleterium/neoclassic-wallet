@@ -95,6 +95,8 @@ import { ShowBootstrapModalEvent } from '../typings'
 
 import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
 
+import { notify } from './notifications'
+
 export function addEventListeners() {
     // from brs.js
     $('#prefered_node').on('blur', function () {
@@ -617,7 +619,7 @@ export function addEventListeners() {
         const userInput = $('#block_info_input_block').val()
         const currentBlock = Number(userInput)
         if (isNaN(currentBlock) || currentBlock < 0) {
-            $.notify($.t('invalid_blockheight'), { type: 'danger' })
+            notify($.t('invalid_blockheight'), { type: 'danger' })
         }
         blockInfoLoad(currentBlock)
     })
@@ -625,7 +627,7 @@ export function addEventListeners() {
         const userInput = $('#block_info_input_block').val()
         const currentBlock = Number(userInput)
         if (isNaN(currentBlock) || currentBlock <= 0) {
-            $.notify($.t('invalid_blockheight'), { type: 'danger' })
+            notify($.t('invalid_blockheight'), { type: 'danger' })
         }
         blockInfoLoad(currentBlock - 1)
     })
@@ -633,7 +635,7 @@ export function addEventListeners() {
         const userInput = $('#block_info_input_block').val()
         const currentBlock = Number(userInput)
         if (isNaN(currentBlock) || currentBlock < 0) {
-            $.notify($.t('invalid_blockheight'), { type: 'danger' })
+            notify($.t('invalid_blockheight'), { type: 'danger' })
         }
         blockInfoLoad(currentBlock + 1)
     })
