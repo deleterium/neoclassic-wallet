@@ -102,6 +102,7 @@ import {
 import { formRequestBurst } from './modals/request_coins'
 
 import { RequestController } from './core/request_controller'
+import { pagesNotifications } from './pages/notifications'
 
 export const BRS = {
     version: '1.0.0',
@@ -190,6 +191,7 @@ export const BRS = {
         subscription: pagesSubscription,
         search_results: pagesSearchResults,
         messages: pagesMessages,
+        notifications: pagesNotifications,
     },
     incoming: {
         latest_blocks: incomingLatestBlocks,

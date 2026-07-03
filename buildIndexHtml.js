@@ -35,7 +35,8 @@ const htmlFiles = [
     { location: 'PAGES_SETTINGS', path: 'html/pages/settings.html' },
     { location: 'PAGES_PEERS', path: 'html/pages/peers.html' },
     { location: 'PAGES_BLOCKS', path: 'html/pages/blocks.html' },
-    { location: 'PAGES_LOCKSCREEN', path: 'html/pages/lockscreen.html' }
+    { location: 'PAGES_LOCKSCREEN', path: 'html/pages/lockscreen.html' },
+    { location: 'PAGES_NOTIFICATIONS', path: 'html/pages/notifications.html' }
 ]
 
 // Read the skeleton file
