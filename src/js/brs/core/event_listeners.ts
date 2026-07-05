@@ -77,6 +77,7 @@ import {
     removeDecryptionForm,
     decryptNoteFormSubmit,
     evCheckNumberInput,
+    evCheckMessageLengthInput,
 } from './modals'
 
 import { showAccountModal, evShowBsTab } from '../modals/account'
@@ -187,6 +188,7 @@ export function addEventListeners() {
         submitForm($(element))
     })
     $('.ev-check-number-input').on('input', evCheckNumberInput)
+    $('.ev-check-message-length-input').on('input', evCheckMessageLengthInput)
 
     // from brs.login.js
     $('#account_phrase_custom_panel form').on('submit', evAccountPhraseCustomPanelSubmit)

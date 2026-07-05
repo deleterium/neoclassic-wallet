@@ -11,6 +11,7 @@ import { resetModalMultiOut } from '../modals/sendmoney'
 import { unlockModal } from './lockable_modal'
 import { SuggestFee } from '../typings'
 import { sendRequestA } from './send_request'
+import converters from '../../util/converters'
 
 /**
  * @param {JQuery.TriggeredEvent} e
@@ -23,6 +24,23 @@ export function evCheckNumberInput(e: JQuery.TriggeredEvent) {
     } catch {
         $(inputElement).addClass('is-invalid')
     }
+}
+
+export function evCheckMessageLengthInput(e: JQuery.TriggeredEvent) {
+    const inputElement = e.target
+    const text = String($(inputElement).val())
+    const isHex = /^[0-9a-fA-F]+$/.test(text)
+    let hexVal: string
+    if (isHex) {
+        hexVal = text
+    } else {
+        hexVal = converters.stringToHexString(text)
+    }
+    if (hexVal.length > 2000) {
+        $(inputElement).addClass('is-invalid')
+        return
+    }
+    $(inputElement).removeClass('is-invalid')
 }
 
 // hide modal when another one is activated.
