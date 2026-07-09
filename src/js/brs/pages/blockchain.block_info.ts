@@ -43,7 +43,7 @@ export async function blockInfoLoad(blockheight: number | '') {
 
 function getTransactionInBlocksRowHTML(transaction: Transaction) {
     const details = getTransactionDetails(transaction)
-    const transactionId = String(transaction.transaction).escapeHTML()
+    const transactionId = transaction.transaction
     const hasMessage = details.hasMessage ? "<i class='far fa-envelope-open'></i>&nbsp;" : ''
     const timestamp = formatTimestampAsDateTime(transaction.timestamp)
     const fee = formatNQTAsAmount(transaction.feeNQT)

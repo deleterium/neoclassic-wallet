@@ -553,7 +553,7 @@ export function addEventListeners() {
     $('#request_burst_qr_modal').on('show.bs.modal', function () {
         $('#new_qr_button').hide()
         $('#request_burst_immutable').prop('checked', true)
-        $('#request_burst_account_id').val(String(BRS.accountRS).escapeHTML())
+        $('#request_burst_account_id').val(BRS.accountRS)
         $('#request_burst_response_div').hide()
     })
     $('#request_burst_qr_modal').on('hide.bs.modal', function () {

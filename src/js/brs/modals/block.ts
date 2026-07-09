@@ -48,8 +48,8 @@ export function showBlockModal(block: GetBlockResponse) {
     let rows = ''
     for (const transaction of block.transactions as Transaction[]) {
         const details = getTransactionDetails(transaction)
-        const transactionId = String(transaction.transaction).escapeHTML()
-        const shortId = String(transaction.transaction.slice(0, 7) + '…').escapeHTML()
+        const transactionId = transaction.transaction
+        const shortId = transaction.transaction.slice(0, 7) + '…'
         rows += `
             <tr>
                 <td>

@@ -137,7 +137,7 @@ function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid') {
 
         rows += `
             <tr data-order='${completeOrder.order}' ${rowClass}>
-                <td><a href='#' data-goto-asset='${completeOrder.asset.escapeHTML()}'>${completeOrder.name.escapeHTML()}</a></td>
+                <td><a href='#' data-goto-asset='${completeOrder.asset}'>${completeOrder.name}</a></td>
                 <td id='order${completeOrder.order}total'>${formatQNTAsQuantity(completeOrder.quantityQNT, completeOrder.decimals)}</td>
                 <td id='order${completeOrder.order}percent'>${completeOrder.height === 0 ? '' : BRS.pendingTransactionHTML}</td>
                 <td>${formatPriceNQTAsPriceQuantity(completeOrder.priceNQT, completeOrder.decimals)}</td>

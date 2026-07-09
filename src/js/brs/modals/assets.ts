@@ -22,7 +22,7 @@ export function populateTransferAssetSelector($invoker: JQuery<HTMLElement>) {
 
     $formGroup.find('input[name=asset]').val(assetId)
     $formGroup.find('input[name=decimals]').val(decimals)
-    $formGroup.find('span[name=asset-name]').html(String(assetName).escapeHTML())
+    $formGroup.find('span[name=asset-name]').text(assetName)
     $formGroup.find('input[name=name_plus_asset]').val(assetName + ' - ' + assetId)
     $('#transfer_asset_name_plus_asset').val(assetName + ' - ' + assetId)
 
@@ -104,7 +104,7 @@ export function formsTransferAssetMulti(data: any) {
         BRS.showedFormWarning = true
         return {
             error: $.t('error_max_asset_transfer_warning', {
-                qty: String(BRS.settings.asset_transfer_warning).escapeHTML(),
+                qty: BRS.settings.asset_transfer_warning,
             }),
         }
     }
@@ -133,7 +133,7 @@ export function formsTransferAsset(data: any) {
         BRS.showedFormWarning = true
         return {
             error: $.t('error_max_asset_transfer_warning', {
-                qty: String(BRS.settings.asset_transfer_warning).escapeHTML(),
+                qty: BRS.settings.asset_transfer_warning,
             }),
         }
     }

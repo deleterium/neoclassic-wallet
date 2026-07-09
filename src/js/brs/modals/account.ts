@@ -90,14 +90,14 @@ function accountModalDataReady() {
         $('#user_info_modal_account_balance').html(formatNQTAsAmount(accountInfo.unconfirmedBalanceNQT) + ' ' + BRS.valueSuffix)
     }
     if (accountInfo.name) {
-        $('#user_info_modal_account_name').html(String(accountInfo.name).escapeHTML())
+        $('#user_info_modal_account_name').text(accountInfo.name)
         $('#user_info_modal_account_name_container').show()
     } else {
         $('#user_info_modal_account_name_container').hide()
     }
     if (accountInfo.description) {
         $('#user_info_description').show()
-        $('#user_info_modal_description').html(String(accountInfo.description).escapeHTML().nl2br())
+        $('#user_info_modal_description').html(accountInfo.description.nl2br())
     } else {
         $('#user_info_description').hide()
     }
@@ -151,8 +151,8 @@ async function userInfoModalTransactions() {
                 <tr>
                   <td>
                     <a href='#'
-                        data-transaction='${String(transaction.transaction).escapeHTML()}'
-                        data-timestamp='${String(transaction.timestamp).escapeHTML()}'
+                        data-transaction='${transaction.transaction}'
+                        data-timestamp='${transaction.timestamp}'
                     >
                     ${formatTimestampAsDateTime(transaction.timestamp)}
                     </a>
@@ -192,9 +192,9 @@ async function userInfoModalAliases() {
     })
     for (let i = 0; i < aliases.length; i++) {
         const alias = aliases[i]
-        const aliasName = String(alias.aliasName).escapeHTML()
-        const tldName = String(alias.aliasName).escapeHTML()
-        const aliasURI = String(alias.aliasURI).escapeHTML()
+        const aliasName = alias.aliasName
+        const tldName = alias.aliasName
+        const aliasURI = alias.aliasURI
         rows += `
             <tr>
               <td><a href="#" data-alias="${alias.alias}">${aliasName}</a></td>
@@ -230,7 +230,7 @@ function userInfoModalDetails() {
         tbodyHTML += `
             <tr>
               <td>${$.t('description')}</td>
-              <td style="word-break:break-all;word-wrap: break-word;">${accountInfo.description.escapeHTML()}</td>
+              <td style="word-break:break-all;word-wrap: break-word;">${accountInfo.description}</td>
             </tr>`
     }
     tbodyHTML += `
@@ -318,7 +318,7 @@ async function userInfoModalSmartcontract() {
                 }
                 break
             default:
-                codeHTML = String(response[row]).escapeHTML()
+                codeHTML = response[row]
         }
         rows += `<td style='word-break: break-word;'>${codeHTML}</td>`
         rows += '</tr>'
@@ -414,8 +414,8 @@ function userInfoModalAssetsLoaded() {
     for (const asset of combinedAssets) {
         const percentageAsset = calculatePercentage(asset.balanceQNT, asset.quantityCirculatingQNT)
         const isIssued = asset.account === currentAccount
-        const assetName = String(asset.name).escapeHTML()
-        const assetId = String(asset.asset).escapeHTML()
+        const assetName = asset.name
+        const assetId = asset.asset
 
         rows += `
             <tr>

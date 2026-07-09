@@ -20,13 +20,13 @@ export async function evBrsModalServerInfoOnShowBsModal() {
         const el = $('#brs_node_state_' + key)
         if (el.length) {
             if (key.indexOf('number') !== -1) {
-                el.html(formatNQTAsAmount(state[key]))
+                el.text(formatNQTAsAmount(state[key]))
             } else if (key.indexOf('Memory') !== -1) {
-                el.html(formatVolume(state[key]))
+                el.text(formatVolume(state[key]))
             } else if (key === 'time') {
-                el.html(formatTimestampAsDateTime(state[key]))
+                el.text(formatTimestampAsDateTime(state[key]))
             } else {
-                el.html(String(state[key]).escapeHTML())
+                el.text(state[key])
             }
         }
     }

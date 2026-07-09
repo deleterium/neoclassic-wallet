@@ -38,7 +38,7 @@ export function incomingUpdateDashboardTransactions(newTransactions: Transaction
 function getTransactionRowDashboardHTML(transaction: Transaction) {
     const details = getTransactionDetails(transaction)
 
-    let confirmationHTML = String(transaction.confirmations).escapeHTML()
+    let confirmationHTML = String(transaction.confirmations)
     if (transaction.height === UNCONFIRMED_HEIGHT) {
         confirmationHTML = BRS.pendingTransactionHTML
     } else if (transaction.confirmations > 10) {
@@ -50,7 +50,7 @@ function getTransactionRowDashboardHTML(transaction: Transaction) {
 
     return `
         <tr class='${rowClass}'>
-            <td><a href='#' data-transaction='${String(transaction.transaction).escapeHTML()}' data-timestamp='${String(transaction.timestamp).escapeHTML()}'>${formatTimestampAsDateTime(transaction.timestamp)}</a></td>
+            <td><a href='#' data-transaction='${transaction.transaction}' data-timestamp='${String(transaction.timestamp)}'>${formatTimestampAsDateTime(transaction.timestamp)}</a></td>
             <td>${details.nameOfTransaction}${messageIcon}</td>
             <td>${details.circleText}</td>
             <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
@@ -68,9 +68,9 @@ export function updateDashboardBlocks() {
     let rows = ''
     for (const block of BRS.blocks) {
         const isBold = block.numberOfTransactions > 0 ? "style='font-weight:bold'" : ''
-        const height = String(block.height).escapeHTML()
-        const blockId = String(block.block).escapeHTML()
-        const timestamp = String(block.timestamp).escapeHTML()
+        const height = String(block.height)
+        const blockId = String(block.block)
+        const timestamp = String(block.timestamp)
         const formattedTimestamp = formatTimestampAsDateTime(block.timestamp)
         const totalAmount = formatNQTAsAmount(block.totalAmountNQT)
         const totalFee = formatNQTAsAmount(block.totalFeeNQT)

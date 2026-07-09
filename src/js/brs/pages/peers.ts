@@ -63,14 +63,14 @@ export async function pagesPeers() {
                   <td>
                     ${isConnected ? "<i class='fas fa-check-circle' style='color:#5cb85c' title='Connected'></i>" : "<i class='fas fa-times-circle' style='color:#f0ad4e' title='Disconnected'></i>"}
                     &nbsp;&nbsp;
-                    ${peerData.announcedAddress ? String(peerData.announcedAddress).escapeHTML() : 'No name'}
+                    ${peerData.announcedAddress ? peerData.announcedAddress : 'No name'}
                   </td>
                   <td>${formatVolume(peerData.downloadedVolume)}</td>
                   <td>${formatVolume(peerData.uploadedVolume)}</td>
                   <td><span class='label label-${isUpToDate ? 'success' : 'danger'}'>
-                    ${peerData.application && peerData.version ? String(peerData.application).escapeHTML() + ' ' + String(peerData.version).escapeHTML() : '?'}
+                    ${peerData.application && peerData.version ? peerData.application + ' ' + peerData.version : '?'}
                   </span></td>
-                  <td>${peerData.platform ? String(peerData.platform).escapeHTML() : '?'}</td>
+                  <td>${peerData.platform ? peerData.platform : '?'}</td>
                 </tr>`
             $('#peer-' + peerIP.replace(/\./g, '-')).replaceWith(row)
 

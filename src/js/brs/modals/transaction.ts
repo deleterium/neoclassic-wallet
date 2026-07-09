@@ -138,7 +138,7 @@ async function processTransactionModalData(transaction: Transaction) {
         const transactionDetails = $.extend({}, transaction)
         delete transactionDetails.attachment
 
-        $('#transaction_info_modal_transaction').html(String(transaction.transaction).escapeHTML())
+        $('#transaction_info_modal_transaction').html(transaction.transaction)
         $('#transaction_info_tab_link').tab('show')
         $('#transaction_info_details_table tbody').empty().append(createInfoTable(transactionDetails))
         $('#transaction_info_table tbody').empty()
@@ -309,7 +309,7 @@ async function processTransactionModalData(transaction: Transaction) {
                         burst: formatNQTAsAmount(transaction.attachment.priceNQT),
                     }) +
                     " <a href='#' data-alias='" +
-                    String(transaction.attachment.alias).escapeHTML() +
+                    String(transaction.attachment.alias) +
                     "' data-toggle='modal' data-target='#buy_alias_modal'>" +
                     $.t('buy_it_q') +
                     '</a>'
@@ -319,7 +319,7 @@ async function processTransactionModalData(transaction: Transaction) {
                         burst: formatNQTAsAmount(transaction.attachment.priceNQT),
                     }) +
                     " <a href='#' data-alias='" +
-                    String(transaction.attachment.alias).escapeHTML() +
+                    String(transaction.attachment.alias) +
                     "' data-toggle='modal' data-target='#buy_alias_modal'>" +
                     $.t('buy_it_q') +
                     '</a>'
@@ -328,7 +328,7 @@ async function processTransactionModalData(transaction: Transaction) {
                     message =
                         $.t('your_alias_sale_offer') +
                         " <a href='#' data-alias='" +
-                        String(transaction.attachment.alias).escapeHTML() +
+                        String(transaction.attachment.alias) +
                         "' data-toggle='modal' data-target='#cancel_alias_sale_modal'>" +
                         $.t('cancel_sale_q') +
                         '</a>'
@@ -352,7 +352,7 @@ async function processTransactionModalData(transaction: Transaction) {
                 assetDetails = await getAssetDetails(fullHashToId(transaction.fullHash))
                 if (!assetDetails) return
                 data.asset_name_formatted_html = getAssetLink(assetDetails)
-                data.description = transaction.attachment.description.escapeHTML()
+                data.description = transaction.attachment.description
                 data.quantity = transaction.attachment.quantityQNT
                 data.decimals = transaction.attachment.decimals
                 if (transaction.attachment.mintable === true) {
@@ -592,7 +592,7 @@ async function processTransactionModalData(transaction: Transaction) {
             if (purchase.errorCode === 4) {
                 callout = $.t('incorrect_purchase')
             } else {
-                callout = String(purchase.errorDescription).escapeHTML()
+                callout = String(purchase.errorDescription)
             }
         } else {
             if (BRS.account === transaction.recipient || BRS.account === transaction.sender) {
@@ -600,7 +600,7 @@ async function processTransactionModalData(transaction: Transaction) {
                     if (BRS.account === transaction.recipient) {
                         callout =
                             "<a href='#' data-toggle='modal' data-target='#dgs_delivery_modal' data-purchase='" +
-                            String(transaction.transaction).escapeHTML() +
+                            transaction.transaction +
                             "'>" +
                             $.t('deliver_goods_q') +
                             '</a>'
@@ -657,7 +657,7 @@ async function processTransactionModalData(transaction: Transaction) {
             if (!purchase2.refundNQT) {
                 callout =
                     "<a href='#' data-toggle='modal' data-target='#dgs_refund_modal' data-purchase='" +
-                    String(transaction.attachment.purchase).escapeHTML() +
+                    String(transaction.attachment.purchase) +
                     "'>" +
                     $.t('refund_this_purchase_q') +
                     '</a>'
@@ -705,7 +705,7 @@ async function processTransactionModalData(transaction: Transaction) {
                 callout =
                     $.t('goods_received') +
                     " <a href='#' data-toggle='modal' data-target='#dgs_feedback_modal' data-purchase='" +
-                    String(transaction.attachment.purchase).escapeHTML() +
+                    String(transaction.attachment.purchase) +
                     "'>" +
                     $.t('give_feedback_q') +
                     '</a>'
@@ -825,7 +825,7 @@ export function drawAttachmentMessages(transaction: Transaction, $output: JQuery
             messageHTML += `<br><label>${$.t('text')}:</label>`
             messageHTML += `<div class='modal-text-box'>${(messageText ?? '').escapeHTML().nl2br()}</div>`
             messageHTML += `<label>${$.t('bytes')}:</label>`
-            messageHTML += `<div class='modal-text-box'>${(messageBytes ?? '').escapeHTML().nl2br()}</div>`
+            messageHTML += `<div class='modal-text-box'>${(messageBytes ?? '').nl2br()}</div>`
         }
         showMessage = true
     }

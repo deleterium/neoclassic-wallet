@@ -23,7 +23,7 @@ export async function pagesEscrow() {
     for (const escrow of response.escrows) {
         rows += `
             <tr>
-              <td><a href='#' data-escrow='${escrow.id.escapeHTML()}'>${escrow.id.escapeHTML()}</a></td>
+              <td><a href='#' data-escrow='${escrow.id}'>${escrow.id}</a></td>
               <td>${getAccountTitleFromObject(escrow, 'sender')}</td>
               <td>${getAccountTitleFromObject(escrow, 'recipient')}</td>
               <td>`

@@ -33,8 +33,8 @@ export async function getAndUpdateAccountDetails(firstRun: boolean, callback?: (
                         .removeClass('alert-danger')
                         .html(
                             $.t('status_new_account', {
-                                account_id: String(BRS.accountRS).escapeHTML(),
-                                public_key: String(BRS.publicKey).escapeHTML(),
+                                account_id: BRS.accountRS,
+                                public_key: BRS.publicKey,
                             }) +
                                 '<br /><br />' +
                                 $.t('status_blockchain_downloading'),
@@ -59,18 +59,14 @@ export async function getAndUpdateAccountDetails(firstRun: boolean, callback?: (
                     .removeClass('alert-danger')
                     .html(
                         $.t('status_new_account', {
-                            account_id: String(BRS.accountRS).escapeHTML(),
-                            public_key: String(BRS.publicKey).escapeHTML(),
+                            account_id: BRS.accountRS,
+                            public_key: BRS.publicKey,
                         }),
                     )
                     .show()
             }
         } else {
-            $('#dashboard_message')
-                .addClass('alert-danger')
-                .removeClass('alert-success')
-                .html(response.errorDescription ? response.errorDescription.escapeHTML() : $.t('error_unknown'))
-                .show()
+            $('#dashboard_message').addClass('alert-danger').removeClass('alert-success').text(response.errorDescription).show()
         }
     } else {
         if (BRS.accountRS && BRS.accountInfo.accountRS !== BRS.accountRS) {
@@ -230,8 +226,8 @@ async function checkAssetDifferences(current_balances: AssetBalance[], previous_
                 if (quantity !== '0') {
                     notify(
                         $.t('you_received_assets', {
-                            asset: String(asset.asset).escapeHTML(),
-                            name: String(asset.name).escapeHTML(),
+                            asset: asset.asset,
+                            name: asset.name,
                             count: quantity,
                         }),
                         { type: 'success' },
@@ -245,8 +241,8 @@ async function checkAssetDifferences(current_balances: AssetBalance[], previous_
                 if (quantity !== '0') {
                     notify(
                         $.t('you_sold_assets', {
-                            asset: String(asset.asset).escapeHTML(),
-                            name: String(asset.name).escapeHTML(),
+                            asset: asset.asset,
+                            name: asset.name,
                             count: quantity,
                         }),
                         { type: 'success' },

@@ -174,7 +174,7 @@ async function loginWithAccount(account: string) {
     $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
     $('#login_check_password_length').val(1)
     notify($.t('success_login_watch_only'), { type: 'success' })
-    $('#account_id').html(String(BRS.accountRS).escapeHTML())
+    $('#account_id').text(BRS.accountRS)
 
     loginCommon()
 }
@@ -236,7 +236,7 @@ async function loginWithPassphrase(passphrase: string) {
 
     $('#login_password, #login_account, #registration_password, #registration_password_repeat').val('')
     $('#login_check_password_length').val(1)
-    $('#account_id').html(String(BRS.accountRS).escapeHTML())
+    $('#account_id').text(BRS.accountRS)
 
     loginCommon()
 }

@@ -59,22 +59,22 @@ function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
     let rows = ''
     for (const asset of myAssets) {
         rows += `
-            <tr data-asset="${String(asset.asset).escapeHTML()}">
-              <td><a href='#' data-goto-asset='${String(asset.asset).escapeHTML()}'>
-                ${String(asset.name).escapeHTML()}</a>
+            <tr data-asset="${asset.asset}">
+              <td><a href='#' data-goto-asset='${asset.asset}'>
+                ${asset.name}</a>
               </td>
               <td class="quantity">${formatQNTAsQuantity(asset.balanceQNT, asset.decimals)}</td>
               <td>${formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>
-              <td id="ask-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</i></td>
-              <td id="bid-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</td>
-              <td id="value-order-${String(asset.asset).escapeHTML()}">${BRS.pendingTransactionHTML}</td>
+              <td id="ask-order-${asset.asset}">${BRS.pendingTransactionHTML}</i></td>
+              <td id="bid-order-${asset.asset}">${BRS.pendingTransactionHTML}</td>
+              <td id="value-order-${asset.asset}">${BRS.pendingTransactionHTML}</td>
               <td>
                 <a href='#'
                   data-toggle='modal'
                   data-target='#transfer_asset_modal'
-                  data-asset='${String(asset.asset).escapeHTML()}'
-                  data-name='${String(asset.name).escapeHTML()}'
-                  data-decimals='${String(asset.decimals).escapeHTML()}'>
+                  data-asset='${asset.asset}'
+                  data-name='${asset.name}'
+                  data-decimals='${String(asset.decimals)}'>
                   ${$.t('transfer')}
                 </a>
               </td>
@@ -125,7 +125,7 @@ function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
 }
 
 function updateAskOrderCell(assetId: string, priceNQT?: string, decimals?: number) {
-    const cellSelector = '#ask-order-' + assetId.escapeHTML()
+    const cellSelector = '#ask-order-' + assetId
     if (!priceNQT || !decimals) {
         $(cellSelector).text('--')
         return
@@ -134,8 +134,8 @@ function updateAskOrderCell(assetId: string, priceNQT?: string, decimals?: numbe
 }
 
 function updateBidOrderCell(assetId: string, priceNQT?: string, decimals?: number, userBalanceQNT?: string) {
-    const orderSelector = '#bid-order-' + assetId.escapeHTML()
-    const valueSelector = '#value-order-' + assetId.escapeHTML()
+    const orderSelector = '#bid-order-' + assetId
+    const valueSelector = '#value-order-' + assetId
     if (!priceNQT || !decimals || !userBalanceQNT) {
         $(orderSelector).text('--')
         $(valueSelector).text('--')

@@ -44,7 +44,7 @@ export function getAccountLink(object: Transaction, acc: string) {
         }
         return '/'
     } else {
-        return `<a href='#' data-user='${String(object[acc + 'RS']).escapeHTML()}' class='user-info'>${getAccountTitleFromObject(object, acc)}</a>`
+        return `<a href='#' data-user='${object[acc + 'RS']}' class='user-info'>${getAccountTitleFromObject(object, acc)}</a>`
     }
 }
 
@@ -58,18 +58,13 @@ export function getAssetLink(asset: AssetDetails) {
 // region getAccount
 
 export function getAccountTitleFromObject(object: object, acc: string) {
-    let accountRS = ''
-
     if (acc === 'multiple') {
         return $.t('multiple')
     }
     if (typeof object[acc + 'RS'] === 'undefined') {
         return '/'
-    } else {
-        accountRS = String(object[acc + 'RS']).escapeHTML()
     }
-
-    return getAccountTitle(accountRS)
+    return getAccountTitle(object[acc + 'RS'])
 }
 
 export function getAccountTitle(accountRS: string) {

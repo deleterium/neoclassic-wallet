@@ -54,7 +54,7 @@ function showAssetSearchResults(assets: GetAssetResponse[]) {
               <td>${asset.name}</td>
               <td><a href="#" data-goto-asset="${asset.asset}">${asset.asset}</a></td>
               <td><a href="#" data-user="${asset.accountRS}" class="user-info">${asset.accountRS}</a></td>
-              <td>${String(asset.description).escapeHTML()}</td>
+              <td>${asset.description}</td>
             </tr>`
     }
     resultHTML += `
@@ -101,7 +101,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
               <td><a href="#" data-alias="${alias.alias}">${alias.aliasName}</a></td>
               <td><a href="#" data-user="${alias.accountRS}" class="user-info">${alias.accountRS}</a></td>
               <td>${alias.tldName}</td>
-              <td>${alias.aliasURI.escapeHTML()}</td>
+              <td>${alias.aliasURI}</td>
               <td>${statusHTML}</td>
               <th>${priceHTML}</th>
             </tr>`

@@ -18,7 +18,7 @@ export async function pagesSubscription() {
     }
     let rows = ''
     for (const subscription of response.subscriptions) {
-        const subscriptionId = String(subscription.id).escapeHTML()
+        const subscriptionId = subscription.id
         const timeInterval = convertSecondsToDuration(subscription.frequency)
         rows += `
             <tr>
@@ -27,8 +27,8 @@ export async function pagesSubscription() {
                     ${subscriptionId}
                 </a>
               </td>
-              <td>${String(subscription.senderRS).escapeHTML()}</td>
-              <td>${String(subscription.recipientRS).escapeHTML()}</td>
+              <td>${subscription.senderRS}</td>
+              <td>${subscription.recipientRS}</td>
               <td>${formatNQTAsAmount(subscription.amountNQT)}</td>
               <td>${BRS.durationFormatter.format({ seconds: subscription.frequency })} - ${BRS.durationFormatter.format(timeInterval)}</td>
               <td>${formatTimestampAsDateTime(subscription.timeNext)}</td>

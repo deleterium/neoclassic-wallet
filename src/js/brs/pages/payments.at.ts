@@ -20,9 +20,9 @@ export async function pagesAt() {
     for (const at of response.ats) {
         rows += `
             <tr>
-                <td>${String(at.atRS).escapeHTML()}</td>
-                <td>${String(at.name).escapeHTML()}</td>
-                <td>${String(at.description).escapeHTML()}</td>
+                <td>${at.atRS}</td>
+                <td>${at.name}</td>
+                <td>${at.description}</td>
                 <td>${formatNQTAsAmount(at.balanceNQT)}</td>
             </tr>`
     }

@@ -17,8 +17,8 @@ export function evAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
 
     const alias = String($invoker.data('alias'))
 
-    $(modal).find('input[name=aliasName]').val(alias.escapeHTML())
-    $(modal).find('.alias_name_display').html(alias.escapeHTML())
+    $(modal).find('input[name=aliasName]').val(alias)
+    $(modal).find('.alias_name_display').html(alias)
 }
 
 export function formsSellAlias(data: any) {
@@ -135,10 +135,10 @@ export async function evBuyAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
         notify($.t('error_alias_sale_different_account'), { type: 'danger' })
         return
     }
-    $modal.find('input[name=alias]').val(response.alias.escapeHTML())
-    $modal.find('.alias_id_display').html(response.alias.escapeHTML())
-    $modal.find('.alias_name_display').html(response.aliasName.escapeHTML())
-    $modal.find('.alias_tld_display').html(response.tldName.escapeHTML())
+    $modal.find('input[name=alias]').val(response.alias)
+    $modal.find('.alias_id_display').html(response.alias)
+    $modal.find('.alias_name_display').html(response.aliasName)
+    $modal.find('.alias_tld_display').html(response.tldName)
     $modal.find('input[name=amountNXT]').val(formatNQTAsAmount(response.priceNQT)).prop('readonly', true)
 }
 
@@ -318,7 +318,7 @@ export function formsSetAliasError(response: PostResponse, data: any) {
         return
     }
 
-    const errorDescription = String(response.errorDescription).escapeHTML()
+    const errorDescription = String(response.errorDescription)
 
     $('#register_alias_modal')
         .find('.error_message')
@@ -476,7 +476,7 @@ function getAliasStatus(alias: GetAliasResponse) {
  */
 function aliasModalDataReady(response: GetAliasResponse) {
     $('#alias_info_table tbody').empty()
-    $('#alias_info_modal_alias').html(String(response.aliasName).escapeHTML())
+    $('#alias_info_modal_alias').text(response.aliasName)
     const data = {
         account: response.accountRS,
         last_updated: formatTimestampAsDateTime(response.timestamp),

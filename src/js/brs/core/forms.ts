@@ -294,7 +294,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     }
 
     function endWithError(errorMsg: string) {
-        $form.find('.error_message').html(errorMsg).show()
+        $form.find('.error_message').text(errorMsg).show()
         if (formFunctionError) {
             formFunctionError(
                 {
@@ -352,7 +352,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     if (typeof formFunction === 'function') {
         const output = await formFunction(data)
         if (output.error) {
-            endWithError(output.error.escapeHTML())
+            endWithError(output.error)
             return
         }
         if (output.requestType) {
@@ -395,7 +395,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
         data = await addMessageData(data, requestType)
     } catch (err) {
         errorStr = (err as Error).message
-        endWithError(errorStr.escapeHTML())
+        endWithError(errorStr)
         return
     }
 
@@ -456,7 +456,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
 
     let formFunctionComplete: undefined | ((response: any, data: any) => void)
     if (isErrorResponse(response)) {
-        $form.find('.error_message').html(String(response.errorDescription).escapeHTML()).show()
+        $form.find('.error_message').text(response.errorDescription).show()
         if (formFunctionError) {
             formFunctionError(response, data)
         }

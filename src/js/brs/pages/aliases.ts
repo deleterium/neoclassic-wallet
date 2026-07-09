@@ -76,12 +76,12 @@ export async function pagesAliases() {
 
         if (alias.aliasURI.length > 100) {
             shortAliasURI = alias.aliasURI.substring(0, 98) + '...'
-            shortAliasURI = shortAliasURI.escapeHTML()
+            shortAliasURI = shortAliasURI
         } else {
-            shortAliasURI = alias.aliasURI.escapeHTML()
+            shortAliasURI = alias.aliasURI
         }
 
-        alias.aliasURI = alias.aliasURI.escapeHTML()
+        alias.aliasURI = alias.aliasURI
 
         let allowCancel = false
 
@@ -100,7 +100,7 @@ export async function pagesAliases() {
             status = "<span class='label label-small label-info'>" + status + '</span>'
         }
 
-        const aliasName = String(alias.aliasName).escapeHTML()
+        const aliasName = alias.aliasName
         const tentativeClass = tentative ? " class='tentative'" : ''
         const editButton = `
             <a href="#"

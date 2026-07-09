@@ -23,8 +23,8 @@ export function drawBlocksInCurrentPage(blocks: BlockDetails[]) {
         totalTransactions += block.numberOfTransactions
 
         // Format values for display
-        const height = String(block.height).escapeHTML()
-        const blockId = String(block.block).escapeHTML()
+        const height = String(block.height)
+        const blockId = String(block.block)
         const isBold = block.numberOfTransactions > 0 ? " style='font-weight:bold'" : ''
         const timestamp = formatTimestampAsDateTime(block.timestamp)
         const amount = formatNQTAsAmount(block.totalAmountNQT)

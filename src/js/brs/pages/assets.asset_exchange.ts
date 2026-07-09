@@ -253,7 +253,7 @@ export function loadAssetExchangeSidebar(callback?: () => void) {
             
             <a href='#'
             class='${itemClass}'
-            data-asset='${String(asset.asset).escapeHTML()}'
+            data-asset='${asset.asset}'
             data-context='asset_exchange_vtab_context'
             ${dataGroupname}
             ${hideClosedGroup}
@@ -406,24 +406,24 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
                 getAccountTitleFromObject(asset, 'account') +
                 '</a>',
         )
-        $('#asset_id').html(assetId.escapeHTML())
-        $('#asset_decimals').html(String(asset.decimals).escapeHTML())
-        $('#asset_name').html(String(asset.name).escapeHTML())
-        $('#asset_description').html(String(asset.description).escapeHTML())
+        $('#asset_id').html(assetId)
+        $('#asset_decimals').html(String(asset.decimals))
+        $('#asset_name').html(asset.name)
+        $('#asset_description').html(asset.description)
         $('#asset_quantity').html(formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals))
 
-        $('.asset_name').html(String(asset.name).escapeHTML())
+        $('.asset_name').html(asset.name)
         $('#sell_asset_button').data('asset', assetId)
         $('#buy_asset_button').data('asset', assetId)
         $('#sell_asset_for_burst').html(
             $.t('sell_asset_for_burst', {
-                assetName: String(asset.name).escapeHTML(),
+                assetName: asset.name,
                 valueSuffix: BRS.valueSuffix,
             }),
         )
         $('#buy_asset_with_burst').html(
             $.t('buy_asset_with_burst', {
-                assetName: String(asset.name).escapeHTML(),
+                assetName: asset.name,
                 valueSuffix: BRS.valueSuffix,
             }),
         )
@@ -878,7 +878,7 @@ export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
 
     if (option === 'add_to_group') {
         $('#asset_exchange_group_asset').val(assetId)
-        $('#asset_exchange_group_title').html(String(asset.name).escapeHTML())
+        $('#asset_exchange_group_title').html(asset.name)
 
         const groupNames = [...new Set(BRS.assets.filter((tkn) => tkn.groupName).map((tkn) => tkn.groupName))]
         groupNames.sort((a, b) => a.localeCompare(b))

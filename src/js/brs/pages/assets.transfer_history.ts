@@ -29,13 +29,13 @@ export async function pagesTransferHistory() {
             rows += `
                 <tr>
                   <td>
-                    <a href='#' data-transaction='${String(transfer.assetTransfer).escapeHTML()}'>
-                      ${String(transfer.assetTransfer).escapeHTML()}
+                    <a href='#' data-transaction='${transfer.assetTransfer}'>
+                      ${transfer.assetTransfer}
                     </a>
                   </td>
                   <td>
-                    <a href='#' data-goto-asset='${String(transfer.asset).escapeHTML()}'>
-                      ${String(transfer.name).escapeHTML()}
+                    <a href='#' data-goto-asset='${transfer.asset}'>
+                      ${transfer.name}
                     </a>
                   </td>
                   <td>${formatTimestampAsDateTime(transfer.timestamp)}</td>

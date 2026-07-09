@@ -80,7 +80,7 @@ async function getAccountTypeAndMessage(accountIdOrRs: string): Promise<{
         }
         return {
             type: 'danger',
-            message: $.t('recipient_problem') + ' ' + String(response.errorDescription).escapeHTML(),
+            message: $.t('recipient_problem') + ' ' + response.errorDescription,
             account: null,
             publicKeyNeeded: 'hide',
         }
@@ -229,7 +229,7 @@ async function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
         // Account matches numeric ID
         const response = await getAccountTypeAndMessage(account)
         formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
-        updateCallout(callout, 'alert-' + response.type, response.message.escapeHTML())
+        updateCallout(callout, 'alert-' + response.type, response.message)
         return
     }
 
@@ -245,8 +245,7 @@ async function checkRecipient(account: string, form: JQuery<HTMLFormElement>) {
         const response = await getAccountTypeAndMessage(contact.account)
         formatRecipientPublicKey(response.publicKeyNeeded, form, response.account?.publicKey)
         checkForMerchant(response.account?.description, form)
-        const message =
-            $.t('contact_account_link', { account_id: getAccountRSFromObject(contact, 'account') }) + ' ' + response.message.escapeHTML()
+        const message = $.t('contact_account_link', { account_id: getAccountRSFromObject(contact, 'account') }) + ' ' + response.message
         updateCallout(callout, 'alert-' + response.type, message)
         if (response.type === 'info' || response.type === 'warning') {
             accountInputField.val(contact.accountRS)
@@ -301,7 +300,7 @@ async function checkRecipientAlias(account: string, form: JQuery<HTMLFormElement
         }
 
         let msg = $.t('alias_account_no_link')
-        msg += !alias ? $.t('error_uri_empty') : $.t('uri_is', { uri: String(alias).escapeHTML() })
+        msg += !alias ? $.t('error_uri_empty') : $.t('uri_is', { uri: alias })
         updateCallout(callout, 'alert-danger', msg)
         return
     }
