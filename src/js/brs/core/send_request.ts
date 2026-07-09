@@ -326,3 +326,9 @@ export async function sendRequestA(requestType: string, data: any): Promise<any>
         })
     })
 }
+
+// A type guard that tells TypeScript the shape is the error variant
+export function isErrorResponse<T>(res: T): res is T & { errorCode: number; errorDescription: string } {
+    // @ts-expect-error: errorCode is present in all Response types!
+    return res.errorCode !== undefined
+}

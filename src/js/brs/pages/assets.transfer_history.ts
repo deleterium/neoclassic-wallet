@@ -1,7 +1,7 @@
 import { BRS } from '..'
 import { GetAssetTransfersResponse } from '../typings'
 import { formatTimestampAsDateTime, formatQNTAsQuantity } from '../core/numbers'
-import { sendRequestA } from '../core/send_request'
+import { isErrorResponse, sendRequestA } from '../core/send_request'
 import { getAccountRSFromObject, getAccountTitleFromObject, dataLoaded } from '../core/util'
 import { notify } from '../core/notifications'
 
@@ -17,8 +17,8 @@ export async function pagesTransferHistory() {
             BRS.hasMorePages = true
             response.transfers.pop()
         }
-        if (response.errorCode) {
-            notify(response.errorDescription || 'API getAssetTransfers error.')
+        if (isErrorResponse(response)) {
+            notify(response.errorDescription)
             dataLoaded()
             return
         }

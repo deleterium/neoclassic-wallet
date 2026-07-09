@@ -3,7 +3,7 @@ import { BRS } from '..'
 import { GetAccountResponse, AssetBalance, GetAssetResponse } from '../typings'
 import { dbGet, dbPut } from './database'
 import { formatQNTAsQuantity } from './numbers'
-import { sendRequestA } from './send_request'
+import { isErrorResponse, sendRequestA } from './send_request'
 import { formatStyledAmount } from './util'
 import { notify } from './notifications'
 
@@ -21,7 +21,7 @@ export async function getAndUpdateAccountDetails(firstRun: boolean, callback?: (
     const previousAccountInfo = BRS.accountInfo
     BRS.accountInfo = response
 
-    if (response.errorCode) {
+    if (isErrorResponse(response)) {
         $('#account_balance, #account_committed_balance, #account_balance_sendmoney').html('0')
         $('#account_nr_assets').html('0')
 

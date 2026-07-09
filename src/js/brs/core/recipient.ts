@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { NxtAddress } from '../../util/nxtaddress'
 
-import { sendRequestA } from './send_request'
+import { isErrorResponse, sendRequestA } from './send_request'
 
 import { getContactByName } from '../tools/contacts'
 
@@ -61,7 +61,7 @@ async function getAccountTypeAndMessage(accountIdOrRs: string): Promise<{
 
     const response: GetAccountResponse = await sendRequestA('getAccount', { account: accountIdOrRs })
 
-    if (response.errorCode) {
+    if (isErrorResponse(response)) {
         switch (response.errorCode) {
             case 4:
                 return {

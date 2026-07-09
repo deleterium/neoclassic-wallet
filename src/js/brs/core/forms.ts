@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from './send_request'
+import { isErrorResponse, sendRequestA } from './send_request'
 
 import { encryptNote, createEncryptionToOtherOptions, createEncryptionToSelfOptions } from './encryption'
 
@@ -455,7 +455,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     const response: PostResponse = await sendRequestA(requestType, data)
 
     let formFunctionComplete: undefined | ((response: any, data: any) => void)
-    if (response.errorCode) {
+    if (isErrorResponse(response)) {
         $form.find('.error_message').html(String(response.errorDescription).escapeHTML()).show()
         if (formFunctionError) {
             formFunctionError(response, data)

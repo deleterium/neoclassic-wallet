@@ -6,7 +6,7 @@ import { getAndUpdateAccountDetails } from './check_incoming.account'
 
 import { updateSettings } from '../pages/settings'
 
-import { setSavedPassword, sendRequestA } from './send_request'
+import { setSavedPassword, sendRequestA, isErrorResponse } from './send_request'
 
 import { getContactByName } from '../tools/contacts'
 
@@ -150,7 +150,7 @@ async function loginWithAccount(account: string) {
     // Get the account information for the given address
     const response: GetAccountResponse = await sendRequestA('getAccount', { account: login })
 
-    if (response.errorCode) {
+    if (isErrorResponse(response)) {
         if (BRS.rsRegEx.test(login) || BRS.idRegEx.test(login)) {
             notify($.t('error_account_unknow_watch_only'), { type: 'danger' })
             return
