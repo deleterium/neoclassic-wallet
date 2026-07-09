@@ -1,4 +1,4 @@
-import { ByteArray, HexString, HexChar } from '../typings'
+import { ByteArray, HexString, HexChar } from '../brs/typings'
 
 export default {
     charToNibble: {

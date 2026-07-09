@@ -50,7 +50,7 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
         transaction.amountNQT = String(converters.byteArrayToBigInt64(byteArray, 48))
         transaction.feeNQT = String(converters.byteArrayToBigInt64(byteArray, 56))
         transaction.referencedTransactionFullHash = converters.byteArrayToHexString(byteArray.slice(64, 96))
-        if (/^0+$/.test(transaction.referencedTransactionFullHash)) {
+        if (/^0+$/.test(transaction.referencedTransactionFullHash ?? '')) {
             transaction.referencedTransactionFullHash = ''
         }
         if (transaction.version > 0) {
