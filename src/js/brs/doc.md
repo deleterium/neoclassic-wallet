@@ -6,6 +6,7 @@
 - [Pages](#pages)
 - [Pagination](#pagination)
 
+
 ## Numbers
 
 ### Coins and Tokens formats
@@ -52,6 +53,7 @@ Check the features:
 * Check saved password
 * Sign and broadcast transactions, if needed.
 * Check internally if the response was not tampered
+* Secure the strings in response, escaping the HTML chars. Use `String.unescapeHTML()` if needed.
 ### Argument options
 #### `requestType: string`
 A string with the API request to be done.
@@ -66,6 +68,7 @@ The promise never fails, instead the response will have the properties `errorCod
 Error code '-1' is used if there was an error in the ajax request, like the server is down or request timed out.
 Positive error codes are the the ones that the signum node respond.
 
+
 ## Modals
 
 Creating a new modal
@@ -78,6 +81,7 @@ They can be created by the formFunction, or by adding the property 'error_reques
 
 Notes:
 * Remember to check and add new modal to `automaticallyCheckRecipient` at file `recipients` if needed.
+
 
 ## Forms
 
@@ -129,6 +133,7 @@ Object with the 'errorCode' and maybe 'errorDescription'.
 * `data`
 The form data used to generate the request.
 
+
 ## Pages
 Creating a new page:
 * Create a new html file. Use the other pages as templates like `at_page`.
@@ -137,9 +142,9 @@ Creating a new page:
 * Create a new typescript file in `src/js/brs/pages/` to have the pageFunction.
 * Add the pageFunction in `BRS.pages` at file `src/js/brs/index.ts`
 
-
 ### pageFunction
-TODO
+The pageFunction is called to draw the page user selected.
+No return and no arguments, example: `function pagesMyNewPage (void) : void`
 
 ### incomingFunction
 This function, if defined in `BRS.incoming`, is called when a new block is forged or when there is a new pending message to the user account.
@@ -149,6 +154,7 @@ The incomingFunction will the called with the argument:
 If there are new transactions, the last 10 confirmed transactions will be included.
 If there are a new pending transaction, all pending transactions will be passed. Unconfirmed transactions will include properties `height: 2147483647`, `confirmations: -1`, `block: ''` and `blockTimestamp: -1`, so they can have 'Transaction' type.
 On top, all pending transactions have the property `unconfirmed: true` added by the `sendRequest` function.
+
 
 ## Pagination
 Pagination can be easily added in pages:
