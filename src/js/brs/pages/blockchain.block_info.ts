@@ -5,6 +5,10 @@ import { sendRequestA } from '../core/send_request'
 import { getTransactionDetails } from '../tools/transactions'
 import { dataLoaded } from '../core/util'
 import { notify } from '../core/notifications'
+import { reloadCurrentPage } from '../core/navigation'
+
+// Current page is 'block_info'
+// It's not need to process unconfirmed.
 
 /**
  * Draws the page 'Blockchain' -> 'Blocks Info' with latest block available.
@@ -60,4 +64,10 @@ function getTransactionInBlocksRowHTML(transaction: Transaction) {
           <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
           <td>${fee}</td>
         </tr>`
+}
+
+export function incomingBlockInfo() {
+    if (BRS.checkIncoming.newBlock) {
+        reloadCurrentPage()
+    }
 }

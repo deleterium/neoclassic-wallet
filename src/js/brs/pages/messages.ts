@@ -21,6 +21,9 @@ import { getMessageTextFromTX, getEncryptedMessageFromTX, decryptAttachmentField
 import { GetAccountTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 import { notify } from '../core/notifications'
 
+// Current page is 'messages'
+// Processing unconfirmed in chat, but not in sidebar.
+
 export async function pagesMessages() {
     if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
         // we will refresh current chat box
@@ -122,7 +125,11 @@ function displayMessageSidebar() {
     }
 }
 
-export function incomingMessages(transactions: Transaction[]) {
+/**
+ * Checking for new messages in every update.
+ * It shows notification to the user and redraw page 'messages' it is currently beeing displayed.
+ */
+export function checkIncomingMessages(transactions: Transaction[]) {
     if (!BRS.checkIncoming.newTransactions && !BRS.checkIncoming.unconfirmedChanged) {
         return
     }

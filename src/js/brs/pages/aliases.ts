@@ -4,6 +4,9 @@ import { goToPage, pageLoaded, reloadCurrentPage } from '../core/navigation'
 import { sendRequestA } from '../core/send_request'
 import { getUnconfirmedTransactionsFromCache, dataLoadFinished } from '../core/util'
 
+// Current page is 'aliases'
+// Do not process unconfirmed.
+
 export async function pagesAliases() {
     const response: GetAliasesResponse = await sendRequestA('getAliases+', {
         account: BRS.account,
@@ -172,7 +175,7 @@ export async function pagesAliases() {
 }
 
 export function incomingAliases() {
-    if (BRS.checkIncoming.newTransactions || BRS.checkIncoming.unconfirmedChanged) {
+    if (BRS.checkIncoming.newTransactions) {
         reloadCurrentPage()
     }
 }

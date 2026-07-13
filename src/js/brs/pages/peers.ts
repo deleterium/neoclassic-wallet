@@ -10,6 +10,9 @@ import { dataLoaded } from '../core/util'
 
 import { GetPeerResponse, GetPeersResponse } from '../typings'
 
+// Current page is 'peers'
+// Processing new blocks.
+
 export async function pagesPeers() {
     const response: GetPeersResponse = await sendRequestA('getPeers+', {
         active: 'true',
@@ -115,7 +118,9 @@ function peersFinished(peers: Record<string, GetPeerResponse>) {
 }
 
 export function incomingPeers() {
-    reloadCurrentPage()
+    if (BRS.checkIncoming.newBlock) {
+        reloadCurrentPage()
+    }
 }
 
 class PreleaseTag {

@@ -17,6 +17,10 @@ import { sendRequestA } from '../core/send_request'
 import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from '../core/util'
 import { formatNQTAsAmount } from '../core/numbers'
 
+// Current page is 'search_results'.
+// This page is accessible only when submitting a new search, so no 'pageFunction' needed.
+// Do not handle unconfirmed neither new blocks nor transactions.
+
 /**
  * Draws the search results if found many accounts.
  * @param accountsList

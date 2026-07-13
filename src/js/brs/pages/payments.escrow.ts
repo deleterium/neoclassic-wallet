@@ -10,6 +10,9 @@ import { GetAccountEscrowTransactionsResponse } from '../typings'
 
 import { recipientToId } from '../modals/sendmoney'
 
+// Current page is 'escrow'
+// Do not handle unconfirmed neither new blocks nor transactions.
+
 export async function pagesEscrow() {
     const response: GetAccountEscrowTransactionsResponse = await sendRequestA('getAccountEscrowTransactions', {
         account: BRS.account,

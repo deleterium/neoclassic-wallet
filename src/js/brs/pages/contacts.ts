@@ -5,6 +5,9 @@ import { dbGet, dbPut } from '../core/database'
 import { dataLoaded, getAccountRSFromObject } from '../core/util'
 import { notify } from '../core/notifications'
 
+// Current page is 'contacts'
+// It's not need to process incoming blocks.
+
 export function pagesContacts() {
     if (!BRS.databaseSupport) {
         let rows = ''

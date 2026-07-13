@@ -8,6 +8,9 @@ import { dataLoaded } from '../core/util'
 
 import { GetAccountATsResponse } from '../typings'
 
+// Current page is 'at'
+// Do not handle unconfirmed neither new blocks nor transactions.
+
 export async function pagesAt() {
     const response: GetAccountATsResponse = await sendRequestA('getAccountATs', {
         account: BRS.account,

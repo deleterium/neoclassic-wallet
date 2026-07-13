@@ -1,5 +1,6 @@
 import { BRS } from '..'
 import { Note } from '../typings'
+import { reloadCurrentPage } from './navigation'
 
 export function notify(message: string, options?: any) {
     const type = options?.type || 'info'
@@ -20,6 +21,10 @@ export function notify(message: string, options?: any) {
         class: `custom-toast bg-${type}`,
         close: false,
     })
+
+    if (BRS.currentPage === 'notifications') {
+        reloadCurrentPage()
+    }
 }
 
 export function getNotifications(firstItem: number, lastItem: number) {

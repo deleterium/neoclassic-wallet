@@ -19,6 +19,8 @@ import {
 
 import { notify } from './notifications'
 
+import { checkIncomingMessages } from '../pages/messages'
+
 export function setCheckIncomingInterval(seconds: number): void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
         return
@@ -232,22 +234,7 @@ function handleIncomingTransactions(transactions: Transaction[]) {
         if (BRS.incoming[BRS.currentPage]) {
             BRS.incoming[BRS.currentPage](transactions)
         }
+        // Always call 'checkIncomingMessages' to enable message notifications. Page 'messages' does not use 'incomingFunction'.
+        checkIncomingMessages(transactions)
     }
-
-    // These handlers must be used in respective `incomingFunctions`
-
-    // always unconfirmed transactions..
-    // if (BRS.currentPage === 'transactions' && BRS.transactionsPageType === 'unconfirmed') {
-    //     BRS.incoming.transactions()
-    // } else {
-    //     if (BRS.currentPage !== 'messages' && (!oldBlock || BRS.unconfirmedTransactionsChange)) {
-    //         if (BRS.incoming[BRS.currentPage]) {
-    //             BRS.incoming[BRS.currentPage](transactions)
-    //         }
-    //     }
-    // }
-    // // always call incoming for messages to enable message notifications
-    // if (!oldBlock || BRS.unconfirmedTransactionsChange) {
-    //     BRS.incoming.messages(transactions)
-    // }
 }

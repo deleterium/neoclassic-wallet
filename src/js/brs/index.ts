@@ -15,7 +15,7 @@ import { pagesLatestBlocks, incomingLatestBlocks } from './pages/blockchain.late
 
 import { pagesForgedBlocks } from './pages/mining.forged_blocks'
 
-import { pagesBlockInfo } from './pages/blockchain.block_info'
+import { incomingBlockInfo, pagesBlockInfo } from './pages/blockchain.block_info'
 
 import {
     formsSellAlias,
@@ -43,7 +43,7 @@ import { addEventListeners } from './core/event_listeners'
 
 import { pagesAssetExchange, formsAddAssetBookmark, incomingAssetExchange, formsOrderAssetComplete } from './pages/assets.asset_exchange'
 
-import { pagesTransferHistory } from './pages/assets.transfer_history'
+import { incomingTransferHistory, pagesTransferHistory } from './pages/assets.transfer_history'
 
 import {
     formsOrderAsset,
@@ -61,9 +61,9 @@ import { pagesOpenOrders, incomingOpenOrders } from './pages/assets.open_orders'
 
 import { pagesMyAssets, incomingMyAssets } from './pages/assets.my_assets'
 
-import { pagesTransactions } from './pages/transactions'
+import { incomingTransactions, pagesTransactions } from './pages/transactions'
 
-import { pagesMessages, incomingMessages } from './pages/messages'
+import { pagesMessages } from './pages/messages'
 
 import { formsDecryptMessages } from './modals/messages'
 
@@ -78,8 +78,6 @@ import { formsSetAccountInfoComplete } from './modals/account_info'
 import { formsBroadcastTransactionComplete, formsParseTransactionComplete, formsParseTransactionError } from './modals/advanced'
 
 import { formsSignModalButtonClicked, formsSignMessage, formsVerifyMessage } from './modals/sign_message'
-
-import { reloadCurrentPage } from './core/navigation'
 
 import { init } from './core/lockscreen'
 
@@ -161,9 +159,12 @@ export const BRS = {
 
     // Used for checkIncoming
     checkIncoming: {
+        /** `true` if there is new block in chain. */
         newBlock: false,
+        /** `true` if there is new transactions to the account. Only `true` if `newBlock` is `true` too */
         newTransactions: false,
         latestsTransactionsIds: '',
+        /** `true` if there is new pending transactions to the account, or if pending transactions were processed and removed from queue. */
         unconfirmedChanged: false,
         unconfirmedTransactionIds: '',
         forceDashboardUpdate: false,
@@ -203,10 +204,10 @@ export const BRS = {
         asset_exchange: incomingAssetExchange,
         my_assets: incomingMyAssets,
         open_orders: incomingOpenOrders,
-        transactions: reloadCurrentPage,
+        transactions: incomingTransactions,
         peers: incomingPeers,
-        messages: incomingMessages,
-        notifications: reloadCurrentPage,
+        transfer_history: incomingTransferHistory,
+        block_info: incomingBlockInfo,
     },
     forms: {
         sellAlias: formsSellAlias,

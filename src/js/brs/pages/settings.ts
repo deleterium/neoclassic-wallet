@@ -11,6 +11,9 @@ import { dbGet, dbPut } from '../core/database'
 import { formatNQTAsAmount } from '../core/numbers'
 import { RequestController } from '../core/request_controller'
 
+// Current page is 'settings'
+// Do not handle unconfirmed neither new blocks nor transactions.
+
 export function pagesSettings() {
     $('#settings_language').val(BRS.settings.language)
     $('#settings_page_size').val(String(BRS.settings.page_size))

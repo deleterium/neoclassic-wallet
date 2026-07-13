@@ -5,6 +5,10 @@ import { formatNQTAsAmount, formatNumber, formatTimestampAsDateTime } from '../c
 
 import { getTransactionDetails } from '../tools/transactions'
 
+// Current page is 'dashboard'
+// Dashboard is refreshed directly from 'checkIncoming' logic, it is always updated even when in other pages.
+// So, 'pageFunction' and 'incomingFunction' are not need.
+
 export function incomingUpdateDashboardTransactions(newTransactions: Transaction[]) {
     if (!newTransactions.length) {
         return

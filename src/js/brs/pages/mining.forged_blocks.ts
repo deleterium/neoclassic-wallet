@@ -3,6 +3,9 @@ import { GetAccountBlocksResponse } from '../typings'
 import { drawBlocksInCurrentPage } from '../tools/blockchain'
 import { sendRequestA } from '../core/send_request'
 
+// Current page is 'forged_blocks'
+// Do not handle incoming transactions/blocks
+
 /**
  * Draws the page 'Mining' -> 'Forged block'.
  */

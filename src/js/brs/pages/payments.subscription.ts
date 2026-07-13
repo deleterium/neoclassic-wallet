@@ -8,6 +8,9 @@ import { dataLoaded } from '../core/util'
 
 import { GetAccountSubscriptionsResponse } from '../typings'
 
+// Current page is 'subscriptions'
+// Do not handle unconfirmed neither new blocks nor transactions.
+
 export async function pagesSubscription() {
     const response: GetAccountSubscriptionsResponse = await sendRequestA('getAccountSubscriptions', {
         account: BRS.account,

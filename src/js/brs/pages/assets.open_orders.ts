@@ -6,6 +6,9 @@ import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuant
 import { sendRequestA } from '../core/send_request'
 import { dataLoadFinished } from '../core/util'
 
+// Current page is 'open_orders'
+// Processing unconfirmed!
+
 export async function pagesOpenOrders() {
     const askOrders = await getOpenOrders('ask')
     const bidOrders = await getOpenOrders('bid')

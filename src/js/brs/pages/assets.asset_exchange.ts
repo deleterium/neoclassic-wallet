@@ -26,6 +26,9 @@ import { cacheAsset, getAssetDetails } from '../tools/assets'
 import { AnyAssetOrder, DBAsset, GetAssetResponse, GetTradesResponse, PostResponse } from '../typings'
 import { notify } from '../core/notifications'
 
+// Current page is 'asset_exchange'
+// Processing unconfirmed!
+
 export function pagesAssetExchange(callback: () => void) {
     if (BRS.currentSubPage) {
         updateMiniTradeHistory()

@@ -1,8 +1,12 @@
 import { BRS } from '..'
+import { reloadCurrentPage } from '../core/navigation'
 import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from '../core/numbers'
 import { sendRequestA } from '../core/send_request'
 import { dataLoaded } from '../core/util'
 import { AssetBalance, GetAskOrdersResponse, GetAssetResponse, GetBidOrdersResponse, MyAssetDetails } from '../typings'
+
+// Current page is 'my_assets'
+// Do not process unconfirmed transactions
 
 export async function pagesMyAssets() {
     if (!BRS.accountInfo.assetBalances || !BRS.accountInfo.assetBalances.length) {
@@ -147,5 +151,7 @@ function updateBidOrderCell(assetId: string, priceNQT?: string, decimals?: numbe
 }
 
 export function incomingMyAssets() {
-    // reloadCurrentPage()
+    if (BRS.checkIncoming.newTransactions) {
+        reloadCurrentPage()
+    }
 }

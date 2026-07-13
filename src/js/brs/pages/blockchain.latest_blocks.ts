@@ -8,6 +8,9 @@ import { GetBlocksResponse } from '../typings'
 
 import { drawBlocksInCurrentPage } from '../tools/blockchain'
 
+// Current page is 'latest_blocks'
+// It's not need to process unconfirmed.
+
 /**
  * Draws the page 'Blockchain' -> 'Latest blocks'
  * @param blockheight Block to show
@@ -26,5 +29,7 @@ export async function pagesLatestBlocks() {
 }
 
 export function incomingLatestBlocks() {
-    reloadCurrentPage()
+    if (BRS.checkIncoming.newBlock) {
+        reloadCurrentPage()
+    }
 }

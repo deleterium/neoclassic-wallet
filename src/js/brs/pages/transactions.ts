@@ -9,6 +9,9 @@ import { GetAccountTransactionsResponse, GetUnconfirmedTransactionsResponse, Tra
 import { mapUnconfirmedToTransaction } from '../core/check_incoming'
 import { notify } from '../core/notifications'
 
+// Current page is 'transactions'
+// Only process new info if displaying first page.
+
 export async function pagesTransactions() {
     function getFrom() {
         const from = $('input[name=transactions_from_account]:checked').val()
@@ -139,4 +142,10 @@ export function evTransactionsPageTypeClick(e: JQuery.ClickEvent) {
     $('.popover').remove()
 
     reloadCurrentPage()
+}
+
+export function incomingTransactions() {
+    if (BRS.pageNumber === 1 && (BRS.transactionsPageType === 'unconfirmed' || BRS.transactionsPageType === '')) {
+        reloadCurrentPage()
+    }
 }
