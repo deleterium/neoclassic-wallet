@@ -88,7 +88,7 @@ Notes:
 ### formFunction
 Form functions can handle the html form data and process it.
 Some simple cases doesn't need the form, when the fields can be passed directly to the API.
-Function names are created by 'form' + 'requestType' and shall be added to `BRS.forms`.
+Function names are created by 'form' + 'requestType' and shall be added to `formFunctions` in `src/js/brs/core/forms.ts`.
 The formFunction optionally can return a Promise.
 #### Argument `data`
 The `data` object will have all the fields from the form.
@@ -117,7 +117,7 @@ Otherwise the modal will stay open.
 No message will be added to the callout.
 
 ### formFunctionComplete
-Function names are created by 'form' + 'requestType' + 'Complete' and shall be added to `BRS.forms`.
+Function names are created by 'form' + 'requestType' + 'Complete' and shall be added to `formFunctions` in `src/js/brs/core/forms.ts`.
 If the request is successfull and the 'formFunctionComplete' is defined, it is called with two arguments:
 * `response: PostResponse`
 The server response, including transaction generated.
@@ -126,7 +126,7 @@ Note this is an unconfirmed transaction, it may not be confirmed in some cases.
 It is the form data used to generate the request.
 
 ### formFunctionError
-Function names are created by 'form' + 'requestType' + 'Error' and shall be added to `BRS.forms`.
+Function names are created by 'form' + 'requestType' + 'Error' and shall be added to `formFunctions` in `src/js/brs/core/forms.ts`.
 If there is a problem in the response, it is passed as argument to the function:
 * `response`
 Object with the 'errorCode' and maybe 'errorDescription'.
@@ -140,20 +140,19 @@ Creating a new page:
 * Add the 'insert location' in `src/index.html` and in `buildIndexHtml.js`.
 * Add the menu item. Use `class="goto-page" data-page="yourpage"` in link.
 * Create a new typescript file in `src/js/brs/pages/` to have the pageFunction.
-* Add the pageFunction in `BRS.pages` at file `src/js/brs/index.ts`
+* Add the pageFunction in `pageFunctions` at file `src/js/brs/navigation.ts`
 
 ### pageFunction
 The pageFunction is called to draw the page user selected.
 No return and no arguments, example: `function pagesMyNewPage (void) : void`
 
 ### incomingFunction
-This function, if defined in `BRS.incoming`, is called when a new block is forged or when there is a new pending message to the user account.
+This function, if defined in `incomingFunctions` at `src/js/brs/core/check_incoming.ts`, is called when a new block is forged or when there is a new pending message to the user account.
 Note that `BRS.checkIncoming` will have more details about the call.
 The incomingFunction will the called with the argument:
 * `transactions: Transaction[]`
 If there are new transactions, the last 10 confirmed transactions will be included.
 If there are a new pending transaction, all pending transactions will be passed. Unconfirmed transactions will include properties `height: 2147483647`, `confirmations: -1`, `block: ''` and `blockTimestamp: -1`, so they can have 'Transaction' type.
-On top, all pending transactions have the property `unconfirmed: true` added by the `sendRequest` function.
 
 
 ## Pagination
