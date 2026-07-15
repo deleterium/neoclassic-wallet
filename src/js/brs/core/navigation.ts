@@ -1,6 +1,23 @@
-import { goToAsset } from '../pages/assets.asset_exchange'
+import { goToAsset, pagesAssetExchange } from '../pages/assets.asset_exchange'
 
 import { BRS } from '..'
+import { pagesAliases } from '../pages/aliases'
+import { pagesMyAssets } from '../pages/assets.my_assets'
+import { pagesOpenOrders } from '../pages/assets.open_orders'
+import { pagesTransferHistory } from '../pages/assets.transfer_history'
+import { pagesBlockInfo } from '../pages/blockchain.block_info'
+import { pagesLatestBlocks } from '../pages/blockchain.latest_blocks'
+import { pagesContacts } from '../pages/contacts'
+import { pagesMessages } from '../pages/messages'
+import { pagesForgedBlocks } from '../pages/mining.forged_blocks'
+import { pagesNotifications } from '../pages/notifications'
+import { pagesAt } from '../pages/payments.at'
+import { pagesEscrow } from '../pages/payments.escrow'
+import { pagesSubscription } from '../pages/payments.subscription'
+import { pagesPeers } from '../pages/peers'
+import { pagesSearchResults } from '../pages/search_results.page'
+import { pagesSettings } from '../pages/settings'
+import { pagesTransactions } from '../pages/transactions'
 
 /**
  * Handles clicks in sidebar, changing current page if needed
@@ -21,26 +38,49 @@ export function evSidebarClick(e: JQuery.ClickEvent): void {
     loadPage(page)
 }
 
+const pageFunctions = {
+    aliases: pagesAliases,
+    asset_exchange: pagesAssetExchange,
+    at: pagesAt,
+    block_info: pagesBlockInfo,
+    contacts: pagesContacts,
+    escrow: pagesEscrow,
+    forged_blocks: pagesForgedBlocks,
+    latest_blocks: pagesLatestBlocks,
+    messages: pagesMessages,
+    my_assets: pagesMyAssets,
+    notifications: pagesNotifications,
+    open_orders: pagesOpenOrders,
+    peers: pagesPeers,
+    search_results: pagesSearchResults,
+    settings: pagesSettings,
+    subscription: pagesSubscription,
+    transactions: pagesTransactions,
+    transfer_history: pagesTransferHistory,
+}
+
+function executePage(page: string) {
+    pageLoading()
+    if (!pageFunctions[page]) {
+        console.error(`Unknow page '${page}'`)
+        pageLoaded()
+        return
+    }
+    pageFunctions[page]()
+}
+
 /** Load a page for first time (setting up global variables) */
 function loadPage(page: string): void {
     BRS.currentPage = page
     BRS.currentSubPage = ''
     BRS.pageNumber = 1
     BRS.showPageNumbers = false
-    if (BRS.pages[page]) {
-        pageLoading()
-        BRS.pages[page]()
-    }
+    executePage(page)
 }
 
 /** Reload current page, keeping variables like pagination */
 export function reloadCurrentPage(): void {
-    if (!BRS.pages[BRS.currentPage]) {
-        console.log('Possible bug on reloadCurrentPage.')
-        return
-    }
-    pageLoading()
-    BRS.pages[BRS.currentPage]()
+    executePage(BRS.currentPage)
 }
 
 /** Go to a page, updating sidebar menu */
@@ -120,8 +160,7 @@ export function addPagination(): void {
 
 export function goToPageNumber(pageNumber: number) {
     BRS.pageNumber = pageNumber
-    pageLoading()
-    BRS.pages[BRS.currentPage]()
+    executePage(BRS.currentPage)
 }
 
 export function checkLocationHash(): void {
