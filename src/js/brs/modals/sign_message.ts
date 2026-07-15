@@ -1,6 +1,6 @@
 import converters from '../../util/converters'
 
-import { getSavedPassword, sendRequestA } from '../core/send_request'
+import { getSavedPassword, sendRequest } from '../core/send_request'
 
 import { getAccountIdFromPublicKey, getAccountPublicKey, getPublicKeyFromPassphrase, signBytes, verifyBytes } from '../core/encryption'
 
@@ -35,7 +35,7 @@ export async function formsSignMessage() {
         hexData = inputData.replace(/[\n\s\r\t]/g, '')
     }
 
-    const result: ParseTransactionResponse = await sendRequestA('parseTransaction', { transactionBytes: hexData })
+    const result: ParseTransactionResponse = await sendRequest('parseTransaction', { transactionBytes: hexData })
 
     const signature = signBytes(hexData, passphrase)
     if (!result.errorCode) {

@@ -1,14 +1,14 @@
 import { BRS } from '..'
 import { GetAliasesResponse } from '../typings'
 import { goToPage, pageLoaded, reloadCurrentPage } from '../core/navigation'
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 import { getUnconfirmedTransactionsFromCache, dataLoadFinished } from '../core/util'
 
 // Current page is 'aliases'
 // Do not process unconfirmed.
 
 export async function pagesAliases() {
-    const response: GetAliasesResponse = await sendRequestA('getAliases+', {
+    const response: GetAliasesResponse = await sendRequest('getAliases+', {
         account: BRS.account,
         timestamp: 0,
         firstIndex: BRS.pageSize * (BRS.pageNumber - 1),

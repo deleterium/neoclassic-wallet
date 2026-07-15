@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount } from '../core/numbers'
 
@@ -12,7 +12,7 @@ import { GetAccountATsResponse } from '../typings'
 // Do not handle unconfirmed neither new blocks nor transactions.
 
 export async function pagesAt() {
-    const response: GetAccountATsResponse = await sendRequestA('getAccountATs', {
+    const response: GetAccountATsResponse = await sendRequest('getAccountATs', {
         account: BRS.account,
     })
 

@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { reloadCurrentPage } from '../core/navigation'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { formatVolume } from '../core/numbers'
 
@@ -14,7 +14,7 @@ import { GetPeerResponse, GetPeersResponse } from '../typings'
 // Processing new blocks.
 
 export async function pagesPeers() {
-    const response: GetPeersResponse = await sendRequestA('getPeers+', {
+    const response: GetPeersResponse = await sendRequest('getPeers+', {
         active: 'true',
     })
 
@@ -38,7 +38,7 @@ export async function pagesPeers() {
               <td>${BRS.pendingTransactionHTML}</td>
             </tr>`
 
-        sendRequestA('getPeer+', {
+        sendRequest('getPeer+', {
             peer: peerIP,
         }).then((response2: GetPeerResponse) => {
             if (BRS.currentPage !== 'peers') {

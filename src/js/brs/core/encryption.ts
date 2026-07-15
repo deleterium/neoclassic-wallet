@@ -5,7 +5,7 @@ import { sha256 } from 'js-sha256'
 import curve25519 from '../../crypto/curve25519'
 import converters from '../../util/converters'
 
-import { sendRequestA } from './send_request'
+import { sendRequest } from './send_request'
 
 import {
     ByteArray,
@@ -54,7 +54,7 @@ export async function getAccountPublicKey(account: string) {
         return publicKeyInCache
     }
 
-    const response: GetAccountPublicKeyResponse = await sendRequestA('getAccountPublicKey', {
+    const response: GetAccountPublicKeyResponse = await sendRequest('getAccountPublicKey', {
         account,
     })
 

@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { reloadCurrentPage } from '../core/navigation'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { GetBlocksResponse } from '../typings'
 
@@ -16,7 +16,7 @@ import { drawBlocksInCurrentPage } from '../tools/blockchain'
  * @param blockheight Block to show
  */
 export async function pagesLatestBlocks() {
-    const response: GetBlocksResponse = await sendRequestA('getBlocks', {
+    const response: GetBlocksResponse = await sendRequest('getBlocks', {
         firstIndex: 0,
         lastIndex: BRS.pageSize,
     })

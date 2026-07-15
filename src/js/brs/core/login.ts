@@ -6,7 +6,7 @@ import { getAndUpdateAccountDetails } from './check_incoming.account'
 
 import { updateSettings } from '../pages/settings'
 
-import { setSavedPassword, sendRequestA, isErrorResponse } from './send_request'
+import { setSavedPassword, sendRequest, isErrorResponse } from './send_request'
 
 import { getContactByName } from '../tools/contacts'
 
@@ -148,7 +148,7 @@ async function loginWithAccount(account: string) {
     }
 
     // Get the account information for the given address
-    const response: GetAccountResponse = await sendRequestA('getAccount', { account: login })
+    const response: GetAccountResponse = await sendRequest('getAccount', { account: login })
 
     if (isErrorResponse(response)) {
         if (BRS.rsRegEx.test(login) || BRS.idRegEx.test(login)) {

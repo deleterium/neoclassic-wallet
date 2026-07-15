@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { calculatePercentage, formatQNTAsQuantity, formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
@@ -43,7 +43,7 @@ export async function showAccountModal(account: string | GetAccountResponse) {
     } else {
         userAccount = account
         BRS.fetchingModalData = true
-        const response: GetAccountResponse = await sendRequestA('getAccount', {
+        const response: GetAccountResponse = await sendRequest('getAccount', {
             account: userAccount,
             getCommittedAmount: 'true',
         })
@@ -132,7 +132,7 @@ export function evShowBsTab(e) {
 
 async function userInfoModalTransactions() {
     if (!BRS.userInfoModal) return
-    const response: GetAccountTransactionsResponse = await sendRequestA('getAccountTransactions', {
+    const response: GetAccountTransactionsResponse = await sendRequest('getAccountTransactions', {
         account: BRS.userInfoModal.modalAccount.account,
         firstIndex: 0,
         lastIndex: BRS.pageSize,
@@ -170,7 +170,7 @@ async function userInfoModalTransactions() {
 
 async function userInfoModalAliases() {
     if (!BRS.userInfoModal) return
-    const response: GetAliasesResponse = await sendRequestA('getAliases', {
+    const response: GetAliasesResponse = await sendRequest('getAliases', {
         account: BRS.userInfoModal.modalAccount.account,
         timestamp: 0,
     })
@@ -272,7 +272,7 @@ function userInfoModalDetails() {
 
 async function userInfoModalSmartcontract() {
     if (!BRS.userInfoModal) return
-    const response = await sendRequestA('getAT', {
+    const response = await sendRequest('getAT', {
         at: convertRSAccountToNumeric(BRS.userInfoModal.modalAccount.account),
     })
     if (response.errorCode) {
@@ -332,7 +332,7 @@ async function userInfoModalAssets() {
     const accountInfo = BRS.userInfoModal.modalAccount
 
     // Ensures all assets issued by the account are cached.
-    const response: GetAssetsByIssuerResponse = await sendRequestA('getAssetsByIssuer', {
+    const response: GetAssetsByIssuerResponse = await sendRequest('getAssetsByIssuer', {
         account: accountInfo.account,
     })
     if (response.assets && response.assets.length) {

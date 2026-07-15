@@ -3,7 +3,7 @@ import { AnyAssetOrder, GetTransactionResponse, UNCONFIRMED_HEIGHT } from '../ty
 import { pageLoaded, reloadCurrentPage } from '../core/navigation'
 import { getAssetDetails } from '../tools/assets'
 import { calculateOrderTotalNQT, formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, formatNQTAsAmount } from '../core/numbers'
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 import { dataLoadFinished } from '../core/util'
 
 // Current page is 'open_orders'
@@ -23,7 +23,7 @@ async function getOpenOrders(type: 'ask' | 'bid') {
     const getCurrentOrders = `getAccountCurrent${type.capitalize()}Orders+`
     const typeOrderName = `${type}Orders`
 
-    const response = await sendRequestA(getCurrentOrders, {
+    const response = await sendRequest(getCurrentOrders, {
         account: BRS.account,
     })
 
@@ -55,7 +55,7 @@ async function getOpenOrders(type: 'ask' | 'bid') {
 
 async function fetchAllTransactionDetails(orders: AnyAssetOrder[]) {
     orders.forEach(async (order) => {
-        const startingOrder: GetTransactionResponse = await sendRequestA('getTransaction+', {
+        const startingOrder: GetTransactionResponse = await sendRequest('getTransaction+', {
             transaction: order.order,
         })
         fillOrderDetails(

@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { formatVolume, formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
@@ -13,7 +13,7 @@ export async function evBrsModalServerInfoOnShowBsModal() {
 
     BRS.fetchingModalData = true
 
-    const state: GetStateResponse = await sendRequestA('getState', {})
+    const state: GetStateResponse = await sendRequest('getState', {})
     BRS.fetchingModalData = false
 
     for (const key in state) {

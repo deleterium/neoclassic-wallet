@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount, formatTimestampAsDateTime, convertSecondsToDuration } from '../core/numbers'
 
@@ -12,7 +12,7 @@ import { GetAccountSubscriptionsResponse } from '../typings'
 // Do not handle unconfirmed neither new blocks nor transactions.
 
 export async function pagesSubscription() {
-    const response: GetAccountSubscriptionsResponse = await sendRequestA('getAccountSubscriptions', {
+    const response: GetAccountSubscriptionsResponse = await sendRequest('getAccountSubscriptions', {
         account: BRS.account,
     })
 

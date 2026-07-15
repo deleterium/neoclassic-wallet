@@ -4,7 +4,7 @@ import { BRS } from '..'
 
 import { reloadCurrentPage, pageLoaded } from '../core/navigation'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { getDecryptionPassword } from '../core/encryption'
 
@@ -44,7 +44,7 @@ export async function pagesMessages() {
 
     BRS._messages = {}
 
-    const response: GetAccountTransactionsResponse = await sendRequestA('getAccountTransactions+', {
+    const response: GetAccountTransactionsResponse = await sendRequest('getAccountTransactions+', {
         account: BRS.account,
         firstIndex: 0,
         lastIndex: 74,

@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { NxtAddress } from '../../util/nxtaddress'
 
-import { isErrorResponse, sendRequestA } from './send_request'
+import { isErrorResponse, sendRequest } from './send_request'
 
 import { getContactByName } from '../tools/contacts'
 
@@ -59,7 +59,7 @@ async function getAccountTypeAndMessage(accountIdOrRs: string): Promise<{
         }
     }
 
-    const response: GetAccountResponse = await sendRequestA('getAccount', { account: accountIdOrRs })
+    const response: GetAccountResponse = await sendRequest('getAccount', { account: accountIdOrRs })
 
     if (isErrorResponse(response)) {
         switch (response.errorCode) {
@@ -264,7 +264,7 @@ async function checkRecipientAlias(account: string, form: JQuery<HTMLFormElement
 
     accountInputField.val('')
 
-    const response: GetAliasResponse = await sendRequestA('getAlias', { aliasName: account })
+    const response: GetAliasResponse = await sendRequest('getAlias', { aliasName: account })
 
     if (response.errorCode) {
         updateCallout(callout, 'alert-danger', $.t('error_invalid_alias_name'))

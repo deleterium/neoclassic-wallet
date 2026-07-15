@@ -6,7 +6,7 @@ import { loadSettingsFromDB } from '../pages/settings'
 import { createDatabase } from './database'
 import { showLockscreen } from './login'
 import { automaticallyCheckRecipient } from './recipient'
-import { sendRequestA } from './send_request'
+import { sendRequest } from './send_request'
 import { notify } from './notifications'
 
 /**
@@ -28,7 +28,7 @@ export function checkSelectedNode(): void {
         $('#prefered_node').addClass('is-invalid')
 
         // Server changed, get new network details
-        sendRequestA('getConstants+', {}).then((response) => {
+        sendRequest('getConstants+', {}).then((response) => {
             if (response.errorCode) {
                 return
             }
@@ -93,7 +93,7 @@ export function autoSelectServer(): void {
 export async function getState() {
     checkSelectedNode()
 
-    const response: GetBlochainStatusResponse = await sendRequestA('getBlockchainStatus+', {})
+    const response: GetBlochainStatusResponse = await sendRequest('getBlockchainStatus+', {})
 
     if (response.errorCode) {
         if (BRS.settings.automatic_node_selection) {

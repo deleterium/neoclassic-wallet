@@ -13,7 +13,7 @@ import { showAliasModal } from '../modals/aliases'
 import { showAccountModal } from '../modals/account'
 import { showBlockModal } from '../modals/block'
 import { showTransactionModal } from '../modals/transaction'
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from '../core/util'
 import { formatNQTAsAmount } from '../core/numbers'
 
@@ -122,7 +122,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
  */
 export async function pagesSearchResults() {
     async function requestAccountAndShow(accountValue: string) {
-        const response: GetAccountResponse = await sendRequestA('getAccount', {
+        const response: GetAccountResponse = await sendRequest('getAccount', {
             account: accountValue,
             getCommittedAmount: 'true',
         })
@@ -150,7 +150,7 @@ export async function pagesSearchResults() {
         return
     }
     if (BRS.idRegEx.test(searchText)) {
-        const response: GetTransactionResponse = await sendRequestA('getTransaction', {
+        const response: GetTransactionResponse = await sendRequest('getTransaction', {
             transaction: searchText,
         })
         if (response.errorCode) {
@@ -178,7 +178,7 @@ export async function pagesSearchResults() {
             return
         case 'b':
         case 'block': {
-            const response: GetBlockResponse = await sendRequestA('getBlock', {
+            const response: GetBlockResponse = await sendRequest('getBlock', {
                 height: splitted[1].trim(),
                 includeTransactions: 'true',
             })
@@ -196,7 +196,7 @@ export async function pagesSearchResults() {
             return
         }
         case 'alias': {
-            const response: GetAliasesResponse = await sendRequestA('getAliasesByName', {
+            const response: GetAliasesResponse = await sendRequest('getAliasesByName', {
                 aliasName: splitted[1].trim(),
             })
             if (response.errorCode || !response.aliases || response.aliases.length === 0) {
@@ -210,7 +210,7 @@ export async function pagesSearchResults() {
             return
         }
         case 'name': {
-            const response: GetAccountsWithNameResponse = await sendRequestA('getAccountsWithName', {
+            const response: GetAccountsWithNameResponse = await sendRequest('getAccountsWithName', {
                 name: splitted[1].trim(),
             })
             if (response.errorCode || !response.accounts || response.accounts.length === 0) {
@@ -225,7 +225,7 @@ export async function pagesSearchResults() {
             return
         }
         case 'token': {
-            const response: GetAssetsByNameResponse = await sendRequestA('getAssetsByName', {
+            const response: GetAssetsByNameResponse = await sendRequest('getAssetsByName', {
                 name: splitted[1].trim(),
             })
             if (response.errorCode || !response.assets || response.assets.length === 0) {

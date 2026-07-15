@@ -1,6 +1,6 @@
 import { BRS } from '..'
 import { getContactByName } from '../tools/contacts'
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 import { getUnconfirmedTransactionsFromCache, dataLoaded } from '../core/util'
 import { reloadCurrentPage } from '../core/navigation'
 import { formatNumber, formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers'
@@ -70,7 +70,7 @@ export async function pagesTransactions() {
         rows = unconfirmedTransactions.reduce((prev, currTr) => prev + getTransactionRowHTML(currTr, account), '')
     }
 
-    const response: GetAccountTransactionsResponse = await sendRequestA('getAccountTransactions+', params)
+    const response: GetAccountTransactionsResponse = await sendRequest('getAccountTransactions+', params)
 
     if (response.transactions && response.transactions.length) {
         if (response.transactions.length > BRS.pageSize) {
@@ -83,7 +83,7 @@ export async function pagesTransactions() {
 }
 
 async function displayUnconfirmedTransactions(viewAccount: string) {
-    const response: GetUnconfirmedTransactionsResponse = await sendRequestA('getUnconfirmedTransactions', {})
+    const response: GetUnconfirmedTransactionsResponse = await sendRequest('getUnconfirmedTransactions', {})
 
     let rows = ''
     if (response.unconfirmedTransactions && response.unconfirmedTransactions.length) {

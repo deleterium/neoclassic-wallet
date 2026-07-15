@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { fullHashToId, getDecryptedMessageFromCache, getDecryptionPassword } from '../core/encryption'
 
@@ -39,7 +39,7 @@ export async function showTransactionModal(transaction: Transaction | string) {
     $('#transaction_info_table tbody').empty()
 
     if (typeof transaction !== 'object') {
-        const response: Transaction = await sendRequestA('getTransaction', {
+        const response: Transaction = await sendRequest('getTransaction', {
             transaction,
         })
         processTransactionModalData(response)
@@ -295,7 +295,7 @@ async function processTransactionModalData(transaction: Transaction) {
         let message = ''
         let messageStyle = 'info'
         data.price = transaction.attachment.priceNQT
-        const response: GetAliasResponse = await sendRequestA('getAlias', {
+        const response: GetAliasResponse = await sendRequest('getAlias', {
             aliasName: transaction.attachment.alias,
         })
 
@@ -403,7 +403,7 @@ async function processTransactionModalData(transaction: Transaction) {
             case 5: {
                 // ask order cancellation
                 // bid order cancellation
-                const transactionII: GetTransactionResponse = await sendRequestA('getTransaction', {
+                const transactionII: GetTransactionResponse = await sendRequest('getTransaction', {
                     transaction: transaction.attachment.order,
                 })
                 if (transactionII.errorCode) {
@@ -465,7 +465,7 @@ async function processTransactionModalData(transaction: Transaction) {
         data.distributing_asset_formatted_html = transaction.attachment.assetToDistribute
         data.distributing_quantity = transaction.attachment.quantityQNT
         data.you_received = $.t('no')
-        const transactionII: GetIndirectIncomingResponse = await sendRequestA('getIndirectIncoming', {
+        const transactionII: GetIndirectIncomingResponse = await sendRequest('getIndirectIncoming', {
             transaction: transaction.transaction,
             account: BRS.account,
         })
@@ -518,7 +518,7 @@ async function processTransactionModalData(transaction: Transaction) {
             case 1:
                 // marketplace removal
                 delete data.sender_formatted_html
-                goods = await sendRequestA('getDGSGood', {
+                goods = await sendRequest('getDGSGood', {
                     goods: transaction.attachment.goods,
                 })
                 data.seller = getAccountRSFromObject(goods, 'seller')
@@ -527,7 +527,7 @@ async function processTransactionModalData(transaction: Transaction) {
             case 2:
                 // marketplace item price change
                 delete data.sender_formatted_html
-                goods = await sendRequestA('getDGSGood', {
+                goods = await sendRequest('getDGSGood', {
                     goods: transaction.attachment.goods,
                 })
                 data.seller = getAccountRSFromObject(goods, 'seller')
@@ -537,7 +537,7 @@ async function processTransactionModalData(transaction: Transaction) {
             case 3:
                 // marketplace item quantity change
                 delete data.sender_formatted_html
-                goods = await sendRequestA('getDGSGood', {
+                goods = await sendRequest('getDGSGood', {
                     goods: transaction.attachment.goods,
                 })
                 data.seller = getAccountRSFromObject(goods, 'seller')
@@ -556,12 +556,12 @@ async function processTransactionModalData(transaction: Transaction) {
             case 7: {
                 delete data.sender_formatted_html
                 delete data.recipient_formatted_html
-                const purchase = await sendRequestA('getDGSPurchase', {
+                const purchase = await sendRequest('getDGSPurchase', {
                     purchase: transaction.attachment.purchase,
                 })
                 data.seller = getAccountRSFromObject(purchase, 'seller')
                 data.buyer = getAccountRSFromObject(purchase, 'buyer')
-                goods = await sendRequestA('getDGSGood', {
+                goods = await sendRequest('getDGSGood', {
                     goods: purchase.goods,
                 })
                 data.item_name = goods.name
@@ -576,7 +576,7 @@ async function processTransactionModalData(transaction: Transaction) {
         // marketplace purchase
         delete data.sender_formatted_html
         delete data.recipient_formatted_html
-        const goods = await sendRequestA('getDGSGood', {
+        const goods = await sendRequest('getDGSGood', {
             goods: transaction.attachment.goods,
         })
         data.buyer = getAccountRSFromObject(transaction, 'sender')
@@ -584,7 +584,7 @@ async function processTransactionModalData(transaction: Transaction) {
         data.item_name = goods.name
         data.price = transaction.attachment.priceNQT
         data.quantity_formatted_html = formatNumber(transaction.attachment.quantity)
-        const purchase = await sendRequestA('getDGSPurchase', {
+        const purchase = await sendRequest('getDGSPurchase', {
             purchase: transaction.transaction,
         })
         let callout = ''
@@ -633,19 +633,19 @@ async function processTransactionModalData(transaction: Transaction) {
         // marketplace feedback
         delete data.sender_formatted_html
         delete data.recipient_formatted_html
-        const purchase = await sendRequestA('getDGSPurchase', {
+        const purchase = await sendRequest('getDGSPurchase', {
             purchase: transaction.attachment.purchase,
         })
         data.seller = getAccountRSFromObject(purchase, 'seller')
         data.buyer = getAccountRSFromObject(purchase, 'buyer')
-        const goods = await sendRequestA('getDGSGood', {
+        const goods = await sendRequest('getDGSGood', {
             goods: purchase.goods,
         })
         data.item_name = goods.name
         if (purchase.seller !== BRS.account && purchase.buyer !== BRS.account) {
             return
         }
-        const purchase2 = await sendRequestA('getDGSPurchase', {
+        const purchase2 = await sendRequest('getDGSPurchase', {
             purchase: transaction.attachment.purchase,
         })
         let callout = ''
@@ -676,12 +676,12 @@ async function processTransactionModalData(transaction: Transaction) {
         // marketplace delivery
         delete data.sender_formatted_html
         delete data.recipient_formatted_html
-        const purchase = await sendRequestA('getDGSPurchase', {
+        const purchase = await sendRequest('getDGSPurchase', {
             purchase: transaction.attachment.purchase,
         })
         data.seller = getAccountRSFromObject(purchase, 'seller')
         data.buyer = getAccountRSFromObject(purchase, 'buyer')
-        const goods = await sendRequestA('getDGSGood', {
+        const goods = await sendRequest('getDGSGood', {
             goods: purchase.goods,
         })
         data.item_name = goods.name

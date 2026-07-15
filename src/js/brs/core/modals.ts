@@ -10,7 +10,7 @@ import { resetModalMultiOut } from '../modals/sendmoney'
 
 import { unlockModal } from './lockable_modal'
 import { SuggestFee } from '../typings'
-import { isErrorResponse, sendRequestA } from './send_request'
+import { isErrorResponse, sendRequest } from './send_request'
 import converters from '../../util/converters'
 
 /**
@@ -245,7 +245,7 @@ export async function showFeeSuggestionsNG(input_form: HTMLElement) {
     $groups.find('.suggested_fee_spinner').show()
     $groups.find('.suggested_fee_response').empty()
 
-    const response: SuggestFee = await sendRequestA('suggestFee', {})
+    const response: SuggestFee = await sendRequest('suggestFee', {})
 
     $groups.find('.suggested_fee_spinner').hide()
     const minFeeNQT = Number($groups.find('[name=feeNXT]').prop('min')) * 1e8

@@ -1,7 +1,7 @@
 import { BRS } from '..'
 import { DBAsset, GetAssetResponse } from '../typings'
 import { dbGet, dbPut } from '../core/database'
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 import { notify } from '../core/notifications'
 
 export function loadClosedGroupsFromDB() {
@@ -76,7 +76,7 @@ export async function getAssetDetails(assetId: string): Promise<DBAsset | undefi
     const asset = BRS.assets.find((tkn) => tkn.asset === assetId)
     if (asset) return asset
 
-    const response: GetAssetResponse = await sendRequestA('getAsset', {
+    const response: GetAssetResponse = await sendRequest('getAsset', {
         asset: assetId,
     })
 

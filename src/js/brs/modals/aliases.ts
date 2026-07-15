@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { NxtAddress } from '../../util/nxtaddress'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
@@ -115,7 +115,7 @@ export async function evBuyAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
 
     const alias = String($invoker.data('buy-alias'))
 
-    const response: GetAliasResponse = await sendRequestA('getAlias', {
+    const response: GetAliasResponse = await sendRequest('getAlias', {
         alias: alias,
     })
     BRS.fetchingModalData = false
@@ -178,7 +178,7 @@ export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent
 
     if (alias) {
         BRS.fetchingModalData = true
-        const response: GetAliasResponse = await sendRequestA('getAlias', {
+        const response: GetAliasResponse = await sendRequest('getAlias', {
             aliasName: alias,
         })
         BRS.fetchingModalData = false
@@ -324,7 +324,7 @@ export function formsSetAliasError(response: PostResponse, data: any) {
         .find('.error_message')
         .html(errorDescription + '. ' + BRS.pendingTransactionHTML)
 
-    sendRequestA('getAlias', {
+    sendRequest('getAlias', {
         aliasName: data.aliasName,
     }).then((response: GetAliasResponse) => {
         if (response.errorCode) {
@@ -435,7 +435,7 @@ export async function showAliasModal(alias: string | GetAliasResponse) {
         return
     }
     BRS.fetchingModalData = true
-    const response: GetAliasResponse = await sendRequestA('getAlias', {
+    const response: GetAliasResponse = await sendRequest('getAlias', {
         alias: alias,
     })
     BRS.fetchingModalData = false

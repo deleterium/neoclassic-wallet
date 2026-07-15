@@ -1,7 +1,7 @@
 import { BRS } from '..'
 import { GetAssetTransfersResponse } from '../typings'
 import { formatTimestampAsDateTime, formatQNTAsQuantity } from '../core/numbers'
-import { isErrorResponse, sendRequestA } from '../core/send_request'
+import { isErrorResponse, sendRequest } from '../core/send_request'
 import { getAccountRSFromObject, getAccountTitleFromObject, dataLoaded } from '../core/util'
 import { notify } from '../core/notifications'
 import { reloadCurrentPage } from '../core/navigation'
@@ -10,7 +10,7 @@ import { reloadCurrentPage } from '../core/navigation'
 // Do not process unconfirmed.
 
 export async function pagesTransferHistory() {
-    const response: GetAssetTransfersResponse = await sendRequestA('getAssetTransfers+', {
+    const response: GetAssetTransfersResponse = await sendRequest('getAssetTransfers+', {
         account: BRS.accountRS,
         firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
         lastIndex: BRS.pageSize * BRS.pageNumber,

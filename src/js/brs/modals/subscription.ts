@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
@@ -16,7 +16,7 @@ export async function showSubscriptionCancelModal(subscription: string | Subscri
         return
     }
     BRS.fetchingModalData = true
-    const response: GetSubscriptionResponse = await sendRequestA('getSubscription', {
+    const response: GetSubscriptionResponse = await sendRequest('getSubscription', {
         subscription,
     })
     BRS.fetchingModalData = false

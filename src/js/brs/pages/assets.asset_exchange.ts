@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { addPagination, goToPage, pageLoaded } from '../core/navigation'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { dbPut } from '../core/database'
 
@@ -60,7 +60,7 @@ export function bookmarkAllUserAssets() {
 
     for (const eachAsset of idsToFetchAndBookmark) {
         // Not all are cached, so request info about missing.
-        sendRequestA('getAsset+', {
+        sendRequest('getAsset+', {
             asset: eachAsset,
         }).then((response: GetAssetResponse) => {
             if (!response.errorCode) {
@@ -370,7 +370,7 @@ export async function evAssetExchangeSidebarClick(e: JQuery.ClickEvent) {
     if (foundAsset) {
         loadAsset(foundAsset, true, true)
     } else {
-        const response: GetAssetResponse = await sendRequestA('getAsset+', {
+        const response: GetAssetResponse = await sendRequest('getAsset+', {
             asset: BRS.currentAssetID,
         })
 
@@ -470,7 +470,7 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
     }
 
     if (refreshAsset) {
-        sendRequestA('getAsset+', {
+        sendRequest('getAsset+', {
             asset: assetId,
         }).then((response: GetAssetResponse) => {
             if (!response.errorCode) {
@@ -528,7 +528,7 @@ function showHideBookmarkAllAssetsButton() {
 
 export async function updateMiniTradeHistory() {
     const myTrades = $('#ae_show_my_trades_only').is(':checked')
-    const response: GetTradesResponse = await sendRequestA('getTrades+', {
+    const response: GetTradesResponse = await sendRequest('getTrades+', {
         asset: BRS.currentAsset.asset,
         account: myTrades ? BRS.account : '',
         firstIndex: BRS.pageSize * (BRS.pageNumber - 1),
@@ -563,7 +563,7 @@ export async function updateMiniTradeHistory() {
 }
 
 async function loadAssetOrders(type: 'ask' | 'bid', assetId: string, refresh: boolean) {
-    const response: any = await sendRequestA('get' + type.capitalize() + 'Orders+', {
+    const response: any = await sendRequest('get' + type.capitalize() + 'Orders+', {
         asset: assetId,
         firstIndex: 0,
         lastIndex: 49,
@@ -942,7 +942,7 @@ export async function goToAsset(asset: string) {
         })
         return
     }
-    const response: GetAssetResponse = await sendRequestA('getAsset+', {
+    const response: GetAssetResponse = await sendRequest('getAsset+', {
         asset,
     })
     if (!response.errorCode) {

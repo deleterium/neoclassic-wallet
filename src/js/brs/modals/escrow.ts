@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { formatTimestampAsDateTime } from '../core/numbers'
 
@@ -17,7 +17,7 @@ export async function showEscrowDecisionModal(escrow: Escrow | string) {
     }
     // Fetch escrow details
     BRS.fetchingModalData = true
-    const response: GetEscrowTransactionResponse = await sendRequestA('getEscrowTransaction', {
+    const response: GetEscrowTransactionResponse = await sendRequest('getEscrowTransaction', {
         escrow,
     })
     BRS.fetchingModalData = false

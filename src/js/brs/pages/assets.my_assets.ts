@@ -1,7 +1,7 @@
 import { BRS } from '..'
 import { reloadCurrentPage } from '../core/navigation'
 import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from '../core/numbers'
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 import { dataLoaded } from '../core/util'
 import { AssetBalance, GetAskOrdersResponse, GetAssetResponse, GetBidOrdersResponse, MyAssetDetails } from '../typings'
 
@@ -18,7 +18,7 @@ export async function pagesMyAssets() {
 
     if (BRS.requestController?.getPendingRequestsCount()) {
         // Wait until all assets are fetched on first login. Once that done, all user assets will be cached.
-        await sendRequestA('getBlockchainStatus+', {})
+        await sendRequest('getBlockchainStatus+', {})
     }
 
     for (const myAsset of BRS.accountInfo.assetBalances) {
@@ -37,7 +37,7 @@ export async function pagesMyAssets() {
 
     // There was some error fetchins some assets during login. Try fetch assets again
     const fetchPromises = nonCachedAssets.map(async (myAsset) => {
-        const asset: GetAssetResponse = await sendRequestA('getAsset+', {
+        const asset: GetAssetResponse = await sendRequest('getAsset+', {
             asset: myAsset.asset,
         })
         return { balanceQNT: myAsset.balanceQNT, ...asset }
@@ -87,7 +87,7 @@ function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
 
     // Initial page loaded, fetch order details asynchronously
     for (const asset of myAssets) {
-        sendRequestA('getAskOrders+', {
+        sendRequest('getAskOrders+', {
             asset: asset.asset,
             firstIndex: 0,
             lastIndex: 0,
@@ -103,7 +103,7 @@ function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
             updateAskOrderCell(response.askOrders[0].asset, response.askOrders[0].priceNQT, response.askOrders[0].decimals)
         })
 
-        sendRequestA('getBidOrders+', {
+        sendRequest('getBidOrders+', {
             asset: asset.asset,
             firstIndex: 0,
             lastIndex: 0,

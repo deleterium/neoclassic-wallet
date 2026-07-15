@@ -1,7 +1,7 @@
 import { BRS } from '..'
 import { GetBlockResponse, Transaction } from '../typings'
 import { formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers'
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 import { getTransactionDetails } from '../tools/transactions'
 import { dataLoaded } from '../core/util'
 import { notify } from '../core/notifications'
@@ -27,7 +27,7 @@ export async function blockInfoLoad(blockheight: number | '') {
         blockheight = BRS.blocks[0].height
     }
 
-    const response: GetBlockResponse = await sendRequestA('getBlock+', {
+    const response: GetBlockResponse = await sendRequest('getBlock+', {
         height: blockheight,
         includeTransactions: true,
     })

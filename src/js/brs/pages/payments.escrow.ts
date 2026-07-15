@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { sendRequestA } from '../core/send_request'
+import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount, parseAmountToNumber } from '../core/numbers'
 
@@ -14,7 +14,7 @@ import { recipientToId } from '../modals/sendmoney'
 // Do not handle unconfirmed neither new blocks nor transactions.
 
 export async function pagesEscrow() {
-    const response: GetAccountEscrowTransactionsResponse = await sendRequestA('getAccountEscrowTransactions', {
+    const response: GetAccountEscrowTransactionsResponse = await sendRequest('getAccountEscrowTransactions', {
         account: BRS.account,
     })
 

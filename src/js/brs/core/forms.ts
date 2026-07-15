@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { isErrorResponse, sendRequestA } from './send_request'
+import { isErrorResponse, sendRequest } from './send_request'
 
 import { encryptNote, createEncryptionToOtherOptions, createEncryptionToSelfOptions } from './encryption'
 
@@ -520,7 +520,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     delete data.converted_account_id
     delete data.merchant_info
 
-    const response: PostResponse = await sendRequestA(requestType, data)
+    const response: PostResponse = await sendRequest(requestType, data)
 
     let formFunctionComplete: undefined | ((response: any, data: any) => void)
     if (isErrorResponse(response)) {

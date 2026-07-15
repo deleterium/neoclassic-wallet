@@ -1,5 +1,5 @@
 import { BRS } from '..'
-import { sendRequestA } from './send_request'
+import { sendRequest } from './send_request'
 
 import { incomingUpdateDashboardTransactions, updateConfirmationsInDashboardTransactions, updateDashboardBlocks } from '../pages/dashboard'
 
@@ -64,7 +64,7 @@ async function checkIncomingBlocksAndTransactions() {
     BRS.checkIncoming.unconfirmedChanged = false
     BRS.checkIncoming.forceDashboardUpdate = true
 
-    const response: GetBlochainStatusResponse = await sendRequestA('getBlockchainStatus', {})
+    const response: GetBlochainStatusResponse = await sendRequest('getBlockchainStatus', {})
 
     if (response.errorCode) {
         notify($.t('could_not_connect_to', { server: BRS.server }))
@@ -88,7 +88,7 @@ async function checkIncomingBlocksAndTransactions() {
  * Called when it is detected a new block on blockchain. Checks sync progress and update dashboard information.
  */
 export function handleNewBlocks() {
-    sendRequestA('getBlocks', {
+    sendRequest('getBlocks', {
         firstIndex: 0,
         lastIndex: 10,
     }).then((response: GetBlocksResponse) => {
@@ -163,7 +163,7 @@ export function getInitialTransactions() {
    not updated yet. */
 function getNewTransactions() {
     // check if there is a new transaction..
-    sendRequestA('getAccountTransactionIds', {
+    sendRequest('getAccountTransactionIds', {
         account: BRS.account,
         timestamp: BRS.blocks[0].timestamp + 1,
         firstIndex: 0,
@@ -179,7 +179,7 @@ function getNewTransactions() {
 }
 
 function fetchAndHandleLatestTransactions() {
-    sendRequestA('getAccountTransactions', {
+    sendRequest('getAccountTransactions', {
         account: BRS.account,
         firstIndex: 0,
         lastIndex: 9,
@@ -210,7 +210,7 @@ export function mapUnconfirmedToTransaction(unconfirmed: UnconfirmedTransaction)
 }
 
 function addUnconfirmedAndHandleIncoming(confirmedTransactions: Transaction[]) {
-    sendRequestA('getUnconfirmedTransactions', {
+    sendRequest('getUnconfirmedTransactions', {
         account: BRS.account,
         includeIndirect: true,
     }).then((response: GetUnconfirmedTransactionsResponse) => {

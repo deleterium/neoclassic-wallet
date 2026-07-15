@@ -3,7 +3,7 @@ import { BRS } from '..'
 import { GetAccountResponse, AssetBalance, GetAssetResponse } from '../typings'
 import { dbGet, dbPut } from './database'
 import { formatQNTAsQuantity } from './numbers'
-import { isErrorResponse, sendRequestA } from './send_request'
+import { isErrorResponse, sendRequest } from './send_request'
 import { formatStyledAmount } from './util'
 import { notify } from './notifications'
 
@@ -13,7 +13,7 @@ import { notify } from './notifications'
  * @param callback
  */
 export async function getAndUpdateAccountDetails(firstRun: boolean, callback?: () => void) {
-    const response: GetAccountResponse = await sendRequestA('getAccount', {
+    const response: GetAccountResponse = await sendRequest('getAccount', {
         account: BRS.account,
         getCommittedAmount: 'true',
     })
@@ -213,7 +213,7 @@ async function checkAssetDifferences(current_balances: AssetBalance[], previous_
     }
     if (nr <= 3) {
         for (const k in diff) {
-            const asset: GetAssetResponse = await sendRequestA('getAsset', { asset: k })
+            const asset: GetAssetResponse = await sendRequest('getAsset', { asset: k })
 
             if (asset.errorCode) {
                 return
