@@ -12,6 +12,36 @@ import { lockModal, unlockModal } from './lockable_modal'
 import { PostResponse, RequestType } from '../typings'
 import { checkIncomingNow } from './check_incoming'
 import { notify } from './notifications'
+import { formsSetAccountInfoComplete } from '../modals/account_info'
+import { formsBroadcastTransactionComplete, formsParseTransactionComplete, formsParseTransactionError } from '../modals/advanced'
+import {
+    formsSellAlias,
+    formsSellAliasComplete,
+    formsBuyAliasError,
+    formsBuyAliasComplete,
+    formsSetAlias,
+    formsSetAliasError,
+    formsSetAliasComplete,
+} from '../modals/aliases'
+import {
+    formsOrderAsset,
+    formsIssueAsset,
+    formsAssetExchangeChangeGroupName,
+    formsAssetExchangeGroup,
+    formsTransferAssetMulti,
+    formsTransferAsset,
+    formsTransferAssetComplete,
+    formsCancelOrder,
+    formsCancelOrderComplete,
+} from '../modals/assets'
+import { formsClearData } from '../modals/clear_data'
+import { formsAddContact, formsUpdateContact, formsDeleteContact } from '../modals/contacts'
+import { formsDecryptMessages } from '../modals/messages'
+import { formRequestBurst } from '../modals/request_coins'
+import { formsSendMoneyComplete, formsSendMoneyMulti } from '../modals/sendmoney'
+import { formsSignModalButtonClicked, formsSignMessage, formsVerifyMessage } from '../modals/sign_message'
+import { formsAddAssetBookmark, formsOrderAssetComplete } from '../pages/assets.asset_exchange'
+import { formsSendMoneyEscrow } from '../pages/payments.escrow'
 
 /**
  * There are the 'requestType' in forms that will check if node is in sync before proceed.
@@ -272,9 +302,47 @@ function checkMerchantField(requestType: RequestType, data: any) {
     return $.t('error_merchant_message_' + regexType)
 }
 
+const formFunctions = {
+    addAssetBookmark: formsAddAssetBookmark,
+    addCommitment: formsAddCommitment,
+    addContact: formsAddContact,
+    assetExchangeChangeGroupName: formsAssetExchangeChangeGroupName,
+    assetExchangeGroup: formsAssetExchangeGroup,
+    broadcastTransactionComplete: formsBroadcastTransactionComplete,
+    buyAliasComplete: formsBuyAliasComplete,
+    buyAliasError: formsBuyAliasError,
+    cancelOrder: formsCancelOrder,
+    cancelOrderComplete: formsCancelOrderComplete,
+    clearData: formsClearData,
+    decryptMessages: formsDecryptMessages,
+    deleteContact: formsDeleteContact,
+    issueAsset: formsIssueAsset,
+    orderAsset: formsOrderAsset,
+    orderAssetComplete: formsOrderAssetComplete,
+    parseTransactionComplete: formsParseTransactionComplete,
+    parseTransactionError: formsParseTransactionError,
+    requestBurst: formRequestBurst,
+    sellAlias: formsSellAlias,
+    sellAliasComplete: formsSellAliasComplete,
+    sendMoneyComplete: formsSendMoneyComplete,
+    sendMoneyEscrow: formsSendMoneyEscrow,
+    sendMoneyMulti: formsSendMoneyMulti,
+    setAccountInfoComplete: formsSetAccountInfoComplete,
+    setAlias: formsSetAlias,
+    setAliasComplete: formsSetAliasComplete,
+    setAliasError: formsSetAliasError,
+    signMessage: formsSignMessage,
+    signModalButtonClicked: formsSignModalButtonClicked,
+    transferAsset: formsTransferAsset,
+    transferAssetComplete: formsTransferAssetComplete,
+    transferAssetMulti: formsTransferAssetMulti,
+    updateContact: formsUpdateContact,
+    verifyMessage: formsVerifyMessage,
+}
+
 /** Function called when a submit button is clicked on modals.
  *  Checks for all kinds of modals.
- *  Specific modals are coded at BRS.forms.FORMNAME and form data is passed as parameter.
+ *  Specific modals are coded in `formFunctions` and form data is passed as parameter.
  */
 export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     let formFunctionError: ((response: any, arg1: any) => void) | false
@@ -316,8 +384,8 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     let successMessage = getSuccessMessage(requestType)
     let errorMessage = getErrorMessage(requestType)
 
-    const formFunction = BRS.forms[requestType]
-    formFunctionError = BRS.forms[requestType + 'Error']
+    const formFunction = formFunctions[requestType]
+    formFunctionError = formFunctions[requestType + 'Error']
 
     if (typeof formFunctionError !== 'function') {
         formFunctionError = false
@@ -475,7 +543,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
             notify(successMessage.escapeHTML(), { type: 'success' })
         }
 
-        formFunctionComplete = BRS.forms[originalRequestType + 'Complete']
+        formFunctionComplete = formFunctions[originalRequestType + 'Complete']
 
         if (typeof formFunctionComplete === 'function' && response.broadcasted) {
             data.requestType = requestType
@@ -493,7 +561,7 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
         let sentToFunction = false
 
         if (!errorMessage) {
-            formFunctionComplete = BRS.forms[originalRequestType + 'Complete']
+            formFunctionComplete = formFunctions[originalRequestType + 'Complete']
 
             if (typeof formFunctionComplete === 'function') {
                 sentToFunction = true
