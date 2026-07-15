@@ -9,81 +9,9 @@ import i18nHttpApi from 'i18next-http-backend'
 
 import '../util/string.extensions'
 
-import { pagesSettings } from './pages/settings'
-
-import { pagesLatestBlocks, incomingLatestBlocks } from './pages/blockchain.latest_blocks'
-
-import { pagesForgedBlocks } from './pages/mining.forged_blocks'
-
-import { incomingBlockInfo, pagesBlockInfo } from './pages/blockchain.block_info'
-
-import {
-    formsSellAlias,
-    formsSellAliasComplete,
-    formsBuyAliasError,
-    formsBuyAliasComplete,
-    formsSetAlias,
-    formsSetAliasError,
-    formsSetAliasComplete,
-} from './modals/aliases'
-
-import { pagesAliases, incomingAliases } from './pages/aliases'
-
-import { pagesAt } from './pages/payments.at'
-
-import { formsAddContact, formsUpdateContact, formsDeleteContact } from './modals/contacts'
-
-import { pagesContacts } from './pages/contacts'
-
-import { formsSendMoneyEscrow, pagesEscrow } from './pages/payments.escrow'
-
-import { formsAddCommitment } from './core/forms'
-
 import { addEventListeners } from './core/event_listeners'
 
-import { pagesAssetExchange, formsAddAssetBookmark, incomingAssetExchange, formsOrderAssetComplete } from './pages/assets.asset_exchange'
-
-import { incomingTransferHistory, pagesTransferHistory } from './pages/assets.transfer_history'
-
-import {
-    formsOrderAsset,
-    formsIssueAsset,
-    formsAssetExchangeChangeGroupName,
-    formsAssetExchangeGroup,
-    formsTransferAssetMulti,
-    formsTransferAsset,
-    formsTransferAssetComplete,
-    formsCancelOrder,
-    formsCancelOrderComplete,
-} from './modals/assets'
-
-import { pagesOpenOrders, incomingOpenOrders } from './pages/assets.open_orders'
-
-import { pagesMyAssets, incomingMyAssets } from './pages/assets.my_assets'
-
-import { incomingTransactions, pagesTransactions } from './pages/transactions'
-
-import { pagesMessages } from './pages/messages'
-
-import { formsDecryptMessages } from './modals/messages'
-
-import { pagesPeers, incomingPeers } from './pages/peers'
-
-import { formsSendMoneyComplete, formsSendMoneyMulti } from './modals/sendmoney'
-
-import { pagesSubscription } from './pages/payments.subscription'
-
-import { formsSetAccountInfoComplete } from './modals/account_info'
-
-import { formsBroadcastTransactionComplete, formsParseTransactionComplete, formsParseTransactionError } from './modals/advanced'
-
-import { formsSignModalButtonClicked, formsSignMessage, formsVerifyMessage } from './modals/sign_message'
-
 import { init } from './core/lockscreen'
-
-import { pagesSearchResults } from './pages/search_results.page'
-
-import { formsClearData } from './modals/clear_data'
 
 import {
     BlockchainStatus,
@@ -98,10 +26,7 @@ import {
     Transaction,
 } from './typings'
 
-import { formRequestBurst } from './modals/request_coins'
-
 import { RequestController } from './core/request_controller'
-import { pagesNotifications } from './pages/notifications'
 
 export const BRS = {
     version: '1.0.0',
@@ -177,75 +102,6 @@ export const BRS = {
 
     // Used for notifications
     _notifications: [] as Note[],
-
-    pages: {
-        settings: pagesSettings,
-        forged_blocks: pagesForgedBlocks,
-        block_info: pagesBlockInfo,
-        latest_blocks: pagesLatestBlocks,
-        aliases: pagesAliases,
-        at: pagesAt,
-        contacts: pagesContacts,
-        escrow: pagesEscrow,
-        asset_exchange: pagesAssetExchange,
-        transfer_history: pagesTransferHistory,
-        my_assets: pagesMyAssets,
-        open_orders: pagesOpenOrders,
-        transactions: pagesTransactions,
-        peers: pagesPeers,
-        subscription: pagesSubscription,
-        search_results: pagesSearchResults,
-        messages: pagesMessages,
-        notifications: pagesNotifications,
-    },
-    incoming: {
-        latest_blocks: incomingLatestBlocks,
-        aliases: incomingAliases,
-        asset_exchange: incomingAssetExchange,
-        my_assets: incomingMyAssets,
-        open_orders: incomingOpenOrders,
-        transactions: incomingTransactions,
-        peers: incomingPeers,
-        transfer_history: incomingTransferHistory,
-        block_info: incomingBlockInfo,
-    },
-    forms: {
-        sellAlias: formsSellAlias,
-        sellAliasComplete: formsSellAliasComplete,
-        buyAliasError: formsBuyAliasError,
-        buyAliasComplete: formsBuyAliasComplete,
-        setAlias: formsSetAlias,
-        setAliasError: formsSetAliasError,
-        setAliasComplete: formsSetAliasComplete,
-        addContact: formsAddContact,
-        updateContact: formsUpdateContact,
-        deleteContact: formsDeleteContact,
-        addCommitment: formsAddCommitment,
-        addAssetBookmark: formsAddAssetBookmark,
-        orderAsset: formsOrderAsset,
-        orderAssetComplete: formsOrderAssetComplete,
-        issueAsset: formsIssueAsset,
-        assetExchangeChangeGroupName: formsAssetExchangeChangeGroupName,
-        assetExchangeGroup: formsAssetExchangeGroup,
-        transferAssetMulti: formsTransferAssetMulti,
-        transferAsset: formsTransferAsset,
-        transferAssetComplete: formsTransferAssetComplete,
-        cancelOrder: formsCancelOrder,
-        cancelOrderComplete: formsCancelOrderComplete,
-        sendMoneyComplete: formsSendMoneyComplete,
-        sendMoneyMulti: formsSendMoneyMulti,
-        sendMoneyEscrow: formsSendMoneyEscrow,
-        decryptMessages: formsDecryptMessages,
-        setAccountInfoComplete: formsSetAccountInfoComplete,
-        clearData: formsClearData,
-        broadcastTransactionComplete: formsBroadcastTransactionComplete,
-        parseTransactionComplete: formsParseTransactionComplete,
-        parseTransactionError: formsParseTransactionError,
-        signModalButtonClicked: formsSignModalButtonClicked,
-        signMessage: formsSignMessage,
-        verifyMessage: formsVerifyMessage,
-        requestBurst: formRequestBurst,
-    },
 
     hasLocalStorage: true,
     inApp: false,

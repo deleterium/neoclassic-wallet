@@ -29,13 +29,13 @@ import { notify } from '../core/notifications'
 // Current page is 'asset_exchange'
 // Processing unconfirmed!
 
-export function pagesAssetExchange(callback: () => void) {
+export function pagesAssetExchange() {
     if (BRS.currentSubPage) {
         updateMiniTradeHistory()
         return
     }
     $('#asset_details').hide()
-    loadAssetExchangeSidebar(callback)
+    loadAssetExchangeSidebar()
 }
 
 export function bookmarkAllUserAssets() {

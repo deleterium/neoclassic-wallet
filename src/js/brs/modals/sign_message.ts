@@ -1,7 +1,5 @@
 import converters from '../../util/converters'
 
-import { BRS } from '..'
-
 import { getSavedPassword, sendRequestA } from '../core/send_request'
 
 import { getAccountIdFromPublicKey, getAccountPublicKey, getPublicKeyFromPassphrase, signBytes, verifyBytes } from '../core/encryption'
@@ -10,9 +8,9 @@ import { HexString, ParseTransactionResponse } from '../typings'
 
 export function formsSignModalButtonClicked() {
     if ($('#sign_message_nav').hasClass('active')) {
-        BRS.forms.signMessage()
+        formsSignMessage()
     } else {
-        BRS.forms.verifyMessage()
+        formsVerifyMessage()
     }
 }
 
