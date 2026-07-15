@@ -20,6 +20,15 @@ import {
 import { notify } from './notifications'
 
 import { checkIncomingMessages } from '../pages/messages'
+import { incomingAliases } from '../pages/aliases'
+import { incomingAssetExchange } from '../pages/assets.asset_exchange'
+import { incomingMyAssets } from '../pages/assets.my_assets'
+import { incomingOpenOrders } from '../pages/assets.open_orders'
+import { incomingTransferHistory } from '../pages/assets.transfer_history'
+import { incomingBlockInfo } from '../pages/blockchain.block_info'
+import { incomingLatestBlocks } from '../pages/blockchain.latest_blocks'
+import { incomingPeers } from '../pages/peers'
+import { incomingTransactions } from '../pages/transactions'
 
 export function setCheckIncomingInterval(seconds: number): void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
@@ -217,6 +226,18 @@ function addUnconfirmedAndHandleIncoming(confirmedTransactions: Transaction[]) {
     })
 }
 
+const incomingFunctions = {
+    aliases: incomingAliases,
+    asset_exchange: incomingAssetExchange,
+    block_info: incomingBlockInfo,
+    latest_blocks: incomingLatestBlocks,
+    my_assets: incomingMyAssets,
+    open_orders: incomingOpenOrders,
+    peers: incomingPeers,
+    transactions: incomingTransactions,
+    transfer_history: incomingTransferHistory,
+}
+
 function handleIncomingTransactions(transactions: Transaction[]) {
     transactions.sort((x, y) => y.timestamp - x.timestamp)
 
@@ -231,8 +252,8 @@ function handleIncomingTransactions(transactions: Transaction[]) {
         incomingUpdateDashboardTransactions(transactions)
     }
     if (BRS.checkIncoming.newBlock || BRS.checkIncoming.unconfirmedChanged) {
-        if (BRS.incoming[BRS.currentPage]) {
-            BRS.incoming[BRS.currentPage](transactions)
+        if (incomingFunctions[BRS.currentPage]) {
+            incomingFunctions[BRS.currentPage](transactions)
         }
         // Always call 'checkIncomingMessages' to enable message notifications. Page 'messages' does not use 'incomingFunction'.
         checkIncomingMessages(transactions)
