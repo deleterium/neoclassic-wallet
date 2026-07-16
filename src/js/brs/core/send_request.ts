@@ -238,21 +238,24 @@ function verifySignAndBroadcastTransaction(
         })
         return
     }
-    const payload = verifyTransactionBytes(response.unsignedTransactionBytes, signature, requestType, data)
-    if (payload.length === 0) {
-        const errorMessage = $.t('error_signature_verification_server')
+    try {
+        verifyTransactionBytes(response.unsignedTransactionBytes, requestType, data)
+    } catch (e) {
+        const errorMessage = $.t('error_signature_verification_server', {
+            field: (e as Error).message,
+        })
         callback({
-            errorCode: 1,
+            errorCode: -1,
             errorDescription: errorMessage,
         })
         return
     }
+    const payload = response.unsignedTransactionBytes.slice(0, 192) + signature + response.unsignedTransactionBytes.slice(320)
     if (data.broadcast === 'false') {
         showRawTransactionModal(response, payload)
         return
     }
     broadcastTransactionBytes(payload, callback, response, data)
-    return
 }
 
 export function broadcastTransactionBytes(

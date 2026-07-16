@@ -11,10 +11,17 @@ interface AttachmentSpec {
         type: string
         value: any[]
     }[]
-    postCheck?: () => boolean
+    postCheck?: () => void
 }
 
-export function verifyTransactionBytes(transactionBytes: string, signature: string, requestType: string, data: any) {
+/**
+ * Verify if the transaction bytes received matches the data that was submitted.
+ * @param transactionBytes received from node.
+ * @param requestType sent
+ * @param data sent
+ * @throws an Error if transactionBytes does not match sent data. The message will have the field that failed.
+ */
+export function verifyTransactionBytes(transactionBytes: string, requestType: string, data: any) {
     /* @ts-expect-error Empty object to be populated with the Transaction properties. */
     const transaction: Transaction = {}
     let txFlags = 0
@@ -23,20 +30,17 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
     const byteArray = converters.hexStringToByteArray(transactionBytes)
     // This will bring the info to check type, subtype and attachment for a given requestType
     let attachmentSpec: AttachmentSpec
-    const ERROR = true
-    const SUCCESS = false
 
     function verifyAndSignTransactionBytesMain() {
         createBaseTransaction()
         prepareData()
         attachmentSpec = getAttachmentSpec(requestType)
-        if (checkBaseTransaction()) return ''
-        if (checkAttachment()) return ''
-        if (checkMessage()) return ''
-        if (checkEncryptedMessage()) return ''
-        if (checkRecipientPublicKey()) return ''
-        if (checkEncryptToSelfMessage()) return ''
-        return transactionBytes.substr(0, 192) + signature + transactionBytes.substr(320)
+        checkBaseTransaction()
+        checkAttachment()
+        checkMessage()
+        checkEncryptedMessage()
+        checkRecipientPublicKey()
+        checkEncryptToSelfMessage()
     }
 
     function createBaseTransaction() {
@@ -89,12 +93,12 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
             transaction.type !== attachmentSpec.type ||
             transaction.subtype !== attachmentSpec.subtype
         ) {
-            return ERROR
+            throw new Error('base_transaction')
         }
         if (transaction.recipient !== data.recipient) {
             const requestTypeWithoutRecipientInData = ['buyAlias']
             if (requestTypeWithoutRecipientInData.indexOf(requestType) === -1) {
-                return ERROR
+                throw new Error('recipient')
             }
         }
         if (transaction.amountNQT !== data.amountNQT) {
@@ -107,17 +111,16 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
                 'removeCommitment',
             ]
             if (requestTypeWithSeperatedAmountNQTCalculation.indexOf(requestType) === -1) {
-                return ERROR
+                throw new Error('amountNQT')
             }
         }
         if ('referencedTransactionFullHash' in data) {
             if (transaction.referencedTransactionFullHash !== data.referencedTransactionFullHash) {
-                return ERROR
+                throw new Error('referencedTransactionFullHash')
             }
         } else if (transaction.referencedTransactionFullHash !== '') {
-            return ERROR
+            throw new Error('referencedTransactionFullHash')
         }
-        return SUCCESS
     }
 
     function getAttachmentSpecV2(rqType) {
@@ -159,8 +162,9 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
                         for (const eachRecipient of data.recipients.split(';')) {
                             sum += BigInt(eachRecipient.split(':')[1])
                         }
-                        if (transaction.amountNQT !== sum.toString(10)) return ERROR
-                        return SUCCESS
+                        if (transaction.amountNQT !== sum.toString(10)) {
+                            throw new Error('amountNQT')
+                        }
                     },
                 }
             case 'sendMoneyMultiSame':
@@ -173,8 +177,9 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
                     ],
                     postCheck() {
                         const totalAmount = BigInt(data.recipients.split(';').length) * BigInt(data.amountNQT)
-                        if (transaction.amountNQT !== totalAmount.toString(10)) return ERROR
-                        return SUCCESS
+                        if (transaction.amountNQT !== totalAmount.toString(10)) {
+                            throw new Error('amountNQT')
+                        }
                     },
                 }
             case 'sendMessage':
@@ -332,7 +337,7 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
     function checkAttachment() {
         const pastValues: string[][] = []
         if (attachmentSpec.attachmentInfo === undefined) {
-            return SUCCESS
+            return
         }
         const attachmentVersion = byteArray[pos]
         pos++
@@ -344,12 +349,12 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
                 if (transaction.type === attachmentSpec.type && transaction.subtype === attachmentSpec.subtype) {
                     break
                 }
-                return ERROR
+                throw new Error('attachment_version')
             default:
-                return ERROR
+                throw new Error('attachment_version')
         }
         if (attachmentSpec.attachmentInfo === undefined) {
-            return SUCCESS
+            return
         }
         for (const item of attachmentSpec.attachmentInfo) {
             const itemType = item.type.split('*')
@@ -403,38 +408,37 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
                         pos++
                         break
                     default:
-                        return ERROR
+                        throw new Error('attachment_type_spec')
                 }
             }
             for (const eachVal of item.value) {
                 // Maybe the order was changed. Search all items...
                 if (currentValues.find((eachParsed) => eachParsed === String(eachVal)) === undefined) {
-                    return ERROR
+                    throw new Error('attachment_item')
                 }
             }
             // ... and ensure no item was added
             if (item.value.length !== currentValues.length) {
-                return ERROR
+                throw new Error('attachment_item')
             }
             pastValues.push(currentValues)
         }
         if (attachmentSpec.postCheck) {
             return attachmentSpec.postCheck()
         }
-        return SUCCESS
     }
 
     function checkMessage() {
         // flag for non-encrypted message
         const flagBit = 0b1
         if ((txFlags & flagBit) === 0) {
-            if (data.message) return ERROR
-            else return SUCCESS
+            if (data.message) throw new Error('attachment_message')
+            else return
         }
         const attachmentVersion = byteArray[pos]
         pos++
         if (attachmentVersion !== 1) {
-            return ERROR
+            throw new Error('attachment_message_version')
         }
         const attachment: any = {}
         let messageLength = converters.byteArrayToSignedInt32(byteArray, pos)
@@ -452,25 +456,24 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
         pos += messageLength
         const messageIsText = attachment.messageIsText ? 'true' : 'false'
         if (messageIsText !== data.messageIsText) {
-            return ERROR
+            throw new Error('attachment_messageIsText')
         }
         if (attachment.message !== data.message) {
-            return ERROR
+            throw new Error('attachment_message')
         }
-        return SUCCESS
     }
 
     function checkEncryptedMessage() {
         // flag for encrypted note
         const flagBit = 0b10
         if ((txFlags & flagBit) === 0) {
-            if (data.encryptedMessageData) return ERROR
-            else return SUCCESS
+            if (data.encryptedMessageData) throw new Error('attachment_encryptedMessage')
+            else return
         }
         const attachmentVersion = byteArray[pos]
         pos++
         if (attachmentVersion !== 1) {
-            return ERROR
+            throw new Error('attachment_encryptedMessage_version')
         }
         const attachment: any = {}
         let encryptedMessageLength = converters.byteArrayToSignedInt32(byteArray, pos)
@@ -485,46 +488,44 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
         pos += 32
         const messageToEncryptIsText = attachment.messageToEncryptIsText ? 'true' : 'false'
         if (messageToEncryptIsText !== data.messageToEncryptIsText) {
-            return ERROR
+            throw new Error('attachment_messageToEncryptIsText')
         }
         if (
             attachment.encryptedMessageData !== data.encryptedMessageData ||
             attachment.encryptedMessageNonce !== data.encryptedMessageNonce
         ) {
-            return ERROR
+            throw new Error('attachment_encryptedMessage')
         }
-        return SUCCESS
     }
 
     function checkRecipientPublicKey() {
         const flagBit = 0b100
         if ((txFlags & flagBit) === 0) {
-            if (data.recipientPublicKey) return ERROR
-            else return SUCCESS
+            if (data.recipientPublicKey) throw new Error('attachment_recipientPublicKey')
+            else return
         }
         const attachmentVersion = byteArray[pos]
         pos++
         if (attachmentVersion !== 1) {
-            return ERROR
+            throw new Error('attachment_recipientPublicKey_version')
         }
         const recipientPublicKey = converters.byteArrayToHexString(byteArray.slice(pos, pos + 32))
         pos += 32
         if (recipientPublicKey !== data.recipientPublicKey) {
-            return ERROR
+            throw new Error('attachment_recipientPublicKey')
         }
-        return SUCCESS
     }
 
     function checkEncryptToSelfMessage() {
         const flagBit = 0b1000
         if ((txFlags & flagBit) === 0) {
-            if (data.encryptToSelfMessageData) return ERROR
-            else return false
+            if (data.encryptToSelfMessageData) throw new Error('attachment_encryptToSelfMessage')
+            else return
         }
         const attachmentVersion = byteArray[pos]
         pos++
         if (attachmentVersion !== 1) {
-            return ERROR
+            throw new Error('attachment_encryptToSelfMessage_version')
         }
         const attachment: any = {}
         let encryptedToSelfMessageLength = converters.byteArrayToSignedInt32(byteArray, pos)
@@ -539,15 +540,14 @@ export function verifyTransactionBytes(transactionBytes: string, signature: stri
         pos += 32
         const messageToEncryptToSelfIsText = attachment.messageToEncryptToSelfIsText ? 'true' : 'false'
         if (messageToEncryptToSelfIsText !== data.messageToEncryptToSelfIsText) {
-            return ERROR
+            throw new Error('attachment_messageToEncryptToSelfIsText')
         }
         if (
             attachment.encryptToSelfMessageData !== data.encryptToSelfMessageData ||
             attachment.encryptToSelfMessageNonce !== data.encryptToSelfMessageNonce
         ) {
-            return ERROR
+            throw new Error('attachment_encryptToSelfMessage')
         }
-        return SUCCESS
     }
 
     return verifyAndSignTransactionBytesMain()
