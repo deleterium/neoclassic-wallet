@@ -21,12 +21,12 @@ String.prototype.escapeHTML = function () {
 }
 
 String.prototype.unescapeHTML = function () {
-    return this.replace('&amp;', '&')
-        .replace('&lt;', '<')
-        .replace('&gt;', '>')
-        .replace('&quot;', '"')
-        .replace('&#39;', "'")
-        .replace('&#x2F;', '/')
+    return this.replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&#x2F;/g, '/')
 }
 
 String.prototype.nl2br = function () {
