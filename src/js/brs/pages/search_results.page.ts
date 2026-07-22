@@ -102,7 +102,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
         }
         resultHTML += `
             <tr>
-              <td><a href="#" data-alias="${alias.alias}">${alias.aliasName}</a></td>
+              <td><a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a></td>
               <td><a href="#" data-user="${alias.accountRS}" class="user-info">${alias.accountRS}</a></td>
               <td>${alias.tldName}</td>
               <td>${alias.aliasURI}</td>

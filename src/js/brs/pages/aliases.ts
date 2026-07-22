@@ -142,9 +142,9 @@ export async function pagesAliases() {
         }
 
         rows += `
-            <tr ${tentativeClass} data-alias="${aliasName.toLowerCase()}">
+            <tr ${tentativeClass}>
               <td class='alias'>
-                <a href="#" data-alias="${alias.alias}">${aliasName}</a>
+                <a href="#" data-show-alias="${alias.alias}">${aliasName}</a>
               </td>
               <td>${alias.tldName}</td>
               <td class='uri'>

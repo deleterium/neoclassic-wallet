@@ -377,9 +377,9 @@ export function addEventListeners() {
         setAliasType(type, $('#register_alias_uri').val() as string)
     })
     $('#alias_search').on('submit', evAliasSearchSubmit)
-    $('#search_results_contents, #aliases_table, #user_info_modal_aliases_table').on('click', 'a[data-alias]', function (e) {
+    $('#search_results_contents, #aliases_table, #user_info_modal_aliases_table').on('click', 'a[data-show-alias]', function (e) {
         e.preventDefault()
-        const alias = $(this).data('alias')
+        const alias = $(this).data('show-alias')
         showAliasModal(alias)
     })
 
