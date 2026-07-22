@@ -53,6 +53,8 @@ export const BRS = {
 
     settings: {} as BrsSettings,
     contacts: {} as Record<string, DBContact>,
+    /** Used to verify operations with aliases version 2. Empty tld defaults to 'signum', tld id '0'. */
+    tlds: { '': '0' } as Record<string, string>,
 
     isTestNet: false,
     prefix: 'S-',

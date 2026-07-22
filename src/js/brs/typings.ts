@@ -531,6 +531,22 @@ export interface GetAliasesResponse {
     errorDescription?: string
 }
 
+interface TLD {
+    account: string
+    accountRS: string
+    aliasName: string
+    timestamp: number
+    alias: string
+    numberOfAliases: number
+}
+
+export interface GetTLDsResponse {
+    tlds: TLD[]
+    requestProcessingTime: number
+    errorCode?: number
+    errorDescription?: string
+}
+
 // region AT
 
 export interface AT {

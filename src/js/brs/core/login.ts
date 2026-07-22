@@ -20,7 +20,7 @@ import { getInitialTransactions, handleNewBlocks } from './check_incoming'
 
 import PassPhraseGenerator from './passphrase_generator'
 
-import { GetAccountResponse } from '../typings'
+import { GetAccountResponse, GetTLDsResponse } from '../typings'
 import { convertSecondsToDuration } from './numbers'
 import { notify } from './notifications'
 
@@ -126,6 +126,9 @@ export function loginCommon() {
 
     // Simulate new block
     handleNewBlocks()
+
+    // Prepare tld's translation structure
+    populateBrsTlds()
 }
 
 async function loginWithAccount(account: string) {
@@ -313,4 +316,18 @@ export function logout() {
     setEncryptionPassword('')
     setSavedPassword('')
     window.location.reload()
+}
+
+/**
+ * Get all current available TLD's and store at `BRS.tlds`. Necessary step to verify aliases responses during operation with aliases in attachment version 2.
+ */
+async function populateBrsTlds() {
+    const allTLDs: GetTLDsResponse = await sendRequest('getTLDs', {})
+    if (allTLDs.errorCode) {
+        notify($.t('error_get_tlds'))
+        return
+    }
+    for (const { aliasName, alias } of allTLDs.tlds) {
+        BRS.tlds[aliasName] = alias
+    }
 }
