@@ -10,8 +10,12 @@
           <div class="form-group">
             <label data-i18n="alias">ALIAS</label>
             <p class="alias_name_display"></p>
-            <input type="hidden" name="aliasName" value="" />
+            <input type="hidden" name="alias" value="" />
             <input type="hidden" name="priceNQT" value="0" />
+          </div>
+          <div class="form-group">
+            <label data-i18n="tld_long">tld_long</label>
+            <p class="alias_tld_display"></p>
           </div>
 
           <!-- Recipient template -->
@@ -224,6 +228,17 @@
             <p id="register_alias_alias_noneditable" style="display: none"></p>
           </div>
           <div class="form-group">
+            <label for="register_alias_tld" data-i18n="tld_long">tld_long</label>
+            <input
+              type="text"
+              class="form-control"
+              name="tld"
+              id="register_alias_tld"
+              placeholder="signum" />
+            <p id="register_alias_tld_help" data-i18n="[html]tld_help">tld_help</p>
+            <p id="register_alias_tld_noneditable" style="display: none"></p>
+          </div>
+          <div class="form-group">
             <label for="register_alias_type" data-i18n="type">TYPE</label>
             <select class="form-control" name="type" id="register_alias_type">
               <option value="uri" data-i18n="uri">URI</option>
@@ -414,6 +429,10 @@
             <input type="hidden" name="alias" value="" />
           </div>
           <div class="form-group">
+            <label data-i18n="tld_long">tld_long</label>
+            <p class="alias_tld_display"></p>
+          </div>
+          <div class="form-group">
             <label data-i18n="alias_name">alias_name</label>
             <p class="alias_name_display"></p>
           </div>
@@ -589,7 +608,11 @@
           <div class="form-group">
             <label data-i18n="alias">ALIAS</label>
             <p class="alias_name_display"></p>
-            <input type="hidden" name="aliasName" value="" />
+            <input type="hidden" name="alias" value="" />
+          </div>
+          <div class="form-group">
+            <label data-i18n="tld_long">tld_long</label>
+            <p class="alias_tld_display"></p>
           </div>
 
           <!-- Specific code -->
@@ -812,8 +835,12 @@
           <div class="form-group">
             <label data-i18n="alias">ALIAS</label>
             <p class="alias_name_display"></p>
-            <input type="hidden" name="aliasName" value="" />
+            <input type="hidden" name="alias" value="" />
             <input type="hidden" name="modal" value="cancel_alias_sale" />
+          </div>
+          <div class="form-group">
+            <label data-i18n="tld_long">tld_long</label>
+            <p class="alias_tld_display"></p>
           </div>
 
           <!-- Fee + deadline template -->

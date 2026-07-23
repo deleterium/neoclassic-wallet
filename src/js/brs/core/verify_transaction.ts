@@ -123,7 +123,7 @@ export function verifyTransactionBytes(transactionBytes: string, requestType: st
         }
     }
 
-    function getAttachmentSpecV2(rqType) {
+    function getAttachmentSpecV2(rqType: string): AttachmentSpec {
         switch (rqType) {
             case 'issueAsset':
                 return {
@@ -137,6 +137,32 @@ export function verifyTransactionBytes(transactionBytes: string, requestType: st
                         { type: 'Byte*1', value: [data.mintable ? 1 : 0] },
                     ],
                 }
+            case 'setAlias':
+                return {
+                    type: 1,
+                    subtype: 1,
+                    attachmentInfo: [
+                        { type: 'ByteString*1', value: [data.aliasName] },
+                        { type: 'ShortString*1', value: [data.aliasURI] },
+                        { type: 'Long*1', value: [BRS.tlds[data.tld]] },
+                    ],
+                }
+            case 'sellAlias':
+                return {
+                    type: 1,
+                    subtype: 6,
+                    attachmentInfo: [
+                        { type: 'Long*1', value: [data.alias] },
+                        { type: 'Long*1', value: [data.priceNQT] },
+                    ],
+                }
+            case 'buyAlias':
+                return {
+                    type: 1,
+                    subtype: 7,
+                    attachmentInfo: [{ type: 'Long*1', value: [data.alias] }],
+                }
+
             default:
                 return {
                     type: -1,

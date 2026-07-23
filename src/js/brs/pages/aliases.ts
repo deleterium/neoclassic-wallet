@@ -103,14 +103,15 @@ export async function pagesAliases() {
             status = "<span class='label label-small label-info'>" + status + '</span>'
         }
 
-        const aliasName = alias.aliasName
         const tentativeClass = tentative ? " class='tentative'" : ''
         const editButton = `
             <a href="#"
               class="btn btn-xs btn-default"
               data-toggle="modal"
               data-target="#register_alias_modal"
-              data-alias="${aliasName}">
+              data-alias="${alias.alias}"
+              data-alias-name="${alias.aliasName}"
+              data-tld="${alias.tldName}">
               ${$.t('edit')}
             </a>`
         const transferButton = `
@@ -118,7 +119,9 @@ export async function pagesAliases() {
               class="btn btn-xs btn-default"
               data-toggle="modal"
               data-target="#transfer_alias_modal"
-              data-alias="${aliasName}">
+              data-alias="${alias.alias}"
+              data-alias-name="${alias.aliasName}"
+              data-tld="${alias.tldName}">
               ${$.t('transfer')}
             </a>`
         const sellButton = `
@@ -126,7 +129,9 @@ export async function pagesAliases() {
               class="btn btn-xs btn-default"
               data-toggle="modal"
               data-target="#sell_alias_modal"
-              data-alias="${aliasName}">
+              data-alias="${alias.alias}"
+              data-alias-name="${alias.aliasName}"
+              data-tld="${alias.tldName}">
               ${$.t('sell')}
             </a>`
         let cancelSaleButton = ''
@@ -136,7 +141,9 @@ export async function pagesAliases() {
                   class="btn btn-xs btn-default cancel_alias_sale"
                   data-toggle="modal"
                   data-target="#cancel_alias_sale_modal"
-                  data-alias="${aliasName}">
+                  data-alias="${alias.alias}"
+                  data-alias-name="${alias.aliasName}"
+                  data-tld="${alias.tldName}">
                   ${$.t('cancel_sale')}
                 </a>`
         }
@@ -144,7 +151,7 @@ export async function pagesAliases() {
         rows += `
             <tr ${tentativeClass}>
               <td class='alias'>
-                <a href="#" data-show-alias="${alias.alias}">${aliasName}</a>
+                <a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a>
               </td>
               <td>${alias.tldName}</td>
               <td class='uri'>

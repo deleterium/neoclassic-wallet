@@ -16,9 +16,12 @@ export function evAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     const modal = e.target
 
     const alias = String($invoker.data('alias'))
+    const aliasName = String($invoker.data('alias-name'))
+    const tld = String($invoker.data('tld'))
 
-    $(modal).find('input[name=aliasName]').val(alias)
-    $(modal).find('.alias_name_display').html(alias)
+    $(modal).find('input[name=alias]').val(alias)
+    $(modal).find('.alias_name_display').text(aliasName)
+    $(modal).find('.alias_tld_display').text(tld)
 }
 
 export function formsSellAlias(data: any) {
@@ -179,7 +182,7 @@ export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent
     if (alias) {
         BRS.fetchingModalData = true
         const response: GetAliasResponse = await sendRequest('getAlias', {
-            aliasName: alias,
+            alias: alias,
         })
         BRS.fetchingModalData = false
         if (response.errorCode) {
@@ -188,20 +191,25 @@ export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent
         } else {
             let aliasURI: RegExpExecArray | null
             const reg = /^https?:\/\//i
-            if (reg.test(response.aliasURI)) {
-                setAliasType('uri', response.aliasURI)
-            } else if ((aliasURI = /acct:(.*)@burst/.exec(response.aliasURI)) || (aliasURI = /nacc:(.*)/.exec(response.aliasURI))) {
-                setAliasType('account', response.aliasURI)
-                response.aliasURI = String(aliasURI[1]).toUpperCase()
+            let responseURI = response.aliasURI.unescapeHTML()
+            if (reg.test(responseURI)) {
+                setAliasType('uri', responseURI)
+            } else if ((aliasURI = /acct:(.*)@burst/.exec(responseURI)) || (aliasURI = /nacc:(.*)/.exec(responseURI))) {
+                setAliasType('account', responseURI)
+                responseURI = String(aliasURI[1]).toUpperCase()
             } else {
-                setAliasType('general', response.aliasURI)
+                setAliasType('general', responseURI)
             }
 
             $('#register_alias_modal h4.modal-title').html($.t('update_alias'))
             $('#register_alias_modal .btn-primary').html($.t('update'))
             $('#register_alias_alias').val(alias.escapeHTML()).hide()
-            $('#register_alias_alias_noneditable').html(alias.escapeHTML()).show()
+            $('#register_alias_alias_noneditable').text(alias).show()
+            $('#register_alias_tld').val(response.tld.escapeHTML()).hide()
+            $('#register_alias_tld_noneditable').text(response.tld).show()
+            $('#register_alias_tld_help').hide()
             $('#register_alias_alias_update').val(1)
+            $('#register_alias_uri').val(responseURI)
         }
         return
     }
@@ -218,6 +226,9 @@ export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent
     }
     $('#register_alias_alias_noneditable').html('').hide()
     $('#register_alias_alias_update').val(0)
+    $('#register_alias_tld').val('').show()
+    $('#register_alias_tld_noneditable').text('').hide()
+    $('#register_alias_tld_help').show()
     setAliasType('uri', '')
 }
 
