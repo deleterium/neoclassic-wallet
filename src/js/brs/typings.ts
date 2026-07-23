@@ -204,6 +204,8 @@ export interface GetIndirectIncomingResponse {
     errorDescription?: string
 }
 
+// region Subscription
+
 export interface Subscription {
     id: string
     sender: string
@@ -214,6 +216,11 @@ export interface Subscription {
     frequency: number
     timeNext: number
     timestamp: number
+    // Only if it a subscription linked to an alias
+    alias?: string
+    aliasName?: string
+    tld?: string
+    tldName?: string
 }
 
 export interface GetSubscriptionResponse extends Subscription {
