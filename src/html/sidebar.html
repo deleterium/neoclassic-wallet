@@ -198,11 +198,28 @@
           <p data-i18n="messages">Messages</p>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#" data-page="aliases">
+      <li class="treeview nav-item">
+        <a class="nav-link" href="#" data-page="keep">
           <i class="nav-icon fas fa-address-card"></i>
-          <p data-i18n="aliases">Aliases</p>
+          <p><i class="right fa pull-right fa-angle-left"></i><span data-i18n="aliases">aliases</span></p>
         </a>
+        <ul class="nav nav-treeview">
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-page="aliases">
+              <p data-i18n="my_aliases">my_aliases</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-toggle="modal" data-target="#register_alias_modal">
+              <p data-i18n="register_alias">register_alias</p>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-toggle="modal" data-target="#register_tld_modal">
+              <p data-i18n="register_tld">register_tld</p>
+            </a>
+          </li>
+        </ul>
       </li>
       <li class="treeview nav-item" id="sidebar_blockchain">
         <a class="nav-link" href="#" data-page="keep">

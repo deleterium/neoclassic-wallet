@@ -243,6 +243,12 @@ export function verifyTransactionBytes(transactionBytes: string, requestType: st
                     subtype: 7,
                     attachmentInfo: [{ type: 'ByteString*1', value: [data.aliasName] }],
                 }
+            case 'setTLD':
+                return {
+                    type: 1,
+                    subtype: 8,
+                    attachmentInfo: [{ type: 'ByteString*1', value: [data.tld] }],
+                }
             case 'issueAsset':
                 return {
                     type: 2,

@@ -22,6 +22,7 @@ import {
     formsSetAlias,
     formsSetAliasError,
     formsSetAliasComplete,
+    formsSetTLDComplete,
 } from '../modals/aliases'
 import {
     formsOrderAsset,
@@ -71,6 +72,7 @@ const submitOnlyWhenInSync = {
     setAccountInfo: true,
     setAlias: true,
     setRewardRecipient: true,
+    setTLD: true,
     signMessage: false,
     subscriptionCancel: true,
     transferAsset: true,
@@ -331,6 +333,7 @@ const formFunctions = {
     setAlias: formsSetAlias,
     setAliasComplete: formsSetAliasComplete,
     setAliasError: formsSetAliasError,
+    setTLDComplete: formsSetTLDComplete,
     signMessage: formsSignMessage,
     signModalButtonClicked: formsSignModalButtonClicked,
     transferAsset: formsTransferAsset,

@@ -84,6 +84,7 @@ export type RequestType =
     | 'requestBurst'
     | 'sellAlias'
     | 'sellOrderAsset'
+    | 'setTLD'
     | 'sendMessage'
     | 'sendMoney'
     | 'sendMoneyEscrow'

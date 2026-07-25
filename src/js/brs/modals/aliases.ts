@@ -432,6 +432,10 @@ export function formsSetAliasComplete(response: PostResponse, data: any) {
     notify($.t('success_alias_register'), { type: 'success' })
 }
 
+export function formsSetTLDComplete(response: PostResponse, data: any) {
+    BRS.tlds[data.tld] = response.transaction
+}
+
 /**
  * Opens a "Alias Modal" with the given alias.
  * @param {string|Alias} alias - If string, the alias ID to be requested and shown. If the object, just show it.

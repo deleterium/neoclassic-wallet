@@ -66,6 +66,7 @@ interface DataTable {
     alias_name?: string
     data_formatted_html?: string
     price?: string
+    tld?: string
     // assets
     asset_name_formatted_html?: string
     description?: string
@@ -287,6 +288,10 @@ async function processTransactionModalData(transaction: Transaction) {
                 // alias buy
                 data.alias_name = transaction.attachment.alias
                 data.price = transaction.amountNQT
+                break
+            case 8:
+                // set tld
+                data.tld = transaction.attachment.tld
                 break
         }
     }
