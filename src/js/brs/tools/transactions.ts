@@ -120,6 +120,9 @@ export function getTransactionDetails(transaction: Transaction, viewingAccount: 
                 case 7:
                     nameOfTransaction = $.t('alias_buy')
                     break
+                case 8:
+                    nameOfTransaction = $.t('set_tld')
+                    break
             }
             break
         case 2: // "Colored coins"

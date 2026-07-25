@@ -6,7 +6,7 @@ import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
-import { createInfoTable } from '../core/util'
+import { createInfoTable, getAccountTitle } from '../core/util'
 
 import { GetAliasResponse, PostResponse, ShowBootstrapModalEvent } from '../typings'
 import { notify } from '../core/notifications'
@@ -203,10 +203,10 @@ export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent
 
             $('#register_alias_modal h4.modal-title').html($.t('update_alias'))
             $('#register_alias_modal .btn-primary').html($.t('update'))
-            $('#register_alias_alias').val(alias.escapeHTML()).hide()
-            $('#register_alias_alias_noneditable').text(alias).show()
-            $('#register_alias_tld').val(response.tld.escapeHTML()).hide()
-            $('#register_alias_tld_noneditable').text(response.tld).show()
+            $('#register_alias_alias_noneditable').text(response.aliasName).show()
+            $('#register_alias_alias_name').val(response.aliasName).hide()
+            $('#register_alias_tld').val(response.tldName).hide()
+            $('#register_alias_tld_noneditable').text(response.tldName).show()
             $('#register_alias_tld_help').hide()
             $('#register_alias_alias_update').val(1)
             $('#register_alias_uri').val(responseURI)
@@ -216,14 +216,8 @@ export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent
     // no alias given
     $('#register_alias_modal h4.modal-title').html($.t('register_alias'))
     $('#register_alias_modal .btn-primary').html($.t('register'))
+    $('#register_alias_alias_name').val('').show()
 
-    const prefill = $invoker.data('prefill-alias')
-
-    if (prefill) {
-        $('#register_alias_alias').val(prefill).show()
-    } else {
-        $('#register_alias_alias').val('').show()
-    }
     $('#register_alias_alias_noneditable').html('').hide()
     $('#register_alias_alias_update').val(0)
     $('#register_alias_tld').val('').show()
@@ -493,9 +487,11 @@ function aliasModalDataReady(response: GetAliasResponse) {
     $('#alias_info_table tbody').empty()
     $('#alias_info_modal_alias').text(response.aliasName)
     const data = {
-        account: response.accountRS,
+        account: getAccountTitle(response.accountRS),
+        alias_name: response.tldName ? (response.aliasName ?? '') : '',
+        tld: response.tldName || response.aliasName,
         last_updated: formatTimestampAsDateTime(response.timestamp),
-        data_formatted_html: String(response.aliasURI),
+        data_formatted_html: response.aliasURI ?? '',
     }
     const aliasCallout = getAliasStatus(response)
     $('#alias_sale_callout').html(aliasCallout)

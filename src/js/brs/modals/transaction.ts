@@ -27,6 +27,8 @@ import { decryptAttachmentFieldAndUpdateSelector, getMessageBytesFromTX, getMess
 
 import { DBAsset, GetAliasResponse, GetIndirectIncomingResponse, GetTransactionResponse, Transaction } from '../typings'
 
+import { findTLDNameByTLDId } from '../tools/aliases'
+
 export async function showTransactionModal(transaction: Transaction | string) {
     if (BRS.fetchingModalData) {
         return
@@ -274,21 +276,32 @@ async function processTransactionModalData(transaction: Transaction) {
         switch (transaction.subtype) {
             case 1:
                 // alias assignment
-                data.alias = transaction.attachment.alias
+                data.alias_name = transaction.attachment.alias
+                data.tld = findTLDNameByTLDId(transaction.attachment.tld)
                 data.data_formatted_html = transaction.attachment.uri
                 return
             case 6:
+            case 7: {
                 // alias sale/transfer/sale cancelation
-                data.alias_name = transaction.attachment.alias
+                const aliasDetails: GetAliasResponse = await sendRequest('getAlias', { alias: transaction.attachment.alias })
+                if (aliasDetails.errorCode) return
+                data.alias = transaction.attachment.alias
+                if (transaction.attachment.uri) {
+                    data.alias_name = aliasDetails.aliasName
+                    data.data_formatted_html = transaction.attachment.uri
+                } else {
+                    // Special alias, actually is a TLD
+                    data.tld = aliasDetails.aliasName
+                }
                 if (details.nameOfTransaction === $.t('alias_sale')) {
-                    await peMessagingAliasSale()
+                    peMessagingAliasSale(aliasDetails)
+                }
+                if (transaction.subtype === 7) {
+                    // alias buy
+                    data.price = transaction.amountNQT
                 }
                 return
-            case 7:
-                // alias buy
-                data.alias_name = transaction.attachment.alias
-                data.price = transaction.amountNQT
-                break
+            }
             case 8:
                 // set tld
                 data.tld = transaction.attachment.tld
@@ -296,51 +309,46 @@ async function processTransactionModalData(transaction: Transaction) {
         }
     }
 
-    async function peMessagingAliasSale() {
+    function peMessagingAliasSale(response: GetAliasResponse) {
         let message = ''
         let messageStyle = 'info'
         data.price = transaction.attachment.priceNQT
-        const response: GetAliasResponse = await sendRequest('getAlias', {
-            aliasName: transaction.attachment.alias,
-        })
 
-        if (!response.errorCode) {
-            if (transaction.recipient !== response.buyer || transaction.attachment.priceNQT !== response.priceNQT) {
-                message = $.t('alias_sale_info_outdated')
-                messageStyle = 'danger'
-            } else if (transaction.recipient === BRS.account) {
+        if (transaction.recipient !== response.buyer || transaction.attachment.priceNQT !== response.priceNQT) {
+            message = $.t('alias_sale_info_outdated')
+            messageStyle = 'danger'
+        } else if (transaction.recipient === BRS.account) {
+            message =
+                $.t('alias_sale_direct_offer', {
+                    burst: formatNQTAsAmount(transaction.attachment.priceNQT),
+                }) +
+                " <a href='#' data-alias='" +
+                String(transaction.attachment.alias) +
+                "' data-toggle='modal' data-target='#buy_alias_modal'>" +
+                $.t('buy_it_q') +
+                '</a>'
+        } else if (typeof transaction.recipient === 'undefined') {
+            message =
+                $.t('alias_sale_indirect_offer', {
+                    burst: formatNQTAsAmount(transaction.attachment.priceNQT),
+                }) +
+                " <a href='#' data-alias='" +
+                String(transaction.attachment.alias) +
+                "' data-toggle='modal' data-target='#buy_alias_modal'>" +
+                $.t('buy_it_q') +
+                '</a>'
+        } else if (transaction.senderRS === BRS.accountRS) {
+            if (transaction.attachment.priceNQT !== '0') {
                 message =
-                    $.t('alias_sale_direct_offer', {
-                        burst: formatNQTAsAmount(transaction.attachment.priceNQT),
-                    }) +
+                    $.t('your_alias_sale_offer') +
                     " <a href='#' data-alias='" +
                     String(transaction.attachment.alias) +
-                    "' data-toggle='modal' data-target='#buy_alias_modal'>" +
-                    $.t('buy_it_q') +
+                    "' data-toggle='modal' data-target='#cancel_alias_sale_modal'>" +
+                    $.t('cancel_sale_q') +
                     '</a>'
-            } else if (typeof transaction.recipient === 'undefined') {
-                message =
-                    $.t('alias_sale_indirect_offer', {
-                        burst: formatNQTAsAmount(transaction.attachment.priceNQT),
-                    }) +
-                    " <a href='#' data-alias='" +
-                    String(transaction.attachment.alias) +
-                    "' data-toggle='modal' data-target='#buy_alias_modal'>" +
-                    $.t('buy_it_q') +
-                    '</a>'
-            } else if (transaction.senderRS === BRS.accountRS) {
-                if (transaction.attachment.priceNQT !== '0') {
-                    message =
-                        $.t('your_alias_sale_offer') +
-                        " <a href='#' data-alias='" +
-                        String(transaction.attachment.alias) +
-                        "' data-toggle='modal' data-target='#cancel_alias_sale_modal'>" +
-                        $.t('cancel_sale_q') +
-                        '</a>'
-                }
-            } else {
-                message = $.t('error_alias_sale_different_account')
             }
+        } else {
+            message = $.t('error_alias_sale_different_account')
         }
 
         if (message.length) {
