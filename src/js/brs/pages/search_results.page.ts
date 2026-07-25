@@ -8,6 +8,7 @@ import {
     GetTransactionResponse,
     GetBlockResponse,
     GetAccountsWithNameResponse,
+    GetAliasResponse,
 } from '../typings'
 import { showAliasModal } from '../modals/aliases'
 import { showAccountModal } from '../modals/account'
@@ -196,17 +197,29 @@ export async function pagesSearchResults() {
             return
         }
         case 'alias': {
+            let aliases: Alias[] = []
             const response: GetAliasesResponse = await sendRequest('getAliasesByName', {
                 aliasName: splitted[1].trim(),
             })
-            if (response.errorCode || !response.aliases || response.aliases.length === 0) {
+            if (!response.errorCode) {
+                aliases = response.aliases
+            }
+            if (BRS.tlds[splitted[1].trim()]) {
+                const tld: GetAliasResponse = await sendRequest('getAlias', {
+                    alias: BRS.tlds[splitted[1].trim()],
+                })
+                if (!tld.errorCode) {
+                    aliases.push(tld)
+                }
+            }
+            if (aliases.length === 0) {
                 dataLoaded($.t('error_search_no_results'))
                 return
             }
-            if (response.aliases.length === 1) {
-                showAliasModal(response.aliases[0])
+            if (aliases.length === 1) {
+                showAliasModal(aliases[0])
             }
-            showAliasesSearchResults(response.aliases)
+            showAliasesSearchResults(aliases)
             return
         }
         case 'name': {

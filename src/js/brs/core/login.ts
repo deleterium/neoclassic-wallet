@@ -327,7 +327,10 @@ async function populateBrsTlds() {
         notify($.t('error_get_tlds'))
         return
     }
-    for (const { aliasName, alias } of allTLDs.tlds) {
+    for (const { account, aliasName, alias } of allTLDs.tlds) {
         BRS.tlds[aliasName] = alias
+        if (account === BRS.account) {
+            BRS.myTlds.push({ alias, aliasName })
+        }
     }
 }

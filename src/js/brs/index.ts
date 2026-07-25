@@ -55,6 +55,8 @@ export const BRS = {
     contacts: {} as Record<string, DBContact>,
     /** Used to verify operations with aliases version 2. Empty tld defaults to 'signum', tld id '0'. */
     tlds: { '': '0' } as Record<string, string>,
+    /** To store tlds from the user when logged. */
+    myTlds: [] as { alias: string; aliasName: string }[],
 
     isTestNet: false,
     prefix: 'S-',

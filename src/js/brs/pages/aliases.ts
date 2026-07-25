@@ -15,8 +15,50 @@ export async function pagesAliases() {
         lastIndex: BRS.pageSize * BRS.pageNumber,
     })
 
+    let rows = ''
+    if (BRS.pageNumber === 1 && BRS.myTlds.length > 0) {
+        for (const tld of BRS.myTlds) {
+            rows += `
+            <tr>
+              <td class='alias'></td>
+              <td><a href="#" data-show-alias="${tld.alias}">${tld.aliasName}</a></td>
+              <td class='uri'></td>
+              <td class='status'></td>
+              <td style="white-space:nowrap">
+                <a href="#"
+                  class="btn btn-xs btn-default"
+                  data-toggle="modal"
+                  data-target="#transfer_alias_modal"
+                  data-alias="${tld.alias}"
+                  data-alias-name=""
+                  data-tld="${tld.aliasName}">
+                  ${$.t('transfer')}
+                </a>
+                <a href="#"
+                  class="btn btn-xs btn-default"
+                  data-toggle="modal"
+                  data-target="#sell_alias_modal"
+                  data-alias="${tld.alias}"
+                  data-alias-name=""
+                  data-tld="${tld.aliasName}">
+                  ${$.t('sell')}
+                </a>
+                <a href="#"
+                  class="btn btn-xs btn-default cancel_alias_sale"
+                  data-toggle="modal"
+                  data-target="#cancel_alias_sale_modal"
+                  data-alias="${tld.alias}"
+                  data-alias-name=""
+                  data-tld="${tld.aliasName}">
+                  ${$.t('cancel_sale')}
+                </a>
+              </td>
+            </tr>`
+        }
+    }
+
     if (!response.aliases || !response.aliases.length) {
-        $('#aliases_table tbody').empty()
+        $('#aliases_table tbody').empty().append(rows)
         dataLoadFinished($('#aliases_table'))
         $('#alias_account_count, #alias_uri_count, #empty_alias_count, #alias_count').html('0').removeClass('loading_dots')
         pageLoaded()
@@ -55,7 +97,6 @@ export async function pagesAliases() {
     //     }
     // }
 
-    let rows = ''
     for (const alias of response.aliases) {
         let status = '/'
         let tentative = false
