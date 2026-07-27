@@ -76,28 +76,6 @@ export function formsSellAlias(data: any) {
     }
 }
 
-export function formsSellAliasComplete(response: PostResponse, data: any) {
-    const $row = $('#aliases_table tr[data-alias=' + String(data.aliasName).toLowerCase().escapeHTML() + ']')
-
-    $row.addClass('tentative')
-
-    // transfer
-    if (data.priceNQT === '0') {
-        if (data.recipient === BRS.account) {
-            $row.find('td.status').html("<span class='label label-small label-info'>" + $.t('cancelling_sale') + '</span>')
-            $row.find('a.cancel_alias_sale').remove()
-        } else {
-            $row.find('td.status').html("<span class='label label-small label-info'>" + $.t('transfer_in_progress') + '</span>')
-        }
-    } else {
-        if (data.recipient !== BRS.genesis) {
-            $row.find('td.status').html("<span class='label label-small label-info'>" + $.t('for_sale_direct') + '</span>')
-        } else {
-            $row.find('td.status').html("<span class='label label-small label-info'>" + $.t('for_sale_indirect') + '</span>')
-        }
-    }
-}
-
 export function evSellAliasSellToSpecificClick(e: JQuery.ClickEvent) {
     const element = e.currentTarget
     const $form = $(element).closest('form')
@@ -147,31 +125,6 @@ export async function evBuyAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
 
 export function formsBuyAliasError() {
     $('#buy_alias_modal').find('input[name=priceNXT]').prop('readonly', false)
-}
-
-export function formsBuyAliasComplete(response: PostResponse, data: any) {
-    // Not needed if correct 'incoming' supporting pending transactions
-    if (BRS.currentPage !== 'aliases') {
-        return
-    }
-
-    data.aliasName = String(data.aliasName).escapeHTML()
-    data.aliasURI = ''
-
-    $('#aliases_table tbody').prepend(`
-        <tr class='tentative' data-alias='${data.aliasName.toLowerCase()}'>
-          <td class='alias'>${data.aliasName}</td>
-          <td class='uri'>${data.aliasURI}</td>
-          <td>/</td>
-          <td style='white-space:nowrap'>
-            <a class='btn btn-xs btn-default' href='#'>${$.t('edit')}</a> 
-            <a class='btn btn-xs btn-default' href='#'>${$.t('transfer')}</a> 
-            <a class='btn btn-xs btn-default' href='#'>${$.t('sell')}</a>
-          </td>
-        </tr>`)
-    if ($('#aliases_table').parent().hasClass('data-empty')) {
-        $('#aliases_table').parent().removeClass('data-empty')
-    }
 }
 
 export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
@@ -344,86 +297,6 @@ export function formsSetAliasError(response: PostResponse, data: any) {
             .find('.error_message')
             .html(errorDescription + '. ' + message)
     })
-}
-
-export function formsSetAliasComplete(response: PostResponse, data: any) {
-    // Not needed if unconfirmed is handled in alias page
-    if (BRS.currentPage !== 'aliases') {
-        return
-    }
-    data.aliasName = String(data.aliasName).escapeHTML()
-    data.aliasURI = String(data.aliasURI)
-
-    if (data.aliasURI.length > 100) {
-        data.shortAliasURI = data.aliasURI.substring(0, 100) + '...'
-        data.shortAliasURI = data.shortAliasURI.escapeHTML()
-    } else {
-        data.shortAliasURI = data.aliasURI.escapeHTML()
-    }
-
-    data.aliasURI = data.aliasURI.escapeHTML()
-
-    const $table = $('#aliases_table tbody')
-
-    const $row = $table.find('tr[data-alias=' + data.aliasName.toLowerCase() + ']')
-
-    if ($row.length) {
-        $row.addClass('tentative')
-        $row.find('td.alias').html(data.aliasName)
-
-        if (data.aliasURI && data.aliasURI.indexOf('http') === 0) {
-            $row.find('td.uri').html("<a href='" + data.aliasURI + "' target='_blank'>" + data.shortAliasURI + '</a>')
-        } else {
-            $row.find('td.uri').html(data.shortAliasURI)
-        }
-
-        notify($.t('success_alias_update'), { type: 'success' })
-        return
-    }
-    const $rows = $table.find('tr')
-
-    const rowToAdd =
-        "<tr class='tentative' data-alias='" +
-        data.aliasName.toLowerCase() +
-        "'><td class='alias'>" +
-        data.aliasName +
-        "</td><td class='uri'>" +
-        (data.aliasURI && data.aliasURI.indexOf('http') === 0
-            ? "<a href='" + data.aliasURI + "' target='_blank'>" + data.shortAliasURI + '</a>'
-            : data.shortAliasURI) +
-        "</td><td>/</td><td style='white-space:nowrap'><a class='btn btn-xs btn-default' href='#'>" +
-        $.t('edit') +
-        "</a> <a class='btn btn-xs btn-default' href='#'>" +
-        $.t('transfer') +
-        "</a> <a class='btn btn-xs btn-default' href='#'>" +
-        $.t('sell') +
-        '</a></td></tr>'
-
-    let rowAdded = false
-
-    const newAlias = data.aliasName.toLowerCase()
-
-    if ($rows.length) {
-        $rows.each(function () {
-            const alias = $(this).data('alias')
-
-            if (newAlias < alias) {
-                $(this).before(rowToAdd)
-                rowAdded = true
-                return false
-            }
-        })
-    }
-
-    if (!rowAdded) {
-        $table.append(rowToAdd)
-    }
-
-    if ($('#aliases_table').parent().hasClass('data-empty')) {
-        $('#aliases_table').parent().removeClass('data-empty')
-    }
-
-    notify($.t('success_alias_register'), { type: 'success' })
 }
 
 export function formsSetTLDComplete(response: PostResponse, data: any) {

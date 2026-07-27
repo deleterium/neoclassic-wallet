@@ -1,11 +1,12 @@
 import { BRS } from '..'
-import { GetAliasesResponse } from '../typings'
+import { Alias, GetAliasesResponse, GetAliasResponse } from '../typings'
 import { goToPage, pageLoaded, reloadCurrentPage } from '../core/navigation'
 import { sendRequest } from '../core/send_request'
-import { getUnconfirmedTransactionsFromCache, dataLoadFinished } from '../core/util'
+import { dataLoadFinished } from '../core/util'
+import { findTLDNameByTLDId } from '../tools/aliases'
 
 // Current page is 'aliases'
-// Do not process unconfirmed.
+// Processing unconfirmed!.
 
 export async function pagesAliases() {
     const response: GetAliasesResponse = await sendRequest('getAliases+', {
@@ -57,7 +58,7 @@ export async function pagesAliases() {
         }
     }
 
-    if (!response.aliases || !response.aliases.length) {
+    if (response.errorCode) {
         $('#aliases_table tbody').empty().append(rows)
         dataLoadFinished($('#aliases_table'))
         $('#alias_account_count, #alias_uri_count, #empty_alias_count, #alias_count').html('0').removeClass('loading_dots')
@@ -68,64 +69,93 @@ export async function pagesAliases() {
         BRS.hasMorePages = true
         response.aliases.pop()
     }
+    const aliases = response.aliases
 
-    // TODO Add support for unconfirmed!!!
-    // if (BRS.unconfirmedTransactions.length) {
-    //     for (let i = 0; i < BRS.unconfirmedTransactions.length; i++) {
-    //         const unconfirmedTransaction = BRS.unconfirmedTransactions[i];
+    for (const unconfirmedTransaction of BRS.unconfirmedTransactions) {
+        if (unconfirmedTransaction.type !== 1) continue
+        if (unconfirmedTransaction.subtype === 1 || unconfirmedTransaction.subtype === 7 || unconfirmedTransaction.subtype === 8) {
+            // 1: setAlias, 7: buyAlias, 8: setTLD
+            let found = false
+            for (const alias of aliases) {
+                if (alias.aliasName === unconfirmedTransaction.attachment.alias) {
+                    alias.aliasURI = unconfirmedTransaction.attachment.uri
+                    alias.timestamp = -1
+                    found = true
+                    break
+                }
+            }
+            if (!found) {
+                const newAlias: Alias = {
+                    account: unconfirmedTransaction.sender,
+                    accountRS: unconfirmedTransaction.senderRS,
+                    aliasName: unconfirmedTransaction.attachment.alias ?? '', // setTLD has no alias name
+                    timestamp: -1,
+                    alias: unconfirmedTransaction.transaction,
+                    aliasURI: unconfirmedTransaction.attachment.uri ?? '',
+                    tld: unconfirmedTransaction.attachment.tld,
+                    tldName: findTLDNameByTLDId(unconfirmedTransaction.attachment.tld),
+                }
+                if ('priceNQT' in unconfirmedTransaction.attachment) {
+                    newAlias['priceNQT'] = unconfirmedTransaction.attachment.priceNQT
+                }
+                if ('buyer' in unconfirmedTransaction.attachment) {
+                    newAlias['buyer'] = unconfirmedTransaction.attachment.buyer
+                }
+                aliases.push(newAlias)
+            }
+        }
+        if (unconfirmedTransaction.subtype === 6) {
+            // 6: sellAlias
+            let found = false
+            for (const alias of aliases) {
+                if (alias.alias === unconfirmedTransaction.attachment.alias) {
+                    if (unconfirmedTransaction.recipient) {
+                        alias['buyer'] = unconfirmedTransaction.recipient
+                    }
+                    alias['priceNQT'] = unconfirmedTransaction.attachment.priceNQT
+                    alias.timestamp = -1
+                    found = true
+                    break
+                }
+            }
+            if (!found) {
+                const incomingAlias: GetAliasResponse = await sendRequest('getAlias', { alias: unconfirmedTransaction.attachment.alias })
+                const newAlias: Alias = {
+                    account: unconfirmedTransaction.sender,
+                    accountRS: unconfirmedTransaction.senderRS,
+                    aliasName: incomingAlias.errorCode ? '?' : incomingAlias.aliasName,
+                    timestamp: -1,
+                    alias: unconfirmedTransaction.attachment.alias,
+                    aliasURI: incomingAlias.errorCode ? '?' : incomingAlias.aliasURI || '',
+                    tld: incomingAlias.errorCode ? '' : incomingAlias.tld,
+                    tldName: incomingAlias.errorCode ? '?' : findTLDNameByTLDId(incomingAlias.tld),
+                }
+                if ('priceNQT' in unconfirmedTransaction.attachment) {
+                    newAlias['priceNQT'] = unconfirmedTransaction.attachment.priceNQT
+                }
+                if (unconfirmedTransaction.recipient) {
+                    newAlias['buyer'] = unconfirmedTransaction.recipient
+                }
+                aliases.push(newAlias)
+            }
+        }
+    }
 
-    //         if (unconfirmedTransaction.type === 1 && (unconfirmedTransaction.subtype === 1 || unconfirmedTransaction.subtype === 7)) {
-    //             let found = false;
-
-    //             for (let j = 0; j < aliases.length; j++) {
-    //                 if (aliases[j].aliasName === unconfirmedTransaction.attachment.alias) {
-    //                     aliases[j].aliasURI = unconfirmedTransaction.attachment.uri;
-    //                     aliases[j].tentative = true;
-    //                     found = true;
-    //                     break;
-    //                 }
-    //             }
-
-    //             if (!found) {
-    //                 aliases.push({
-    //                     aliasName: unconfirmedTransaction.attachment.alias,
-    //                     aliasURI: (unconfirmedTransaction.attachment.uri ? unconfirmedTransaction.attachment.uri : ''),
-    //                     tentative: true
-    //                 });
-    //             }
-    //         }
-    //     }
-    // }
-
-    for (const alias of response.aliases) {
+    for (const alias of aliases) {
         let status = '/'
         let tentative = false
-        let shortAliasURI = ''
 
-        const unconfirmedTransaction = getUnconfirmedTransactionsFromCache(1, 6, {
-            alias: alias.aliasName,
-        })
-
-        if (unconfirmedTransaction) {
+        if (alias.timestamp === -1) {
             tentative = true
-            if (unconfirmedTransaction[0].recipient) {
-                alias.buyer = unconfirmedTransaction[0].recipient
-            }
-            alias.priceNQT = unconfirmedTransaction[0].attachment?.priceNQT
         }
 
         if (!alias.aliasURI) {
             alias.aliasURI = ''
         }
-
+        let shortAliasURI = alias.aliasURI
         if (alias.aliasURI.length > 100) {
             shortAliasURI = alias.aliasURI.substring(0, 98) + '...'
-            shortAliasURI = shortAliasURI
-        } else {
-            shortAliasURI = alias.aliasURI
         }
-
-        alias.aliasURI = alias.aliasURI
 
         let allowCancel = false
 
@@ -202,10 +232,10 @@ export async function pagesAliases() {
                 ${status}
               </td>
               <td style="white-space:nowrap">
-                ${editButton}
-                ${transferButton}
-                ${sellButton}
-                ${cancelSaleButton}
+                ${tentative ? BRS.pendingTransactionHTML : editButton}
+                ${tentative ? '' : transferButton}
+                ${tentative ? '' : sellButton}
+                ${tentative ? '' : cancelSaleButton}
               </td>
             </tr>`
     }
@@ -213,7 +243,7 @@ export async function pagesAliases() {
     $('#aliases_table tbody').empty().append(rows)
     dataLoadFinished($('#aliases_table'))
     if (BRS.pageNumber === 1) {
-        let count = response.aliases.length.toString()
+        let count = (response.aliases.length + BRS.myTlds.length).toString()
         if (BRS.hasMorePages) {
             count += '+'
         }
@@ -223,7 +253,7 @@ export async function pagesAliases() {
 }
 
 export function incomingAliases() {
-    if (BRS.checkIncoming.newTransactions) {
+    if (BRS.checkIncoming.newTransactions || BRS.checkIncoming.unconfirmedChanged) {
         reloadCurrentPage()
     }
 }

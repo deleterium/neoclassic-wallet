@@ -14,16 +14,7 @@ import { checkIncomingNow } from './check_incoming'
 import { notify } from './notifications'
 import { formsSetAccountInfoComplete } from '../modals/account_info'
 import { formsBroadcastTransactionComplete, formsParseTransactionComplete, formsParseTransactionError } from '../modals/advanced'
-import {
-    formsSellAlias,
-    formsSellAliasComplete,
-    formsBuyAliasError,
-    formsBuyAliasComplete,
-    formsSetAlias,
-    formsSetAliasError,
-    formsSetAliasComplete,
-    formsSetTLDComplete,
-} from '../modals/aliases'
+import { formsSellAlias, formsBuyAliasError, formsSetAlias, formsSetAliasError, formsSetTLDComplete } from '../modals/aliases'
 import {
     formsOrderAsset,
     formsIssueAsset,
@@ -311,7 +302,6 @@ const formFunctions = {
     assetExchangeChangeGroupName: formsAssetExchangeChangeGroupName,
     assetExchangeGroup: formsAssetExchangeGroup,
     broadcastTransactionComplete: formsBroadcastTransactionComplete,
-    buyAliasComplete: formsBuyAliasComplete,
     buyAliasError: formsBuyAliasError,
     cancelOrder: formsCancelOrder,
     cancelOrderComplete: formsCancelOrderComplete,
@@ -325,13 +315,11 @@ const formFunctions = {
     parseTransactionError: formsParseTransactionError,
     requestBurst: formRequestBurst,
     sellAlias: formsSellAlias,
-    sellAliasComplete: formsSellAliasComplete,
     sendMoneyComplete: formsSendMoneyComplete,
     sendMoneyEscrow: formsSendMoneyEscrow,
     sendMoneyMulti: formsSendMoneyMulti,
     setAccountInfoComplete: formsSetAccountInfoComplete,
     setAlias: formsSetAlias,
-    setAliasComplete: formsSetAliasComplete,
     setAliasError: formsSetAliasError,
     setTLDComplete: formsSetTLDComplete,
     signMessage: formsSignMessage,
