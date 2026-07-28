@@ -49,7 +49,7 @@ async function getOpenOrders(type: 'ask' | 'bid') {
         return 0
     })
 
-    drawOrdersTable(response[typeOrderName].concat(getUnconfirmedOrders(type)), type)
+    drawOrdersTable(response[typeOrderName].concat(await getUnconfirmedOrders(type)), type)
     return anyOrders
 }
 
