@@ -23,7 +23,7 @@ import { closeContextMenu } from '../core/context_menu'
 
 import { cacheAsset, getAssetDetails } from '../tools/assets'
 
-import { AnyAssetOrder, DBAsset, GetAssetResponse, GetTradesResponse, PostResponse } from '../typings'
+import { AnyAssetOrder, DBAsset, GetAssetResponse, GetTradesResponse } from '../typings'
 import { notify } from '../core/notifications'
 
 // Current page is 'asset_exchange'
@@ -800,67 +800,6 @@ export function evCalculatePricePreviewInput(e: JQuery.TriggeredEvent) {
     }
     const total = formatOrderTotal(quantityQNT, priceNQT)
     $('#' + orderType + '_asset_total').val(total.toString())
-}
-
-export function formsOrderAssetComplete(response: PostResponse, data: any) {
-    let $table: JQuery<HTMLElement>
-    if (data.requestType === 'placeBidOrder') {
-        $table = $('#asset_exchange_bid_orders_table tbody')
-    } else {
-        $table = $('#asset_exchange_ask_orders_table tbody')
-    }
-
-    if ($table.find(`tr[data-transaction='${response.transaction}']`).length) {
-        return
-    }
-
-    const $rows = $table.find('tr')
-
-    const totalNQT = calculateOrderTotalNQT(data.quantityQNT, data.priceNQT)
-
-    let rowToAdd = `
-        <tr class='tentative'
-          data-transaction='${response.transaction}'
-          data-quantity='${data.quantityQNT.toString()}'
-          data-price='${data.priceNQT.toString()}'>`
-    if (data.requestType === 'placeBidOrder') {
-        rowToAdd += `
-          <td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>
-          <td>${formatNQTAsAmount(totalNQT)}</td>
-          <td>${formatQNTAsQuantity(data.quantityQNT, BRS.currentAsset.decimals)}</td>
-          <td>${formatPriceNQTAsPriceQuantity(data.priceNQT, BRS.currentAsset.decimals)}</td>
-        </tr>`
-    } else {
-        rowToAdd += `
-          <td>${formatPriceNQTAsPriceQuantity(data.priceNQT, BRS.currentAsset.decimals)}</td>
-          <td>${formatQNTAsQuantity(data.quantityQNT, BRS.currentAsset.decimals)}</td>
-          <td>${formatNQTAsAmount(totalNQT)}</td>
-          <td>${BRS.pendingTransactionHTML} <strong>${$.t('you')}</strong></td>
-        </tr>`
-    }
-
-    let rowAdded = false
-
-    if ($rows.length) {
-        $rows.each(function () {
-            const rowPrice = BigInt($(this).data('price'))
-
-            if (data.requestType === 'placeBidOrder' && BigInt(data.priceNQT) > rowPrice) {
-                $(this).before(rowToAdd)
-                rowAdded = true
-                return false
-            } else if (data.requestType === 'placeAskOrder' && BigInt(data.priceNQT) < rowPrice) {
-                $(this).before(rowToAdd)
-                rowAdded = true
-                return false
-            }
-        })
-    }
-
-    if (!rowAdded) {
-        $table.append(rowToAdd)
-        $table.parent().parent().removeClass('data-empty').parent().addClass('no-padding')
-    }
 }
 
 export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {

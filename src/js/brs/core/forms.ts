@@ -22,17 +22,15 @@ import {
     formsAssetExchangeGroup,
     formsTransferAssetMulti,
     formsTransferAsset,
-    formsTransferAssetComplete,
     formsCancelOrder,
-    formsCancelOrderComplete,
 } from '../modals/assets'
 import { formsClearData } from '../modals/clear_data'
 import { formsAddContact, formsUpdateContact, formsDeleteContact } from '../modals/contacts'
 import { formsDecryptMessages } from '../modals/messages'
 import { formRequestBurst } from '../modals/request_coins'
-import { formsSendMoneyComplete, formsSendMoneyMulti } from '../modals/sendmoney'
+import { formsSendMoneyMulti } from '../modals/sendmoney'
 import { formsSignModalButtonClicked, formsSignMessage, formsVerifyMessage } from '../modals/sign_message'
-import { formsAddAssetBookmark, formsOrderAssetComplete } from '../pages/assets.asset_exchange'
+import { formsAddAssetBookmark } from '../pages/assets.asset_exchange'
 import { formsSendMoneyEscrow } from '../pages/payments.escrow'
 
 /**
@@ -75,7 +73,7 @@ const submitOnlyWhenInSync = {
 function getSuccessMessage(requestType: RequestType) {
     const key = 'success_' + requestType
     if ($.i18n.exists(key)) {
-        return $.t(key)
+        return $.t(key, { valueSuffix: BRS.valueSuffix })
     }
     return ''
 }
@@ -83,7 +81,7 @@ function getSuccessMessage(requestType: RequestType) {
 function getErrorMessage(requestType: RequestType) {
     const key = 'error_' + requestType
     if ($.i18n.exists(key)) {
-        return $.t(key)
+        return $.t(key, { valueSuffix: BRS.valueSuffix })
     }
     return ''
 }
@@ -304,18 +302,15 @@ const formFunctions = {
     broadcastTransactionComplete: formsBroadcastTransactionComplete,
     buyAliasError: formsBuyAliasError,
     cancelOrder: formsCancelOrder,
-    cancelOrderComplete: formsCancelOrderComplete,
     clearData: formsClearData,
     decryptMessages: formsDecryptMessages,
     deleteContact: formsDeleteContact,
     issueAsset: formsIssueAsset,
     orderAsset: formsOrderAsset,
-    orderAssetComplete: formsOrderAssetComplete,
     parseTransactionComplete: formsParseTransactionComplete,
     parseTransactionError: formsParseTransactionError,
     requestBurst: formRequestBurst,
     sellAlias: formsSellAlias,
-    sendMoneyComplete: formsSendMoneyComplete,
     sendMoneyEscrow: formsSendMoneyEscrow,
     sendMoneyMulti: formsSendMoneyMulti,
     setAccountInfoComplete: formsSetAccountInfoComplete,
@@ -325,7 +320,6 @@ const formFunctions = {
     signMessage: formsSignMessage,
     signModalButtonClicked: formsSignModalButtonClicked,
     transferAsset: formsTransferAsset,
-    transferAssetComplete: formsTransferAssetComplete,
     transferAssetMulti: formsTransferAssetMulti,
     updateContact: formsUpdateContact,
     verifyMessage: formsVerifyMessage,

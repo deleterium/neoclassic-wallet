@@ -1,6 +1,5 @@
 import { BRS } from '..'
-import { PostResponse, ShowBootstrapModalEvent } from '../typings'
-import { reloadCurrentPage } from '../core/navigation'
+import { ShowBootstrapModalEvent } from '../typings'
 import { loadAssetExchangeSidebar } from '../pages/assets.asset_exchange'
 import { dbPut } from '../core/database'
 import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from '../core/numbers'
@@ -157,31 +156,18 @@ export function formsTransferAsset(data: any) {
     }
 }
 
-export function formsTransferAssetComplete() {
-    if (BRS.currentPage === 'my_assets') {
-        reloadCurrentPage()
-    }
-}
-
 export function formsCancelOrder(data: any) {
     const requestType = data.cancel_order_type
     delete data.cancel_order_type
+    let successMessage = $.t('success_cancelBuyOrder')
+    if (requestType === 'cancelAskOrder') {
+        successMessage = $.t('success_cancelSellOrder')
+    }
     return {
         data,
         requestType,
+        successMessage,
     }
-}
-
-export function formsCancelOrderComplete(response: PostResponse, data: any) {
-    if (data.requestType === 'cancelAskOrder') {
-        notify($.t('success_cancelSellOrder'), { type: 'success' })
-    } else {
-        notify($.t('success_cancelBuyOrder'), { type: 'success' })
-    }
-    $('#open_orders_page tr[data-order=' + String(data.order).escapeHTML() + ']')
-        .addClass('text-muted text-line-through')
-        .find('td.cancel')
-        .html(BRS.pendingTransactionHTML)
 }
 
 export function formsAssetExchangeGroup(data: any) {
