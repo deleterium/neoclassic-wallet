@@ -8,7 +8,6 @@ import { getAndUpdateAccountDetails } from './check_incoming.account'
 import { cacheUserAssets, saveCachedAssets } from '../tools/assets'
 
 import {
-    GetAccountTransactionIdsResponse,
     GetAccountTransactionsResponse,
     GetBlochainStatusResponse,
     GetBlocksResponse,
@@ -155,7 +154,7 @@ function checkSyncProcess() {
 /* Done only once at login */
 export function getInitialTransactions() {
     BRS.checkIncoming.forceDashboardUpdate = true
-    fetchAndHandleLatestTransactions()
+    getNewTransactions()
 }
 
 /* New block detected, start looking for transaction changes
@@ -163,34 +162,20 @@ export function getInitialTransactions() {
    not updated yet. */
 function getNewTransactions() {
     // check if there is a new transaction..
-    sendRequest('getAccountTransactionIds', {
-        account: BRS.account,
-        timestamp: BRS.blocks[0].timestamp + 1,
-        firstIndex: 0,
-        lastIndex: 0,
-    }).then((response: GetAccountTransactionIdsResponse) => {
-        if (response.transactionIds && response.transactionIds.length) {
-            BRS.checkIncoming.newTransactions = true
-            fetchAndHandleLatestTransactions()
-            return
-        }
-        addUnconfirmedAndHandleIncoming([])
-    })
-}
-
-function fetchAndHandleLatestTransactions() {
     sendRequest('getAccountTransactions', {
         account: BRS.account,
+        timestamp: (BRS.blocks[0]?.timestamp ?? 0) + 1,
         firstIndex: 0,
         lastIndex: 9,
         includeIndirect: true,
     }).then((response: GetAccountTransactionsResponse) => {
         if (response.transactions && response.transactions.length) {
+            BRS.checkIncoming.newTransactions = true
             BRS.checkIncoming.latestsTransactionsIds = response.transactions.map((tr) => tr.transaction).join()
             addUnconfirmedAndHandleIncoming(response.transactions)
-        } else {
-            addUnconfirmedAndHandleIncoming([])
+            return
         }
+        addUnconfirmedAndHandleIncoming([])
     })
 }
 
@@ -241,11 +226,17 @@ const incomingFunctions = {
 function handleIncomingTransactions(transactions: Transaction[]) {
     transactions.sort((x, y) => y.timestamp - x.timestamp)
 
-    if (BRS.checkIncoming.newTransactions) {
-        notify($.t('new_confirmed_transaction'))
+    if (transactions.some((tx) => tx.recipient === BRS.account && tx.confirmations === 0)) {
+        notify($.t('new_received_transaction'))
     }
-    if (BRS.checkIncoming.unconfirmedChanged && !BRS.checkIncoming.newBlock) {
-        notify($.t('new_unconfirmed_transaction'))
+    if (transactions.some((tx) => tx.sender === BRS.account && tx.confirmations === 0)) {
+        notify($.t('new_sent_transaction'))
+    }
+    if (transactions.some((tx) => tx.recipient === BRS.account && tx.confirmations === -1)) {
+        notify($.t('pending_received_transaction'))
+    }
+    if (transactions.some((tx) => tx.sender === BRS.account && tx.confirmations === -1)) {
+        notify($.t('pending_sent_transaction'))
     }
 
     if (BRS.checkIncoming.forceDashboardUpdate || BRS.checkIncoming.newTransactions || BRS.checkIncoming.unconfirmedChanged) {
