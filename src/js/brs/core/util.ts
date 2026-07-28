@@ -291,6 +291,14 @@ export function getUnconfirmedTransactionsFromCache(type: number, subtype: numbe
 
         if (fields) {
             for (const key in fields) {
+                if (typeof fields[key] === 'object' && typeof unconfirmedTransaction[key] === 'object') {
+                    for (const subkey in fields[key]) {
+                        if (unconfirmedTransaction[key][subkey] === fields[key][subkey]) {
+                            unconfirmedTransactions.push(unconfirmedTransaction)
+                        }
+                    }
+                    continue
+                }
                 if (unconfirmedTransaction[key] === fields[key]) {
                     unconfirmedTransactions.push(unconfirmedTransaction)
                 }
