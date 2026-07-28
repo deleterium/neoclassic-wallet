@@ -229,12 +229,7 @@
           </div>
           <div class="form-group">
             <label for="register_alias_tld" data-i18n="tld_long">tld_long</label>
-            <input
-              type="text"
-              class="form-control"
-              name="tld"
-              id="register_alias_tld"
-              placeholder="signum" />
+            <input type="text" class="form-control" name="tld" id="register_alias_tld" placeholder="signum" />
             <p id="register_alias_tld_help" data-i18n="[html]tld_help">tld_help</p>
             <p id="register_alias_tld_noneditable" style="display: none"></p>
           </div>
@@ -1015,14 +1010,9 @@
       </div>
       <div class="modal-body">
         <form role="form" autocomplete="off" id="form_register_tld">
-
           <div class="form-group">
             <label for="register_tld_tld" data-i18n="tld_long">tld_long</label>
-            <input
-              type="text"
-              class="form-control"
-              name="tld"
-              id="register_tld_tld" />
+            <input type="text" class="form-control" name="tld" id="register_tld_tld" />
             <p data-i18n="custom_tld_help">custom_tld_help</p>
           </div>
 
@@ -1092,12 +1082,7 @@
             <textarea class="form-control ev-check-message-length-input" id="register_tld_message" name="message" rows="4"></textarea>
             <div>
               <label>
-                <input
-                  type="checkbox"
-                  name="encrypt_message"
-                  id="register_tld_encrypt_message"
-                  value="0"
-                  disabled />
+                <input type="checkbox" name="encrypt_message" id="register_tld_encrypt_message" value="0" disabled />
                 <span data-i18n="encrypt_message">encrypt_message</span>
               </label>
             </div>
@@ -1119,7 +1104,11 @@
           </div>
           <div class="form-group advanced optional_note">
             <label data-i18n="note_to_self">Note to Self</label>
-            <textarea class="form-control ev-check-message-length-input" id="register_tld_note_to_self" name="note_to_self" rows="4"></textarea>
+            <textarea
+              class="form-control ev-check-message-length-input"
+              id="register_tld_note_to_self"
+              name="note_to_self"
+              rows="4"></textarea>
             <div>
               <span data-i18n="note_is_encrypted">This note is encrypted.</span>
             </div>
