@@ -17,7 +17,7 @@ export function getMessageTextFromTX(transaction: Transaction): string | undefin
     }
     if (transaction.attachment['version.Message'] === 1) {
         if (transaction.attachment.messageIsText) {
-            return transaction.attachment.message
+            return transaction.attachment.message.unescapeHTML()
         }
         // try to convert the data to string (Smart Contracts need this)
         return converters.hexStringToString(transaction.attachment.message)
@@ -40,7 +40,7 @@ export function getMessageBytesFromTX(transaction: Transaction): HexString | und
     }
     if (transaction.attachment['version.Message'] === 1) {
         if (transaction.attachment.messageIsText) {
-            return converters.stringToHexString(transaction.attachment.message)
+            return converters.stringToHexString(transaction.attachment.message.unescapeHTML())
         }
         // Already hex string
         return transaction.attachment.message
@@ -62,7 +62,7 @@ interface GetEncryptedMessage {
  *     isDecrypted: {boolean}
  * } OR {undefined} if no EncryptedMessage in that TX
  */
-export function getEncryptedMessageFromTX(transaction): GetEncryptedMessage | undefined {
+export function getEncryptedMessageFromTX(transaction: Transaction): GetEncryptedMessage | undefined {
     if (!transaction.attachment || !transaction.attachment.encryptedMessage) {
         return
     }
