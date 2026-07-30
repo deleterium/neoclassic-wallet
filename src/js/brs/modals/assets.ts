@@ -6,17 +6,24 @@ import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQua
 import { getTranslatedFieldName } from '../core/util'
 import { notify } from '../core/notifications'
 
-export function populateTransferAssetSelector($invoker: JQuery<HTMLElement>) {
+export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: string) {
     const assetId = $invoker.data('asset') ?? ''
     const assetName = $invoker.data('name') ?? '?'
     const decimals = $invoker.data('decimals') ?? ''
-    if (assetId === '') {
-        return
-    }
+
     let $formGroup = $invoker.closest('.row')
     if ($formGroup.length === 0) {
-        // click was not in dropdown-menu... Assume new "transfer asset"
-        $formGroup = $('#form-transfer-asset')
+        // click was not in dropdown-menu...
+        $formGroup = $('#form-' + formName?.replace('_', '-'))
+        if ($formGroup.length === 0) {
+            console.error('Unkown form name: ' + formName)
+            return
+        }
+    }
+
+    if (assetId === '') {
+        $formGroup.find(`span[name=available]`).empty()
+        return
     }
 
     $formGroup.find('input[name=asset]').val(assetId)
@@ -61,7 +68,7 @@ export function populateTransferAssetSelector($invoker: JQuery<HTMLElement>) {
             $.t('total_lowercase') +
             ')'
     }
-    $formGroup.find('span[name=transfer_asset_available]').html(availableAssetsMessage)
+    $formGroup.find(`span[name=available]`).html(availableAssetsMessage)
 }
 
 export function formsTransferAssetMulti(data: any) {

@@ -52,7 +52,7 @@ import {
     goToAsset,
 } from '../pages/assets.asset_exchange'
 
-import { populateTransferAssetSelector, evAssetOrderModalOnShowBsModal, evAssetSelectorButtonClick } from '../modals/assets'
+import { populateAssetSelector, evAssetOrderModalOnShowBsModal, evAssetSelectorButtonClick } from '../modals/assets'
 
 import { evTransactionsPageTypeClick } from '../pages/transactions'
 
@@ -234,7 +234,7 @@ export function addEventListeners() {
     })
     $('span.asset_selector button').on('click', evAssetSelectorButtonClick)
     $('span.asset_selector').on('click', 'ul li a', (e) => {
-        populateTransferAssetSelector($(e.currentTarget))
+        populateAssetSelector($(e.currentTarget))
     })
     $('.recipient_selector button').on('click', evSpanRecipientSelectorClickButton)
     $('.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
@@ -310,7 +310,8 @@ export function addEventListeners() {
         $('#asset_exchange_group_new_group_div').val('').hide()
     })
     $('#transfer_asset_modal').on('show.bs.modal', (e) => {
-        populateTransferAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget))
+        populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'transfer_asset')
+    })
     })
     $('body').on('click', 'a[data-goto-asset]', function (e) {
         e.preventDefault()
