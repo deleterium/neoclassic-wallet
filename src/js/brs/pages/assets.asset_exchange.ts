@@ -414,6 +414,7 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
         $('#asset_name').html(asset.name)
         $('#asset_description').html(asset.description)
         $('#asset_quantity').html(formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals))
+        $('#asset_mintable').text(asset.mintable ? $.t('yes') : $.t('no'))
 
         $('.asset_name').html(asset.name)
         $('#sell_asset_button').data('asset', assetId)
