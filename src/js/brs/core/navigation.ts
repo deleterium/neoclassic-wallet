@@ -18,6 +18,7 @@ import { pagesPeers } from '../pages/peers'
 import { pagesSearchResults } from '../pages/search_results.page'
 import { pagesSettings } from '../pages/settings'
 import { pagesTransactions } from '../pages/transactions'
+import { pagesAssestAdministration } from '../pages/assets.asset_administration'
 
 /**
  * Handles clicks in sidebar, changing current page if needed
@@ -41,6 +42,7 @@ export function evSidebarClick(e: JQuery.ClickEvent): void {
 const pageFunctions = {
     aliases: pagesAliases,
     asset_exchange: pagesAssetExchange,
+    asset_administration: pagesAssestAdministration,
     at: pagesAt,
     block_info: pagesBlockInfo,
     contacts: pagesContacts,

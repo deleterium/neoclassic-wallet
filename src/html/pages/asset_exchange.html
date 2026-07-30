@@ -398,3 +398,36 @@
     <div class="data-pagination"></div>
   </section>
 </div>
+<div id="asset_administration_page" class="page">
+  <section class="content-header header-space-between">
+    <h1 data-i18n="asset_administration">asset_administration</h1>
+    <div>
+      <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#issue_asset_modal" data-i18n="issue_asset">
+        issue_asset
+      </button>
+    </div>
+  </section>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="data-container data-loading">
+        <table class="table table-striped" id="asset_administration_table">
+          <thead>
+            <tr>
+              <th data-i18n="asset">asset</th>
+              <th data-i18n="asset_id">asset_id</th>
+              <th data-i18n="quantity">Quantity</th>
+              <th data-i18n="quantity_circulating">Total Available</th>
+              <th data-i18n="mintable">mintable</th>
+              <th data-i18n="distribute_rewards">distribute_rewards</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="data-loading-container"><i class="fas fa-circle-notch fa-spin fa-3x" style="display: block"></i></div>
+        <div class="data-empty-container">
+          <p data-i18n="no_issued_assets">no_issued_assets</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
