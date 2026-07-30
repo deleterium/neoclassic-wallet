@@ -301,6 +301,15 @@ export function verifyTransactionBytes(transactionBytes: string, requestType: st
                     subtype: 5,
                     attachmentInfo: [{ type: 'Long*1', value: [data.order] }],
                 }
+            case 'mintAsset':
+                return {
+                    type: 2,
+                    subtype: 6,
+                    attachmentInfo: [
+                        { type: 'Long*1', value: [data.asset] },
+                        { type: 'Long*1', value: [data.quantityQNT] },
+                    ],
+                }
             case 'transferAssetMulti':
                 return {
                     type: 2,

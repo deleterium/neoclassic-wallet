@@ -5,6 +5,7 @@ import { dbPut } from '../core/database'
 import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from '../core/numbers'
 import { getTranslatedFieldName } from '../core/util'
 import { notify } from '../core/notifications'
+import { getAssetFromCache } from '../tools/assets'
 
 export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: string) {
     const assetId = $invoker.data('asset') ?? ''
@@ -30,8 +31,15 @@ export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: 
     $formGroup.find('input[name=decimals]').val(decimals)
     $formGroup.find('span[name=asset-name]').text(assetName)
     $formGroup.find('input[name=name_plus_asset]').val(assetName + ' - ' + assetId)
-    $('#transfer_asset_name_plus_asset').val(assetName + ' - ' + assetId)
 
+    if (formName === 'mint_asset') {
+        const selectedAsset = getAssetFromCache(assetId)
+        if (!selectedAsset) return
+        $formGroup
+            .find('span[name=available]')
+            .text($.t('quantity_circulating') + ': ' + formatQNTAsQuantity(selectedAsset.quantityCirculatingQNT, selectedAsset.decimals))
+        return
+    }
     let confirmedBalance = ''
     let unconfirmedBalance = ''
     if (BRS.accountInfo.assetBalances) {
@@ -425,5 +433,33 @@ export function evAssetSelectorButtonClick(e: JQuery.ClickEvent) {
                 `<li><a class='dropdown-item' href='#' data-name='${asset.name}' data-asset='${asset.asset}' data-decimals='${asset.decimals}'>${asset.name} - ${asset.asset}</a></li>`,
             )
         }
+    }
+}
+
+export function formsMintAsset(data: any) {
+    if (!data.quantity) {
+        return {
+            error: $.t('error_not_specified', {
+                name: getTranslatedFieldName('quantity').toLowerCase(),
+            }).capitalize(),
+        }
+    }
+
+    try {
+        data.quantityQNT = parseQuantityToQNT(data.quantity, Number(data.decimals))
+    } catch (e) {
+        return {
+            error: $.t('error_incorrect_quantity_plus', {
+                err: (e as Error).message.escapeHTML(),
+            }),
+        }
+    }
+
+    delete data.quantity
+    delete data.decimals
+    delete data.name_plus_asset
+
+    return {
+        data,
     }
 }

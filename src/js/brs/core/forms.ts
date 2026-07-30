@@ -23,6 +23,7 @@ import {
     formsTransferAssetMulti,
     formsTransferAsset,
     formsCancelOrder,
+    formsMintAsset,
 } from '../modals/assets'
 import { formsClearData } from '../modals/clear_data'
 import { formsAddContact, formsUpdateContact, formsDeleteContact } from '../modals/contacts'
@@ -50,6 +51,7 @@ const submitOnlyWhenInSync = {
     deleteContact: false,
     escrowSign: true,
     issueAsset: true,
+    mintAsset: true,
     orderAsset: true,
     requestBurst: false,
     sellAlias: true,
@@ -306,6 +308,7 @@ const formFunctions = {
     decryptMessages: formsDecryptMessages,
     deleteContact: formsDeleteContact,
     issueAsset: formsIssueAsset,
+    mintAsset: formsMintAsset,
     orderAsset: formsOrderAsset,
     parseTransactionComplete: formsParseTransactionComplete,
     parseTransactionError: formsParseTransactionError,

@@ -312,6 +312,8 @@ export function addEventListeners() {
     $('#transfer_asset_modal').on('show.bs.modal', (e) => {
         populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'transfer_asset')
     })
+    $('#mint_asset_modal').on('show.bs.modal', (e) => {
+        populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'mint_asset')
     })
     $('body').on('click', 'a[data-goto-asset]', function (e) {
         e.preventDefault()
