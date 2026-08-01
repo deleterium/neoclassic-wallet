@@ -44,15 +44,22 @@ export async function pagesAssestAdministration() {
         if (unconfirmedMintTx) {
             mintHTML = BRS.pendingTransactionHTML
         }
-        const distributionHTML = `
+        let distributionHTML = `
             <a href='#'
                 data-toggle='modal'
-                data-target='#distribute_rewards_asset_modal'
+                data-target='#distribute_to_asset_holders_asset_modal'
                 data-asset='${asset.asset}'
                 data-name='${asset.name}'
                 data-decimals='${String(asset.decimals)}'>
                 <i class="fa fa-magic" aria-hidden="true"></i>
             </a>`
+        const unconfirmedDistributionTx = getUnconfirmedTransactionsFromCache(2, 8, {
+            attachment: { asset: asset.asset },
+        })
+        if (unconfirmedDistributionTx) {
+            distributionHTML = BRS.pendingTransactionHTML
+        }
+
         rows += `
             <tr data-asset="${asset.asset}">
               <td><a href='#' data-goto-asset='${asset.asset}'>

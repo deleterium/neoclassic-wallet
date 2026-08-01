@@ -5,7 +5,7 @@ import { dbPut } from '../core/database'
 import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from '../core/numbers'
 import { getTranslatedFieldName } from '../core/util'
 import { notify } from '../core/notifications'
-import { getAssetFromCache } from '../tools/assets'
+import { getAssetDetails, getAssetFromCache } from '../tools/assets'
 
 export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: string) {
     const assetId = $invoker.data('asset') ?? ''
@@ -79,6 +79,40 @@ export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: 
     $formGroup.find(`span[name=available]`).html(availableAssetsMessage)
 }
 
+export function populateDistributeAssetHolders($invoker: JQuery<HTMLElement>) {
+    const $formGroup = $('#form-distribute_to_asset_holders')
+    $formGroup.find('span[name=available]').text('')
+
+    const assetId = $invoker.data('asset') ?? ''
+    if (!assetId) {
+        $formGroup.find('input[name=holders_asset]').empty().addClass('is-invalid')
+        $formGroup.find('input[name=holders_decimals]').empty()
+        $formGroup.find('span[name=holders_asset_name]').text('?')
+        return
+    }
+    const assetName = $invoker.data('name') ?? '?'
+    const decimals = $invoker.data('decimals') ?? ''
+
+    $formGroup.find('input[name=holders_asset]').val(assetId).removeClass('is-invalid')
+    $formGroup.find('input[name=holders_decimals]').val(decimals)
+    $formGroup.find('span[name=holders_asset_name]').text(assetName)
+}
+
+export async function evDistributeToAssetHoldersHoldersAssetInput(e: JQuery.TriggeredEvent) {
+    const assetInput: string = $(e.target).val()
+    const chainAsset = await getAssetDetails(assetInput)
+    const $formGroup = $('#form-distribute_to_asset_holders')
+    if (!chainAsset) {
+        $('#distribute_to_asset_holders_holders_asset').addClass('is-invalid')
+        $formGroup.find('input[name=holders_decimals]').empty()
+        $formGroup.find('span[name=holders_asset_name]').text('?')
+        return
+    }
+    $formGroup.find('input[name=holders_asset]').val(chainAsset.asset).removeClass('is-invalid')
+    $formGroup.find('input[name=holders_decimals]').val(chainAsset.decimals)
+    $formGroup.find('span[name=holders_asset_name]').text(chainAsset.name)
+}
+
 export function formsTransferAssetMulti(data: any) {
     data.assetIdsAndQuantities = ''
     let items = 0
@@ -95,7 +129,7 @@ export function formsTransferAssetMulti(data: any) {
             showWarning = true
         }
         try {
-            data.assetIdsAndQuantities += data.asset[i] + ':' + parseQuantityToQNT(data.quantity[i], data.decimals[i])
+            data.assetIdsAndQuantities += data.asset[i] + ':' + parseQuantityToQNT(data.quantity[i], Number(data.decimals[i]))
         } catch (e) {
             return {
                 error: $.t('error_incorrect_quantity_plus', {
@@ -153,7 +187,7 @@ export function formsTransferAsset(data: any) {
     }
 
     try {
-        data.quantityQNT = parseQuantityToQNT(data.quantity, data.decimals)
+        data.quantityQNT = parseQuantityToQNT(data.quantity, Number(data.decimals))
     } catch (e) {
         return {
             error: $.t('error_incorrect_quantity_plus', {
@@ -458,6 +492,70 @@ export function formsMintAsset(data: any) {
     delete data.quantity
     delete data.decimals
     delete data.name_plus_asset
+
+    return {
+        data,
+    }
+}
+
+export function formsDistributeToAssetHolders(data: any) {
+    if (!data.quantity && !data.amountNXT) {
+        return {
+            error: $.t('error_not_specified', {
+                name: getTranslatedFieldName('quantity_and_or_amount').toLowerCase(),
+            }).capitalize(),
+        }
+    }
+    if (!data.holders_asset) {
+        return {
+            error: $.t('error_not_specified', {
+                name: getTranslatedFieldName('to_holders_of').toLowerCase(),
+            }).capitalize(),
+        }
+    }
+    if (!data.quantityMinimum) {
+        data.quantityMinimumQNT = '0'
+    } else {
+        if (!data.holders_decimals) {
+            return {
+                error: $.t('error_not_specified', {
+                    name: getTranslatedFieldName('to_holders_of').toLowerCase(),
+                }).capitalize(),
+            }
+        }
+        try {
+            data.quantityMinimumQNT = parseQuantityToQNT(data.quantityMinimum, Number(data.holders_decimals))
+        } catch (e) {
+            return {
+                error: $.t('error_incorrect_quantity_plus', {
+                    err: (e as Error).message.escapeHTML(),
+                }),
+            }
+        }
+    }
+    if (!data.asset) {
+        data.asset = '0'
+        data.quantityQNT = '0'
+    } else {
+        try {
+            data.quantityQNT = parseQuantityToQNT(data.quantity, Number(data.decimals))
+        } catch (e) {
+            return {
+                error: $.t('error_incorrect_quantity_plus', {
+                    err: (e as Error).message.escapeHTML(),
+                }),
+            }
+        }
+    }
+
+    delete data.quantity
+    delete data.decimals
+    delete data.name_plus_asset
+    data.assetToDistribute = data.asset
+    data.asset = data.holders_asset
+    delete data.holders_asset
+    delete data.holders_decimals
+    delete data.quantityMinimum
 
     return {
         data,

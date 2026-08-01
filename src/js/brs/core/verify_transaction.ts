@@ -310,6 +310,17 @@ export function verifyTransactionBytes(transactionBytes: string, requestType: st
                         { type: 'Long*1', value: [data.quantityQNT] },
                     ],
                 }
+            case 'distributeToAssetHolders':
+                return {
+                    type: 2,
+                    subtype: 8,
+                    attachmentInfo: [
+                        { type: 'Long*1', value: [data.asset] },
+                        { type: 'Long*1', value: [data.quantityMinimumQNT] },
+                        { type: 'Long*1', value: [data.assetToDistribute] },
+                        { type: 'Long*1', value: [data.quantityQNT] },
+                    ],
+                }
             case 'transferAssetMulti':
                 return {
                     type: 2,

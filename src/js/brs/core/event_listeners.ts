@@ -52,7 +52,13 @@ import {
     goToAsset,
 } from '../pages/assets.asset_exchange'
 
-import { populateAssetSelector, evAssetOrderModalOnShowBsModal, evAssetSelectorButtonClick } from '../modals/assets'
+import {
+    populateAssetSelector,
+    evAssetOrderModalOnShowBsModal,
+    evAssetSelectorButtonClick,
+    populateDistributeAssetHolders,
+    evDistributeToAssetHoldersHoldersAssetInput,
+} from '../modals/assets'
 
 import { evTransactionsPageTypeClick } from '../pages/transactions'
 
@@ -315,6 +321,9 @@ export function addEventListeners() {
     $('#mint_asset_modal').on('show.bs.modal', (e) => {
         populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'mint_asset')
     })
+    $('#distribute_to_asset_holders_asset_modal').on('show.bs.modal', (e) => {
+        populateDistributeAssetHolders($((e as ShowBootstrapModalEvent).relatedTarget))
+    })
     $('body').on('click', 'a[data-goto-asset]', function (e) {
         e.preventDefault()
         const $visible_modal = $('.modal.in')
@@ -323,6 +332,7 @@ export function addEventListeners() {
         }
         goToAsset($(this).data('goto-asset'))
     })
+    $('#distribute_to_asset_holders_holders_asset').on('input', evDistributeToAssetHoldersHoldersAssetInput)
     $('#cancel_order_modal').on('show.bs.modal', function (e) {
         const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
         const orderType = $invoker.data('type')
