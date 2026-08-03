@@ -422,6 +422,7 @@ export interface GetAssetsByResponse {
 }
 export type GetAssetsByNameResponse = GetAssetsByResponse
 export type GetAssetsByIssuerResponse = GetAssetsByResponse
+export type GetAssetsByOwnerResponse = GetAssetsByResponse
 
 export interface AssetTransfer {
     assetTransfer: string

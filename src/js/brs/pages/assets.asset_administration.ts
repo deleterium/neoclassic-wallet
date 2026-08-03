@@ -3,7 +3,7 @@ import { reloadCurrentPage } from '../core/navigation'
 import { formatQNTAsQuantity } from '../core/numbers'
 import { sendRequest } from '../core/send_request'
 import { dataLoaded, getUnconfirmedTransactionsFromCache } from '../core/util'
-import { GetAssetsByIssuerResponse, MyAssetDetails } from '../typings'
+import { GetAssetsByOwnerResponse, MyAssetDetails } from '../typings'
 
 // Current page is 'asset_administration'
 // Processing unconfirmed!
@@ -11,7 +11,7 @@ import { GetAssetsByIssuerResponse, MyAssetDetails } from '../typings'
 export async function pagesAssestAdministration() {
     const myIssuedAssets: MyAssetDetails[] = []
 
-    const issuedAssets: GetAssetsByIssuerResponse = await sendRequest('getAssetsByIssuer+', { account: BRS.account })
+    const issuedAssets: GetAssetsByOwnerResponse = await sendRequest('getAssetsByOwner+', { account: BRS.account })
     if (issuedAssets.errorCode || issuedAssets.assets.length === 0) {
         dataLoaded()
     }
@@ -59,6 +59,19 @@ export async function pagesAssestAdministration() {
         if (unconfirmedDistributionTx) {
             distributionHTML = BRS.pendingTransactionHTML
         }
+        let transferHTML = `
+            <a href='#'
+                data-toggle='modal'
+                data-target='#transfer_asset_ownership_modal'
+                data-asset='${asset.asset}'>
+                <i class="fa fa-magic" aria-hidden="true"></i>
+            </a>`
+        const unconfirmedTransferTx = getUnconfirmedTransactionsFromCache(2, 10, {
+            sender: BRS.account,
+        })
+        if (unconfirmedTransferTx) {
+            transferHTML = BRS.pendingTransactionHTML
+        }
 
         rows += `
             <tr data-asset="${asset.asset}">
@@ -70,6 +83,7 @@ export async function pagesAssestAdministration() {
               <td>${formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals)}</td>
               <td>${asset.mintable ? mintHTML : $.t('no')}</i></td>
               <td>${distributionHTML}</td>
+              <td>${transferHTML}</td>
             </tr>`
     }
 

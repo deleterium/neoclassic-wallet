@@ -1,11 +1,12 @@
 import { BRS } from '..'
-import { ShowBootstrapModalEvent } from '../typings'
+import { GetTransactionResponse, ShowBootstrapModalEvent } from '../typings'
 import { loadAssetExchangeSidebar } from '../pages/assets.asset_exchange'
 import { dbPut } from '../core/database'
 import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from '../core/numbers'
 import { getTranslatedFieldName } from '../core/util'
 import { notify } from '../core/notifications'
 import { getAssetDetails, getAssetFromCache } from '../tools/assets'
+import { sendRequest } from '../core/send_request'
 
 export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: string) {
     const assetId = $invoker.data('asset') ?? ''
@@ -111,6 +112,31 @@ export async function evDistributeToAssetHoldersHoldersAssetInput(e: JQuery.Trig
     $formGroup.find('input[name=holders_asset]').val(chainAsset.asset).removeClass('is-invalid')
     $formGroup.find('input[name=holders_decimals]').val(chainAsset.decimals)
     $formGroup.find('span[name=holders_asset_name]').text(chainAsset.name)
+}
+
+export async function populateTransferAssetOwnership($invoker: JQuery<HTMLElement>) {
+    const assetId = $invoker.data('asset') ?? ''
+    $('#transfer_asset_ownership_name_plus_asset').val($.t('loading_please_wait')).addClass('is-invalid')
+    $('#transfer_asset_ownership_referenced_transaction').val($.t('loading_please_wait')).addClass('is-invalid')
+
+    const issueAssetTx: GetTransactionResponse = await sendRequest('getTransaction', { transaction: assetId })
+    if (issueAssetTx.errorCode) {
+        $('#transfer_asset_ownership_name_plus_asset').val($.t('error'))
+        $('#transfer_asset_ownership_referenced_transaction').val($.t('error'))
+        return
+    }
+
+    $('#transfer_asset_ownership_name_plus_asset')
+        .val(assetId + ' - ' + issueAssetTx.attachment.name)
+        .removeClass('is-invalid')
+    $('#transfer_asset_ownership_referenced_transaction').val(issueAssetTx.fullHash).removeClass('is-invalid')
+}
+
+export function formsTransferAssetOwnership(data: any) {
+    delete data.name_plus_asset
+    return {
+        data,
+    }
 }
 
 export function formsTransferAssetMulti(data: any) {

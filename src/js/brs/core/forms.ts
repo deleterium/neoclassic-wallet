@@ -25,6 +25,7 @@ import {
     formsCancelOrder,
     formsMintAsset,
     formsDistributeToAssetHolders,
+    formsTransferAssetOwnership,
 } from '../modals/assets'
 import { formsClearData } from '../modals/clear_data'
 import { formsAddContact, formsUpdateContact, formsDeleteContact } from '../modals/contacts'
@@ -70,6 +71,7 @@ const submitOnlyWhenInSync = {
     subscriptionCancel: true,
     transferAsset: true,
     transferAssetMulti: true,
+    transferAssetOwnership: true,
     updateContact: false,
     verifyMessage: false,
 }
@@ -327,6 +329,7 @@ const formFunctions = {
     signModalButtonClicked: formsSignModalButtonClicked,
     transferAsset: formsTransferAsset,
     transferAssetMulti: formsTransferAssetMulti,
+    transferAssetOwnership: formsTransferAssetOwnership,
     updateContact: formsUpdateContact,
     verifyMessage: formsVerifyMessage,
 }

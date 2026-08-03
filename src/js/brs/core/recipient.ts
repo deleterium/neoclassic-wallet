@@ -19,9 +19,25 @@ import { evMultiOutSameAmountChange, evMultiOutAmountChange } from '../modals/se
 import { evCheckNumberInput } from './modals'
 
 export function automaticallyCheckRecipient() {
-    const $recipientFields = $(
-        '#add_contact_account_id, #update_contact_account_id, #buy_alias_recipient, #escrow_create_recipient, #inline_message_recipient, #reward_assignment_recipient, #sell_alias_recipient, #send_message_recipient, #send_money_recipient, #subscription_cancel_recipient, #subscription_create_recipient, #transfer_alias_recipient, #transfer_asset_recipient, #transfer_asset_multi_recipient',
-    )
+    const recipientFieldIds = [
+        '#add_contact_account_id',
+        '#update_contact_account_id',
+        '#buy_alias_recipient',
+        '#escrow_create_recipient',
+        '#inline_message_recipient',
+        '#reward_assignment_recipient',
+        '#sell_alias_recipient',
+        '#send_message_recipient',
+        '#send_money_recipient',
+        '#subscription_cancel_recipient',
+        '#subscription_create_recipient',
+        '#transfer_alias_recipient',
+        '#transfer_asset_recipient',
+        '#transfer_asset_multi_recipient',
+        '#transfer_asset_ownership_recipient',
+    ]
+
+    const $recipientFields = $(recipientFieldIds.join(', '))
 
     $recipientFields.on('blur', function () {
         $(this).trigger('checkRecipientEvent')

@@ -330,6 +330,8 @@ export function verifyTransactionBytes(transactionBytes: string, requestType: st
                         { type: 'Long:Long*$0', value: data.assetIdsAndQuantities.split(';') },
                     ],
                 }
+            case 'transferAssetOwnership':
+                return { type: 2, subtype: 10 }
             case 'setRewardRecipient':
                 return { type: 20, subtype: 0 }
             case 'addCommitment':
