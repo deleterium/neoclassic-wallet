@@ -866,7 +866,7 @@
               </div>
               <div class="advanced">
                 <label>
-                  <input type="checkbox" name="add_note_to_self" id="EDITME_add_note_to_self" class="add_note_to_self" />
+                  <input type="checkbox" name="add_note_to_self" id="transfer_asset_add_note_to_self" class="add_note_to_self" />
                   <span data-i18n="add_note_to_self_q">add_note_to_self_q</span>
                 </label>
               </div>
@@ -1614,7 +1614,12 @@
                 <label data-i18n="fee">FEE</label>
                 <div class="input-group">
                   <!-- Check mininum fee for this type of -->
-                  <input type="text" name="feeNXT" id="distribute_to_asset_holders_fee" class="form-control ev-check-number-input" min="0.01" />
+                  <input
+                    type="text"
+                    name="feeNXT"
+                    id="distribute_to_asset_holders_fee"
+                    class="form-control ev-check-number-input"
+                    min="0.01" />
                   <span class="input-group-text" data-value-suffix=""></span>
                 </div>
                 <div>
@@ -1653,15 +1658,14 @@
           </div>
           <div class="form-group optional_message">
             <label data-i18n="message">MESSAGE</label>
-            <textarea class="form-control ev-check-message-length-input" id="distribute_to_asset_holders_message" name="message" rows="4"></textarea>
+            <textarea
+              class="form-control ev-check-message-length-input"
+              id="distribute_to_asset_holders_message"
+              name="message"
+              rows="4"></textarea>
             <div>
               <label>
-                <input
-                  type="checkbox"
-                  name="encrypt_message"
-                  id="distribute_to_asset_holders_encrypt_message"
-                  value="0"
-                  disabled />
+                <input type="checkbox" name="encrypt_message" id="distribute_to_asset_holders_encrypt_message" value="0" disabled />
                 <span data-i18n="encrypt_message">encrypt_message</span>
               </label>
             </div>
