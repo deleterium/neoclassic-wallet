@@ -529,7 +529,7 @@ export function addEventListeners() {
 
     // from brs.modals.account.js
     $(
-        '#blocks_table, #forged_blocks_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents',
+        '#latest_blocks_table, #forged_blocks_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents',
     ).on('click', 'a[data-user]', function (e) {
         e.preventDefault()
         const account = $(this).data('user')
@@ -549,7 +549,7 @@ export function addEventListeners() {
     })
 
     // from brs.modals.block.js
-    $('#blocks_table, #forged_blocks_table, #dashboard_blocks_table, #search_results_contents').on(
+    $('#latest_blocks_table, #forged_blocks_table, #dashboard_blocks_table, #search_results_contents').on(
         'click',
         'a[data-block]',
         evBlocksTableClick,
