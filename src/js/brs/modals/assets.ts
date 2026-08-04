@@ -114,25 +114,38 @@ export async function evDistributeToAssetHoldersHoldersAssetInput(e: JQuery.Trig
     $formGroup.find('span[name=holders_asset_name]').text(chainAsset.name)
 }
 
-export async function populateTransferAssetOwnership($invoker: JQuery<HTMLElement>) {
+export async function populateReferencedAsset($invoker: JQuery<HTMLElement>, formName: string) {
     const assetId = $invoker.data('asset') ?? ''
-    $('#transfer_asset_ownership_name_plus_asset').val($.t('loading_please_wait')).addClass('is-invalid')
-    $('#transfer_asset_ownership_referenced_transaction').val($.t('loading_please_wait')).addClass('is-invalid')
+    $(formName + '_name_plus_asset')
+        .val($.t('loading_please_wait'))
+        .addClass('is-invalid')
+    $(formName + '_referenced_transaction')
+        .val($.t('loading_please_wait'))
+        .addClass('is-invalid')
 
     const issueAssetTx: GetTransactionResponse = await sendRequest('getTransaction', { transaction: assetId })
     if (issueAssetTx.errorCode) {
-        $('#transfer_asset_ownership_name_plus_asset').val($.t('error'))
-        $('#transfer_asset_ownership_referenced_transaction').val($.t('error'))
+        $(formName + '_name_plus_asset').val($.t('error'))
+        $(formName + '_referenced_transaction').val($.t('error'))
         return
     }
 
-    $('#transfer_asset_ownership_name_plus_asset')
+    $(formName + '_name_plus_asset')
         .val(assetId + ' - ' + issueAssetTx.attachment.name)
         .removeClass('is-invalid')
-    $('#transfer_asset_ownership_referenced_transaction').val(issueAssetTx.fullHash).removeClass('is-invalid')
+    $(formName + '_referenced_transaction')
+        .val(issueAssetTx.fullHash)
+        .removeClass('is-invalid')
 }
 
 export function formsTransferAssetOwnership(data: any) {
+    delete data.name_plus_asset
+    return {
+        data,
+    }
+}
+
+export function formsAddAssetTreasuryAccount(data: any) {
     delete data.name_plus_asset
     return {
         data,

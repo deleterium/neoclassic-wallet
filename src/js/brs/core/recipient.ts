@@ -20,6 +20,7 @@ import { evCheckNumberInput } from './modals'
 
 export function automaticallyCheckRecipient() {
     const recipientFieldIds = [
+        '#add_asset_treasury_account_recipient',
         '#add_contact_account_id',
         '#update_contact_account_id',
         '#buy_alias_recipient',

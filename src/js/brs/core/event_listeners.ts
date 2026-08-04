@@ -58,7 +58,7 @@ import {
     evAssetSelectorButtonClick,
     populateDistributeAssetHolders,
     evDistributeToAssetHoldersHoldersAssetInput,
-    populateTransferAssetOwnership,
+    populateReferencedAsset,
 } from '../modals/assets'
 
 import { evTransactionsPageTypeClick } from '../pages/transactions'
@@ -326,7 +326,10 @@ export function addEventListeners() {
         populateDistributeAssetHolders($((e as ShowBootstrapModalEvent).relatedTarget))
     })
     $('#transfer_asset_ownership_modal').on('show.bs.modal', (e) => {
-        populateTransferAssetOwnership($((e as ShowBootstrapModalEvent).relatedTarget))
+        populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#transfer_asset_ownership')
+    })
+    $('#add_asset_treasury_account_modal').on('show.bs.modal', (e) => {
+        populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#add_asset_treasury_account')
     })
     $('body').on('click', 'a[data-goto-asset]', function (e) {
         e.preventDefault()

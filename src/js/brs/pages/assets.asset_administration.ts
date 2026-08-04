@@ -72,6 +72,19 @@ export async function pagesAssestAdministration() {
         if (unconfirmedTransferTx) {
             transferHTML = BRS.pendingTransactionHTML
         }
+        let treasuryHTML = `
+            <a href='#'
+                data-toggle='modal'
+                data-target='#add_asset_treasury_account_modal'
+                data-asset='${asset.asset}'>
+                <i class="fa fa-magic" aria-hidden="true"></i>
+            </a>`
+        const unconfirmedTreasuryTx = getUnconfirmedTransactionsFromCache(2, 7, {
+            sender: BRS.account,
+        })
+        if (unconfirmedTreasuryTx) {
+            treasuryHTML = BRS.pendingTransactionHTML
+        }
 
         rows += `
             <tr data-asset="${asset.asset}">
@@ -84,6 +97,7 @@ export async function pagesAssestAdministration() {
               <td>${asset.mintable ? mintHTML : $.t('no')}</i></td>
               <td>${distributionHTML}</td>
               <td>${transferHTML}</td>
+              <td>${treasuryHTML}</td>
             </tr>`
     }
 

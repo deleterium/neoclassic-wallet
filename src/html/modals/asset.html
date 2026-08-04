@@ -2009,3 +2009,229 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="add_asset_treasury_account_modal" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" data-i18n="add_asset_treasury_account">add_asset_treasury_account</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form role="form" autocomplete="off" id="form-add_asset_treasury_account">
+          <div class="alert alert-danger never_hide" data-i18n="[html]treasury_account_warning">treasury_account_warning</div>
+          <div class="form-group">
+            <label data-i18n="asset">asset</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="add_asset_treasury_account_name_plus_asset" name="name_plus_asset" readonly />
+            </div>
+          </div>
+
+          <!-- Recipient template -->
+          <div class="form-group">
+            <label data-i18n="recipient">recipient</label>
+            <div class="input-group">
+              <input
+                type="text"
+                class="form-control"
+                name="recipient"
+                id="add_asset_treasury_account_recipient"
+                placeholder="recipient_account"
+                data-i18n="[placeholder]recipient_account"
+                autofocus />
+              <span class="input-group-btn btn-group recipient_selector">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                  <i class="fas fa-user"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-right scrollable-menu" role="menu"></ul>
+              </span>
+            </div>
+          </div>
+
+          <!-- Recipient Public Key template -->
+          <div class="form-group recipient_public_key">
+            <label data-i18n="recipient_public_key">Recipient Public Key</label>
+            <input
+              type="text"
+              class="form-control"
+              name="recipientPublicKey"
+              id="add_asset_treasury_account_recipient_public_key"
+              placeholder="public_key"
+              data-i18n="[placeholder]public_key"
+              spellcheck="false" />
+          </div>
+
+          <!-- Referenced Transaction Hash template -->
+          <div class="form-group">
+            <label>
+              <span data-i18n="referenced_transaction_hash">referenced_transaction_hash</span>
+              <i
+                class="fas fa-question-circle"
+                title="referenced_transaction_warning"
+                data-i18n="[title]referenced_transaction_warning"
+                data-container="body"
+                style="color: #4caa6e"></i>
+            </label>
+            <input
+              type="text"
+              class="form-control"
+              name="referencedTransactionFullHash"
+              id="add_asset_treasury_account_referenced_transaction"
+              placeholder="Referenced Transaction Full Hash"
+              data-i18n="[placeholder]referenced_transaction_full_hash"
+              readonly="" />
+          </div>
+
+          <!-- Fee + deadline template -->
+          <div class="row">
+            <div class="col-8">
+              <div class="form-group has-suggested-fee-group">
+                <label data-i18n="fee">FEE</label>
+                <div class="input-group">
+                  <!-- Check mininum fee for this type of -->
+                  <input type="text" name="feeNXT" id="add_asset_treasury_account_fee" class="form-control ev-check-number-input" min="0.01" />
+                  <span class="input-group-text" data-value-suffix=""></span>
+                </div>
+                <div>
+                  <span data-placement="top" data-html="true" data-i18n="[title]suggested_fee_help">
+                    <i class="fa fa-info-circle" aria-hidden="true"></i> &nbsp;&nbsp;
+                  </span>
+                  <span class="suggested_fee_response"></span>
+                  <span class="suggested_fee_spinner">
+                    <i class="fa fa-spinner fa-spin fa-fw text-danger"></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="form-group">
+                <label data-i18n="deadline">DEADLINE</label>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    name="deadline"
+                    id="add_asset_treasury_account_deadline"
+                    class="form-control ev-check-number-input"
+                    min="0.1"
+                    data-default="1"
+                    value="1" />
+                  <span class="input-group-text" data-i18n="hours"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message template -->
+          <div>
+            <input type="checkbox" name="add_message" id="add_asset_treasury_account_add_message" class="add_message" />
+            <label for="add_asset_treasury_account_add_message"> <span data-i18n="add_message_q">add_message_q</span></label>
+          </div>
+          <div class="form-group optional_message">
+            <label data-i18n="message">MESSAGE</label>
+            <textarea
+              class="form-control ev-check-message-length-input"
+              id="add_asset_treasury_account_message"
+              name="message"
+              rows="4"></textarea>
+            <div>
+              <label>
+                <input
+                  type="checkbox"
+                  name="encrypt_message"
+                  id="add_asset_treasury_account_encrypt_message"
+                  value="1"
+                  data-default="checked"
+                  checked="checked" />
+                <span data-i18n="encrypt_message">encrypt_message</span>
+              </label>
+            </div>
+            <div>
+              <label for="add_asset_treasury_account_message_is_text">
+                <input
+                  type="checkbox"
+                  name="message_is_text"
+                  id="add_asset_treasury_account_message_is_text"
+                  data-default="checked"
+                  checked="checked" />
+                <span data-i18n="message_is_text">message_is_text</span>
+                <p class="help-block" data-i18n="message_is_text_help" style="margin: 0">message_is_text_help</p>
+              </label>
+            </div>
+          </div>
+
+          <!-- Note to Self template -->
+          <div class="advanced">
+            <label>
+              <input type="checkbox" name="add_note_to_self" id="add_asset_treasury_account_add_note_to_self" class="add_note_to_self" />
+              <span data-i18n="add_note_to_self_q">add_note_to_self_q</span>
+            </label>
+          </div>
+          <div class="form-group advanced optional_note">
+            <label data-i18n="note_to_self">Note to Self</label>
+            <textarea
+              class="form-control ev-check-message-length-input"
+              id="add_asset_treasury_account_note_to_self"
+              name="note_to_self"
+              rows="4"></textarea>
+            <div>
+              <span data-i18n="note_is_encrypted">This note is encrypted.</span>
+            </div>
+            <div>
+              <label for="add_asset_treasury_account_note_to_self_is_text">
+                <input
+                  type="checkbox"
+                  name="note_to_self_is_text"
+                  id="add_asset_treasury_account_note_to_self_is_text"
+                  data-default="checked"
+                  checked="checked" />
+                <span data-i18n="message_is_text">message_is_text</span>
+                <p class="help-block" data-i18n="message_is_text_help" style="margin: 0">message_is_text_help</p>
+              </label>
+            </div>
+          </div>
+
+          <!-- Do Not Broadcast template -->
+          <div class="advanced">
+            <label>
+              <input type="checkbox" name="doNotBroadcast" id="add_asset_treasury_account_do_not_broadcast" value="1" />
+              <span data-i18n="do_not_broadcast">Do Not Broadcast</span>
+            </label>
+          </div>
+
+          <!-- Passphrase template -->
+          <div class="form-group secret_phrase">
+            <label data-i18n="passphrase">PASSPHRASE</label>
+            <input
+              type="password"
+              name="secretPhrase"
+              id="add_asset_treasury_account_password"
+              class="form-control"
+              placeholder=""
+              autocomplete="" />
+          </div>
+
+          <!-- ALERTS template -->
+          <div class="alert alert-info account_info"></div>
+          <div class="alert alert-danger error_message"></div>
+
+          <input type="hidden" name="request_type" value="addAssetTreasuryAccount" />
+          <input type="hidden" name="converted_account_id" value="" />
+          <input type="hidden" name="merchant_info" value="" data-default="" />
+        </form>
+      </div>
+      <div class="modal-footer">
+        <div class="advanced_info">
+          <strong data-i18n="fee">fee</strong> <span class="advanced_fee">?</span> - <a href="#" data-i18n="advanced">advanced</a>
+        </div>
+        <button type="button" class="btn btn-default" data-dismiss="modal" data-i18n="cancel">Cancel</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-loading-text="Submitting..."
+          data-i18n="add_asset_treasury_account;[placeholder]submitting"
+          data-form="form-add_asset_treasury_account">
+          submit_button
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

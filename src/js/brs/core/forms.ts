@@ -26,6 +26,7 @@ import {
     formsMintAsset,
     formsDistributeToAssetHolders,
     formsTransferAssetOwnership,
+    formsAddAssetTreasuryAccount,
 } from '../modals/assets'
 import { formsClearData } from '../modals/clear_data'
 import { formsAddContact, formsUpdateContact, formsDeleteContact } from '../modals/contacts'
@@ -41,6 +42,7 @@ import { formsSendMoneyEscrow } from '../pages/payments.escrow'
  */
 const submitOnlyWhenInSync = {
     addAssetBookmark: false,
+    addAssetTreasuryAccount: true,
     addCommitment: true,
     addContact: false,
     assetExchangeChangeGroupName: false,
@@ -301,6 +303,7 @@ function checkMerchantField(requestType: RequestType, data: any) {
 
 const formFunctions = {
     addAssetBookmark: formsAddAssetBookmark,
+    addAssetTreasuryAccount: formsAddAssetTreasuryAccount,
     addCommitment: formsAddCommitment,
     addContact: formsAddContact,
     assetExchangeChangeGroupName: formsAssetExchangeChangeGroupName,

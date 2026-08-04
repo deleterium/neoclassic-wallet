@@ -179,7 +179,7 @@ function processAjaxRequest(requestType: string, data: any, callback: (response:
             // Regular GET response, or POST 'broadcastTransaction'
             callback(response)
             if (data.referencedTransactionFullHash) {
-                notify($.t('info_referenced_transaction_hash'), { type: 'info' })
+                notify($.t('referenced_transaction_warning'), { type: 'info' })
             }
         })
         .fail(function (xhr: JQueryXHR, textStatus: string, error: string) {
@@ -297,7 +297,7 @@ export function broadcastTransactionBytes(
             originalResponse.fullHash = response.fullHash
             callback(originalResponse)
             if (originalData.referencedTransactionFullHash) {
-                notify($.t('info_referenced_transaction_hash'), { type: 'info' })
+                notify($.t('referenced_transaction_warning'), { type: 'info' })
             }
         })
         .fail(function (xhr, textStatus, error) {

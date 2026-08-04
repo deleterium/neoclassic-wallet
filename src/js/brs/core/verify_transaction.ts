@@ -310,6 +310,8 @@ export function verifyTransactionBytes(transactionBytes: string, requestType: st
                         { type: 'Long*1', value: [data.quantityQNT] },
                     ],
                 }
+            case 'addAssetTreasuryAccount':
+                return { type: 2, subtype: 7 }
             case 'distributeToAssetHolders':
                 return {
                     type: 2,
