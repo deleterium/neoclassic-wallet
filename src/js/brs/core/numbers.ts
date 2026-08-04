@@ -124,7 +124,7 @@ export function calculatePercentage(a: number | string, b: number | string) {
         a = Number(a) * 100
         b = Number(b)
         const result = a / b
-        return result.toFixed(2)
+        return result.toLocaleString(BRS.settings.language, { minimumFractionDigits: 0, maximumFractionDigits: 2 })
     } catch (e) {
         return (e as Error).message.escapeHTML()
     }
