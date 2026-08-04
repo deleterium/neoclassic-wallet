@@ -19,6 +19,7 @@ import { pagesSearchResults } from '../pages/search_results.page'
 import { pagesSettings } from '../pages/settings'
 import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
+import { showAssetHoldersModal } from '../modals/assets'
 
 /**
  * Handles clicks in sidebar, changing current page if needed
@@ -180,6 +181,10 @@ export function checkLocationHash(): void {
         $modal = $('#send_money_modal')
     } else if (hash[0] === 'asset') {
         goToAsset(hash[1])
+        return
+    } else if (hash[0] === 'asset_holders') {
+        showAssetHoldersModal(hash[1])
+        window.location.hash = '#'
         return
     }
 

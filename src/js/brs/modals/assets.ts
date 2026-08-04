@@ -1,9 +1,16 @@
 import { BRS } from '..'
-import { GetTransactionResponse, ShowBootstrapModalEvent } from '../typings'
+import { GetAssetAccountsResponse, GetTransactionResponse, ShowBootstrapModalEvent } from '../typings'
 import { loadAssetExchangeSidebar } from '../pages/assets.asset_exchange'
 import { dbPut } from '../core/database'
-import { formatNQTAsAmount, formatOrderTotal, formatQNTAsQuantity, parsePriceQuantityToPriceNQT, parseQuantityToQNT } from '../core/numbers'
-import { getTranslatedFieldName } from '../core/util'
+import {
+    calculatePercentage,
+    formatNQTAsAmount,
+    formatOrderTotal,
+    formatQNTAsQuantity,
+    parsePriceQuantityToPriceNQT,
+    parseQuantityToQNT,
+} from '../core/numbers'
+import { getAccountTitleFromObject, getTranslatedFieldName } from '../core/util'
 import { notify } from '../core/notifications'
 import { getAssetDetails, getAssetFromCache } from '../tools/assets'
 import { sendRequest } from '../core/send_request'
@@ -599,4 +606,58 @@ export function formsDistributeToAssetHolders(data: any) {
     return {
         data,
     }
+}
+
+export async function showAssetHoldersModal(asset: string) {
+    if (BRS.fetchingModalData) {
+        return
+    }
+    BRS.fetchingModalData = true
+    const response: GetAssetAccountsResponse = await sendRequest('getAssetAccounts', {
+        asset,
+        ignoreTreasury: false,
+        firstIndex: 0,
+        lastIndex: BRS.pageSize,
+    })
+    BRS.fetchingModalData = false
+    if (response.errorCode) {
+        $('#asset_holders_modal_table tbody').text($.t('error_asset_not_found'))
+        $('#asset_holders_modal').modal('show')
+        return
+    }
+    if (response.accountAssets.length === 0) {
+        $('#asset_holders_modal_table tbody').text('')
+        $('#asset_holders_modal').modal('show')
+        return
+    }
+    const assetDetails = getAssetFromCache(response.accountAssets[0].asset)
+    if (!assetDetails) {
+        return
+    }
+    const treasuryHTML = `&nbsp;<i title="${$.t('treasury_account')}" class="fas fa-briefcase"></i>`
+    let qnt = 0n
+    let rows = ''
+    for (const holder of response.accountAssets) {
+        rows += `
+            <tr>
+              <td>${getAccountTitleFromObject(holder, 'account') + (holder.isTreasury ? treasuryHTML : '')}</td>
+              <td>${formatQNTAsQuantity(holder.quantityQNT, assetDetails.decimals)}</td>
+              <td>${holder.isTreasury ? '/' : calculatePercentage(holder.quantityQNT, assetDetails.quantityCirculatingQNT) + '%'}</td>
+            </tr>`
+        if (!holder.isTreasury) {
+            qnt += BigInt(holder.quantityQNT)
+        }
+    }
+    if (qnt !== BigInt(assetDetails.quantityCirculatingQNT)) {
+        const otherQNT = (BigInt(assetDetails.quantityCirculatingQNT) - qnt).toString()
+        rows += `
+            <tr>
+              <td>${$.t('other')}</td>
+              <td>${formatQNTAsQuantity(otherQNT, assetDetails.decimals)}</td>
+              <td>${calculatePercentage(otherQNT, assetDetails.quantityCirculatingQNT) + '%'}</td>
+            </tr>`
+    }
+
+    $('#asset_holders_modal_table tbody').html(rows)
+    $('#asset_holders_modal').modal('show')
 }

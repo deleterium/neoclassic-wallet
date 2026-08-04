@@ -512,6 +512,22 @@ export interface GetTradesResponse {
     errorDescription?: string
 }
 
+interface AssetHolderAccount {
+    account: string
+    accountRS: string
+    asset: string
+    quantityQNT: string
+    unconfirmedQuantityQNT: string
+    isTreasury: boolean
+}
+
+export interface GetAssetAccountsResponse {
+    accountAssets: AssetHolderAccount[]
+    requestProcessingTime: number
+    errorCode?: number
+    errorDescription?: string
+}
+
 // region Alias
 
 export interface Alias {
