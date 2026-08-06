@@ -8,7 +8,7 @@
     "lint": "npx eslint ./src --fix && npx prettier './src/html/**/*' -w",
     "dev": "node buildIndexHtml.js && ./cpdev.sh && node esbuild.config.js && npm run start",
     "build": "./cpbuild.sh && node buildIndexHtml.js && node esbuild.config.js",
-    "lang": "pushd ./lang && ./updateFiles.sh && popd",
+    "lang": "pushd ./lang && node updateFiles.js && popd",
     "start": "python3 -m http.server -d dist 1221",
     "release": "npm run build && npm run lang"
   },
