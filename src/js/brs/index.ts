@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
             fallbackLng: 'en',
             lowerCaseLng: true,
             backend: {
-                loadPath: './locales/__lng__.json',
+                loadPath: './locales/{{lng}}.json',
             },
             debug: false,
             load: 'currentOnly',
