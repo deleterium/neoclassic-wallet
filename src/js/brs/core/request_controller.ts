@@ -135,6 +135,6 @@ export class RequestController {
      * @returns The number of pending requests.
      */
     getPendingRequestsCount = () => {
-        return this.running
+        return this.waiting.length + this.running
     }
 }
