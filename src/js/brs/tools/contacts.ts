@@ -32,12 +32,9 @@ export function notifyContactOperationSuccess(message: string) {
         reloadCurrentPage()
         return
     }
-    if (BRS.currentPage === 'messages' && BRS.selectedContext) {
-        const heading = BRS.selectedContext.find('h4.list-group-item-heading')
-        if (heading.length) {
-            // TODO solve next line
-            heading.html('data.name.escapeHTML()')
-        }
+    if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
+        BRS.currentSubPage = ''
+        reloadCurrentPage()
     }
 }
 
