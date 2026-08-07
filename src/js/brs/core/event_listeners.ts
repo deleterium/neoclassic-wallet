@@ -106,6 +106,11 @@ import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
 import { notify } from './notifications'
 
 export function addEventListeners() {
+    // Fixes sidebar not closing after click the button to open it.
+    $('#sidebar-overlay').on('click', () => {
+        $('body').removeClass('sidebar-open').addClass('sidebar-collapse')
+    })
+
     // from brs.js
     $('#prefered_node').on('blur', function () {
         getState()
