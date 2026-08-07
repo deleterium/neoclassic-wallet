@@ -38,7 +38,7 @@ export function pagesAssetExchange() {
     loadAssetExchangeSidebar()
 }
 
-export function bookmarkAllUserAssets() {
+export async function bookmarkAllUserAssets() {
     // check owned assets, adding all to bookmarks
     const assetsToBookmark: DBAsset[] = []
     const idsToFetchAndBookmark: string[] = []
@@ -46,6 +46,13 @@ export function bookmarkAllUserAssets() {
     if (!BRS.accountInfo.unconfirmedAssetBalances) {
         return
     }
+
+    if (BRS.requestController?.getPendingRequestsCount()) {
+        // Wait until all assets are fetched on first login. Once that done, all user assets will be cached.
+        notify($.t('asset_data_loading'))
+        await sendRequest('getBlockchainStatus+', {})
+    }
+
     for (const userAsset of BRS.accountInfo.unconfirmedAssetBalances) {
         const foundAsset = BRS.assets.find((tkn) => tkn.asset === userAsset.asset)
         if (foundAsset) {
@@ -69,8 +76,7 @@ export function bookmarkAllUserAssets() {
         })
     }
     if (idsToFetchAndBookmark.length) {
-        // TODO Add translation
-        notify('Some assets not bookmarked, because their details are still beeing processing. Try again in 10 seconds!', {
+        notify($.t('error_unknown'), {
             type: 'danger',
         })
     }

@@ -1,5 +1,6 @@
 import { BRS } from '..'
 import { reloadCurrentPage } from '../core/navigation'
+import { notify } from '../core/notifications'
 import { formatQNTAsQuantity, formatPriceNQTAsPriceQuantity, calculateOrderTotalNQT, formatNQTAsAmount } from '../core/numbers'
 import { sendRequest } from '../core/send_request'
 import { dataLoaded } from '../core/util'
@@ -18,6 +19,7 @@ export async function pagesMyAssets() {
 
     if (BRS.requestController?.getPendingRequestsCount()) {
         // Wait until all assets are fetched on first login. Once that done, all user assets will be cached.
+        notify($.t('asset_data_loading'))
         await sendRequest('getBlockchainStatus+', {})
     }
 

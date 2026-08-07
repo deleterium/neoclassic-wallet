@@ -149,8 +149,7 @@ function isValidImport(jsonObj: any): boolean {
 
 export function importContacts(imported_contacts: any) {
     if (!isValidImport(imported_contacts)) {
-        // TODO TRANSLATION
-        notify("File does not match 'contacts' requirements.", { type: 'danger' })
+        notify($.t('error_invalid_import_file'), { type: 'danger', keep: true })
         return
     }
 

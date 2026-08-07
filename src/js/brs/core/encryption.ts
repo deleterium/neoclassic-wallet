@@ -211,8 +211,7 @@ export function signBytes(message: HexString, secretPhrase: string): HexString {
     const h = doubleHash(m, y)
     const v = curve25519.sign(h, x, s)
     if (!v) {
-        // TODO add translation
-        throw new Error('error_on_signature_process')
+        throw new Error($.t('error_signature_verification_client'))
     }
     return converters.byteArrayToHexString(v.concat(h))
 }

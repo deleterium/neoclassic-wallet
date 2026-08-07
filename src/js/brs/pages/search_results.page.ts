@@ -87,7 +87,6 @@ function showAliasesSearchResults(aliases: Alias[]) {
           </thead>
           <tbody>`
     for (const alias of aliases) {
-        // TODO add transalation and show here and in alias page
         let statusHTML = '/'
         if (alias.priceNQT && !alias.buyer) {
             statusHTML = $.t('for_sale_indirect')
