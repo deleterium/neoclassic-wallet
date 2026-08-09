@@ -21,25 +21,6 @@ import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
 import { showAssetHoldersModal } from '../modals/assets'
 
-/**
- * Handles clicks in sidebar, changing current page if needed
- */
-export function evSidebarClick(e: JQuery.ClickEvent): void {
-    e.preventDefault()
-    if ($(e.currentTarget).data('toggle') === 'modal') {
-        return
-    }
-    const page = $(e.currentTarget).data('page')
-    if (page === 'keep' || page === BRS.currentPage) {
-        return
-    }
-    $('.page').hide()
-    $('#' + page + '_page').show()
-    $('#sidebar .active').removeClass('active')
-    $(e.currentTarget).addClass('active')
-    loadPage(page)
-}
-
 const pageFunctions = {
     aliases: pagesAliases,
     asset_exchange: pagesAssetExchange,
@@ -73,11 +54,11 @@ function executePage(page: string) {
 }
 
 /** Load a page for first time (setting up global variables) */
-function loadPage(page: string): void {
+function loadPage(page: string, subpage: string, pageNumber: number): void {
     BRS.currentPage = page
-    BRS.currentSubPage = ''
-    BRS.pageNumber = 1
-    BRS.showPageNumbers = false
+    BRS.currentSubPage = subpage
+    BRS.pageNumber = pageNumber
+    // BRS.showPageNumbers = false
     executePage(page)
 }
 
@@ -86,9 +67,10 @@ export function reloadCurrentPage(): void {
     executePage(BRS.currentPage)
 }
 
-/** Go to a page, updating sidebar menu */
-export function goToPage(page: string): void {
-    let $link = $('[data-widget="treeview"] a[data-page=' + page + ']')
+/** Updates sidebar menu */
+export function updateSidebarActiveItem(page: string): void {
+    $('[data-widget="treeview"] a.active').removeClass('active')
+    let $link = $('[data-widget="treeview"] a[href*="#page=' + page + '"]')
 
     if ($link.length > 1) {
         // if there are many pages in menubar
@@ -100,15 +82,10 @@ export function goToPage(page: string): void {
         }
     }
     if ($link.length === 1) {
-        // handle pages that are in sidebar simulating a click
-        $link.trigger('click')
+        $link.addClass('active')
         return
     }
-    // Handle hidden pages like "search_results"
-    $('[data-widget="treeview"] a.active').removeClass('active')
-    $('.page').hide()
-    $('#' + page + '_page').show()
-    loadPage(page)
+    // It's, a hidden page like "search_results"
 }
 
 export function pageLoading(): void {
@@ -166,7 +143,8 @@ export function goToPageNumber(pageNumber: number) {
     executePage(BRS.currentPage)
 }
 
-export function checkLocationHash(): void {
+// TODO remove after upgrading location logic.
+export function checkLocationHashOld(): void {
     if (!window.location.hash) {
         return
     }

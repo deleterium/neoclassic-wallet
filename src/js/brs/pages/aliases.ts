@@ -1,6 +1,6 @@
 import { BRS } from '..'
 import { Alias, GetAliasesResponse, GetAliasResponse } from '../typings'
-import { goToPage, pageLoaded, reloadCurrentPage } from '../core/navigation'
+import { pageLoaded, reloadCurrentPage } from '../core/navigation'
 import { sendRequest } from '../core/send_request'
 import { dataLoadFinished } from '../core/util'
 import { findTLDNameByTLDId } from '../tools/aliases'
@@ -261,7 +261,8 @@ export function incomingAliases() {
 export function evAliasSearchSubmit(e: JQuery.SubmitEvent) {
     e.preventDefault()
     const alias = $('#alias_search input[name=q]').val()
-    $('#search_box input').val('alias:' + alias)
+    const value = 'alias:' + alias
     // Execute the search via "search pages"
-    goToPage('search_results')
+    $('#search_box input').val(value)
+    window.location.hash = 'page=search_results&value=' + value
 }

@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { addPagination, goToPage, pageLoaded } from '../core/navigation'
+import { addPagination, pageLoaded } from '../core/navigation'
 
 import { sendRequest } from '../core/send_request'
 
@@ -872,9 +872,10 @@ export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
 }
 
 export async function goToAsset(asset: string) {
-    if (BRS.currentPage !== 'asset_exchange') {
-        goToPage('asset_exchange')
-    }
+    // TODO check if needed
+    // if (BRS.currentPage !== 'asset_exchange') {
+    //     goToPage('asset_exchange')
+    // }
 
     BRS.assetSearch = false
     $('#asset_exchange_vtab_search input[name=q]').val('')

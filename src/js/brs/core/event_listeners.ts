@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { evSidebarClick, reloadCurrentPage, goToPage, goToPageNumber } from './navigation'
+import { reloadCurrentPage, goToPageNumber } from './navigation'
 
 import { autoSelectServer, getState } from './lockscreen'
 
@@ -162,12 +162,6 @@ export function addEventListeners() {
         }
     })
 
-    $('[data-widget="treeview"] a').on('click', evSidebarClick)
-    $('button.goto-page, a.goto-page').on('click', function (event) {
-        event.preventDefault()
-
-        goToPage($(this).data('page'))
-    })
     $('.data-pagination').on('click', 'a', function (e) {
         e.preventDefault()
 
@@ -175,11 +169,11 @@ export function addEventListeners() {
     })
     $('#search_box').on('keyup', function (e) {
         if (e.key !== 'Enter') return
-        goToPage('search_results')
+        window.location.hash = 'page=search_results&value=' + $('#search_box input').val()
     })
     $('#search_btn').on('click', function (e) {
         e.preventDefault()
-        goToPage('search_results')
+        window.location.hash = 'page=search_results&value=' + $('#search_box input').val()
     })
     $('#login_button').on('click', evLoginButtonClick)
 
