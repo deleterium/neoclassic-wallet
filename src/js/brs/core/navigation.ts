@@ -43,23 +43,22 @@ const pageFunctions = {
     transfer_history: pagesTransferHistory,
 }
 
-function executePage(page: string) {
+async function executePage(page: string) {
     pageLoading()
     if (!pageFunctions[page]) {
         console.error(`Unknow page '${page}'`)
         pageLoaded()
         return
     }
-    pageFunctions[page]()
+    await pageFunctions[page]()
 }
 
 /** Load a page for first time (setting up global variables) */
-function loadPage(page: string, subpage: string, pageNumber: number): void {
+async function loadPage(page: string, pageNumber: number) {
     BRS.currentPage = page
-    BRS.currentSubPage = subpage
+    BRS.currentSubPage = ''
     BRS.pageNumber = pageNumber
-    // BRS.showPageNumbers = false
-    executePage(page)
+    await executePage(page)
 }
 
 /** Reload current page, keeping variables like pagination */

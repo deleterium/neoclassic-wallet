@@ -105,15 +105,17 @@ export function evAccountPhraseCustomPanelSubmit(event) {
     loginWithPassphrase(password)
 }
 
-export function loginCommon() {
+export async function loginCommon() {
     if (!BRS.settings.automatic_node_selection) {
         updateSettings('prefered_node', BRS.server)
     }
     $('[data-value-suffix]').text(BRS.valueSuffix)
 
-    getAndUpdateAccountDetails(true, cacheUserAssets)
+    await getAndUpdateAccountDetails(true)
 
     unlock()
+
+    cacheUserAssets()
 
     setupClipboardFunctionality()
 
