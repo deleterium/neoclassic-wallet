@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { addPagination, pageLoaded } from '../core/navigation'
+import { pageLoaded } from '../core/navigation'
 
 import { sendRequest } from '../core/send_request'
 
@@ -260,7 +260,7 @@ export function loadAssetExchangeSidebar(callback?: () => void) {
         const hideClosedGroup = isClosedGroup ? 'style="display:none"' : ''
         rows += `
             
-            <a href='#'
+            <a href='#page=asset_exchange&subPage=${asset.asset}'
             class='${itemClass}'
             data-asset='${asset.asset}'
             data-context='asset_exchange_vtab_context'
@@ -324,67 +324,63 @@ export function incomingAssetExchange() {
     updateQuantitiesInAssetExchangeSidebarContent()
 }
 
-export async function evAssetExchangeSidebarClick(e: JQuery.ClickEvent) {
-    const element = e.currentTarget
-    e.preventDefault()
-
-    const assetClicked = String($(element).data('asset')).escapeHTML()
-    if (assetClicked !== 'undefined') {
-        // Only update if clicked on sidebar. Click in "load my orders only
-        // refreshes current asset.
-        BRS.currentAssetID = assetClicked
-    } else {
-        // clicked on a group
-        if (BRS.databaseSupport) {
-            let group = $(element).data('groupname')
-            const closed = $(element).data('closed')
-            let $links: JQuery<HTMLElement>
-
-            if (!group) {
-                $links = $('#asset_exchange_vtab a.list-group-item-ungrouped')
-            } else {
-                $links = $("#asset_exchange_vtab a.list-group-item-grouped[data-groupname='" + group.escapeHTML() + "']")
-            }
-
-            if (!group) {
-                group = 'undefined'
-            }
-            if (closed) {
-                const pos = BRS.closedGroups.indexOf(group)
-                if (pos >= 0) {
-                    BRS.closedGroups.splice(pos)
-                }
-                $(element).data('closed', '')
-                $(element).find('i').removeClass('fa-angle-right').addClass('fa-angle-down')
-                $links.show()
-            } else {
-                BRS.closedGroups.push(group)
-                $(element).data('closed', true)
-                $(element).find('i').removeClass('fa-angle-down').addClass('fa-angle-right')
-                $links.hide()
-            }
-
-            dbPut('data', {
-                id: 'closed_groups',
-                contents: BRS.closedGroups.join('#'),
-            })
-        }
+export function evAssetExchangeSidebarClick(e: JQuery.ClickEvent) {
+    const $element = $(e.currentTarget)
+    let group = $element.data('groupname')
+    const closed = $element.data('closed')
+    if (!$element.hasClass('list-group-item-action')) {
         return
     }
+    // proceed only with the groups.
+    e.preventDefault()
+    let $links: JQuery<HTMLElement>
 
-    const foundAsset = BRS.assets.find((tkn) => tkn.asset === BRS.currentAssetID)
+    if (!group) {
+        $links = $('#asset_exchange_vtab a.list-group-item-ungrouped')
+    } else {
+        $links = $("#asset_exchange_vtab a.list-group-item-grouped[data-groupname='" + group.escapeHTML() + "']")
+    }
+
+    if (!group) {
+        group = 'undefined'
+    }
+    if (closed) {
+        const pos = BRS.closedGroups.indexOf(group)
+        if (pos >= 0) {
+            BRS.closedGroups.splice(pos)
+        }
+        $element.data('closed', '')
+        $element.find('i').removeClass('fa-angle-right').addClass('fa-angle-down')
+        $links.show()
+    } else {
+        BRS.closedGroups.push(group)
+        $element.data('closed', true)
+        $element.find('i').removeClass('fa-angle-down').addClass('fa-angle-right')
+        $links.hide()
+    }
+    if (BRS.databaseSupport) {
+        dbPut('data', {
+            id: 'closed_groups',
+            contents: BRS.closedGroups.join('#'),
+        })
+    }
+}
+
+export async function loadAssetExchangeSubPage(asset: string) {
+    if (!asset) return
+    const foundAsset = BRS.assets.find((tkn) => tkn.asset === asset)
     if (foundAsset) {
         loadAsset(foundAsset, true, true)
-    } else {
-        const response: GetAssetResponse = await sendRequest('getAsset+', {
-            asset: BRS.currentAssetID,
-        })
-
-        if (!response.errorCode && response.asset === BRS.currentAssetID) {
-            const addedAsset = cacheAsset(response)
-            loadAsset(addedAsset, true, false)
-        }
+        return
     }
+    const response: GetAssetResponse = await sendRequest('getAsset+', { asset })
+
+    if (!response.errorCode && response.asset === asset) {
+        const addedAsset = cacheAsset(response)
+        loadAsset(addedAsset, true, false)
+        return
+    }
+    notify($.t('invalid_asset'))
 }
 
 function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) {
@@ -546,8 +542,10 @@ export async function updateMiniTradeHistory() {
     })
 
     if (!response.trades || !response.trades.length) {
+        BRS.hasMorePages = false
         $('#asset_exchange_trade_history_table tbody').empty()
         dataLoadFinished($('#asset_exchange_trade_history_table'), true)
+        pageLoaded()
         return
     }
     if (response.trades.length > BRS.pageSize) {
@@ -569,7 +567,7 @@ export async function updateMiniTradeHistory() {
     }
     $('#asset_exchange_trade_history_table tbody').empty().append(rows)
     dataLoadFinished($('#asset_exchange_trade_history_table'), true)
-    addPagination()
+    pageLoaded()
 }
 
 async function loadAssetOrders(type: 'ask' | 'bid', assetId: string, refresh: boolean) {

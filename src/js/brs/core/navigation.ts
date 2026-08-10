@@ -1,4 +1,4 @@
-import { goToAsset, pagesAssetExchange } from '../pages/assets.asset_exchange'
+import { goToAsset, loadAssetExchangeSubPage, pagesAssetExchange } from '../pages/assets.asset_exchange'
 
 import { BRS } from '..'
 import { pagesAliases } from '../pages/aliases'
@@ -8,7 +8,7 @@ import { pagesTransferHistory } from '../pages/assets.transfer_history'
 import { pagesBlockInfo } from '../pages/blockchain.block_info'
 import { pagesLatestBlocks } from '../pages/blockchain.latest_blocks'
 import { pagesContacts } from '../pages/contacts'
-import { pagesMessages } from '../pages/messages'
+import { loadMessagesSubPage, pagesMessages } from '../pages/messages'
 import { pagesForgedBlocks } from '../pages/mining.forged_blocks'
 import { pagesNotifications } from '../pages/notifications'
 import { pagesAt } from '../pages/payments.at'
@@ -175,6 +175,73 @@ export function checkLocationHashOld(): void {
         $modal.modal('show')
     }
     window.location.hash = '#'
+}
+
+export function checkLocationHash() {
+    const locationHash = window.location.hash.replace('#', '')
+    if (!locationHash) {
+        window.location.hash = '#page=' + BRS.currentPage
+        return
+    }
+
+    const params = new URLSearchParams(locationHash)
+    if (params.has('page')) {
+        pageRouter(params)
+        return
+    }
+    if (params.has('modal')) {
+        const modalName = params.get('modal')
+        switch (modalName) {
+            case 'asset_holders':
+                // modal=asset_holders&asset=12345678
+                if (params.has('asset')) {
+                    showAssetHoldersModal(params.get('asset') as string)
+                    return
+                }
+        }
+        return
+    }
+}
+
+async function pageRouter(params: URLSearchParams) {
+    const hashPage = params.get('page') || ''
+    const hashSubPage = params.get('subPage') || ''
+    const hashPageNumberInput = params.get('pageNumber') || '1'
+
+    // Check if the page number input is a valid integer and within the specified range
+    let hashPageNumber = Number(hashPageNumberInput)
+    if (!Number.isInteger(hashPageNumber) || hashPageNumber < 1 || hashPageNumber > Number.MAX_SAFE_INTEGER) {
+        hashPageNumber = 1
+    }
+
+    if (hashPage === BRS.currentPage) {
+        if (hashSubPage === BRS.currentSubPage) {
+            if (hashPageNumber === BRS.pageNumber) {
+                return
+            }
+            goToPageNumber(hashPageNumber)
+            return
+        }
+    } else {
+        $('.page').hide()
+        $('#' + hashPage + '_page').show()
+        updateSidebarActiveItem(hashPage)
+        await loadPage(hashPage, hashPageNumber)
+    }
+    if (!hashSubPage) {
+        return
+    }
+    switch (hashPage) {
+        case 'asset_exchange':
+            loadAssetExchangeSubPage(hashSubPage)
+            return
+        case 'messages':
+            loadMessagesSubPage(hashSubPage)
+            return
+        default:
+            console.log('Page ' + hashPage + ' has no subPage action.')
+            return
+    }
 }
 
 /** Checks if a Number is valid and greater than minimum fee. If not, return minimum fee */

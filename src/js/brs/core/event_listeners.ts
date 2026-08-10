@@ -65,7 +65,7 @@ import { evTransactionsPageTypeClick } from '../pages/transactions'
 
 import { evSidebarContextOnContextmenu, closeContextMenu } from './context_menu'
 
-import { evMessagesSidebarClick, evMessagesSidebarContextClick } from '../pages/messages'
+import { evMessagesSidebarContextClick } from '../pages/messages'
 
 import {
     sendMoneyCalculateTotal,
@@ -364,7 +364,6 @@ export function addEventListeners() {
             }
         }
     })
-    $('#messages_vtab').on('click', 'a', evMessagesSidebarClick)
     $('#messages_vtab_context').on('click', 'a', evMessagesSidebarContextClick)
     $('#messages_vtab_update_context').on('click', 'a', function (e) {
         e.preventDefault()
