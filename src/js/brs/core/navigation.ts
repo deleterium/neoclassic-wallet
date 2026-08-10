@@ -116,25 +116,36 @@ export function pageLoaded(callback?: () => void) {
 }
 
 export function addPagination(): void {
-    let output = ''
-
-    if (BRS.pageNumber === 2) {
-        output += "<a href='#' data-page='1'>&laquo; " + $.t('previous_page') + '</a>'
-    } else if (BRS.pageNumber > 2) {
-        // output += "<a href='#' data-page='1'>&laquo; First Page</a>";
-        output += " <a href='#' data-page='" + (BRS.pageNumber - 1) + "'>&laquo; " + $.t('previous_page') + '</a>'
+    function createListElement(pageNumber: number, extClass: string, content: string) {
+        return `<li class="page-item ${extClass}"><a class="page-link" href='#page=${BRS.currentPage}&subPage=${BRS.currentSubPage}&pageNumber=${pageNumber}'>${content}</a></li>`
     }
+
+    let output = '<ul class="pagination justify-content-center">'
+
+    if (BRS.pageNumber === 1) {
+        output += createListElement(1, 'disabled', '<i class="fa fa-fast-backward" aria-hidden="true"></i>')
+        output += createListElement(1, 'disabled', '<i class="fa fa-step-backward" aria-hidden="true"></i>')
+    } else {
+        output += createListElement(1, '', '<i class="fa fa-fast-backward" aria-hidden="true"></i>')
+        output += createListElement(BRS.pageNumber - 1, '', '<i class="fa fa-step-backward" aria-hidden="true"></i>')
+    }
+
+    output += createListElement(BRS.pageNumber, '', BRS.pageNumber.toString())
+
     if (BRS.hasMorePages) {
-        if (BRS.pageNumber > 1) {
-            output += '&nbsp;&nbsp;&nbsp;'
-        }
-        output += " <a href='#' data-page='" + (BRS.pageNumber + 1) + "'>" + $.t('next_page') + ' &raquo;</a>'
+        output += createListElement(BRS.pageNumber + 1, '', '<i class="fa fa-step-forward" aria-hidden="true"></i>')
+    } else {
+        output += createListElement(BRS.pageNumber + 1, 'disabled', '<i class="fa fa-step-forward" aria-hidden="true"></i>')
     }
 
     const $paginationContainer = $('#' + BRS.currentPage + '_page .data-pagination')
 
     if ($paginationContainer.length) {
-        $paginationContainer.html(output)
+        if (BRS.pageNumber === 1 && !BRS.hasMorePages) {
+            $paginationContainer.html('')
+        } else {
+            $paginationContainer.html(output + '</ul>')
+        }
     }
 }
 

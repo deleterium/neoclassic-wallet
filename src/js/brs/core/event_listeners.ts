@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { reloadCurrentPage, goToPageNumber } from './navigation'
+import { reloadCurrentPage } from './navigation'
 
 import { autoSelectServer, getState } from './lockscreen'
 
@@ -162,11 +162,6 @@ export function addEventListeners() {
         }
     })
 
-    $('.data-pagination').on('click', 'a', function (e) {
-        e.preventDefault()
-
-        goToPageNumber($(this).data('page'))
-    })
     $('#search_box').on('keyup', function (e) {
         if (e.key !== 'Enter') return
         window.location.hash = 'page=search_results&value=' + $('#search_box input').val()
