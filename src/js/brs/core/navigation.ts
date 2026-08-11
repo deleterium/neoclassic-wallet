@@ -251,6 +251,7 @@ async function pageRouter(params: URLSearchParams) {
             return
         default:
             console.log('Page ' + hashPage + ' has no subPage action.')
+            window.location.hash = '#'
             return
     }
 }
@@ -267,6 +268,7 @@ function modalRouter(params: URLSearchParams) {
                 }
             }
             console.log('Missing or invalid asset for modal "asset_holders".')
+            window.location.hash = '#'
             return
         case 'send_money':
             showSendMoneyModal(params.get('recipient') ?? '', params.get('amount') ?? '')
@@ -280,6 +282,7 @@ function modalRouter(params: URLSearchParams) {
                 }
             }
             console.log('Missing or invalid transaction for modal "transaction_info".')
+            window.location.hash = '#'
             return
     }
 }
