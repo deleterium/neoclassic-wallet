@@ -291,6 +291,10 @@ function unlock() {
     setInterval(setHeaderClock, 1000)
 
     $(document.documentElement).scrollTop(0)
+
+    BRS.currentPage = 'dashboard'
+    BRS.currentSubPage = ''
+    BRS.pageNumber = 1
 }
 
 function setHeaderClock(): void {

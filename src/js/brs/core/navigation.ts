@@ -190,7 +190,14 @@ export function checkLocationHashOld(): void {
 export function checkLocationHash() {
     const locationHash = window.location.hash.replace('#', '')
     if (!locationHash) {
-        window.location.hash = '#page=' + BRS.currentPage
+        let loc = '#page=' + BRS.currentPage
+        if (BRS.currentSubPage) {
+            loc += '&subPage=' + BRS.currentSubPage
+        }
+        if (BRS.pageNumber !== 1) {
+            loc += '&pageNumber=' + BRS.pageNumber.toString()
+        }
+        window.location.hash = loc
         return
     }
 

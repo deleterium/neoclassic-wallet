@@ -147,6 +147,8 @@ export function evModalOnHiddenBsModal(event: JQuery.TriggeredEvent) {
         $modal.find('.advanced_fee').html(formatNQTAsAmount(parseAmountToNQT(defaultFee)) + ' ' + BRS.valueSuffix)
     }
 
+    window.location.hash = '#'
+
     BRS.showedFormWarning = false
 }
 
