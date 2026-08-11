@@ -43,8 +43,6 @@ export function evCheckMessageLengthInput(e: JQuery.TriggeredEvent) {
     $(inputElement).removeClass('is-invalid')
 }
 
-// hide modal when another one is activated.
-export function evModalOnShowBsModal(e: JQuery.TriggeredEvent) {
 /**
  * Common for all modals!
  */
@@ -54,8 +52,8 @@ export function showModal(id: string) {
         console.error(`Unknow modal: ${id}_modal`)
         return
     }
-    // BRS.modalZIndex++
-    // modalElement.style.zIndex = BRS.modalZIndex.toString()
+    BRS.modalZIndex++
+    modalElement.style.zIndex = BRS.modalZIndex.toString()
     showFeeSuggestionsNG(modalElement)
     $(`#${id}_modal`).modal('show')
 }
@@ -152,6 +150,12 @@ export function evModalOnHiddenBsModal(event: JQuery.TriggeredEvent) {
     window.location.hash = '#'
 
     BRS.showedFormWarning = false
+
+    const visible = $('.modal.show')
+    if (visible.length === 0) {
+        // Reset z index if no more modals open
+        BRS.modalZIndex = 2000
+    }
 }
 
 export function showModalError(errorMessage: string, $modal: JQuery<HTMLElement>) {

@@ -78,7 +78,6 @@ import {
 import { evAddRecipientsClick, evSpanRecipientSelectorClickButton, evSpanRecipientSelectorClickUlLiA } from './recipient'
 
 import {
-    evModalOnShowBsModal,
     evModalOnHiddenBsModal,
     evAdvancedInfoClick,
     removeDecryptionForm,
@@ -492,7 +491,6 @@ export function addEventListeners() {
             $(this).closest('form').find('.optional_sell_to_specific').hide()
         }
     })
-    $('.modal').on('show.bs.modal', evModalOnShowBsModal)
     $('.modal').on('shown.bs.modal', function () {
         $(this).find('input[autofocus]').trigger('focus')
         $(this).find('input[name=converted_account_id]').val('')

@@ -190,6 +190,7 @@ export const BRS = {
     fetchingModalData: false,
     _encryptedNote: null as null | Transaction,
     showedFormWarning: false,
+    modalZIndex: 2000,
 
     // from modals.account
     userInfoModal: null as null | {
