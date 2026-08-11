@@ -38,7 +38,7 @@ export async function pagesTransferHistory() {
                     </a>
                   </td>
                   <td>
-                    <a href='#' data-goto-asset='${transfer.asset}'>
+                    <a href='#page=asset_exchange&subPage=${transfer.asset}'>
                       ${transfer.name}
                     </a>
                   </td>

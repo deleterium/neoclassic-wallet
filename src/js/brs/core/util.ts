@@ -52,7 +52,7 @@ export function getAssetLink(asset: AssetDetails) {
     if (!asset || !asset.asset) {
         return '/'
     }
-    return `${asset.name} <a href='#' data-goto-asset='${asset.asset}'>${asset.asset}</a>`
+    return `${asset.name} <a href='#page=asset_exchange&subPage=${asset.asset}'>${asset.asset}</a>`
 }
 
 // region getAccount

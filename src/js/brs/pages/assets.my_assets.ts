@@ -66,7 +66,7 @@ function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
     for (const asset of myAssets) {
         rows += `
             <tr data-asset="${asset.asset}">
-              <td><a href='#' data-goto-asset='${asset.asset}'>
+              <td><a href='#page=asset_exchange&subPage=${asset.asset}'>
                 ${asset.name}</a>
               </td>
               <td class="quantity">${formatQNTAsQuantity(asset.balanceQNT, asset.decimals)}</td>

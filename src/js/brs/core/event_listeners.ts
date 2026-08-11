@@ -325,14 +325,6 @@ export function addEventListeners() {
     $('#add_asset_treasury_account_modal').on('show.bs.modal', (e) => {
         populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#add_asset_treasury_account')
     })
-    $('body').on('click', 'a[data-goto-asset]', function (e) {
-        e.preventDefault()
-        const $visible_modal = $('.modal.in')
-        if ($visible_modal.length) {
-            $visible_modal.modal('hide')
-        }
-        goToAsset($(this).data('goto-asset'))
-    })
     $('#distribute_to_asset_holders_holders_asset').on('input', evDistributeToAssetHoldersHoldersAssetInput)
     $('#cancel_order_modal').on('show.bs.modal', function (e) {
         const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
