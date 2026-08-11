@@ -98,14 +98,6 @@ function getClipboardText(type: string) {
                 return BRS.accountRSExtended
             }
             return BRS.accountRS
-        case 'message_link':
-            return document.URL.replace(/#.*$/, '') + '#message:' + BRS.account
-        case 'send_link':
-            return document.URL.replace(/#.*$/, '') + '#send:' + BRS.account
-        case 'asset_id':
-            return $('#asset_id').text()
-        case 'asset_link':
-            return document.URL.replace(/#.*/, '') + '#asset:' + $('#asset_id').text()
         default:
             return ''
     }
