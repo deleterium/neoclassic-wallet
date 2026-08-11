@@ -218,7 +218,7 @@ export function addEventListeners() {
     })
 
     // from brs.recipient.js
-    $('#send_message_modal, #send_money_modal, #add_contact_modal').on('show.bs.modal', function (e) {
+    $('#send_message_modal, #add_contact_modal').on('show.bs.modal', function (e) {
         const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
         let account = $invoker.data('account')
         if (!account) {

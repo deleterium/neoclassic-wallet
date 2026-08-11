@@ -20,6 +20,7 @@ import { pagesSettings } from '../pages/settings'
 import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
 import { showAssetHoldersModal } from '../modals/assets'
+import { showSendMoneyModal } from '../modals/sendmoney'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -207,15 +208,7 @@ export function checkLocationHash() {
         return
     }
     if (params.has('modal')) {
-        const modalName = params.get('modal')
-        switch (modalName) {
-            case 'asset_holders':
-                // modal=asset_holders&asset=12345678
-                if (params.has('asset')) {
-                    showAssetHoldersModal(params.get('asset') as string)
-                    return
-                }
-        }
+        modalRouter(params)
         return
     }
 }
@@ -257,6 +250,25 @@ async function pageRouter(params: URLSearchParams) {
             return
         default:
             console.log('Page ' + hashPage + ' has no subPage action.')
+            return
+    }
+}
+
+function modalRouter(params: URLSearchParams) {
+    const modalName = params.get('modal')
+    switch (modalName) {
+        case 'asset_holders':
+            if (params.has('asset')) {
+                const assetID = params.get('asset') ?? ''
+                if (assetID) {
+                    showAssetHoldersModal(params.get('asset') as string)
+                    return
+                }
+            }
+            console.log('Missing or invalid asset for modal "asset_holders".')
+            return
+        case 'send_money':
+            showSendMoneyModal(params.get('recipient') ?? '', params.get('amount') ?? '')
             return
     }
 }

@@ -45,17 +45,19 @@ export function evCheckMessageLengthInput(e: JQuery.TriggeredEvent) {
 
 // hide modal when another one is activated.
 export function evModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $visible_modal = $('.modal.show')
-    if ($visible_modal.length) {
-        if ($visible_modal.hasClass('locked')) {
-            const $btn = $visible_modal.find('button.btn-primary:not([data-dismiss=modal])') as JQuery<HTMLButtonElement>
-            unlockModal($visible_modal, $btn, true)
-        } else {
-            $visible_modal.modal('hide')
-        }
+/**
+ * Common for all modals!
+ */
+export function showModal(id: string) {
+    const modalElement = document.getElementById(id + '_modal')
+    if (!modalElement) {
+        console.error(`Unknow modal: ${id}_modal`)
+        return
     }
-
-    showFeeSuggestionsNG(e.target)
+    // BRS.modalZIndex++
+    // modalElement.style.zIndex = BRS.modalZIndex.toString()
+    showFeeSuggestionsNG(modalElement)
+    $(`#${id}_modal`).modal('show')
 }
 
 // Reset form to initial state when modal is closed

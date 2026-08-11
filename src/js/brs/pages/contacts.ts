@@ -73,10 +73,7 @@ export function pagesContacts() {
                 <td>
                 <div class="btn-group">
                     <a class='btn btn-default'
-                    href='#'
-                    data-toggle='modal'
-                    data-target='#send_money_modal'
-                    data-contact='${cName}'>
+                    href='#modal=send_money&recipient=${cName}'>
                     <i class="fas fa-paper-plane"></i>
                     </a>
                     <a class='btn btn-default'
