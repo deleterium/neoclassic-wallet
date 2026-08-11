@@ -652,7 +652,7 @@ export async function showAssetHoldersModal(asset: string) {
         const otherQNT = (BigInt(assetDetails.quantityCirculatingQNT) - qnt).toString()
         rows += `
             <tr>
-              <td>${$.t('other')}</td>
+              <td>${$.t('others')}</td>
               <td>${formatQNTAsQuantity(otherQNT, assetDetails.decimals)}</td>
               <td>${calculatePercentage(otherQNT, assetDetails.quantityCirculatingQNT) + '%'}</td>
             </tr>`

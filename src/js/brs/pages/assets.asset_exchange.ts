@@ -244,7 +244,7 @@ export function loadAssetExchangeSidebar(callback?: () => void) {
                     class='nav-link list-group-item-action no-context' 
                     data-closed='${isClosedGroup}'>
                         <strong class='list-group-item-heading'>
-                            ${$.t('ungrouped')}
+                            ${$.t('others')}
                             <i class='right fa pull-right fa-angle-${angleDirection}'></i>
                         </strong>
                     </a>`
