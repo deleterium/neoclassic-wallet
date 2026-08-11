@@ -108,7 +108,7 @@ function getTransactionRowHTML(transaction: Transaction, viewAccount: string) {
 
     return `
         <tr ${rowClass}>
-          <td><a href='#' data-transaction='${transaction.transaction}'>${transaction.transaction}</a></td>
+          <td><a href='#modal=transaction_info&transaction=${transaction.transaction}'>${transaction.transaction}</a></td>
           <td>${messageIcon}</td>
           <td>${formatTimestampAsDateTime(transaction.timestamp)}</td>
           <td>${details.nameOfTransaction}</td>

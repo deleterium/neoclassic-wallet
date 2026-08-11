@@ -561,8 +561,8 @@ export async function updateMiniTradeHistory() {
               <td>${formatQNTAsQuantity(trade.quantityQNT, BRS.currentAsset.decimals)}</td>
               <td class='asset_price'>${formatPriceNQTAsPriceQuantity(trade.priceNQT, BRS.currentAsset.decimals)}</td>
               <td>${formatNQTAsAmount(totalNQT)}</td>
-              <td><a href='#' data-transaction='${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
-              <td><a href='#' data-transaction='${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
+              <td><a href='#modal=transaction_info&transaction=${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
+              <td><a href='#modal=transaction_info&transaction=${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
             </tr>`
     }
     $('#asset_exchange_trade_history_table tbody').empty().append(rows)

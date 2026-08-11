@@ -21,6 +21,7 @@ import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
 import { showAssetHoldersModal } from '../modals/assets'
 import { showSendMoneyModal } from '../modals/sendmoney'
+import { showTransactionModal } from '../modals/transaction'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -269,6 +270,16 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'send_money':
             showSendMoneyModal(params.get('recipient') ?? '', params.get('amount') ?? '')
+            return
+        case 'transaction_info':
+            if (params.has('transaction')) {
+                const txid = params.get('transaction')
+                if (txid) {
+                    showTransactionModal(txid)
+                    return
+                }
+            }
+            console.log('Missing or invalid transaction for modal "transaction_info".')
             return
     }
 }

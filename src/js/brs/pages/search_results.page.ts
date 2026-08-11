@@ -161,7 +161,7 @@ export async function pagesSearchResults() {
         const htmlResult = `
                 <strong>${$.t('transaction')}:</strong>
                 <ul>
-                  <li><a href="#" data-transaction="${response.transaction}">${response.transaction}</a></li>
+                  <li><a href="#modal=transaction_info&transaction=${response.transaction}">${response.transaction}</a></li>
                 </ul>`
         dataLoaded(htmlResult)
         return

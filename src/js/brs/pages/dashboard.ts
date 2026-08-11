@@ -54,7 +54,7 @@ function getTransactionRowDashboardHTML(transaction: Transaction) {
 
     return `
         <tr class='${rowClass}'>
-            <td><a href='#' data-transaction='${transaction.transaction}' data-timestamp='${String(transaction.timestamp)}'>${formatTimestampAsDateTime(transaction.timestamp)}</a></td>
+            <td><a href='#modal=transaction_info&transaction=${transaction.transaction}'>${formatTimestampAsDateTime(transaction.timestamp)}</a></td>
             <td>${details.nameOfTransaction}${messageIcon}</td>
             <td>${details.circleText}</td>
             <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>

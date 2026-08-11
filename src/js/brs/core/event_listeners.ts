@@ -96,8 +96,6 @@ import { evBrsModalServerInfoOnShowBsModal } from '../modals/server_info'
 
 import { showSubscriptionCancelModal } from '../modals/subscription'
 
-import { showTransactionModal } from '../modals/transaction'
-
 import { ShowBootstrapModalEvent } from '../typings'
 
 import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
@@ -598,13 +596,6 @@ export function addEventListeners() {
     })
 
     // from brs.modals.transaction.js
-    $(
-        '#transactions_table, #dashboard_transactions_table, #transfer_history_table, #asset_exchange_trade_history_table, #block_info_table, #block_info_transactions_table, #user_info_modal_transactions_table, #search_results_contents',
-    ).on('click', 'a[data-transaction]', function (e) {
-        e.preventDefault()
-        const transactionId = $(this).data('transaction')
-        showTransactionModal(transactionId)
-    })
     $('#send_money_modal').on('hide.bs.modal', function () {
         $('#total_amount_multi_out').html('?')
     })

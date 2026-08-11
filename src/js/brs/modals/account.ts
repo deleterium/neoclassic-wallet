@@ -150,10 +150,7 @@ async function userInfoModalTransactions() {
         rows += `
                 <tr>
                   <td>
-                    <a href='#'
-                        data-transaction='${transaction.transaction}'
-                        data-timestamp='${transaction.timestamp}'
-                    >
+                    <a href='#modal=transaction_info&transaction=${transaction.transaction}'>
                     ${formatTimestampAsDateTime(transaction.timestamp)}
                     </a>
                   </td>

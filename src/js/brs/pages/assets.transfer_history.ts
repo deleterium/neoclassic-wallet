@@ -33,7 +33,7 @@ export async function pagesTransferHistory() {
             rows += `
                 <tr>
                   <td>
-                    <a href='#' data-transaction='${transfer.assetTransfer}'>
+                    <a href='#modal=transaction_info&transaction=${transfer.assetTransfer}'>
                       ${transfer.assetTransfer}
                     </a>
                   </td>

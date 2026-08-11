@@ -54,7 +54,7 @@ function getTransactionInBlocksRowHTML(transaction: Transaction) {
 
     return `
         <tr>
-          <td><a href='#' data-transaction='${transactionId}'>${transactionId}</a></td>
+          <td><a href='#modal=transaction_info&transaction=${transactionId}'>${transactionId}</a></td>
           <td>${hasMessage}</td>
           <td>${timestamp}</td>
           <td>${details.nameOfTransaction}</td>

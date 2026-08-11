@@ -53,7 +53,7 @@ export function showBlockModal(block: GetBlockResponse) {
         rows += `
             <tr>
                 <td>
-                    <a href='#' data-transaction='${transactionId}'>${shortId}</a><br>
+                    <a href='#modal=transaction_info&transaction=${transactionId}'>${shortId}</a><br>
                     ${details.nameOfTransaction}
                 </td>
                 <td>${details.senderHTML}</td>

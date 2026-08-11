@@ -17,7 +17,7 @@ import {
 
 import { convertNumericToRSAccountFormat, getAssetLink, getAccountTitle, getAccountRSFromObject, createInfoTable } from '../core/util'
 
-import { removeDecryptionForm } from '../core/modals'
+import { removeDecryptionForm, showModal } from '../core/modals'
 
 import { getAssetDetails } from '../tools/assets'
 
@@ -185,8 +185,8 @@ async function processTransactionModalData(transaction: Transaction) {
 
     function transactionEndLoad() {
         $('#transaction_info_table tbody').append(createInfoTable(data))
-        $('#transaction_info_modal').modal('show')
         $('#transaction_info_table').show()
+        showModal('transaction_info')
         BRS.fetchingModalData = false
     }
 
