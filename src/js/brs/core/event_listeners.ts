@@ -1,6 +1,6 @@
 import { BRS } from '..'
 
-import { evSidebarClick, reloadCurrentPage, goToPage, goToPageNumber } from './navigation'
+import { reloadCurrentPage } from './navigation'
 
 import { autoSelectServer, getState } from './lockscreen'
 
@@ -65,7 +65,7 @@ import { evTransactionsPageTypeClick } from '../pages/transactions'
 
 import { evSidebarContextOnContextmenu, closeContextMenu } from './context_menu'
 
-import { evMessagesSidebarClick, evMessagesSidebarContextClick } from '../pages/messages'
+import { evMessagesSidebarContextClick } from '../pages/messages'
 
 import {
     sendMoneyCalculateTotal,
@@ -162,24 +162,13 @@ export function addEventListeners() {
         }
     })
 
-    $('[data-widget="treeview"] a').on('click', evSidebarClick)
-    $('button.goto-page, a.goto-page').on('click', function (event) {
-        event.preventDefault()
-
-        goToPage($(this).data('page'))
-    })
-    $('.data-pagination').on('click', 'a', function (e) {
-        e.preventDefault()
-
-        goToPageNumber($(this).data('page'))
-    })
     $('#search_box').on('keyup', function (e) {
         if (e.key !== 'Enter') return
-        goToPage('search_results')
+        window.location.hash = 'page=search_results&value=' + $('#search_box input').val()
     })
     $('#search_btn').on('click', function (e) {
         e.preventDefault()
-        goToPage('search_results')
+        window.location.hash = 'page=search_results&value=' + $('#search_box input').val()
     })
     $('#login_button').on('click', evLoginButtonClick)
 
@@ -336,14 +325,6 @@ export function addEventListeners() {
     $('#add_asset_treasury_account_modal').on('show.bs.modal', (e) => {
         populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#add_asset_treasury_account')
     })
-    $('body').on('click', 'a[data-goto-asset]', function (e) {
-        e.preventDefault()
-        const $visible_modal = $('.modal.in')
-        if ($visible_modal.length) {
-            $visible_modal.modal('hide')
-        }
-        goToAsset($(this).data('goto-asset'))
-    })
     $('#distribute_to_asset_holders_holders_asset').on('input', evDistributeToAssetHoldersHoldersAssetInput)
     $('#cancel_order_modal').on('show.bs.modal', function (e) {
         const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
@@ -370,7 +351,6 @@ export function addEventListeners() {
             }
         }
     })
-    $('#messages_vtab').on('click', 'a', evMessagesSidebarClick)
     $('#messages_vtab_context').on('click', 'a', evMessagesSidebarContextClick)
     $('#messages_vtab_update_context').on('click', 'a', function (e) {
         e.preventDefault()

@@ -88,7 +88,7 @@ export async function pagesAssestAdministration() {
 
         rows += `
             <tr data-asset="${asset.asset}">
-              <td><a href='#' data-goto-asset='${asset.asset}'>
+              <td><a href='#page=asset_exchange&subPage=${asset.asset}'>
                 ${asset.name}</a>
               </td>
               <td>${asset.asset}</td>

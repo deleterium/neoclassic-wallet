@@ -10,7 +10,12 @@ import { getDecryptionPassword } from '../core/encryption'
 
 import { formatTimestampAsDateTime } from '../core/numbers'
 
-import { getAccountTitleFromObject, getAccountRSFromObject, getUnconfirmedTransactionsFromCache } from '../core/util'
+import {
+    getAccountTitleFromObject,
+    getAccountRSFromObject,
+    getUnconfirmedTransactionsFromCache,
+    convertRSAccountToNumeric,
+} from '../core/util'
 
 import { closeContextMenu } from '../core/context_menu'
 
@@ -105,7 +110,7 @@ function displayMessageSidebar() {
         }
 
         rows += `
-            <a href='#'
+            <a href='#page=messages&subPage=${sidebarUser.userRS}'
               class='nav-link' 
               data-account="${sidebarUser.userRS}"
               data-account-id="${sidebarUser.user}"
@@ -267,25 +272,30 @@ function buildChatMessages(account_id: string) {
     return output
 }
 
-export function evMessagesSidebarClick(e: JQuery.ClickEvent) {
-    e.preventDefault()
-    const clickedElement = $(e.currentTarget)
-
+export function loadMessagesSubPage(userRS: string) {
     $('#messages_vtab a.active').removeClass('active')
-    clickedElement.addClass('active')
 
-    const otherUser = clickedElement.data('account-id')
-    BRS.currentSubPage = otherUser
+    if (!userRS) return
+    const userID = convertRSAccountToNumeric(userRS)
+    if (!userID) return
 
-    const contactName = clickedElement.data('contact')
-    const rsAddress = clickedElement.data('account')
+    const element = $('#messages_vtab a[data-account="' + userRS + '"]')
+    if (!element.length) {
+        console.log('Invalid user')
+        return
+    }
+    element.addClass('active')
+    BRS.currentSubPage = convertRSAccountToNumeric(userRS)
+
+    const contactName = BRS.contacts[userRS]?.name
+    const rsAddress = userRS
     const friendlyName = contactName ?? rsAddress
     $('#chatbox_title').text(friendlyName)
 
     $('#no_message_selected, #no_messages_available').hide()
     $('#messages_card').hide()
 
-    const chatMessages = buildChatMessages(otherUser)
+    const chatMessages = buildChatMessages(BRS.currentSubPage)
 
     $('#message_details').html(chatMessages)
     $('#messages_card').show()

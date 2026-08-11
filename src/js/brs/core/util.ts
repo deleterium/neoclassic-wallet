@@ -52,7 +52,7 @@ export function getAssetLink(asset: AssetDetails) {
     if (!asset || !asset.asset) {
         return '/'
     }
-    return `${asset.name} <a href='#' data-goto-asset='${asset.asset}'>${asset.asset}</a>`
+    return `${asset.name} <a href='#page=asset_exchange&subPage=${asset.asset}'>${asset.asset}</a>`
 }
 
 // region getAccount
@@ -98,14 +98,6 @@ function getClipboardText(type: string) {
                 return BRS.accountRSExtended
             }
             return BRS.accountRS
-        case 'message_link':
-            return document.URL.replace(/#.*$/, '') + '#message:' + BRS.account
-        case 'send_link':
-            return document.URL.replace(/#.*$/, '') + '#send:' + BRS.account
-        case 'asset_id':
-            return $('#asset_id').text()
-        case 'asset_link':
-            return document.URL.replace(/#.*/, '') + '#asset:' + $('#asset_id').text()
         default:
             return ''
     }

@@ -1,4 +1,4 @@
-import { goToAsset, pagesAssetExchange } from '../pages/assets.asset_exchange'
+import { goToAsset, loadAssetExchangeSubPage, pagesAssetExchange } from '../pages/assets.asset_exchange'
 
 import { BRS } from '..'
 import { pagesAliases } from '../pages/aliases'
@@ -8,7 +8,7 @@ import { pagesTransferHistory } from '../pages/assets.transfer_history'
 import { pagesBlockInfo } from '../pages/blockchain.block_info'
 import { pagesLatestBlocks } from '../pages/blockchain.latest_blocks'
 import { pagesContacts } from '../pages/contacts'
-import { pagesMessages } from '../pages/messages'
+import { loadMessagesSubPage, pagesMessages } from '../pages/messages'
 import { pagesForgedBlocks } from '../pages/mining.forged_blocks'
 import { pagesNotifications } from '../pages/notifications'
 import { pagesAt } from '../pages/payments.at'
@@ -20,25 +20,6 @@ import { pagesSettings } from '../pages/settings'
 import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
 import { showAssetHoldersModal } from '../modals/assets'
-
-/**
- * Handles clicks in sidebar, changing current page if needed
- */
-export function evSidebarClick(e: JQuery.ClickEvent): void {
-    e.preventDefault()
-    if ($(e.currentTarget).data('toggle') === 'modal') {
-        return
-    }
-    const page = $(e.currentTarget).data('page')
-    if (page === 'keep' || page === BRS.currentPage) {
-        return
-    }
-    $('.page').hide()
-    $('#' + page + '_page').show()
-    $('#sidebar .active').removeClass('active')
-    $(e.currentTarget).addClass('active')
-    loadPage(page)
-}
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -62,23 +43,22 @@ const pageFunctions = {
     transfer_history: pagesTransferHistory,
 }
 
-function executePage(page: string) {
+async function executePage(page: string) {
     pageLoading()
     if (!pageFunctions[page]) {
         console.error(`Unknow page '${page}'`)
         pageLoaded()
         return
     }
-    pageFunctions[page]()
+    await pageFunctions[page]()
 }
 
 /** Load a page for first time (setting up global variables) */
-function loadPage(page: string): void {
+async function loadPage(page: string, pageNumber: number) {
     BRS.currentPage = page
     BRS.currentSubPage = ''
-    BRS.pageNumber = 1
-    BRS.showPageNumbers = false
-    executePage(page)
+    BRS.pageNumber = pageNumber
+    await executePage(page)
 }
 
 /** Reload current page, keeping variables like pagination */
@@ -86,9 +66,10 @@ export function reloadCurrentPage(): void {
     executePage(BRS.currentPage)
 }
 
-/** Go to a page, updating sidebar menu */
-export function goToPage(page: string): void {
-    let $link = $('[data-widget="treeview"] a[data-page=' + page + ']')
+/** Updates sidebar menu */
+export function updateSidebarActiveItem(page: string): void {
+    $('[data-widget="treeview"] a.active').removeClass('active')
+    let $link = $('[data-widget="treeview"] a[href*="#page=' + page + '"]')
 
     if ($link.length > 1) {
         // if there are many pages in menubar
@@ -100,15 +81,10 @@ export function goToPage(page: string): void {
         }
     }
     if ($link.length === 1) {
-        // handle pages that are in sidebar simulating a click
-        $link.trigger('click')
+        $link.addClass('active')
         return
     }
-    // Handle hidden pages like "search_results"
-    $('[data-widget="treeview"] a.active').removeClass('active')
-    $('.page').hide()
-    $('#' + page + '_page').show()
-    loadPage(page)
+    // It's, a hidden page like "search_results"
 }
 
 export function pageLoading(): void {
@@ -139,25 +115,36 @@ export function pageLoaded(callback?: () => void) {
 }
 
 export function addPagination(): void {
-    let output = ''
-
-    if (BRS.pageNumber === 2) {
-        output += "<a href='#' data-page='1'>&laquo; " + $.t('previous_page') + '</a>'
-    } else if (BRS.pageNumber > 2) {
-        // output += "<a href='#' data-page='1'>&laquo; First Page</a>";
-        output += " <a href='#' data-page='" + (BRS.pageNumber - 1) + "'>&laquo; " + $.t('previous_page') + '</a>'
+    function createListElement(pageNumber: number, extClass: string, content: string) {
+        return `<li class="page-item ${extClass}"><a class="page-link" href='#page=${BRS.currentPage}&subPage=${BRS.currentSubPage}&pageNumber=${pageNumber}'>${content}</a></li>`
     }
+
+    let output = '<ul class="pagination justify-content-center">'
+
+    if (BRS.pageNumber === 1) {
+        output += createListElement(1, 'disabled', '<i class="fa fa-fast-backward" aria-hidden="true"></i>')
+        output += createListElement(1, 'disabled', '<i class="fa fa-step-backward" aria-hidden="true"></i>')
+    } else {
+        output += createListElement(1, '', '<i class="fa fa-fast-backward" aria-hidden="true"></i>')
+        output += createListElement(BRS.pageNumber - 1, '', '<i class="fa fa-step-backward" aria-hidden="true"></i>')
+    }
+
+    output += createListElement(BRS.pageNumber, '', BRS.pageNumber.toString())
+
     if (BRS.hasMorePages) {
-        if (BRS.pageNumber > 1) {
-            output += '&nbsp;&nbsp;&nbsp;'
-        }
-        output += " <a href='#' data-page='" + (BRS.pageNumber + 1) + "'>" + $.t('next_page') + ' &raquo;</a>'
+        output += createListElement(BRS.pageNumber + 1, '', '<i class="fa fa-step-forward" aria-hidden="true"></i>')
+    } else {
+        output += createListElement(BRS.pageNumber + 1, 'disabled', '<i class="fa fa-step-forward" aria-hidden="true"></i>')
     }
 
     const $paginationContainer = $('#' + BRS.currentPage + '_page .data-pagination')
 
     if ($paginationContainer.length) {
-        $paginationContainer.html(output)
+        if (BRS.pageNumber === 1 && !BRS.hasMorePages) {
+            $paginationContainer.html('')
+        } else {
+            $paginationContainer.html(output + '</ul>')
+        }
     }
 }
 
@@ -166,7 +153,8 @@ export function goToPageNumber(pageNumber: number) {
     executePage(BRS.currentPage)
 }
 
-export function checkLocationHash(): void {
+// TODO remove after upgrading location logic.
+export function checkLocationHashOld(): void {
     if (!window.location.hash) {
         return
     }
@@ -197,6 +185,80 @@ export function checkLocationHash(): void {
         $modal.modal('show')
     }
     window.location.hash = '#'
+}
+
+export function checkLocationHash() {
+    const locationHash = window.location.hash.replace('#', '')
+    if (!locationHash) {
+        let loc = '#page=' + BRS.currentPage
+        if (BRS.currentSubPage) {
+            loc += '&subPage=' + BRS.currentSubPage
+        }
+        if (BRS.pageNumber !== 1) {
+            loc += '&pageNumber=' + BRS.pageNumber.toString()
+        }
+        window.location.hash = loc
+        return
+    }
+
+    const params = new URLSearchParams(locationHash)
+    if (params.has('page')) {
+        pageRouter(params)
+        return
+    }
+    if (params.has('modal')) {
+        const modalName = params.get('modal')
+        switch (modalName) {
+            case 'asset_holders':
+                // modal=asset_holders&asset=12345678
+                if (params.has('asset')) {
+                    showAssetHoldersModal(params.get('asset') as string)
+                    return
+                }
+        }
+        return
+    }
+}
+
+async function pageRouter(params: URLSearchParams) {
+    const hashPage = params.get('page') || ''
+    const hashSubPage = params.get('subPage') || ''
+    const hashPageNumberInput = params.get('pageNumber') || '1'
+
+    // Check if the page number input is a valid integer and within the specified range
+    let hashPageNumber = Number(hashPageNumberInput)
+    if (!Number.isInteger(hashPageNumber) || hashPageNumber < 1 || hashPageNumber > Number.MAX_SAFE_INTEGER) {
+        hashPageNumber = 1
+    }
+
+    if (hashPage === BRS.currentPage) {
+        if (hashSubPage === BRS.currentSubPage) {
+            if (hashPageNumber === BRS.pageNumber) {
+                return
+            }
+            goToPageNumber(hashPageNumber)
+            return
+        }
+    } else {
+        $('.page').hide()
+        $('#' + hashPage + '_page').show()
+        updateSidebarActiveItem(hashPage)
+        await loadPage(hashPage, hashPageNumber)
+    }
+    if (!hashSubPage) {
+        return
+    }
+    switch (hashPage) {
+        case 'asset_exchange':
+            loadAssetExchangeSubPage(hashSubPage)
+            return
+        case 'messages':
+            loadMessagesSubPage(hashSubPage)
+            return
+        default:
+            console.log('Page ' + hashPage + ' has no subPage action.')
+            return
+    }
 }
 
 /** Checks if a Number is valid and greater than minimum fee. If not, return minimum fee */

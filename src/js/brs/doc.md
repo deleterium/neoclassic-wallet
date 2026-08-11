@@ -138,7 +138,7 @@ The form data used to generate the request.
 Creating a new page:
 * Create a new html file. Use the other pages as templates like `at_page`.
 * Add the 'insert location' in `src/index.html` and in `buildIndexHtml.js`.
-* Add the menu item. Use `class="goto-page" data-page="yourpage"` in link.
+* Add the menu item. Use `href="#page=yourpage"` in link.
 * Create a new typescript file in `src/js/brs/pages/` to have the pageFunction.
 * Add the pageFunction in `pageFunctions` at file `src/js/brs/navigation.ts`
 

@@ -175,7 +175,6 @@ export const BRS = {
     closedGroups: [] as string[],
     assetSearch: false as false | string[],
     currentAsset: {} as DBAsset,
-    currentAssetID: 'undefined',
 
     // from transactions
     lastTransactions: '',

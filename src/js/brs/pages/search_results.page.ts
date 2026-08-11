@@ -57,7 +57,7 @@ function showAssetSearchResults(assets: GetAssetResponse[]) {
         resultHTML += `
             <tr>
               <td>${asset.name}</td>
-              <td><a href="#" data-goto-asset="${asset.asset}">${asset.asset}</a></td>
+              <td><a href="#page=asset_exchange&subPage=${asset.asset}">${asset.asset}</a></td>
               <td><a href="#" data-user="${asset.accountRS}" class="user-info">${asset.accountRS}</a></td>
               <td>${asset.description}</td>
             </tr>`

@@ -420,8 +420,7 @@ function userInfoModalAssetsLoaded() {
         rows += `
             <tr>
               <td>
-                <a href='#'
-                   data-goto-asset='${assetId}'
+                <a href='#page=asset_exchange&subPage=${assetId}'
                    ${isIssued ? " style='font-weight:bold'" : ''}>
                    ${assetName}
                 </a>
