@@ -20,6 +20,7 @@ import {
 
 import { cacheAsset, getAssetDetails } from '../tools/assets'
 import { notify } from '../core/notifications'
+import { showModal } from '../core/modals'
 
 /** Start the process of showing an "Account Modal".
  * @param {string|GetAccountResponse} account - Account to be shown.
@@ -101,7 +102,7 @@ function accountModalDataReady() {
     } else {
         $('#user_info_description').hide()
     }
-    $('#user_info_modal').modal('show')
+    showModal('user_info')
     $('#user_info_modal_details_tab').tab('show')
     userInfoModalDetails()
 }
@@ -158,7 +159,7 @@ async function userInfoModalTransactions() {
                   <td>${details.circleText}</td>
                   <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
                   <td>${formatNQTAsAmount(transaction.feeNQT)}</td>
-                  <td>${details.accountTitle}</td>
+                  <td>${details.accountLink}</td>
                 </tr>`
     }
     $('#user_info_modal_transactions_table tbody').empty().append(rows)

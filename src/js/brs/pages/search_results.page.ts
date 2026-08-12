@@ -31,7 +31,7 @@ function showAccountSearchResults(accountsList: string[]): void {
     let resultHTML = `<strong>${$.t('account')}:</strong><ul>`
     for (const account of accountsList) {
         const accountRS = convertNumericToRSAccountFormat(account)
-        resultHTML += `<li><a href="#" data-user="${accountRS}" class="user-info">${accountRS}</a></li>`
+        resultHTML += `<li><a href="#modal=user_info&user=${accountRS}">${accountRS}</a></li>`
     }
     resultHTML += '</ul>'
     dataLoaded(resultHTML)
@@ -58,7 +58,7 @@ function showAssetSearchResults(assets: GetAssetResponse[]) {
             <tr>
               <td>${asset.name}</td>
               <td><a href="#page=asset_exchange&subPage=${asset.asset}">${asset.asset}</a></td>
-              <td><a href="#" data-user="${asset.accountRS}" class="user-info">${asset.accountRS}</a></td>
+              <td><a href="#modal=user_info&user=${asset.accountRS}">${asset.accountRS}</a></td>
               <td>${asset.description}</td>
             </tr>`
     }
@@ -103,7 +103,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
         resultHTML += `
             <tr>
               <td><a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a></td>
-              <td><a href="#" data-user="${alias.accountRS}" class="user-info">${alias.accountRS}</a></td>
+              <td><a href="#modal=user_info&user=${alias.accountRS}">${alias.accountRS}</a></td>
               <td>${alias.tldName}</td>
               <td>${alias.aliasURI}</td>
               <td>${statusHTML}</td>

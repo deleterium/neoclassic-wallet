@@ -32,7 +32,7 @@ export function drawBlocksInCurrentPage(blocks: BlockDetails[]) {
         const transactions = formatNumber(block.numberOfTransactions)
         const generatorDisplay =
             block.generator !== BRS.genesis
-                ? `<a href='#' data-user='${getAccountRSFromObject(block, 'generator')}' class='user_info'>${getAccountTitleFromObject(block, 'generator')}</a>`
+                ? `<a href='#modal=user_info&user=${getAccountRSFromObject(block, 'generator')}'>${getAccountTitleFromObject(block, 'generator')}</a>`
                 : $.t('genesis')
         const volume = formatVolume(block.payloadLength)
         const percentage =

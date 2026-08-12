@@ -783,7 +783,7 @@ async function processTransactionModalData(transaction: Transaction) {
         switch (transaction.subtype) {
             case 0:
                 contractAddress = convertNumericToRSAccountFormat(transaction.transaction)
-                data.at_created_formatted_html = `<a href='#' data-user='${contractAddress}"' class='user-info'>${getAccountTitle(contractAddress)}</a>`
+                data.at_created_formatted_html = `<a href='#modal=user_info&user=${contractAddress}'>${getAccountTitle(contractAddress)}</a>`
                 data.name = transaction.attachment.name
                 data.description = transaction.attachment.description
         }

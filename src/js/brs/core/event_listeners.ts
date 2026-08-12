@@ -509,13 +509,6 @@ export function addEventListeners() {
     $('.advanced_info a').on('click', evAdvancedInfoClick)
 
     // from brs.modals.account.js
-    $(
-        '#latest_blocks_table, #forged_blocks_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents',
-    ).on('click', 'a[data-user]', function (e) {
-        e.preventDefault()
-        const account = $(this).data('user')
-        showAccountModal(account)
-    })
     $('#user_info_modal').on('hidden.bs.modal', function () {
         $(this).find('table tbody').empty()
         $(this).find('.data-container:not(.data-loading,.data-never-loading)').addClass('data-loading')

@@ -62,9 +62,7 @@ export function pagesContacts() {
                 </a>
                 </td>
                 <td>
-                <a href='#'
-                    data-user='${getAccountRSFromObject(contact, 'account')}'
-                    class='user_info'>
+                <a href='#modal=user_info&user=${getAccountRSFromObject(contact, 'account')}'>
                     ${getAccountRSFromObject(contact, 'account')}
                 </a>
                 </td>

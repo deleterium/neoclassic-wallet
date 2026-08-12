@@ -405,9 +405,9 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
         )
 
         $('#asset_account').html(
-            "<a href='#' data-user='" +
+            "<a href='#modal=user_info&user=" +
                 getAccountRSFromObject(asset, 'account') +
-                "' class='user_info'>" +
+                "'>" +
                 getAccountTitleFromObject(asset, 'account') +
                 '</a>',
         )
@@ -672,7 +672,7 @@ async function loadAssetOrders(type: 'ask' | 'bid', assetId: string, refresh: bo
         } else {
             accountHTML += getAccountTitleFromObject(order, 'account')
         }
-        accountHTML = `<a href='#' data-user='${getAccountRSFromObject(order, 'account')}' class='user_info'>${accountHTML}</a>`
+        accountHTML = `<a href='#modal=user_info&user=${getAccountRSFromObject(order, 'account')}'>${accountHTML}</a>`
 
         rows += `
             <tr class='${className}'

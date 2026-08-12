@@ -44,7 +44,7 @@ export function getAccountLink(object: Transaction, acc: string) {
         }
         return '/'
     } else {
-        return `<a href='#' data-user='${object[acc + 'RS']}' class='user-info'>${getAccountTitleFromObject(object, acc)}</a>`
+        return `<a href='#modal=user_info&user=${object[acc + 'RS']}'>${getAccountTitleFromObject(object, acc)}</a>`
     }
 }
 
@@ -242,7 +242,7 @@ export function createInfoTable(data: object) {
         } else if (key === 'price' || key === 'total' || key === 'amount' || key === 'fee' || key === 'refund' || key === 'discount') {
             value = formatNQTAsAmount(value) + ' ' + BRS.valueSuffix
         } else if (key === 'sender' || key === 'recipient' || key === 'account' || key === 'seller' || key === 'buyer') {
-            value = "<a href='#' data-user='" + String(value).escapeHTML() + "'>" + getAccountTitle(value) + '</a>'
+            value = "<a href='#modal=user_info&user=" + String(value).escapeHTML() + "'>" + getAccountTitle(value) + '</a>'
         } else {
             value = String(value).escapeHTML().nl2br()
         }

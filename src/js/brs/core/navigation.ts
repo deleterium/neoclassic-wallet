@@ -22,6 +22,7 @@ import { pagesAssestAdministration } from '../pages/assets.asset_administration'
 import { showAssetHoldersModal } from '../modals/assets'
 import { showSendMoneyModal } from '../modals/sendmoney'
 import { showTransactionModal } from '../modals/transaction'
+import { showAccountModal } from '../modals/account'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -282,6 +283,17 @@ function modalRouter(params: URLSearchParams) {
                 }
             }
             console.log('Missing or invalid transaction for modal "transaction_info".')
+            window.location.hash = '#'
+            return
+        case 'user_info':
+            if (params.has('user')) {
+                const account = params.get('user')
+                if (account) {
+                    showAccountModal(account)
+                    return
+                }
+            }
+            console.log('Missing or invalid user for modal "user_info".')
             window.location.hash = '#'
             return
     }
