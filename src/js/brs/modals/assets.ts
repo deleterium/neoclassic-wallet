@@ -14,6 +14,7 @@ import { getAccountTitleFromObject, getTranslatedFieldName } from '../core/util'
 import { notify } from '../core/notifications'
 import { getAssetDetails, getAssetFromCache } from '../tools/assets'
 import { sendRequest } from '../core/send_request'
+import { showModal } from '../core/modals'
 
 export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: string) {
     const assetId = $invoker.data('asset') ?? ''
@@ -640,7 +641,7 @@ export async function showAssetHoldersModal(asset: string) {
     for (const holder of response.accountAssets) {
         rows += `
             <tr>
-              <td>${getAccountTitleFromObject(holder, 'account') + (holder.isTreasury ? treasuryHTML : '')}</td>
+              <td><a href='#modal=user_info&user=${holder.accountRS}'>${getAccountTitleFromObject(holder, 'account')}</a> ${holder.isTreasury ? treasuryHTML : ''}</td>
               <td>${formatQNTAsQuantity(holder.quantityQNT, assetDetails.decimals)}</td>
               <td>${holder.isTreasury ? '/' : calculatePercentage(holder.quantityQNT, assetDetails.quantityCirculatingQNT) + '%'}</td>
             </tr>`
@@ -659,5 +660,5 @@ export async function showAssetHoldersModal(asset: string) {
     }
 
     $('#asset_holders_modal_table tbody').html(rows)
-    $('#asset_holders_modal').modal('show')
+    showModal('asset_holders')
 }

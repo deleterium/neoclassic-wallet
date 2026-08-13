@@ -418,7 +418,7 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
         $('#asset_quantity').html(formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals))
         $('#asset_mintable').text(asset.mintable ? $.t('yes') : $.t('no'))
         $('#asset_holders_text').html(`
-            <a href="#asset_holders:${asset.asset}">${$.t('view_more')}</a>
+            <a href="#modal=asset_holders&asset=${asset.asset}">${$.t('view_more')}</a>
             `)
 
         $('.asset_name').html(asset.name)

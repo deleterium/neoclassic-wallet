@@ -175,10 +175,6 @@ export function checkLocationHashOld(): void {
     } else if (hash[0] === 'asset') {
         goToAsset(hash[1])
         return
-    } else if (hash[0] === 'asset_holders') {
-        showAssetHoldersModal(hash[1])
-        window.location.hash = '#'
-        return
     }
 
     if ($modal) {
