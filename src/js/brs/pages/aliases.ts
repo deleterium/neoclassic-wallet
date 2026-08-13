@@ -26,13 +26,8 @@ export async function pagesAliases() {
               <td class='uri'></td>
               <td class='status'></td>
               <td style="white-space:nowrap">
-                <a href="#"
-                  class="btn btn-xs btn-default"
-                  data-toggle="modal"
-                  data-target="#transfer_alias_modal"
-                  data-alias="${tld.alias}"
-                  data-alias-name=""
-                  data-tld="${tld.aliasName}">
+                <a href="#modal=transfer_alias&alias=${tld.alias}&tld=${tld.aliasName}"
+                  class="btn btn-xs btn-default">
                   ${$.t('transfer')}
                 </a>
                 <a href="#"
@@ -186,13 +181,8 @@ export async function pagesAliases() {
               ${$.t('edit')}
             </a>`
         const transferButton = `
-            <a href="#"
-              class="btn btn-xs btn-default"
-              data-toggle="modal"
-              data-target="#transfer_alias_modal"
-              data-alias="${alias.alias}"
-              data-alias-name="${alias.aliasName}"
-              data-tld="${alias.tldName}">
+            <a href="#modal=transfer_alias&alias=${alias.alias}&aliasName=${alias.aliasName}&tld=${alias.tldName}"
+              class="btn btn-xs btn-default">
               ${$.t('transfer')}
             </a>`
         const sellButton = `

@@ -10,6 +10,7 @@ import { createInfoTable, getAccountTitle } from '../core/util'
 
 import { GetAliasResponse, PostResponse, ShowBootstrapModalEvent } from '../typings'
 import { notify } from '../core/notifications'
+import { showModal } from '../core/modals'
 
 export function evAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
@@ -22,6 +23,16 @@ export function evAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     $(modal).find('input[name=alias]').val(alias)
     $(modal).find('.alias_name_display').text(aliasName)
     $(modal).find('.alias_tld_display').text(tld)
+}
+
+export function showAliasOperationModal(modalName: 'transfer_alias', alias: string, aliasName: string, tld: string) {
+    const $targetModal = $(`#${modalName}_modal`)
+
+    $targetModal.find('input[name=alias]').val(alias)
+    $targetModal.find('.alias_name_display').text(aliasName)
+    $targetModal.find('.alias_tld_display').text(tld)
+
+    showModal(modalName)
 }
 
 export function formsSellAlias(data: any) {

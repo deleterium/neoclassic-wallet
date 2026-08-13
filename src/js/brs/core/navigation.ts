@@ -24,6 +24,7 @@ import { showSendMoneyModal } from '../modals/sendmoney'
 import { showTransactionModal } from '../modals/transaction'
 import { showAccountModal } from '../modals/account'
 import { showModal } from './modals'
+import { showAliasOperationModal } from '../modals/aliases'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -299,6 +300,19 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'clear_data':
             showModal('clear_data')
+            return
+        case 'transfer_alias':
+            if (params.has('alias')) {
+                const alias = params.get('alias')
+                const aliasName = params.get('aliasName') || ''
+                const tld = params.get('tld')
+                if (alias && tld) {
+                    showAliasOperationModal(modalName, alias, aliasName, tld)
+                    return
+                }
+            }
+            console.log('Missing or invalid options for modal "transfer_alias".')
+            window.location.hash = '#'
             return
     }
 }

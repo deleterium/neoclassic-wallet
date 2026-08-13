@@ -370,7 +370,7 @@ export function addEventListeners() {
     // })
 
     // from brs.aliases.js
-    $('#transfer_alias_modal, #sell_alias_modal, #cancel_alias_sale_modal').on('show.bs.modal', evAliasModalOnShowBsModal)
+    $('#sell_alias_modal, #cancel_alias_sale_modal').on('show.bs.modal', evAliasModalOnShowBsModal)
     $('#sell_alias_sell_to_specific').on('click', evSellAliasSellToSpecificClick)
     $('#buy_alias_modal').on('show.bs.modal', evBuyAliasModalOnShowBsModal)
     $('#register_alias_modal').on('show.bs.modal', evRegisterAliasModalOnShowBsModal)
