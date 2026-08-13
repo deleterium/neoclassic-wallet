@@ -23,6 +23,7 @@ import { showAssetHoldersModal } from '../modals/assets'
 import { showSendMoneyModal } from '../modals/sendmoney'
 import { showTransactionModal } from '../modals/transaction'
 import { showAccountModal } from '../modals/account'
+import { showModal } from './modals'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -295,6 +296,9 @@ function modalRouter(params: URLSearchParams) {
             }
             console.log('Missing or invalid user for modal "user_info".')
             window.location.hash = '#'
+            return
+        case 'clear_data':
+            showModal('clear_data')
             return
     }
 }
