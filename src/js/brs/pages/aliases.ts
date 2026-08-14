@@ -171,13 +171,8 @@ export async function pagesAliases() {
 
         const tentativeClass = tentative ? " class='tentative'" : ''
         const editButton = `
-            <a href="#"
-              class="btn btn-xs btn-default"
-              data-toggle="modal"
-              data-target="#register_alias_modal"
-              data-alias="${alias.alias}"
-              data-alias-name="${alias.aliasName}"
-              data-tld="${alias.tldName}">
+            <a href="#modal=update_alias&alias=${alias.alias}"
+              class="btn btn-xs btn-default">
               ${$.t('edit')}
             </a>`
         const transferButton = `

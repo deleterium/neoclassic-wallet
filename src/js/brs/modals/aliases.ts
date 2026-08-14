@@ -138,46 +138,41 @@ export function formsBuyAliasError() {
     $('#buy_alias_modal').find('input[name=priceNXT]').prop('readonly', false)
 }
 
-export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-
-    const alias = $invoker.data('alias')
-
-    if (alias) {
-        BRS.fetchingModalData = true
-        const response: GetAliasResponse = await sendRequest('getAlias', {
-            alias: alias,
-        })
-        BRS.fetchingModalData = false
-        if (response.errorCode) {
-            e.preventDefault()
-            notify($.t('error_alias_not_found'), { type: 'danger' })
-        } else {
-            let aliasURI: RegExpExecArray | null
-            const reg = /^https?:\/\//i
-            let responseURI = response.aliasURI.unescapeHTML()
-            if (reg.test(responseURI)) {
-                setAliasType('uri', responseURI)
-            } else if ((aliasURI = /acct:(.*)@burst/.exec(responseURI)) || (aliasURI = /nacc:(.*)/.exec(responseURI))) {
-                setAliasType('account', responseURI)
-                responseURI = String(aliasURI[1]).toUpperCase()
-            } else {
-                setAliasType('general', responseURI)
-            }
-
-            $('#register_alias_modal h4.modal-title').html($.t('update_alias'))
-            $('#register_alias_modal .btn-primary').html($.t('update'))
-            $('#register_alias_alias_noneditable').text(response.aliasName).show()
-            $('#register_alias_alias_name').val(response.aliasName).hide()
-            $('#register_alias_tld').val(response.tldName).hide()
-            $('#register_alias_tld_noneditable').text(response.tldName).show()
-            $('#register_alias_tld_help').hide()
-            $('#register_alias_alias_update').val(1)
-            $('#register_alias_uri').val(responseURI)
-        }
+export async function showUpdateAliasModal(alias: string) {
+    BRS.fetchingModalData = true
+    const response: GetAliasResponse = await sendRequest('getAlias', {
+        alias: alias,
+    })
+    BRS.fetchingModalData = false
+    if (response.errorCode) {
+        notify($.t('error_alias_not_found'), { type: 'danger' })
         return
     }
-    // no alias given
+    let aliasURI: RegExpExecArray | null
+    const reg = /^https?:\/\//i
+    let responseURI = response.aliasURI.unescapeHTML()
+    if (reg.test(responseURI)) {
+        setAliasType('uri', responseURI)
+    } else if ((aliasURI = /acct:(.*)@burst/.exec(responseURI)) || (aliasURI = /nacc:(.*)/.exec(responseURI))) {
+        setAliasType('account', responseURI)
+        responseURI = String(aliasURI[1]).toUpperCase()
+    } else {
+        setAliasType('general', responseURI)
+    }
+
+    $('#register_alias_modal h4.modal-title').html($.t('update_alias'))
+    $('#register_alias_modal .btn-primary').html($.t('update'))
+    $('#register_alias_alias_noneditable').text(response.aliasName).show()
+    $('#register_alias_alias_name').val(response.aliasName).hide()
+    $('#register_alias_tld').val(response.tldName).hide()
+    $('#register_alias_tld_noneditable').text(response.tldName).show()
+    $('#register_alias_tld_help').hide()
+    $('#register_alias_alias_update').val(1)
+    $('#register_alias_uri').val(responseURI)
+    showModal('register_alias')
+}
+
+export async function showRegisterAliasModal() {
     $('#register_alias_modal h4.modal-title').html($.t('register_alias'))
     $('#register_alias_modal .btn-primary').html($.t('register'))
     $('#register_alias_alias_name').val('').show()
@@ -188,6 +183,7 @@ export async function evRegisterAliasModalOnShowBsModal(e: JQuery.TriggeredEvent
     $('#register_alias_tld_noneditable').text('').hide()
     $('#register_alias_tld_help').show()
     setAliasType('uri', '')
+    showModal('register_alias')
 }
 
 export function formsSetAlias(data: any) {
