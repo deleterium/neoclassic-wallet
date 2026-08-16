@@ -1,5 +1,5 @@
 import { BRS } from '..'
-import { GetBlockResponse, Transaction } from '../typings'
+import { BlockchainStatus, GetBlockResponse, Transaction } from '../typings'
 import { formatTimestampAsDateTime, formatNQTAsAmount } from '../core/numbers'
 import { sendRequest } from '../core/send_request'
 import { getTransactionDetails } from '../tools/transactions'
@@ -24,7 +24,7 @@ export function pagesBlockInfo() {
  */
 export async function blockInfoLoad(blockheight: number | '') {
     if (blockheight === '') {
-        blockheight = BRS.blocks[0].height
+        blockheight = (BRS.blockchainStatus as BlockchainStatus).numberOfBlocks - 1
     }
 
     const response: GetBlockResponse = await sendRequest('getBlock+', {

@@ -113,6 +113,9 @@ export async function loginCommon() {
 
     await getAndUpdateAccountDetails(true)
 
+    // Prepare tld's translation structure (case loading my_aliases from hash on start)
+    await populateBrsTlds()
+
     unlock()
 
     cacheUserAssets()
@@ -128,9 +131,6 @@ export async function loginCommon() {
 
     // Simulate new block
     handleNewBlocks()
-
-    // Prepare tld's translation structure
-    populateBrsTlds()
 }
 
 async function loginWithAccount(account: string) {
