@@ -328,6 +328,24 @@ async function processTransactionModalData(transaction: Transaction) {
                 "'>" +
                 $.t('buy_it_q') +
                 '</a>'
+        } else if (transaction.senderRS === BRS.accountRS) {
+            if (transaction.attachment.priceNQT !== '0') {
+                if (response.tld === undefined) {
+                    // TLD sale
+                    message = `
+                        ${$.t('your_alias_sale_offer')} 
+                        <a href='#modal=cancel_alias_sale&alias=${response.alias}&tld=${response.aliasName}'>
+                            ${$.t('cancel_sale_q')}
+                        </a>`
+                } else {
+                    // Regular alias sale
+                    message = `
+                        ${$.t('your_alias_sale_offer')} 
+                        <a href='#modal=cancel_alias_sale&alias=${response.alias}&aliasName=${response.aliasName}&tld=${response.tldName}'>
+                            ${$.t('cancel_sale_q')}
+                        </a>`
+                }
+            }
         } else if (typeof transaction.recipient === 'undefined') {
             message =
                 $.t('alias_sale_indirect_offer', {
@@ -339,16 +357,6 @@ async function processTransactionModalData(transaction: Transaction) {
                 "'>" +
                 $.t('buy_it_q') +
                 '</a>'
-        } else if (transaction.senderRS === BRS.accountRS) {
-            if (transaction.attachment.priceNQT !== '0') {
-                message =
-                    $.t('your_alias_sale_offer') +
-                    " <a href='#' data-alias='" +
-                    String(transaction.attachment.alias) +
-                    "' data-toggle='modal' data-target='#cancel_alias_sale_modal'>" +
-                    $.t('cancel_sale_q') +
-                    '</a>'
-            }
         } else {
             message = $.t('error_alias_sale_different_account')
         }

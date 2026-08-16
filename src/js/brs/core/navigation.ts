@@ -299,6 +299,7 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'transfer_alias':
         case 'sell_alias':
+        case 'cancel_alias_sale':
             if (params.has('alias')) {
                 const alias = params.get('alias')
                 const aliasName = params.get('aliasName') || ''

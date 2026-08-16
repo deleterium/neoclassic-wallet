@@ -8,24 +8,16 @@ import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
 import { createInfoTable, getAccountTitle } from '../core/util'
 
-import { GetAliasResponse, PostResponse, ShowBootstrapModalEvent } from '../typings'
+import { GetAliasResponse, PostResponse } from '../typings'
 import { notify } from '../core/notifications'
 import { showModal } from '../core/modals'
 
-export function evAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-    const modal = e.target
-
-    const alias = String($invoker.data('alias'))
-    const aliasName = String($invoker.data('alias-name'))
-    const tld = String($invoker.data('tld'))
-
-    $(modal).find('input[name=alias]').val(alias)
-    $(modal).find('.alias_name_display').text(aliasName)
-    $(modal).find('.alias_tld_display').text(tld)
-}
-
-export function showAliasOperationModal(modalName: 'transfer_alias' | 'sell_alias', alias: string, aliasName: string, tld: string) {
+export function showAliasOperationModal(
+    modalName: 'transfer_alias' | 'sell_alias' | 'cancel_alias_sale',
+    alias: string,
+    aliasName: string,
+    tld: string,
+) {
     const $targetModal = $(`#${modalName}_modal`)
 
     $targetModal.find('input[name=alias]').val(alias)
