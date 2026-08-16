@@ -19,13 +19,7 @@ import {
 
 import { blockInfoLoad } from '../pages/blockchain.block_info'
 
-import {
-    evAliasModalOnShowBsModal,
-    evBuyAliasModalOnShowBsModal,
-    setAliasType,
-    evSellAliasSellToSpecificClick,
-    showAliasModal,
-} from '../modals/aliases'
+import { evAliasModalOnShowBsModal, setAliasType, evSellAliasSellToSpecificClick, showAliasModal } from '../modals/aliases'
 
 import { evAliasSearchSubmit } from '../pages/aliases'
 
@@ -371,7 +365,6 @@ export function addEventListeners() {
     // from brs.aliases.js
     $('#sell_alias_modal, #cancel_alias_sale_modal').on('show.bs.modal', evAliasModalOnShowBsModal)
     $('#sell_alias_sell_to_specific').on('click', evSellAliasSellToSpecificClick)
-    $('#buy_alias_modal').on('show.bs.modal', evBuyAliasModalOnShowBsModal)
     $('#register_alias_type').on('change', function () {
         const type = $(this).val() as string
         setAliasType(type, $('#register_alias_uri').val() as string)

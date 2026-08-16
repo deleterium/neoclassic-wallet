@@ -95,43 +95,42 @@ export function evSellAliasSellToSpecificClick(e: JQuery.ClickEvent) {
     $form.find('input[name=converted_account_id]').val('')
 }
 
-/**
- * Called when showing "Buy Alias Modal". Invoker is "<a>" with "data-buy-alias" set. Fetches the alias details and shows them.
- * @param {*} e Event
- */
-export async function evBuyAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $modal = $(e.target)
-    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
+export async function showBuyAliasModal(alias: string) {
+    const $modal = $('#buy_alias_modal')
 
     BRS.fetchingModalData = true
-
-    const alias = String($invoker.data('buy-alias'))
-
     const response: GetAliasResponse = await sendRequest('getAlias', {
         alias: alias,
     })
     BRS.fetchingModalData = false
 
     if (response.errorCode) {
-        e.preventDefault()
         notify($.t('error_alias_not_found'), { type: 'danger' })
         return
     }
     if (!response.priceNQT) {
-        e.preventDefault()
         notify($.t('error_alias_not_for_sale'), { type: 'danger' })
         return
     }
     if (typeof response.buyer !== 'undefined' && response.buyer !== BRS.account) {
-        e.preventDefault()
         notify($.t('error_alias_sale_different_account'), { type: 'danger' })
         return
     }
     $modal.find('input[name=alias]').val(response.alias)
     $modal.find('.alias_id_display').html(response.alias)
-    $modal.find('.alias_name_display').html(response.aliasName)
-    $modal.find('.alias_tld_display').html(response.tldName)
+    if (response.tld === undefined) {
+        // This is TLD sale operation
+        $('#buy_alias_alias_name_group').hide()
+        $modal.find('.alias_name_display').html('')
+        $modal.find('.alias_tld_display').html(response.aliasName)
+    } else {
+        // This is regular alias sale
+        $('#buy_alias_alias_name_group').show()
+        $modal.find('.alias_name_display').html(response.aliasName)
+        $modal.find('.alias_tld_display').html(response.tldName)
+    }
     $modal.find('input[name=amountNXT]').val(formatNQTAsAmount(response.priceNQT)).prop('readonly', true)
+    showModal('buy_alias')
 }
 
 export function formsBuyAliasError() {
@@ -345,7 +344,7 @@ function getAliasStatus(alias: GetAliasResponse) {
             burst: formatNQTAsAmount(alias.priceNQT),
             valueSuffix: BRS.valueSuffix,
         })
-        message += ` <a href='#' data-buy-alias='${alias.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
+        message += ` <a href='#modal=buy_alias&alias=${alias.alias}'>${$.t('buy_it_q')}</a>`
         return message
     }
     if (alias.buyer === BRS.account) {
@@ -353,7 +352,7 @@ function getAliasStatus(alias: GetAliasResponse) {
             burst: formatNQTAsAmount(alias.priceNQT),
             valueSuffix: BRS.valueSuffix,
         })
-        message += ` <a href='#' data-buy-alias='${alias.alias}' data-toggle='modal' data-target='#buy_alias_modal'>${$.t('buy_it_q')}</a>`
+        message += ` <a href='#modal=buy_alias&alias=${alias.alias}'>${$.t('buy_it_q')}</a>`
         return message
     }
     return $.t('error_alias_sale_different_account')

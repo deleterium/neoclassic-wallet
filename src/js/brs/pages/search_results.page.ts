@@ -97,7 +97,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
         if (alias.priceNQT) {
             priceHTML += formatNQTAsAmount(alias.priceNQT)
             if (alias.buyer === BRS.account || !alias.buyer) {
-                priceHTML += `<br /><a href="#" data-buy-alias="${alias.alias}" data-toggle="modal" data-target="#buy_alias_modal">${$.t('buy_it_q')}</a>`
+                priceHTML += `<br /><a href="#modal=buy_alias&alias=${alias.alias}">${$.t('buy_it_q')}</a>`
             }
         }
         resultHTML += `

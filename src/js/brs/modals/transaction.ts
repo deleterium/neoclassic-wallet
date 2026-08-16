@@ -321,20 +321,22 @@ async function processTransactionModalData(transaction: Transaction) {
             message =
                 $.t('alias_sale_direct_offer', {
                     burst: formatNQTAsAmount(transaction.attachment.priceNQT),
+                    valueSuffix: BRS.valueSuffix,
                 }) +
-                " <a href='#' data-alias='" +
+                " <a href='#modal=buy_alias&alias=" +
                 String(transaction.attachment.alias) +
-                "' data-toggle='modal' data-target='#buy_alias_modal'>" +
+                "'>" +
                 $.t('buy_it_q') +
                 '</a>'
         } else if (typeof transaction.recipient === 'undefined') {
             message =
                 $.t('alias_sale_indirect_offer', {
                     burst: formatNQTAsAmount(transaction.attachment.priceNQT),
+                    valueSuffix: BRS.valueSuffix,
                 }) +
-                " <a href='#' data-alias='" +
+                " <a href='#modal=buy_alias&alias=" +
                 String(transaction.attachment.alias) +
-                "' data-toggle='modal' data-target='#buy_alias_modal'>" +
+                "'>" +
                 $.t('buy_it_q') +
                 '</a>'
         } else if (transaction.senderRS === BRS.accountRS) {
