@@ -191,7 +191,7 @@ async function userInfoModalAliases() {
     for (let i = 0; i < aliases.length; i++) {
         const alias = aliases[i]
         const aliasName = alias.aliasName
-        const tldName = alias.aliasName
+        const tldName = alias.tldName
         const aliasURI = alias.aliasURI
         rows += `
             <tr>

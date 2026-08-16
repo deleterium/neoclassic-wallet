@@ -100,7 +100,20 @@ function showAliasesSearchResults(aliases: Alias[]) {
                 priceHTML += `<br /><a href="#modal=buy_alias&alias=${alias.alias}">${$.t('buy_it_q')}</a>`
             }
         }
-        resultHTML += `
+        if (alias.tld === undefined) {
+            // This is a TLD
+            resultHTML += `
+            <tr>
+              <td></td>
+              <td><a href="#modal=user_info&user=${alias.accountRS}">${alias.accountRS}</a></td>
+              <td><a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a></td>
+              <td></td>
+              <td>${statusHTML}</td>
+              <th>${priceHTML}</th>
+            </tr>`
+        } else {
+            // This is regular alias
+            resultHTML += `
             <tr>
               <td><a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a></td>
               <td><a href="#modal=user_info&user=${alias.accountRS}">${alias.accountRS}</a></td>
@@ -109,6 +122,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
               <td>${statusHTML}</td>
               <th>${priceHTML}</th>
             </tr>`
+        }
     }
     resultHTML += `
           </tbody>
