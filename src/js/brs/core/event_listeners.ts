@@ -363,7 +363,7 @@ export function addEventListeners() {
     // })
 
     // from brs.aliases.js
-    $('#sell_alias_modal, #cancel_alias_sale_modal').on('show.bs.modal', evAliasModalOnShowBsModal)
+    $('#cancel_alias_sale_modal').on('show.bs.modal', evAliasModalOnShowBsModal)
     $('#sell_alias_sell_to_specific').on('click', evSellAliasSellToSpecificClick)
     $('#register_alias_type').on('change', function () {
         const type = $(this).val() as string

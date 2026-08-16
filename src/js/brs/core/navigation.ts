@@ -298,6 +298,7 @@ function modalRouter(params: URLSearchParams) {
             showModal('clear_data')
             return
         case 'transfer_alias':
+        case 'sell_alias':
             if (params.has('alias')) {
                 const alias = params.get('alias')
                 const aliasName = params.get('aliasName') || ''
@@ -307,7 +308,7 @@ function modalRouter(params: URLSearchParams) {
                     return
                 }
             }
-            console.log('Missing or invalid options for modal "transfer_alias".')
+            console.log(`Missing or invalid options for modal "${modalName}".`)
             window.location.hash = '#'
             return
         case 'update_alias':

@@ -25,7 +25,7 @@ export function evAliasModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     $(modal).find('.alias_tld_display').text(tld)
 }
 
-export function showAliasOperationModal(modalName: 'transfer_alias', alias: string, aliasName: string, tld: string) {
+export function showAliasOperationModal(modalName: 'transfer_alias' | 'sell_alias', alias: string, aliasName: string, tld: string) {
     const $targetModal = $(`#${modalName}_modal`)
 
     $targetModal.find('input[name=alias]').val(alias)
