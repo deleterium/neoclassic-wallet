@@ -337,6 +337,9 @@ function modalRouter(params: URLSearchParams) {
             console.log('Missing or invalid alias for modal "buy_alias".')
             window.location.hash = '#'
             return
+        case 'register_tld':
+            showModal('register_tld')
+            return
     }
 }
 
