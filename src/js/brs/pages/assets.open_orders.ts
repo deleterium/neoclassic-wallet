@@ -133,7 +133,7 @@ function drawOrdersTable(orders: AnyAssetOrder[], type: 'ask' | 'bid') {
         }
         let cancelText = ''
         if (rowClass === '') {
-            cancelText = `<a href='#' data-toggle='modal' data-target='#cancel_order_modal' data-order='${completeOrder.order}' data-type='${type}'><i class="fas fa-trash"></i></a>`
+            cancelText = `<a href='#modal=cancel_order&order=${completeOrder.order}&type=${type}'><i class="fas fa-trash"></i></a>`
         } else {
             cancelText = BRS.pendingTransactionHTML
         }

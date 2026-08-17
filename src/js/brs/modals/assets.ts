@@ -257,7 +257,7 @@ export function formsCancelOrder(data: any) {
     delete data.cancel_order_type
     let successMessage = $.t('success_cancelBuyOrder')
     if (requestType === 'cancelAskOrder') {
-        successMessage = $.t('success_cancelSellOrder')
+        successMessage = $.t('success_cancelAskOrder')
     }
     return {
         data,
@@ -661,4 +661,14 @@ export async function showAssetHoldersModal(asset: string) {
 
     $('#asset_holders_modal_table tbody').html(rows)
     showModal('asset_holders')
+}
+
+export function showCancelOrderModal(orderId: string, orderType: 'bid' | 'ask') {
+    if (orderType === 'bid') {
+        $('#cancel_order_type').val('cancelBidOrder')
+    } else {
+        $('#cancel_order_type').val('cancelAskOrder')
+    }
+    $('#cancel_order_order').val(orderId)
+    showModal('cancel_order')
 }

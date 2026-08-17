@@ -317,17 +317,6 @@ export function addEventListeners() {
         populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#add_asset_treasury_account')
     })
     $('#distribute_to_asset_holders_holders_asset').on('input', evDistributeToAssetHoldersHoldersAssetInput)
-    $('#cancel_order_modal').on('show.bs.modal', function (e) {
-        const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-        const orderType = $invoker.data('type')
-        const orderId = $invoker.data('order')
-        if (orderType === 'bid') {
-            $('#cancel_order_type').val('cancelBidOrder')
-        } else {
-            $('#cancel_order_type').val('cancelAskOrder')
-        }
-        $('#cancel_order_order').val(orderId)
-    })
 
     // from brs.messages.js
     $('#send_message_modal').on('show.bs.modal', function () {

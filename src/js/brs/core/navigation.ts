@@ -19,7 +19,7 @@ import { pagesSearchResults } from '../pages/search_results.page'
 import { pagesSettings } from '../pages/settings'
 import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
-import { showAssetHoldersModal } from '../modals/assets'
+import { showAssetHoldersModal, showCancelOrderModal } from '../modals/assets'
 import { showSendMoneyModal } from '../modals/sendmoney'
 import { showTransactionModal } from '../modals/transaction'
 import { showAccountModal } from '../modals/account'
@@ -355,6 +355,18 @@ function modalRouter(params: URLSearchParams) {
                 }
             }
             console.log('Missing or invalid alias for modal "alias_info".')
+            window.location.hash = '#'
+            return
+        case 'cancel_order':
+            if (params.has('order')) {
+                const order = params.get('order')
+                const type = params.get('type')
+                if (order && (type === 'bid' || type === 'ask')) {
+                    showCancelOrderModal(order, type)
+                    return
+                }
+            }
+            console.log('Missing or invalid parameters for modal "cancel_order".')
             window.location.hash = '#'
             return
     }
