@@ -195,7 +195,7 @@ async function userInfoModalAliases() {
         const aliasURI = alias.aliasURI
         rows += `
             <tr>
-              <td><a href="#" data-show-alias="${alias.alias}">${aliasName}</a></td>
+              <td><a href="#modal=alias_info&alias=${alias.alias}">${aliasName}</a></td>
               <td>${tldName}</td>
               <td>${aliasURI}</td>
             </tr>`

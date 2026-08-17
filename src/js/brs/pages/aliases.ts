@@ -27,7 +27,7 @@ export async function pagesAliases() {
             rows += `
             <tr>
               <td class='alias'></td>
-              <td><a href="#" data-show-alias="${tld.alias}">${tld.aliasName}</a></td>
+              <td><a href="#modal=alias_info&alias=${tld.alias}">${tld.aliasName}</a></td>
               <td class='uri'></td>
               <td class='status'></td>
               <td style="white-space:nowrap">
@@ -196,7 +196,7 @@ export async function pagesAliases() {
         rows += `
             <tr ${tentativeClass}>
               <td class='alias'>
-                <a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a>
+                <a href="#modal=alias_info&alias=${alias.alias}">${alias.aliasName}</a>
               </td>
               <td>${alias.tldName}</td>
               <td class='uri'>

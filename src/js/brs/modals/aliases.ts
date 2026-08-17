@@ -6,7 +6,7 @@ import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
-import { createInfoTable, getAccountTitle } from '../core/util'
+import { createInfoTable } from '../core/util'
 
 import { GetAliasResponse, PostResponse } from '../typings'
 import { notify } from '../core/notifications'
@@ -306,7 +306,7 @@ export function formsSetTLDComplete(response: PostResponse, data: any) {
  * @param {string|Alias} alias - If string, the alias ID to be requested and shown. If the object, just show it.
  * @returns
  */
-export async function showAliasModal(alias: string | GetAliasResponse) {
+export async function showAliasInfoModal(alias: string | GetAliasResponse) {
     if (BRS.fetchingModalData) {
         return
     }
@@ -358,7 +358,7 @@ function aliasModalDataReady(response: GetAliasResponse) {
     $('#alias_info_table tbody').empty()
     $('#alias_info_modal_alias').text(response.aliasName)
     const data = {
-        account: getAccountTitle(response.accountRS),
+        account: response.accountRS,
         alias_name: response.tldName ? (response.aliasName ?? '') : '',
         tld: response.tldName || response.aliasName,
         last_updated: formatTimestampAsDateTime(response.timestamp),
@@ -368,6 +368,6 @@ function aliasModalDataReady(response: GetAliasResponse) {
     $('#alias_sale_callout').html(aliasCallout)
     $('#alias_sale_callout').show()
     $('#alias_info_table tbody').append(createInfoTable(data))
-    $('#alias_info_modal').modal('show')
     BRS.fetchingModalData = false
+    showModal('alias_info')
 }

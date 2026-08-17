@@ -24,7 +24,13 @@ import { showSendMoneyModal } from '../modals/sendmoney'
 import { showTransactionModal } from '../modals/transaction'
 import { showAccountModal } from '../modals/account'
 import { showModal } from './modals'
-import { showAliasOperationModal, showBuyAliasModal, showRegisterAliasModal, showUpdateAliasModal } from '../modals/aliases'
+import {
+    showAliasInfoModal,
+    showAliasOperationModal,
+    showBuyAliasModal,
+    showRegisterAliasModal,
+    showUpdateAliasModal,
+} from '../modals/aliases'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -339,6 +345,17 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'register_tld':
             showModal('register_tld')
+            return
+        case 'alias_info':
+            if (params.has('alias')) {
+                const alias = params.get('alias')
+                if (alias) {
+                    showAliasInfoModal(alias)
+                    return
+                }
+            }
+            console.log('Missing or invalid alias for modal "alias_info".')
+            window.location.hash = '#'
             return
     }
 }

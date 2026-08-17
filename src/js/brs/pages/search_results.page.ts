@@ -10,7 +10,7 @@ import {
     GetAccountsWithNameResponse,
     GetAliasResponse,
 } from '../typings'
-import { showAliasModal } from '../modals/aliases'
+import { showAliasInfoModal } from '../modals/aliases'
 import { showAccountModal } from '../modals/account'
 import { showBlockModal } from '../modals/block'
 import { showTransactionModal } from '../modals/transaction'
@@ -106,7 +106,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
             <tr>
               <td></td>
               <td><a href="#modal=user_info&user=${alias.accountRS}">${alias.accountRS}</a></td>
-              <td><a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a></td>
+              <td><a href="#modal=alias_info&alias=${alias.alias}">${alias.aliasName}</a></td>
               <td></td>
               <td>${statusHTML}</td>
               <th>${priceHTML}</th>
@@ -115,7 +115,7 @@ function showAliasesSearchResults(aliases: Alias[]) {
             // This is regular alias
             resultHTML += `
             <tr>
-              <td><a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a></td>
+              <td><a href="#modal=alias_info&alias=${alias.alias}">${alias.aliasName}</a></td>
               <td><a href="#modal=user_info&user=${alias.accountRS}">${alias.accountRS}</a></td>
               <td>${alias.tldName}</td>
               <td>${alias.aliasURI}</td>
@@ -230,7 +230,7 @@ export async function pagesSearchResults() {
                 return
             }
             if (aliases.length === 1) {
-                showAliasModal(aliases[0])
+                showAliasInfoModal(aliases[0])
             }
             showAliasesSearchResults(aliases)
             return
