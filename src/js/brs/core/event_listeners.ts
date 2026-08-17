@@ -77,6 +77,7 @@ import {
     decryptNoteFormSubmit,
     evCheckNumberInput,
     evCheckMessageLengthInput,
+    evModalOnShownBsModal,
 } from './modals'
 
 import { showAccountModal, evShowBsTab } from '../modals/account'
@@ -474,11 +475,7 @@ export function addEventListeners() {
             $(this).closest('form').find('.optional_sell_to_specific').hide()
         }
     })
-    $('.modal').on('shown.bs.modal', function () {
-        $(this).find('input[autofocus]').trigger('focus')
-        $(this).find('input[name=converted_account_id]').val('')
-        BRS.showedFormWarning = false
-    })
+    $('.modal').on('shown.bs.modal', evModalOnShownBsModal)
     $('.modal').on('hidden.bs.modal', evModalOnHiddenBsModal)
     $('input[name=feeNXT]').on('change', function () {
         const $modal = $(this).closest('.modal')

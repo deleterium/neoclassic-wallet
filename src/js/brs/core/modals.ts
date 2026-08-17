@@ -52,10 +52,17 @@ export function showModal(id: string) {
         console.error(`Unknow modal: ${id}_modal`)
         return
     }
-    BRS.modalZIndex++
     modalElement.style.zIndex = BRS.modalZIndex.toString()
+    BRS.modalZIndex++
     showFeeSuggestionsNG(modalElement)
     $(`#${id}_modal`).modal('show')
+}
+
+export function evModalOnShownBsModal(event: JQuery.TriggeredEvent) {
+    const $modal = $(event.target)
+    focusTopMostModal($modal)
+    $modal.find('input[name=converted_account_id]').val('')
+    BRS.showedFormWarning = false
 }
 
 // Reset form to initial state when modal is closed
@@ -151,10 +158,26 @@ export function evModalOnHiddenBsModal(event: JQuery.TriggeredEvent) {
 
     BRS.showedFormWarning = false
 
-    const visible = $('.modal.show')
-    if (visible.length === 0) {
+    const $visible = $('.modal.show')
+    if ($visible.length === 0) {
         // Reset z index if no more modals open
         BRS.modalZIndex = 2000
+        return
+    }
+    focusTopMostModal($visible)
+}
+
+function focusTopMostModal($modals: JQuery<HTMLElement>) {
+    const topModal = $modals.get().sort((a: HTMLElement, b: HTMLElement) => {
+        const zIndexA = parseInt(a.style.zIndex, 10) || 0
+        const zIndexB = parseInt(b.style.zIndex, 10) || 0
+        return zIndexB - zIndexA
+    })[0]
+    const $autofocus = $(topModal).find('input[autofocus]')
+    if ($autofocus.length) {
+        $autofocus.trigger('focus')
+    } else {
+        $(topModal).find('button[data-dismiss="modal"]').trigger('focus')
     }
 }
 
