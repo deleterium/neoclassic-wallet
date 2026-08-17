@@ -19,7 +19,7 @@ import { pagesSearchResults } from '../pages/search_results.page'
 import { pagesSettings } from '../pages/settings'
 import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
-import { showAssetHoldersModal, showCancelOrderModal } from '../modals/assets'
+import { showAssetHoldersModal, showAssetOrderModal, showCancelOrderModal } from '../modals/assets'
 import { showSendMoneyModal } from '../modals/sendmoney'
 import { showTransactionModal } from '../modals/transaction'
 import { showAccountModal } from '../modals/account'
@@ -367,6 +367,18 @@ function modalRouter(params: URLSearchParams) {
                 }
             }
             console.log('Missing or invalid parameters for modal "cancel_order".')
+            window.location.hash = '#'
+            return
+        case 'asset_order':
+            if (params.has('asset')) {
+                const asset = params.get('asset')
+                const type = params.get('type')
+                if (asset && (type === 'buy' || type === 'sell')) {
+                    showAssetOrderModal(asset, type)
+                    return
+                }
+            }
+            console.log('Missing or invalid parameters for modal "asset_order".')
             window.location.hash = '#'
             return
     }

@@ -422,8 +422,8 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
             `)
 
         $('.asset_name').html(asset.name)
-        $('#sell_asset_button').data('asset', assetId)
-        $('#buy_asset_button').data('asset', assetId)
+        $('#sell_asset_button').attr('href', `#modal=asset_order&asset=${assetId}&type=sell`)
+        $('#buy_asset_button').attr('href', `#modal=asset_order&asset=${assetId}&type=buy`)
         $('#sell_asset_for_burst').html(
             $.t('sell_asset_for_burst', {
                 assetName: asset.name,

@@ -396,11 +396,7 @@ export function formsAssetExchangeChangeGroupName(data: any) {
     }
 }
 
-export function evAssetOrderModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-
-    const orderType: string = String($invoker.data('type')).toLowerCase()
-    const assetId: string = $invoker.data('asset')
+export function showAssetOrderModal(assetId: string, orderType: 'buy' | 'sell') {
     let quantityQNT: string
     let priceNQT: string
     let totalNXT: string
@@ -414,12 +410,12 @@ export function evAssetOrderModalOnShowBsModal(e: JQuery.TriggeredEvent) {
         totalNXT = formatOrderTotal(quantityQNT, priceNQT)
     } catch {
         notify('Invalid input.', { type: 'danger' })
-        return e.preventDefault()
+        return
     }
 
     if (priceNQT === '0' || quantityQNT === '0') {
         notify($.t('error_amount_price_required'), { type: 'danger' })
-        return e.preventDefault()
+        return
     }
 
     const priceNQTPerWholeQNT = BigInt(priceNQT) * BigInt(Math.pow(10, BRS.currentAsset.decimals))
@@ -474,6 +470,8 @@ export function evAssetOrderModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     $('#asset_order_asset').val(assetId)
     $('#asset_order_quantity').val(quantityQNT)
     $('#asset_order_price').val(priceNQT)
+
+    showModal('asset_order')
 }
 
 export function formsOrderAsset(data: any) {
