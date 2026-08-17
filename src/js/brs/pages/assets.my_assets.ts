@@ -75,12 +75,7 @@ function myAssetsPageLoaded(myAssets: MyAssetDetails[]) {
               <td id="bid-order-${asset.asset}">${BRS.pendingTransactionHTML}</td>
               <td id="value-order-${asset.asset}">${BRS.pendingTransactionHTML}</td>
               <td>
-                <a href='#'
-                  data-toggle='modal'
-                  data-target='#transfer_asset_modal'
-                  data-asset='${asset.asset}'
-                  data-name='${asset.name}'
-                  data-decimals='${String(asset.decimals)}'>
+                <a href='#modal=transfer_asset&asset=${asset.asset}&name=${asset.name}&decimals=${String(asset.decimals)}'>
                   ${$.t('transfer')}
                 </a>
               </td>

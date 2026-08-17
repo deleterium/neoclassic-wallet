@@ -225,7 +225,11 @@ export function addEventListeners() {
     })
     $('span.asset_selector button').on('click', evAssetSelectorButtonClick)
     $('span.asset_selector').on('click', 'ul li a', (e) => {
-        populateAssetSelector($(e.currentTarget))
+        const assetId = $(e.currentTarget).data('asset') ?? ''
+        const assetName = $(e.currentTarget).data('name') ?? '?'
+        const decimals = $(e.currentTarget).data('decimals') ?? ''
+        const $formGroup = $(e.currentTarget).closest('.row')
+        populateAssetSelector(assetId, assetName, decimals, $formGroup)
     })
     $('.recipient_selector button').on('click', evSpanRecipientSelectorClickButton)
     $('.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
@@ -298,9 +302,6 @@ export function addEventListeners() {
     })
     $('#asset_exchange_group_modal').on('hidden.bs.modal', function () {
         $('#asset_exchange_group_new_group_div').val('').hide()
-    })
-    $('#transfer_asset_modal').on('show.bs.modal', (e) => {
-        populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'transfer_asset')
     })
     $('#mint_asset_modal').on('show.bs.modal', (e) => {
         populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'mint_asset')

@@ -1,5 +1,5 @@
 import { BRS } from '..'
-import { GetAssetAccountsResponse, GetTransactionResponse, ShowBootstrapModalEvent } from '../typings'
+import { GetAssetAccountsResponse, GetTransactionResponse } from '../typings'
 import { loadAssetExchangeSidebar } from '../pages/assets.asset_exchange'
 import { dbPut } from '../core/database'
 import {
@@ -16,21 +16,7 @@ import { getAssetDetails, getAssetFromCache } from '../tools/assets'
 import { sendRequest } from '../core/send_request'
 import { showModal } from '../core/modals'
 
-export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: string) {
-    const assetId = $invoker.data('asset') ?? ''
-    const assetName = $invoker.data('name') ?? '?'
-    const decimals = $invoker.data('decimals') ?? ''
-
-    let $formGroup = $invoker.closest('.row')
-    if ($formGroup.length === 0) {
-        // click was not in dropdown-menu...
-        $formGroup = $('#form-' + formName?.replace('_', '-'))
-        if ($formGroup.length === 0) {
-            console.error('Unkown form name: ' + formName)
-            return
-        }
-    }
-
+export function populateAssetSelector(assetId: string, assetName: string, decimals: string, $formGroup: JQuery<HTMLElement>) {
     if (assetId === '') {
         $formGroup.find(`span[name=available]`).empty()
         return
@@ -41,7 +27,7 @@ export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: 
     $formGroup.find('span[name=asset-name]').text(assetName)
     $formGroup.find('input[name=name_plus_asset]').val(assetName + ' - ' + assetId)
 
-    if (formName === 'mint_asset') {
+    if ($formGroup.closest('form').attr('id') === 'form-mint-asset') {
         const selectedAsset = getAssetFromCache(assetId)
         if (!selectedAsset) return
         $formGroup
@@ -72,15 +58,15 @@ export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: 
     let availableAssetsMessage = ''
     if (confirmedBalance === unconfirmedBalance) {
         availableAssetsMessage = $.t('available_for_transfer', {
-            qty: formatQNTAsQuantity(confirmedBalance, decimals),
+            qty: formatQNTAsQuantity(confirmedBalance, Number(decimals)),
         })
     } else {
         availableAssetsMessage =
             $.t('available_for_transfer', {
-                qty: formatQNTAsQuantity(unconfirmedBalance, decimals),
+                qty: formatQNTAsQuantity(unconfirmedBalance, Number(decimals)),
             }) +
             ' (' +
-            formatQNTAsQuantity(confirmedBalance, decimals) +
+            formatQNTAsQuantity(confirmedBalance, Number(decimals)) +
             ' ' +
             $.t('total_lowercase') +
             ')'
@@ -669,4 +655,13 @@ export function showCancelOrderModal(orderId: string, orderType: 'bid' | 'ask') 
     }
     $('#cancel_order_order').val(orderId)
     showModal('cancel_order')
+}
+
+export function showTransferAssetModal(asset: string, name: string, decimals: string) {
+    const $formGroupOrdinary = $('#form-transfer-asset .form-group').first()
+    populateAssetSelector(asset, name, decimals, $formGroupOrdinary)
+    const $formGroupMulti = $('#form-multi-transfer .form-group').first()
+    populateAssetSelector(asset, name, decimals, $formGroupMulti)
+
+    showModal('transfer_asset')
 }
