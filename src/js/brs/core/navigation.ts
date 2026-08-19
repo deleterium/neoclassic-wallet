@@ -301,7 +301,8 @@ function modalRouter(params: URLSearchParams) {
             window.location.hash = '#'
             return
         case 'clear_data':
-            showModal('clear_data')
+        case 'add_asset_bookmark':
+            showModal(modalName)
             return
         case 'transfer_alias':
         case 'sell_alias':
