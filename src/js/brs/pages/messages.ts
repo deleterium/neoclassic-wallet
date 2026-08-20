@@ -17,14 +17,13 @@ import {
     convertRSAccountToNumeric,
 } from '../core/util'
 
-import { closeContextMenu } from '../core/context_menu'
-
 import { showAccountModal } from '../modals/account'
 
 import { getMessageTextFromTX, getEncryptedMessageFromTX, decryptAttachmentFieldAndUpdateSelector } from '../tools/messages'
 
 import { GetAccountTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 import { notify } from '../core/notifications'
+import { showSendMoneyModal } from '../modals/sendmoney'
 
 // Current page is 'messages'
 // Processing unconfirmed in chat, but not in sidebar.
@@ -104,17 +103,15 @@ function displayMessageSidebar() {
     sidebarUserList.sort((a, b) => a.timestamp - b.timestamp)
 
     for (const sidebarUser of sidebarUserList) {
-        let dataContact = ''
+        let classContact = 'list-group-no-contact'
         if (sidebarUser.userRS in BRS.contacts) {
-            dataContact = ` data-contact="${getAccountTitleFromObject(sidebarUser, 'user')}"`
+            classContact = 'list-group-is-contact'
         }
 
         rows += `
             <a href='#page=messages&subPage=${sidebarUser.userRS}'
-              class='nav-link' 
-              data-account="${sidebarUser.userRS}"
-              data-account-id="${sidebarUser.user}"
-              ${dataContact}
+              class='nav-link ${classContact}' 
+              data-item="${sidebarUser.user}"
               data-context="messages_vtab_context"
               >
               ${getAccountTitleFromObject(sidebarUser, 'user')}
@@ -126,7 +123,7 @@ function displayMessageSidebar() {
     $('#messages_vtab').empty().append(rows)
 
     if (BRS.currentSubPage) {
-        $('#messages_vtab a[data-account-id=' + BRS.currentSubPage + ']').addClass('active')
+        $('#messages_vtab a[data-item=' + BRS.currentSubPage + ']').addClass('active')
     }
 }
 
@@ -279,7 +276,7 @@ export function loadMessagesSubPage(userRS: string) {
     const userID = convertRSAccountToNumeric(userRS)
     if (!userID) return
 
-    const element = $('#messages_vtab a[data-account="' + userRS + '"]')
+    const element = $('#messages_vtab a[data-item=' + userID + ']')
     if (!element.length) {
         console.log('Invalid user')
         return
@@ -309,22 +306,15 @@ export function loadMessagesSubPage(userRS: string) {
     })
 }
 
-export function evMessagesSidebarContextClick(e: JQuery.ClickEvent) {
-    e.preventDefault()
-    if (!BRS.selectedContext) return
-
-    const element = e.currentTarget
-    const account = BRS.selectedContext.data('account')
-    const option = $(element).data('option')
-
-    closeContextMenu()
-
+export function messagesVtabContextHandler(option: string, account: string) {
     if (option === 'add_contact') {
         $('#add_contact_account_id').val(account).trigger('blur')
         $('#add_contact_modal').modal('show')
+    } else if (option === 'update_contact') {
+        $('#update_contact_account_id').val(account).trigger('blur')
+        $('#update_contact_modal').modal('show')
     } else if (option === 'send_burst') {
-        $('#send_money_recipient').val(account).trigger('blur')
-        $('#send_money_modal').modal('show')
+        showSendMoneyModal(account, '')
     } else if (option === 'account_info') {
         showAccountModal(account)
     }

@@ -41,7 +41,6 @@ import {
     evAssetExchangeSearchInput,
     evAssetExchangeOrdersTableClick,
     evCalculatePricePreviewInput,
-    evAssetExchangeSidebarContextClick,
     goToAsset,
 } from '../pages/assets.asset_exchange'
 
@@ -55,9 +54,7 @@ import {
 
 import { evTransactionsPageTypeClick } from '../pages/transactions'
 
-import { evSidebarContextOnContextmenu, closeContextMenu } from './context_menu'
-
-import { evMessagesSidebarContextClick } from '../pages/messages'
+import { evWidgetContextMenuOnContextmenuA, evWidgetContextMenuOnContextClickA } from './context_menu'
 
 import {
     sendMoneyCalculateTotal,
@@ -279,19 +276,6 @@ export function addEventListeners() {
     })
     $('#asset_exchange_bid_orders_table tbody, #asset_exchange_ask_orders_table tbody').on('click', 'td', evAssetExchangeOrdersTableClick)
     $('#sell_asset_quantity, #sell_asset_price, #buy_asset_quantity, #buy_asset_price').on('input', evCalculatePricePreviewInput)
-    $('#asset_exchange_vtab_group_context').on('click', 'a', function (e) {
-        e.preventDefault()
-        if (!BRS.selectedContext) return
-        const groupName = BRS.selectedContext.data('groupname')
-        const option = $(this).data('option')
-        if (option === 'change_group_name') {
-            $('#asset_exchange_change_group_name_old_display').html(groupName.escapeHTML())
-            $('#asset_exchange_change_group_name_old').val(groupName)
-            $('#asset_exchange_change_group_name_new').val('')
-            $('#asset_exchange_change_group_name_modal').modal('show')
-        }
-    })
-    $('#asset_exchange_vtab_context').on('click', 'a', evAssetExchangeSidebarContextClick)
     $('#asset_exchange_group_group').on('change', function () {
         const value = $(this).val()
         if (value === '-1') {
@@ -328,19 +312,6 @@ export function addEventListeners() {
             } else {
                 $('#send_message_recipient').val(recipientAddress).trigger('checkRecipientEvent')
             }
-        }
-    })
-    $('#messages_vtab_context').on('click', 'a', evMessagesSidebarContextClick)
-    $('#messages_vtab_update_context').on('click', 'a', function (e) {
-        e.preventDefault()
-        if (!BRS.selectedContext) return
-        const option = $(this).data('option')
-        closeContextMenu()
-        if (option === 'update_contact') {
-            $('#update_contact_modal').modal('show')
-        } else if (option === 'send_burst') {
-            $('#send_money_recipient').val(BRS.selectedContext.data('contact')).trigger('blur')
-            $('#send_money_modal').modal('show')
         }
     })
     // $('body').on('click', 'a[data-goto-messages-account]', function (e) {
@@ -416,7 +387,9 @@ export function addEventListeners() {
     })
 
     // from brs.contextmenu.ts
-    $('#asset_exchange_vtab, #messages_vtab').on('contextmenu', 'a', evSidebarContextOnContextmenu)
+    $('[data-widget=contextMenu]').on('contextmenu', 'a', evWidgetContextMenuOnContextmenuA)
+    $('.context_menu').on('click', 'a', evWidgetContextMenuOnContextClickA)
+
     $('.open_my_account_modal').on('click', function () {
         showAccountModal(BRS.accountInfo.accountRS)
     })

@@ -340,8 +340,8 @@ export function formsIssueAsset(data: any) {
 }
 
 export function formsAssetExchangeChangeGroupName(data: any) {
-    const oldGroupName = data.asset_exchange_change_group_name_old
-    const newGroupName = data.asset_exchange_change_group_name_new
+    const oldGroupName = data.old_group_name
+    const newGroupName = data.new_group_name
 
     if (!newGroupName.match(/^[a-z0-9 ]+$/i)) {
         return {
