@@ -47,7 +47,6 @@ import {
 import {
     populateAssetSelector,
     evAssetSelectorButtonClick,
-    populateDistributeAssetHolders,
     evDistributeToAssetHoldersHoldersAssetInput,
     populateReferencedAsset,
 } from '../modals/assets'
@@ -286,9 +285,6 @@ export function addEventListeners() {
     })
     $('#asset_exchange_group_modal').on('hidden.bs.modal', function () {
         $('#asset_exchange_group_new_group_div').val('').hide()
-    })
-    $('#distribute_to_asset_holders_asset_modal').on('show.bs.modal', (e) => {
-        populateDistributeAssetHolders($((e as ShowBootstrapModalEvent).relatedTarget))
     })
     $('#transfer_asset_ownership_modal').on('show.bs.modal', (e) => {
         populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#transfer_asset_ownership')

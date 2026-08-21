@@ -74,23 +74,18 @@ export function populateAssetSelector(assetId: string, assetName: string, decima
     $formGroup.find(`span[name=available]`).html(availableAssetsMessage)
 }
 
-export function populateDistributeAssetHolders($invoker: JQuery<HTMLElement>) {
-    const $formGroup = $('#form-distribute_to_asset_holders')
-    $formGroup.find('span[name=available]').text('')
+export function showDistributeToAssetHoldersModal(assetId: string, assetName: string, decimals: string) {
+    const $formGroup = $('#form-distribute_to_asset_holders').first()
 
-    const assetId = $invoker.data('asset') ?? ''
     if (!assetId) {
         $formGroup.find('input[name=holders_asset]').empty().addClass('is-invalid')
-        $formGroup.find('input[name=holders_decimals]').empty()
-        $formGroup.find('span[name=holders_asset_name]').text('?')
-        return
+    } else {
+        $formGroup.find('input[name=holders_asset]').val(assetId).removeClass('is-invalid')
     }
-    const assetName = $invoker.data('name') ?? '?'
-    const decimals = $invoker.data('decimals') ?? ''
-
-    $formGroup.find('input[name=holders_asset]').val(assetId).removeClass('is-invalid')
     $formGroup.find('input[name=holders_decimals]').val(decimals)
     $formGroup.find('span[name=holders_asset_name]').text(assetName)
+
+    showModal('distribute_to_asset_holders')
 }
 
 export async function evDistributeToAssetHoldersHoldersAssetInput(e: JQuery.TriggeredEvent) {

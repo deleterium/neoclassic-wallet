@@ -23,6 +23,7 @@ import {
     showAssetHoldersModal,
     showAssetOrderModal,
     showCancelOrderModal,
+    showDistributeToAssetHoldersModal,
     showMintAssetModal,
     showTransferAssetModal,
 } from '../modals/assets'
@@ -409,6 +410,16 @@ function modalRouter(params: URLSearchParams) {
             }
             console.log('Missing or invalid parameters for modal "mint_asset".')
             window.location.hash = '#'
+            return
+        case 'distribute_to_asset_holders':
+            if (params.has('asset')) {
+                const assetId = params.get('asset') ?? ''
+                const assetName = params.get('name') ?? '?'
+                const decimals = params.get('decimals') ?? ''
+                showDistributeToAssetHoldersModal(assetId, assetName, decimals)
+                return
+            }
+            showDistributeToAssetHoldersModal('', '?', '')
             return
     }
 }

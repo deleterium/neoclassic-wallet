@@ -40,12 +40,7 @@ export async function pagesAssestAdministration() {
             mintHTML = BRS.pendingTransactionHTML
         }
         let distributionHTML = `
-            <a href='#'
-                data-toggle='modal'
-                data-target='#distribute_to_asset_holders_asset_modal'
-                data-asset='${asset.asset}'
-                data-name='${asset.name}'
-                data-decimals='${String(asset.decimals)}'>
+            <a href='#modal=distribute_to_asset_holders&asset=${asset.asset}&name=${asset.name}&decimals=${String(asset.decimals)}'>
                 <i class="fa fa-magic" aria-hidden="true"></i>
             </a>`
         const unconfirmedDistributionTx = getUnconfirmedTransactionsFromCache(2, 8, {
