@@ -26,6 +26,7 @@ import {
     showDistributeToAssetHoldersModal,
     showMintAssetModal,
     showTransferAssetModal,
+    showTransferAssetOwnershipModal,
 } from '../modals/assets'
 import { showSendMoneyModal } from '../modals/sendmoney'
 import { showTransactionModal } from '../modals/transaction'
@@ -420,6 +421,15 @@ function modalRouter(params: URLSearchParams) {
                 return
             }
             showDistributeToAssetHoldersModal('', '?', '')
+            return
+        case 'transfer_asset_ownership':
+            if (params.has('asset')) {
+                const assetId = params.get('asset') ?? ''
+                showTransferAssetOwnershipModal(assetId)
+                return
+            }
+            console.log('Missing or invalid parameters for modal "transfer_asset_ownership".')
+            window.location.hash = '#'
             return
     }
 }

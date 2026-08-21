@@ -103,28 +103,21 @@ export async function evDistributeToAssetHoldersHoldersAssetInput(e: JQuery.Trig
     $formGroup.find('span[name=holders_asset_name]').text(chainAsset.name)
 }
 
-export async function populateReferencedAsset($invoker: JQuery<HTMLElement>, formName: string) {
-    const assetId = $invoker.data('asset') ?? ''
-    $(formName + '_name_plus_asset')
-        .val($.t('loading_please_wait'))
-        .addClass('is-invalid')
-    $(formName + '_referenced_transaction')
-        .val($.t('loading_please_wait'))
-        .addClass('is-invalid')
+export async function populateReferencedAsset(assetId: string, formName: string) {
+    $(`#${formName}_name_plus_asset`).val($.t('loading_please_wait')).addClass('is-invalid')
+    $(`#${formName}_referenced_transaction`).val($.t('loading_please_wait')).addClass('is-invalid')
 
     const issueAssetTx: GetTransactionResponse = await sendRequest('getTransaction', { transaction: assetId })
     if (issueAssetTx.errorCode) {
-        $(formName + '_name_plus_asset').val($.t('error'))
-        $(formName + '_referenced_transaction').val($.t('error'))
+        $(`#${formName}_name_plus_asset`).val($.t('error'))
+        $(`#${formName}_referenced_transaction`).val($.t('error'))
         return
     }
 
-    $(formName + '_name_plus_asset')
+    $(`#${formName}_name_plus_asset`)
         .val(assetId + ' - ' + issueAssetTx.attachment.name)
         .removeClass('is-invalid')
-    $(formName + '_referenced_transaction')
-        .val(issueAssetTx.fullHash)
-        .removeClass('is-invalid')
+    $(`#${formName}_referenced_transaction`).val(issueAssetTx.fullHash).removeClass('is-invalid')
 }
 
 export function formsTransferAssetOwnership(data: any) {
@@ -666,4 +659,10 @@ export function showMintAssetModal(asset: string, name: string, decimals: string
     populateAssetSelector(asset, name, decimals, $formGroup)
 
     showModal('mint_asset')
+}
+
+export function showTransferAssetOwnershipModal(asset: string) {
+    showModal('transfer_asset_ownership')
+
+    populateReferencedAsset(asset, 'transfer_asset_ownership')
 }
