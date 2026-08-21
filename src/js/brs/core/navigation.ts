@@ -302,6 +302,7 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'clear_data':
         case 'add_asset_bookmark':
+        case 'issue_asset':
             showModal(modalName)
             return
         case 'transfer_alias':
