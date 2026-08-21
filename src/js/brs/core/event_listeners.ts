@@ -44,12 +44,7 @@ import {
     goToAsset,
 } from '../pages/assets.asset_exchange'
 
-import {
-    populateAssetSelector,
-    evAssetSelectorButtonClick,
-    evDistributeToAssetHoldersHoldersAssetInput,
-    populateReferencedAsset,
-} from '../modals/assets'
+import { populateAssetSelector, evAssetSelectorButtonClick, evDistributeToAssetHoldersHoldersAssetInput } from '../modals/assets'
 
 import { evTransactionsPageTypeClick } from '../pages/transactions'
 
@@ -285,9 +280,6 @@ export function addEventListeners() {
     })
     $('#asset_exchange_group_modal').on('hidden.bs.modal', function () {
         $('#asset_exchange_group_new_group_div').val('').hide()
-    })
-    $('#add_asset_treasury_account_modal').on('show.bs.modal', (e) => {
-        populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#add_asset_treasury_account')
     })
     $('#distribute_to_asset_holders_holders_asset').on('input', evDistributeToAssetHoldersHoldersAssetInput)
 

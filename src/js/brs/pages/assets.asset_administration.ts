@@ -60,10 +60,7 @@ export async function pagesAssestAdministration() {
             transferHTML = BRS.pendingTransactionHTML
         }
         let treasuryHTML = `
-            <a href='#'
-                data-toggle='modal'
-                data-target='#add_asset_treasury_account_modal'
-                data-asset='${asset.asset}'>
+            <a href='#modal=add_asset_treasury_account&asset=${asset.asset}'>
                 <i class="fa fa-magic" aria-hidden="true"></i>
             </a>`
         const unconfirmedTreasuryTx = getUnconfirmedTransactionsFromCache(2, 7, {

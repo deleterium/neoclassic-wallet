@@ -20,6 +20,7 @@ import { pagesSettings } from '../pages/settings'
 import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
 import {
+    showAddAssetTreasuryAccountModal,
     showAssetHoldersModal,
     showAssetOrderModal,
     showCancelOrderModal,
@@ -429,6 +430,15 @@ function modalRouter(params: URLSearchParams) {
                 return
             }
             console.log('Missing or invalid parameters for modal "transfer_asset_ownership".')
+            window.location.hash = '#'
+            return
+        case 'add_asset_treasury_account':
+            if (params.has('asset')) {
+                const assetId = params.get('asset') ?? ''
+                showAddAssetTreasuryAccountModal(assetId)
+                return
+            }
+            console.log('Missing or invalid parameters for modal "add_asset_treasury_account".')
             window.location.hash = '#'
             return
     }

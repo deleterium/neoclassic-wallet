@@ -666,3 +666,9 @@ export function showTransferAssetOwnershipModal(asset: string) {
 
     populateReferencedAsset(asset, 'transfer_asset_ownership')
 }
+
+export function showAddAssetTreasuryAccountModal(asset: string) {
+    showModal('add_asset_treasury_account')
+
+    populateReferencedAsset(asset, 'add_asset_treasury_account')
+}
