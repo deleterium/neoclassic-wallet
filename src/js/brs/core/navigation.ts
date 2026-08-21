@@ -19,7 +19,13 @@ import { pagesSearchResults } from '../pages/search_results.page'
 import { pagesSettings } from '../pages/settings'
 import { pagesTransactions } from '../pages/transactions'
 import { pagesAssestAdministration } from '../pages/assets.asset_administration'
-import { showAssetHoldersModal, showAssetOrderModal, showCancelOrderModal, showTransferAssetModal } from '../modals/assets'
+import {
+    showAssetHoldersModal,
+    showAssetOrderModal,
+    showCancelOrderModal,
+    showMintAssetModal,
+    showTransferAssetModal,
+} from '../modals/assets'
 import { showSendMoneyModal } from '../modals/sendmoney'
 import { showTransactionModal } from '../modals/transaction'
 import { showAccountModal } from '../modals/account'
@@ -392,6 +398,17 @@ function modalRouter(params: URLSearchParams) {
                 return
             }
             showTransferAssetModal('', '?', '')
+            return
+        case 'mint_asset':
+            if (params.has('asset')) {
+                const assetId = params.get('asset') ?? ''
+                const assetName = params.get('name') ?? '?'
+                const decimals = params.get('decimals') ?? ''
+                showMintAssetModal(assetId, assetName, decimals)
+                return
+            }
+            console.log('Missing or invalid parameters for modal "mint_asset".')
+            window.location.hash = '#'
             return
     }
 }

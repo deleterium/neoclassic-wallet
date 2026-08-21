@@ -30,12 +30,7 @@ export async function pagesAssestAdministration() {
     let rows = ''
     for (const asset of myIssuedAssets) {
         let mintHTML = `
-            <a href='#'
-                data-toggle='modal'
-                data-target='#mint_asset_modal'
-                data-asset='${asset.asset}'
-                data-name='${asset.name}'
-                data-decimals='${String(asset.decimals)}'>
+            <a href='#modal=mint_asset&asset=${asset.asset}&name=${asset.name}&decimals=${String(asset.decimals)}'>
                 ${$.t('yes')}
             </a>`
         const unconfirmedMintTx = getUnconfirmedTransactionsFromCache(2, 6, {

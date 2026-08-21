@@ -287,9 +287,6 @@ export function addEventListeners() {
     $('#asset_exchange_group_modal').on('hidden.bs.modal', function () {
         $('#asset_exchange_group_new_group_div').val('').hide()
     })
-    $('#mint_asset_modal').on('show.bs.modal', (e) => {
-        populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'mint_asset')
-    })
     $('#distribute_to_asset_holders_asset_modal').on('show.bs.modal', (e) => {
         populateDistributeAssetHolders($((e as ShowBootstrapModalEvent).relatedTarget))
     })

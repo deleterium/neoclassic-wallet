@@ -665,3 +665,10 @@ export function showTransferAssetModal(asset: string, name: string, decimals: st
 
     showModal('transfer_asset')
 }
+
+export function showMintAssetModal(asset: string, name: string, decimals: string) {
+    const $formGroup = $('#form-mint-asset .form-group').first()
+    populateAssetSelector(asset, name, decimals, $formGroup)
+
+    showModal('mint_asset')
+}
