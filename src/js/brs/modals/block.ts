@@ -4,44 +4,41 @@ import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount } from '../core/numbers'
 
-import { createInfoTable } from '../core/util'
+import { createInfoTable, dataLoadFinished } from '../core/util'
 
 import { getTransactionDetails } from '../tools/transactions'
 import { GetBlockResponse, Transaction } from '../typings'
+import { notify } from '../core/notifications'
+import { showModal } from '../core/modals'
 
-export function evBlocksTableClick(event: Event) {
-    event.preventDefault()
+export async function showBlockInfoModal(block: string | GetBlockResponse) {
     if (BRS.fetchingModalData) {
         return
     }
-    BRS.fetchingModalData = true
-    const blockHeight = $(event.target as HTMLElement).data('block')
-    sendRequest('getBlock+', {
-        height: blockHeight,
+    if (typeof block === 'object') {
+        blockInfoDataReady(block)
+        return
+    }
+    const blockDetails: GetBlockResponse = await sendRequest('getBlock+', {
+        height: block,
         includeTransactions: 'true',
-    }).then((response: GetBlockResponse) => {
-        showBlockModal(response)
     })
+    BRS.fetchingModalData = false
+    if (blockDetails.errorCode) {
+        notify($.t('invalid_blockheight'), { type: 'danger' })
+        return
+    }
+    blockInfoDataReady(blockDetails)
+    return
 }
 
-export function showBlockModal(block: GetBlockResponse) {
-    $('#block_info_modal_block').text(block.block)
+function blockInfoDataReady(block: GetBlockResponse) {
+    $('#block_info_modal_block').text(block.height)
     const blockDetails = $.extend({}, block) as any
     delete blockDetails.transactions
     delete blockDetails.previousBlockHash
     delete blockDetails.nextBlockHash
-    delete blockDetails.block
-    $('#block_info_details_table tbody').empty().append(createInfoTable(blockDetails))
-    $('#block_info_details_table').show()
-    if (block.transactions.length === 0) {
-        $('#block_info_transactions_none').show()
-        $('#block_info_transactions_table').hide()
-        $('#block_info_modal').modal('show')
-        BRS.fetchingModalData = false
-        return
-    }
-    $('#block_info_transactions_none').hide()
-    $('#block_info_transactions_table').show()
+    $('#block_info_details_table tbody').html(createInfoTable(blockDetails))
     ;(block.transactions as Transaction[]).sort(function (a: Transaction, b: Transaction) {
         return a.timestamp - b.timestamp
     })
@@ -63,6 +60,8 @@ export function showBlockModal(block: GetBlockResponse) {
             </tr>`
     }
     $('#block_info_transactions_table tbody').html(rows)
-    $('#block_info_modal').modal('show')
-    BRS.fetchingModalData = false
+    $('#block_info_modal_transactions_tab').tab('show')
+    dataLoadFinished($('#block_info_transactions_table'))
+
+    showModal('block_info')
 }

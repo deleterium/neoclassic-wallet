@@ -72,8 +72,6 @@ import {
 
 import { showAccountModal, evShowBsTab } from '../modals/account'
 
-import { evBlocksTableClick } from '../modals/block'
-
 import { showEscrowDecisionModal } from '../modals/escrow'
 
 import { evBrsModalServerInfoOnShowBsModal } from '../modals/server_info'
@@ -445,17 +443,6 @@ export function addEventListeners() {
     $('#account_info_modal').on('show.bs.modal', function () {
         $('#account_info_name').val(BRS.accountInfo.name)
         $('#account_info_description').val(BRS.accountInfo.description)
-    })
-
-    // from brs.modals.block.js
-    $('#latest_blocks_table, #forged_blocks_table, #dashboard_blocks_table, #search_results_contents').on(
-        'click',
-        'a[data-block]',
-        evBlocksTableClick,
-    )
-    $('#block_info_modal_info_tab').tab('show')
-    $('#block_info_modal').on('hide.bs.modal', function () {
-        $('#block_info_modal_info_tab').tab('show')
     })
 
     // from brs.modals.escrow.js

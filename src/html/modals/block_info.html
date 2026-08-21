@@ -11,14 +11,14 @@
         <li class="nav-item">
           <a
             class="nav-link"
-            id="block_info_modal_info_tab"
-            href="#block_info_modal_info"
+            id="block_info_modal_transactions_tab"
+            href="#block_info_modal_transactions"
             data-toggle="pill"
             role="tab"
-            aria-controls="block_info_modal_info"
-            aria-selected="false"
-            data-i18n="info">
-            info
+            aria-controls="block_info_modal_transactions"
+            aria-selected="true"
+            data-i18n="transactions">
+            transactions
           </a>
         </li>
         <li class="nav-item">
@@ -30,15 +30,15 @@
             role="tab"
             aria-controls="block_info_modal_details"
             aria-selected="false"
-            data-i18n="actions">
-            actions
+            data-i18n="details">
+            details
           </a>
         </li>
       </ul>
       <div class="modal-body">
         <div class="tab-content">
-          <div id="block_info_modal_info" class="tab-pane fade" role="tabpanel" aria-labelledby="block_info_modal_info_tab">
-            <table class="table table-striped" id="block_info_transactions_table" style="margin-bottom: 0">
+          <div id="block_info_modal_transactions" class="tab-pane fade data-container" role="tabpanel" aria-labelledby="block_info_modal_transactions_tab">
+            <table class="table table-striped" id="block_info_transactions_table">
               <thead>
                 <tr>
                   <th data-i18n="type">type</th>
@@ -50,8 +50,8 @@
               </thead>
               <tbody></tbody>
             </table>
-            <div id="block_info_modal_details_tab" style="display: none" data-i18n="no_transactions_in_block">
-              No transactions in this block.
+            <div class="data-empty-container" style="padding-top: 10px" data-i18n="no_transactions_in_block">
+              no_transactions_in_block
             </div>
           </div>
           <div id="block_info_modal_details" class="tab-pane fade" role="tabpanel" aria-labelledby="block_info_modal_details_tab">

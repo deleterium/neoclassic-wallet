@@ -40,6 +40,7 @@ import {
     showRegisterAliasModal,
     showUpdateAliasModal,
 } from '../modals/aliases'
+import { showBlockInfoModal } from '../modals/block'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -439,6 +440,15 @@ function modalRouter(params: URLSearchParams) {
                 return
             }
             console.log('Missing or invalid parameters for modal "add_asset_treasury_account".')
+            window.location.hash = '#'
+            return
+        case 'block_info':
+            if (params.has('block')) {
+                const blockheight = params.get('block') ?? ''
+                showBlockInfoModal(blockheight)
+                return
+            }
+            console.log('Missing or invalid parameters for modal "block_info".')
             window.location.hash = '#'
             return
     }

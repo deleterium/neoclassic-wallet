@@ -12,7 +12,7 @@ import {
 } from '../typings'
 import { showAliasInfoModal } from '../modals/aliases'
 import { showAccountModal } from '../modals/account'
-import { showBlockModal } from '../modals/block'
+import { showBlockInfoModal } from '../modals/block'
 import { showTransactionModal } from '../modals/transaction'
 import { sendRequest } from '../core/send_request'
 import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from '../core/util'
@@ -200,11 +200,11 @@ export async function pagesSearchResults() {
                 dataLoaded($.t('error_search_no_results'))
                 return
             }
-            showBlockModal(response)
+            showBlockInfoModal(response)
             const htmlResult = `
                 <strong>${$.t('block')}:</strong>
                 <ul>
-                  <li><a href="#" data-block="${response.height}">${response.height}</a></li>
+                  <li><a href="#modal=block_info&block=${response.height}">${response.height}</a></li>
                 </ul>`
             dataLoaded(htmlResult)
             return
