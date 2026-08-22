@@ -2,6 +2,7 @@ import { BRS } from '..'
 import { ShowBootstrapModalEvent } from '../typings'
 import { NxtAddress } from '../../util/nxtaddress'
 import { notifyContactOperationSuccess, getContactByName, saveContactToDatabase, removeContactFromDB } from '../tools/contacts'
+import { showModal } from '../core/modals'
 
 export function formsAddContact(data: any) {
     const error = checkContactDataError(data)
@@ -145,4 +146,9 @@ export function checkContactDataError(data: any): string | undefined {
     if (data.email && !/@/.test(data.email)) {
         return $.t('error_email_address')
     }
+}
+
+export function showAddContactModal(account: string) {
+    $('#add_contact_account_id').val(account).trigger('blur')
+    showModal('add_contact')
 }

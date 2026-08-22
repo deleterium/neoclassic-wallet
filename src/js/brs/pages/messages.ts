@@ -24,6 +24,7 @@ import { getMessageTextFromTX, getEncryptedMessageFromTX, decryptAttachmentField
 import { GetAccountTransactionsResponse, Transaction, UNCONFIRMED_HEIGHT } from '../typings'
 import { notify } from '../core/notifications'
 import { showSendMoneyModal } from '../modals/sendmoney'
+import { showAddContactModal } from '../modals/contacts'
 
 // Current page is 'messages'
 // Processing unconfirmed in chat, but not in sidebar.
@@ -308,8 +309,7 @@ export function loadMessagesSubPage(userRS: string) {
 
 export function messagesVtabContextHandler(option: string, account: string) {
     if (option === 'add_contact') {
-        $('#add_contact_account_id').val(account).trigger('blur')
-        $('#add_contact_modal').modal('show')
+        showAddContactModal(account)
     } else if (option === 'update_contact') {
         $('#update_contact_account_id').val(account).trigger('blur')
         $('#update_contact_modal').modal('show')

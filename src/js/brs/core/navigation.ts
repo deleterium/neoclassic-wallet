@@ -42,6 +42,7 @@ import {
 } from '../modals/aliases'
 import { showBlockInfoModal } from '../modals/block'
 import { showServerInfoModal } from '../modals/server_info'
+import { showAddContactModal } from '../modals/contacts'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -454,6 +455,9 @@ function modalRouter(params: URLSearchParams) {
             }
             console.log('Missing or invalid parameters for modal "block_info".')
             window.location.hash = '#'
+            return
+        case 'add_contact':
+            showAddContactModal(params.get('account') ?? '')
             return
     }
 }

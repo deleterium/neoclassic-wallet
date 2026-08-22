@@ -148,20 +148,21 @@ async function processTransactionModalData(transaction: Transaction) {
     }
 
     function processButtons() {
-        let accountButton: string
+        let accountRecipient = transaction.senderRS
         if (transaction.senderRS === BRS.accountRS) {
             $('#transaction_info_actions').hide()
-        } else {
-            if (transaction.senderRS in BRS.contacts) {
-                accountButton = BRS.contacts[transaction.senderRS].name.escapeHTML()
-                $('#transaction_info_modal_add_as_contact').hide()
-            } else {
-                accountButton = transaction.senderRS
-                $('#transaction_info_modal_add_as_contact').show()
-            }
-            $('#transaction_info_actions').show()
-            $('#transaction_info_actions_tab button').data('account', accountButton)
+            return
         }
+        if (transaction.senderRS in BRS.contacts) {
+            accountRecipient = encodeURIComponent(BRS.contacts[transaction.senderRS].name)
+            $('#transaction_info_modal_actions_add_contact').hide()
+        } else {
+            accountRecipient = transaction.senderRS
+            $('#transaction_info_modal_actions_add_contact').attr('href', `#modal=add_contact&account=${accountRecipient}`).show()
+        }
+        $('#transaction_info_actions').show()
+        $('#transaction_info_modal_actions_send_burst').attr('href', `#modal=send_money&recipient=${accountRecipient}`)
+        // $('#transaction_info_actions_tab button').data('account', accountRecipient)
     }
 
     function processDefaultProperties() {
