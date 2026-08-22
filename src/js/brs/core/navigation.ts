@@ -41,6 +41,7 @@ import {
     showUpdateAliasModal,
 } from '../modals/aliases'
 import { showBlockInfoModal } from '../modals/block'
+import { showServerInfoModal } from '../modals/server_info'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -343,6 +344,9 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'register_alias':
             showRegisterAliasModal()
+            return
+        case 'server_info':
+            showServerInfoModal()
             return
         case 'buy_alias':
             if (params.has('alias')) {

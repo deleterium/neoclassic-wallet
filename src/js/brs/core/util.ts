@@ -6,7 +6,7 @@ import { NxtAddress } from '../../util/nxtaddress'
 
 import { pageLoaded } from './navigation'
 
-import { formatQNTAsQuantity, formatNQTAsAmount } from './numbers'
+import { formatQNTAsQuantity, formatNQTAsAmount, formatVolume, formatTimestampAsDateTime } from './numbers'
 import { notify } from './notifications'
 
 // region converter
@@ -239,10 +239,28 @@ export function createInfoTable(data: object) {
             } else {
                 value = formatQNTAsQuantity(value, 0) + 'QNT'
             }
-        } else if (key === 'price' || key === 'total' || key === 'amount' || key === 'fee' || key === 'refund' || key === 'discount') {
-            value = formatNQTAsAmount(value) + ' ' + BRS.valueSuffix
+        } else if (
+            key === 'price' ||
+            key === 'total' ||
+            key === 'amount' ||
+            key === 'fee' ||
+            key === 'refund' ||
+            key === 'discount' ||
+            key === 'total_mined' ||
+            key === 'total_burnt' ||
+            key === 'circulating_supply'
+        ) {
+            if (type === 'Planck') {
+                value = formatNQTAsAmount(String(value)) + ' ' + BRS.valueSuffix
+            } else {
+                value = formatNQTAsAmount(value) + ' ' + BRS.valueSuffix
+            }
         } else if (key === 'sender' || key === 'recipient' || key === 'account' || key === 'seller' || key === 'buyer') {
             value = "<a href='#modal=user_info&user=" + String(value).escapeHTML() + "'>" + getAccountTitle(value) + '</a>'
+        } else if (key.indexOf('_memory') !== -1) {
+            value = formatVolume(value)
+        } else if (key === 'time') {
+            value = formatTimestampAsDateTime(value)
         } else {
             value = String(value).escapeHTML().nl2br()
         }

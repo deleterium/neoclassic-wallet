@@ -74,8 +74,6 @@ import { showAccountModal, evShowBsTab } from '../modals/account'
 
 import { showEscrowDecisionModal } from '../modals/escrow'
 
-import { evBrsModalServerInfoOnShowBsModal } from '../modals/server_info'
-
 import { showSubscriptionCancelModal } from '../modals/subscription'
 
 import { ShowBootstrapModalEvent } from '../typings'
@@ -451,9 +449,6 @@ export function addEventListeners() {
         const escrowId = $(this).data('escrow')
         showEscrowDecisionModal(escrowId)
     })
-
-    // from brs.modals.serverinfo.js
-    $('#brs_modal_server_info').on('show.bs.modal', evBrsModalServerInfoOnShowBsModal)
 
     // from brs.modals.request.js
     $('#request_burst_qr_modal').on('show.bs.modal', function () {
