@@ -32,7 +32,7 @@ export function notifyContactOperationSuccess(message: string) {
         reloadCurrentPage()
         return
     }
-    if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
+    if (BRS.currentPage === 'messages') {
         BRS.currentSubPage = ''
         reloadCurrentPage()
     }

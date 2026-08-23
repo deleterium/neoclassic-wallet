@@ -51,13 +51,11 @@ export function pagesContacts() {
         }
 
         const cName = contact.name.escapeHTML()
+        const paramName = encodeURIComponent(contact.name)
         return `
             <tr>
                 <td>
-                <a href='#'
-                    data-toggle='modal'
-                    data-target='#update_contact_modal'
-                    data-contact='${cName}'>
+                <a href='#modal=update_contact&account=${paramName}'>
                     ${cName}
                 </a>
                 </td>
@@ -71,7 +69,7 @@ export function pagesContacts() {
                 <td>
                 <div class="btn-group">
                     <a class='btn btn-default'
-                    href='#modal=send_money&recipient=${cName}'>
+                    href='#modal=send_money&recipient=${paramName}'>
                     <i class="fas fa-paper-plane"></i>
                     </a>
                     <a class='btn btn-default'

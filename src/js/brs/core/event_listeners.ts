@@ -23,7 +23,7 @@ import { setAliasType, evSellAliasSellToSpecificClick } from '../modals/aliases'
 
 import { evAliasSearchSubmit } from '../pages/aliases'
 
-import { evDeleteContactModalOnShowBsModal, evUpdateContactModalOnShowBsModal } from '../modals/contacts'
+import { evDeleteContactModalOnShowBsModal } from '../modals/contacts'
 
 import { exportContacts, importContacts } from '../pages/contacts'
 
@@ -309,7 +309,6 @@ export function addEventListeners() {
     $('#alias_search').on('submit', evAliasSearchSubmit)
 
     // from brs.contacts.js
-    $('#update_contact_modal').on('show.bs.modal', evUpdateContactModalOnShowBsModal)
     $('#delete_contact_modal').on('show.bs.modal', evDeleteContactModalOnShowBsModal)
     $('#export_contacts_button').on('click', function () {
         exportContacts()
