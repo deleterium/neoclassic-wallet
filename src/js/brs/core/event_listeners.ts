@@ -78,6 +78,8 @@ import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
 
 import { notify } from './notifications'
 
+import { evNewQrButtonOnClick } from '../modals/request_coins'
+
 export function addEventListeners() {
     // Fixes sidebar not closing after click the button to open it.
     $('#sidebar-overlay').on('click', () => {
@@ -438,29 +440,7 @@ export function addEventListeners() {
     })
 
     // from brs.modals.request.js
-    $('#request_burst_qr_modal').on('show.bs.modal', function () {
-        $('#new_qr_button').hide()
-        $('#request_burst_immutable').prop('checked', true)
-        $('#request_burst_account_id').val(BRS.accountRS)
-        $('#request_burst_response_div').hide()
-    })
-    $('#request_burst_qr_modal').on('hide.bs.modal', function () {
-        $('#request_burst_div').show()
-        $('#request_burst_response_div').hide()
-        $('#generate_qr_button').show()
-        $('#request_burst_div').show()
-        $('#request_burst_response_div').hide()
-        $('#request_burst_qr_modal').find('.error_message').html('').hide()
-    })
-    $('#new_qr_button').on('click', function () {
-        $('#request_burst_div').show()
-        $('#request_burst_response_div').hide()
-        $('#request_burst_amount').val('')
-        $('#request_burst_immutable').prop('checked', true)
-        $('#generate_qr_button').show()
-        $('#new_qr_button').hide()
-        $('#request_burst_qr_modal').find('.error_message').html('').hide()
-    })
+    $('#new_qr_button').on('click', evNewQrButtonOnClick)
 
     // from brs.modals.signmessage.js
     $('#sign_message_tab').tab('show')

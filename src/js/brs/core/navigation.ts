@@ -45,6 +45,7 @@ import { showServerInfoModal } from '../modals/server_info'
 import { showAddContactModal, showDeleteContactModal, showUpdateContactModal } from '../modals/contacts'
 import { showEscrowDecisionModal } from '../modals/escrow'
 import { showRawTransactionModal } from '../modals/advanced'
+import { showRequestBurstQrModal } from '../modals/request_coins'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -491,6 +492,9 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'raw_transaction':
             showRawTransactionModal('', '')
+            return
+        case 'request_burst_qr':
+            showRequestBurstQrModal()
             return
     }
 }
