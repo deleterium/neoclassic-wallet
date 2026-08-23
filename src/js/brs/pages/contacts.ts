@@ -80,10 +80,7 @@ export function pagesContacts() {
                     <i class="fas fa-envelope"></i>
                     </a>
                     <a class='btn btn-default'
-                    href='#'
-                    data-toggle='modal'
-                    data-target='#delete_contact_modal'
-                    data-contact='${cName}'>
+                    href='#modal=delete_contact&account=${paramName}'>
                     <i class="fas fa-trash"></i>
                     </a>
                 </div>

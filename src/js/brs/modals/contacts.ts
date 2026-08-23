@@ -114,19 +114,24 @@ export function showUpdateContactModal(account: string) {
     showModal('update_contact')
 }
 
-export function evDeleteContactModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-
-    const contactName = $invoker.data('contact')
-
-    const contact = getContactByName(contactName)
+export function showDeleteContactModal(account: string) {
+    let contact = getContactByName(account)
     if (!contact) {
+        contact = BRS.contacts[account]
+    }
+    if (!contact) {
+        contact = BRS.contacts[convertNumericToRSAccountFormat(account)]
+    }
+    if (!contact) {
+        notify($.t('error_contact'), { type: 'danger' })
         return
     }
 
     $('#delete_contact_name').text(contact.name)
     $('#delete_contact_account_rs').text(contact.accountRS)
     $('#delete_contact_account_id').text(contact.account)
+
+    showModal('delete_contact')
 }
 
 /**

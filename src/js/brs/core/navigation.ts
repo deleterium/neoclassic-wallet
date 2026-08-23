@@ -42,7 +42,7 @@ import {
 } from '../modals/aliases'
 import { showBlockInfoModal } from '../modals/block'
 import { showServerInfoModal } from '../modals/server_info'
-import { showAddContactModal, showUpdateContactModal } from '../modals/contacts'
+import { showAddContactModal, showDeleteContactModal, showUpdateContactModal } from '../modals/contacts'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -466,6 +466,15 @@ function modalRouter(params: URLSearchParams) {
                 return
             }
             console.log('Missing or invalid parameters for modal "update_contact".')
+            window.location.hash = '#'
+            return
+        case 'delete_contact':
+            if (params.has('account')) {
+                const contact = params.get('account') ?? ''
+                showDeleteContactModal(contact)
+                return
+            }
+            console.log('Missing or invalid parameters for modal "delete_contact".')
             window.location.hash = '#'
             return
     }
