@@ -44,6 +44,7 @@ import { showBlockInfoModal } from '../modals/block'
 import { showServerInfoModal } from '../modals/server_info'
 import { showAddContactModal, showDeleteContactModal, showUpdateContactModal } from '../modals/contacts'
 import { showEscrowDecisionModal } from '../modals/escrow'
+import { showRawTransactionModal } from '../modals/advanced'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -487,6 +488,9 @@ function modalRouter(params: URLSearchParams) {
             }
             console.log('Missing or invalid parameters for modal "escrow_decision".')
             window.location.hash = '#'
+            return
+        case 'raw_transaction':
+            showRawTransactionModal('', '')
             return
     }
 }

@@ -173,7 +173,8 @@ function processAjaxRequest(requestType: string, data: any, callback: (response:
             }
             if (response.broadcasted === false) {
                 // Only in POST and if "broadcast: false"
-                showRawTransactionModal(response, '')
+                showRawTransactionModal(response.unsignedTransactionBytes, '')
+                callback(response)
                 return
             }
             // Regular GET response, or POST 'broadcastTransaction'
@@ -252,7 +253,8 @@ function verifySignAndBroadcastTransaction(
     }
     const payload = response.unsignedTransactionBytes.slice(0, 192) + signature + response.unsignedTransactionBytes.slice(320)
     if (data.broadcast === 'false') {
-        showRawTransactionModal(response, payload)
+        showRawTransactionModal(response.unsignedTransactionBytes, payload)
+        callback(response)
         return
     }
     broadcastTransactionBytes(payload, callback, response, data)
