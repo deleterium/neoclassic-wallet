@@ -6,6 +6,7 @@ import { formatTimestampAsDateTime } from '../core/numbers'
 
 import { Escrow, GetEscrowTransactionResponse } from '../typings'
 import { getAccountTitleFromObject } from '../core/util'
+import { showModal } from '../core/modals'
 
 export async function showEscrowDecisionModal(escrow: Escrow | string) {
     if (BRS.fetchingModalData) {
@@ -24,7 +25,7 @@ export async function showEscrowDecisionModal(escrow: Escrow | string) {
     processEscrowDecisionModalData(response)
 }
 
-export function processEscrowDecisionModalData(escrow: Escrow) {
+function processEscrowDecisionModalData(escrow: Escrow) {
     $('#escrow_decision_escrow').val(escrow.id)
     $('#escrow_decision_escrow_info').val(escrow.id)
     let decisions = ''
@@ -37,5 +38,5 @@ export function processEscrowDecisionModalData(escrow: Escrow) {
         $.t('escrow_deadline_action') + ': ' + $.t(escrow.deadlineAction) + ' -- ' + formatTimestampAsDateTime(escrow.deadline),
     )
 
-    $('#escrow_decision_modal').modal('show')
+    showModal('escrow_decision')
 }

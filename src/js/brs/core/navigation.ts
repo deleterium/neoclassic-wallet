@@ -43,6 +43,7 @@ import {
 import { showBlockInfoModal } from '../modals/block'
 import { showServerInfoModal } from '../modals/server_info'
 import { showAddContactModal, showDeleteContactModal, showUpdateContactModal } from '../modals/contacts'
+import { showEscrowDecisionModal } from '../modals/escrow'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -476,6 +477,15 @@ function modalRouter(params: URLSearchParams) {
                 return
             }
             console.log('Missing or invalid parameters for modal "delete_contact".')
+            window.location.hash = '#'
+            return
+        case 'escrow_decision':
+            if (params.has('escrow')) {
+                const escrowID = params.get('escrow') ?? ''
+                showEscrowDecisionModal(escrowID)
+                return
+            }
+            console.log('Missing or invalid parameters for modal "escrow_decision".')
             window.location.hash = '#'
             return
     }
