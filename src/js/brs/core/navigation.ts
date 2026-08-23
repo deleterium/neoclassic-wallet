@@ -319,6 +319,7 @@ function modalRouter(params: URLSearchParams) {
         case 'add_asset_bookmark':
         case 'issue_asset':
         case 'escrow_create':
+        case 'reward_assignment':
             showModal(modalName)
             return
         case 'transfer_alias':
