@@ -320,6 +320,7 @@ function modalRouter(params: URLSearchParams) {
         case 'issue_asset':
         case 'escrow_create':
         case 'reward_assignment':
+        case 'commitment':
             showModal(modalName)
             return
         case 'transfer_alias':
