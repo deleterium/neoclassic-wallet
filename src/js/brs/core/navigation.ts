@@ -47,6 +47,7 @@ import { showEscrowDecisionModal } from '../modals/escrow'
 import { showRawTransactionModal } from '../modals/advanced'
 import { showRequestBurstQrModal } from '../modals/request_coins'
 import { showSendMessageModal } from '../modals/messages'
+import { showSubscriptionCancelModal } from '../modals/subscription'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -503,6 +504,15 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'send_message':
             showSendMessageModal(params.get('recipient') ?? '', params.get('content') ?? '')
+            return
+        case 'subscription_cancel':
+            if (params.has('subscription')) {
+                const subscriptionID = params.get('subscription') ?? ''
+                showSubscriptionCancelModal(subscriptionID)
+                return
+            }
+            console.log('Missing or invalid parameters for modal "subscription_cancel".')
+            window.location.hash = '#'
             return
     }
 }

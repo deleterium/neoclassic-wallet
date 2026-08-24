@@ -68,8 +68,6 @@ import {
 
 import { showAccountModal, evShowBsTab } from '../modals/account'
 
-import { showSubscriptionCancelModal } from '../modals/subscription'
-
 import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
 
 import { notify } from './notifications'
@@ -426,13 +424,6 @@ export function addEventListeners() {
         $('#verify_message_output').hide()
     })
     $('#verify_message_data_is_transaction').on('click', evVerifyMessageDataIsTransactionClick)
-
-    // from brs.modals.subscription.js
-    $('#subscription_table').on('click', 'a[data-subscription]', function (e) {
-        e.preventDefault()
-        const subscriptionId = $(this).data('subscription')
-        showSubscriptionCancelModal(subscriptionId)
-    })
 
     // from brs.modals.transaction.js
     $('#send_money_modal').on('hide.bs.modal', function () {

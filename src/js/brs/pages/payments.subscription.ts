@@ -33,7 +33,7 @@ export async function pagesSubscription() {
         }
         let actions = ''
         if (subscription.sender === BRS.account) {
-            actions = `<a href="#" data-subscription="${subscriptionId}"><i class="fas fa-trash"></i></a>`
+            actions = `<a href="#modal=subscription_cancel&subscription=${subscriptionId}"><i class="fas fa-trash"></i></a>`
         }
         rows += `
             <tr>
