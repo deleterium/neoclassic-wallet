@@ -36,9 +36,6 @@ export async function pagesMessages() {
 
         $('#message_details').html(chatMessages)
         $('#message_details').scrollTop($('#message_details')[0].scrollHeight)
-        $('#message_details .unlock-messages').on('click', function () {
-            $('#messages_decrypt_modal').modal('show')
-        })
         pageLoaded()
         return
     }
@@ -239,7 +236,7 @@ function buildChatMessages(account_id: string) {
                     // Show button for decryption
                     messageField =
                         "<i class='fas fa-exclamation-triangle'></i> " +
-                        '<button class="btn btn-warning unlock-messages"><i class="fas fa-key"></i></button>'
+                        '<a href="#modal=messages_decrypt" class="btn btn-warning"><i class="fas fa-key"></i></a>'
                 }
             }
         }
@@ -298,9 +295,6 @@ export function loadMessagesSubPage(userRS: string) {
     $('#message_details').html(chatMessages)
     $('#messages_card').show()
     $('#message_details').scrollTop($('#message_details')[0].scrollHeight)
-    $('#message_details .unlock-messages').on('click', function () {
-        $('#messages_decrypt_modal').modal('show')
-    })
     window.scrollTo({
         top: 0,
         behavior: 'smooth',

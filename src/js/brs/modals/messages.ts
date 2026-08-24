@@ -21,6 +21,7 @@ export async function formsDecryptMessages(data: any) {
             hide: true,
         }
     }
+    // Assuming the current page is `messages` because the link to the modal `decrypt_messages` is only there.
     try {
         const messagesToDecrypt: Transaction[] = []
         for (const otherUser in BRS._messages) {

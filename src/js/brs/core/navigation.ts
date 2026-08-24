@@ -322,6 +322,7 @@ function modalRouter(params: URLSearchParams) {
         case 'escrow_create':
         case 'reward_assignment':
         case 'commitment':
+        case 'messages_decrypt':
             showModal(modalName)
             return
         case 'transfer_alias':
