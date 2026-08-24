@@ -413,7 +413,6 @@ export function addEventListeners() {
     $('#new_qr_button').on('click', evNewQrButtonOnClick)
 
     // from brs.modals.signmessage.js
-    $('#sign_message_tab').tab('show')
     $('#sign_message_modal').on('hidden.bs.modal', function () {
         $('#sign_message_tab').tab('show')
         $('#sign_message_output_signature').text('')
