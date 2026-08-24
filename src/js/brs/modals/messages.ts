@@ -2,8 +2,9 @@ import { BRS } from '..'
 import { Transaction } from '../typings'
 import { reloadCurrentPage } from '../core/navigation'
 import { getAccountId, setDecryptionPassword, decryptAttachmentField } from '../core/encryption'
-import { getUnconfirmedTransactionsFromCache } from '../core/util'
+import { convertNumericToRSAccountFormat, getUnconfirmedTransactionsFromCache } from '../core/util'
 import { notify } from '../core/notifications'
+import { showModal } from '../core/modals'
 
 export async function formsDecryptMessages(data: any) {
     const accountId = getAccountId(data.secretPhrase)
@@ -59,4 +60,24 @@ export async function formsDecryptMessages(data: any) {
         stop: true,
         hide: true,
     }
+}
+
+export function showSendMessageModal(recipient: string, content: string) {
+    if (recipient) {
+        $('#send_message_recipient').val(recipient).trigger('checkRecipientEvent')
+    }
+    if (content === 'message_in_chatbox') {
+        const recipientAddress = convertNumericToRSAccountFormat(BRS.currentSubPage)
+        $('#send_message_message').val($('#message_in_chatbox').val() as string)
+        $('#message_in_chatbox').val('')
+        if (BRS.contacts[recipientAddress]) {
+            $('#send_message_recipient').val(BRS.contacts[recipientAddress].name).trigger('checkRecipientEvent')
+        } else {
+            $('#send_message_recipient').val(recipientAddress).trigger('checkRecipientEvent')
+        }
+    } else {
+        $('#send_message_message').val(content)
+    }
+
+    showModal('send_message')
 }

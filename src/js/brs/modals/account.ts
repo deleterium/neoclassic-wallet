@@ -73,7 +73,7 @@ export async function showAccountModal(account: string | GetAccountResponse) {
         $('#user_info_modal_add_as_contact').attr('href', `#modal=add_contact&account=${accountRS}`).show()
     }
     $('#user_info_modal_send_burst').attr('href', `#modal=send_money&recipient=${encodeURIComponent(accountNameOrRs)}`)
-    // $('#user_info_modal_send_message').attr('href', `#modal=send_message&recipient=${accountRS}`)
+    $('#user_info_modal_send_message').attr('href', `#modal=send_message&recipient=${encodeURIComponent(accountNameOrRs)}`)
 
     // Update modal title
     $('#user_info_modal_account').html(accountNameOrRs)

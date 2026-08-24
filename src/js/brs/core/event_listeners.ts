@@ -29,8 +29,6 @@ import { submitForm } from './forms'
 
 import { parseAmountToNQT, formatNQTAsAmount } from './numbers'
 
-import { convertNumericToRSAccountFormat } from './util'
-
 import {
     bookmarkAllUserAssets,
     saveAssetBookmarks,
@@ -71,8 +69,6 @@ import {
 import { showAccountModal, evShowBsTab } from '../modals/account'
 
 import { showSubscriptionCancelModal } from '../modals/subscription'
-
-import { ShowBootstrapModalEvent } from '../typings'
 
 import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
 
@@ -193,18 +189,6 @@ export function addEventListeners() {
     })
 
     // from brs.recipient.js
-    $('#send_message_modal').on('show.bs.modal', function (e) {
-        const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-        let account = $invoker.data('account')
-        if (!account) {
-            account = $invoker.data('contact')
-        }
-        if (account) {
-            const $inputField = $(this).find('input[name=recipient], input[name=account_id]').not('[type=hidden]')
-            $inputField.val(account).trigger('checkRecipientEvent')
-        }
-        sendMoneyCalculateTotal($(this))
-    })
     $('#send_money_amount, #send_money_fee').on('change', function () {
         sendMoneyCalculateTotal($(this))
     })
@@ -278,18 +262,6 @@ export function addEventListeners() {
     $('#distribute_to_asset_holders_holders_asset').on('input', evDistributeToAssetHoldersHoldersAssetInput)
 
     // from brs.messages.js
-    $('#send_message_modal').on('show.bs.modal', function () {
-        if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
-            const recipientAddress = convertNumericToRSAccountFormat(BRS.currentSubPage)
-            $('#send_message_message').val($('#message_in_chatbox').val() as string)
-            $('#message_in_chatbox').val('')
-            if (BRS.contacts[recipientAddress]) {
-                $('#send_message_recipient').val(BRS.contacts[recipientAddress].name).trigger('checkRecipientEvent')
-            } else {
-                $('#send_message_recipient').val(recipientAddress).trigger('checkRecipientEvent')
-            }
-        }
-    })
     // $('body').on('click', 'a[data-goto-messages-account]', function (e) {
     //     e.preventDefault()
     //     const account = $(this).data('goto-messages-account')

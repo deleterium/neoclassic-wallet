@@ -150,7 +150,7 @@ async function processTransactionModalData(transaction: Transaction) {
     function processButtons() {
         let accountRecipient = transaction.senderRS
         if (transaction.senderRS === BRS.accountRS) {
-            $('#transaction_info_actions').hide()
+            $('#transaction_info_modal_actions_tab').hide()
             return
         }
         if (transaction.senderRS in BRS.contacts) {
@@ -160,9 +160,9 @@ async function processTransactionModalData(transaction: Transaction) {
             accountRecipient = transaction.senderRS
             $('#transaction_info_modal_actions_add_contact').attr('href', `#modal=add_contact&account=${accountRecipient}`).show()
         }
-        $('#transaction_info_actions').show()
+        $('#transaction_info_modal_actions_tab').show()
         $('#transaction_info_modal_actions_send_burst').attr('href', `#modal=send_money&recipient=${accountRecipient}`)
-        // $('#transaction_info_actions_tab button').data('account', accountRecipient)
+        $('#transaction_info_modal_actions_send_message').attr('href', `#modal=send_message&recipient=${accountRecipient}`)
     }
 
     function processDefaultProperties() {

@@ -73,10 +73,7 @@ export function pagesContacts() {
                     <i class="fas fa-paper-plane"></i>
                     </a>
                     <a class='btn btn-default'
-                    href='#'
-                    data-toggle='modal'
-                    data-target='#send_message_modal'
-                    data-contact='${cName}'>
+                    href='#modal=send_message&recipient=${paramName}'>
                     <i class="fas fa-envelope"></i>
                     </a>
                     <a class='btn btn-default'

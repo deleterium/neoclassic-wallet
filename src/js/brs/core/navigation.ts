@@ -46,6 +46,7 @@ import { showAddContactModal, showDeleteContactModal, showUpdateContactModal } f
 import { showEscrowDecisionModal } from '../modals/escrow'
 import { showRawTransactionModal } from '../modals/advanced'
 import { showRequestBurstQrModal } from '../modals/request_coins'
+import { showSendMessageModal } from '../modals/messages'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -497,6 +498,9 @@ function modalRouter(params: URLSearchParams) {
             return
         case 'request_burst_qr':
             showRequestBurstQrModal()
+            return
+        case 'send_message':
+            showSendMessageModal(params.get('recipient') ?? '', params.get('content') ?? '')
             return
     }
 }
