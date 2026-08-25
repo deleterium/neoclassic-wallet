@@ -254,3 +254,8 @@
     margin: 3em;
     min-width: 20em;
 }
+
+/* fixes modal width in mobile */
+.modal {
+    width: 100vw;
+}
