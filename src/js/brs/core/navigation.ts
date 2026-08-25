@@ -1,7 +1,6 @@
-import { goToAsset, loadAssetExchangeSubPage, pagesAssetExchange } from '../pages/assets.asset_exchange'
-
 import { BRS } from '..'
 import { pagesAliases } from '../pages/aliases'
+import { loadAssetExchangeSubPage, pagesAssetExchange } from '../pages/assets.asset_exchange'
 import { pagesMyAssets } from '../pages/assets.my_assets'
 import { pagesOpenOrders } from '../pages/assets.open_orders'
 import { pagesTransferHistory } from '../pages/assets.transfer_history'
@@ -56,6 +55,7 @@ const pageFunctions = {
     at: pagesAt,
     block_info: pagesBlockInfo,
     contacts: pagesContacts,
+    dashboard: () => {},
     escrow: pagesEscrow,
     forged_blocks: pagesForgedBlocks,
     latest_blocks: pagesLatestBlocks,
@@ -181,36 +181,6 @@ export function goToPageNumber(pageNumber: number) {
     executePage(BRS.currentPage)
 }
 
-// TODO remove after upgrading location logic.
-export function checkLocationHashOld(): void {
-    if (!window.location.hash) {
-        return
-    }
-    const hash = window.location.hash.replace('#', '').split(':')
-    let $modal: JQuery<HTMLElement> | undefined
-    if (hash.length !== 2) {
-        return
-    }
-    if (hash[0] === 'message') {
-        $modal = $('#send_message_modal')
-    } else if (hash[0] === 'send') {
-        $modal = $('#send_money_modal')
-    } else if (hash[0] === 'asset') {
-        goToAsset(hash[1])
-        return
-    }
-
-    if ($modal) {
-        let account_id = hash[1].trim()
-        if (!/^\d+$/.test(account_id) && account_id.indexOf('@') !== 0) {
-            account_id = '@' + account_id
-        }
-        $modal.find('input[name=recipient]').val(account_id.unescapeHTML()).trigger('blur')
-        $modal.modal('show')
-    }
-    window.location.hash = '#'
-}
-
 export function checkLocationHash() {
     const locationHash = window.location.hash.replace('#', '')
     if (!locationHash) {
@@ -234,6 +204,7 @@ export function checkLocationHash() {
         modalRouter(params)
         return
     }
+    console.log('Unknown hash action.')
 }
 
 async function pageRouter(params: URLSearchParams) {
@@ -278,244 +249,200 @@ async function pageRouter(params: URLSearchParams) {
     }
 }
 
+interface ModalConfig {
+    requiredParams?: string[]
+    handler: (params: URLSearchParams) => void
+}
+
+const MODAL_CONFIG: Record<string, ModalConfig> = {
+    asset_holders: {
+        requiredParams: ['asset'],
+        handler: (params) => showAssetHoldersModal(params.get('asset') as string),
+    },
+    send_money: {
+        handler: (params) => showSendMoneyModal(params.get('recipient') ?? '', params.get('amount') ?? ''),
+    },
+    transaction_info: {
+        requiredParams: ['transaction'],
+        handler: (params) => showTransactionModal(params.get('transaction') as string),
+    },
+    user_info: {
+        requiredParams: ['user'],
+        handler: (params) => showAccountModal(params.get('user') as string),
+    },
+    clear_data: {
+        handler: () => showModal('clear_data'),
+    },
+    add_asset_bookmark: {
+        handler: () => showModal('add_asset_bookmark'),
+    },
+    issue_asset: {
+        handler: () => showModal('issue_asset'),
+    },
+    escrow_create: {
+        handler: () => showModal('escrow_create'),
+    },
+    reward_assignment: {
+        handler: () => showModal('reward_assignment'),
+    },
+    commitment: {
+        handler: () => showModal('commitment'),
+    },
+    messages_decrypt: {
+        handler: () => showModal('messages_decrypt'),
+    },
+    subscription_create: {
+        handler: () => showModal('subscription_create'),
+    },
+    sign_message: {
+        handler: () => showModal('sign_message'),
+    },
+    transfer_alias: {
+        requiredParams: ['alias', 'tld'],
+        handler: (params) =>
+            showAliasOperationModal(
+                'transfer_alias',
+                params.get('alias') as string,
+                params.get('aliasName') || '',
+                params.get('tld') as string,
+            ),
+    },
+    sell_alias: {
+        requiredParams: ['alias', 'tld'],
+        handler: (params) =>
+            showAliasOperationModal(
+                'sell_alias',
+                params.get('alias') as string,
+                params.get('aliasName') || '',
+                params.get('tld') as string,
+            ),
+    },
+    cancel_alias_sale: {
+        requiredParams: ['alias', 'tld'],
+        handler: (params) =>
+            showAliasOperationModal(
+                'cancel_alias_sale',
+                params.get('alias') as string,
+                params.get('aliasName') || '',
+                params.get('tld') as string,
+            ),
+    },
+    update_alias: {
+        requiredParams: ['alias'],
+        handler: (params) => showUpdateAliasModal(params.get('alias') as string),
+    },
+    register_alias: {
+        handler: () => showRegisterAliasModal(),
+    },
+    server_info: {
+        handler: () => showServerInfoModal(),
+    },
+    buy_alias: {
+        requiredParams: ['alias'],
+        handler: (params) => showBuyAliasModal(params.get('alias') as string),
+    },
+    register_tld: {
+        handler: () => showModal('register_tld'),
+    },
+    alias_info: {
+        requiredParams: ['alias'],
+        handler: (params) => showAliasInfoModal(params.get('alias') as string),
+    },
+    cancel_order: {
+        requiredParams: ['order', 'type'],
+        handler: (params) => {
+            const type = params.get('type')
+            if (type !== 'bid' && type !== 'ask') {
+                console.log(`Invalid type "${type}" for modal "cancel_order".`)
+                window.location.hash = '#'
+                return
+            }
+            showCancelOrderModal(params.get('order') as string, type)
+        },
+    },
+    asset_order: {
+        requiredParams: ['asset', 'type'],
+        handler: (params) => {
+            const type = params.get('type')
+            if (type !== 'buy' && type !== 'sell') {
+                console.log(`Invalid type "${type}" for modal "asset_order".`)
+                window.location.hash = '#'
+                return
+            }
+            showAssetOrderModal(params.get('asset') as string, type)
+        },
+    },
+    transfer_asset: {
+        handler: (params) => showTransferAssetModal(params.get('asset') ?? '', params.get('name') ?? '?', params.get('decimals') ?? ''),
+    },
+    mint_asset: {
+        requiredParams: ['asset', 'name', 'decimals'],
+        handler: (params) =>
+            showMintAssetModal(params.get('asset') as string, params.get('name') as string, params.get('decimals') as string),
+    },
+    distribute_to_asset_holders: {
+        handler: (params) =>
+            showDistributeToAssetHoldersModal(params.get('asset') ?? '', params.get('name') ?? '?', params.get('decimals') ?? ''),
+    },
+    transfer_asset_ownership: {
+        requiredParams: ['asset'],
+        handler: (params) => showTransferAssetOwnershipModal(params.get('asset') as string),
+    },
+    add_asset_treasury_account: {
+        requiredParams: ['asset'],
+        handler: (params) => showAddAssetTreasuryAccountModal(params.get('asset') as string),
+    },
+    block_info: {
+        requiredParams: ['block'],
+        handler: (params) => showBlockInfoModal(params.get('block') as string),
+    },
+    add_contact: {
+        handler: (params) => showAddContactModal(params.get('account') ?? ''),
+    },
+    update_contact: {
+        requiredParams: ['account'],
+        handler: (params) => showUpdateContactModal(params.get('account') as string),
+    },
+    delete_contact: {
+        requiredParams: ['account'],
+        handler: (params) => showDeleteContactModal(params.get('account') as string),
+    },
+    escrow_decision: {
+        requiredParams: ['escrow'],
+        handler: (params) => showEscrowDecisionModal(params.get('escrow') as string),
+    },
+    raw_transaction: {
+        handler: () => showRawTransactionModal('', ''),
+    },
+    request_burst_qr: {
+        handler: () => showRequestBurstQrModal(),
+    },
+    send_message: {
+        handler: (params) => showSendMessageModal(params.get('recipient') ?? '', params.get('content') ?? ''),
+    },
+    subscription_cancel: {
+        requiredParams: ['subscription'],
+        handler: (params) => showSubscriptionCancelModal(params.get('subscription') as string),
+    },
+}
+
 function modalRouter(params: URLSearchParams) {
-    const modalName = params.get('modal')
-    switch (modalName) {
-        case 'asset_holders':
-            if (params.has('asset')) {
-                const assetID = params.get('asset') ?? ''
-                if (assetID) {
-                    showAssetHoldersModal(params.get('asset') as string)
-                    return
-                }
-            }
-            console.log('Missing or invalid asset for modal "asset_holders".')
-            window.location.hash = '#'
-            return
-        case 'send_money':
-            showSendMoneyModal(params.get('recipient') ?? '', params.get('amount') ?? '')
-            return
-        case 'transaction_info':
-            if (params.has('transaction')) {
-                const txid = params.get('transaction')
-                if (txid) {
-                    showTransactionModal(txid)
-                    return
-                }
-            }
-            console.log('Missing or invalid transaction for modal "transaction_info".')
-            window.location.hash = '#'
-            return
-        case 'user_info':
-            if (params.has('user')) {
-                const account = params.get('user')
-                if (account) {
-                    showAccountModal(account)
-                    return
-                }
-            }
-            console.log('Missing or invalid user for modal "user_info".')
-            window.location.hash = '#'
-            return
-        case 'clear_data':
-        case 'add_asset_bookmark':
-        case 'issue_asset':
-        case 'escrow_create':
-        case 'reward_assignment':
-        case 'commitment':
-        case 'messages_decrypt':
-        case 'subscription_create':
-        case 'sign_message':
-            showModal(modalName)
-            return
-        case 'transfer_alias':
-        case 'sell_alias':
-        case 'cancel_alias_sale':
-            if (params.has('alias')) {
-                const alias = params.get('alias')
-                const aliasName = params.get('aliasName') || ''
-                const tld = params.get('tld')
-                if (alias && tld) {
-                    showAliasOperationModal(modalName, alias, aliasName, tld)
-                    return
-                }
-            }
-            console.log(`Missing or invalid options for modal "${modalName}".`)
-            window.location.hash = '#'
-            return
-        case 'update_alias':
-            if (params.has('alias')) {
-                const alias = params.get('alias')
-                if (alias) {
-                    showUpdateAliasModal(alias)
-                    return
-                }
-            }
-            console.log('Missing or invalid alias for modal "update_alias".')
-            window.location.hash = '#'
-            return
-        case 'register_alias':
-            showRegisterAliasModal()
-            return
-        case 'server_info':
-            showServerInfoModal()
-            return
-        case 'buy_alias':
-            if (params.has('alias')) {
-                const alias = params.get('alias')
-                if (alias) {
-                    showBuyAliasModal(alias)
-                    return
-                }
-            }
-            console.log('Missing or invalid alias for modal "buy_alias".')
-            window.location.hash = '#'
-            return
-        case 'register_tld':
-            showModal('register_tld')
-            return
-        case 'alias_info':
-            if (params.has('alias')) {
-                const alias = params.get('alias')
-                if (alias) {
-                    showAliasInfoModal(alias)
-                    return
-                }
-            }
-            console.log('Missing or invalid alias for modal "alias_info".')
-            window.location.hash = '#'
-            return
-        case 'cancel_order':
-            if (params.has('order')) {
-                const order = params.get('order')
-                const type = params.get('type')
-                if (order && (type === 'bid' || type === 'ask')) {
-                    showCancelOrderModal(order, type)
-                    return
-                }
-            }
-            console.log('Missing or invalid parameters for modal "cancel_order".')
-            window.location.hash = '#'
-            return
-        case 'asset_order':
-            if (params.has('asset')) {
-                const asset = params.get('asset')
-                const type = params.get('type')
-                if (asset && (type === 'buy' || type === 'sell')) {
-                    showAssetOrderModal(asset, type)
-                    return
-                }
-            }
-            console.log('Missing or invalid parameters for modal "asset_order".')
-            window.location.hash = '#'
-            return
-        case 'transfer_asset':
-            if (params.has('asset')) {
-                const assetId = params.get('asset') ?? ''
-                const assetName = params.get('name') ?? '?'
-                const decimals = params.get('decimals') ?? ''
-                showTransferAssetModal(assetId, assetName, decimals)
-                return
-            }
-            showTransferAssetModal('', '?', '')
-            return
-        case 'mint_asset':
-            if (params.has('asset')) {
-                const assetId = params.get('asset') ?? ''
-                const assetName = params.get('name') ?? '?'
-                const decimals = params.get('decimals') ?? ''
-                showMintAssetModal(assetId, assetName, decimals)
-                return
-            }
-            console.log('Missing or invalid parameters for modal "mint_asset".')
-            window.location.hash = '#'
-            return
-        case 'distribute_to_asset_holders':
-            if (params.has('asset')) {
-                const assetId = params.get('asset') ?? ''
-                const assetName = params.get('name') ?? '?'
-                const decimals = params.get('decimals') ?? ''
-                showDistributeToAssetHoldersModal(assetId, assetName, decimals)
-                return
-            }
-            showDistributeToAssetHoldersModal('', '?', '')
-            return
-        case 'transfer_asset_ownership':
-            if (params.has('asset')) {
-                const assetId = params.get('asset') ?? ''
-                showTransferAssetOwnershipModal(assetId)
-                return
-            }
-            console.log('Missing or invalid parameters for modal "transfer_asset_ownership".')
-            window.location.hash = '#'
-            return
-        case 'add_asset_treasury_account':
-            if (params.has('asset')) {
-                const assetId = params.get('asset') ?? ''
-                showAddAssetTreasuryAccountModal(assetId)
-                return
-            }
-            console.log('Missing or invalid parameters for modal "add_asset_treasury_account".')
-            window.location.hash = '#'
-            return
-        case 'block_info':
-            if (params.has('block')) {
-                const blockheight = params.get('block') ?? ''
-                showBlockInfoModal(blockheight)
-                return
-            }
-            console.log('Missing or invalid parameters for modal "block_info".')
-            window.location.hash = '#'
-            return
-        case 'add_contact':
-            showAddContactModal(params.get('account') ?? '')
-            return
-        case 'update_contact':
-            if (params.has('account')) {
-                const contact = params.get('account') ?? ''
-                showUpdateContactModal(contact)
-                return
-            }
-            console.log('Missing or invalid parameters for modal "update_contact".')
-            window.location.hash = '#'
-            return
-        case 'delete_contact':
-            if (params.has('account')) {
-                const contact = params.get('account') ?? ''
-                showDeleteContactModal(contact)
-                return
-            }
-            console.log('Missing or invalid parameters for modal "delete_contact".')
-            window.location.hash = '#'
-            return
-        case 'escrow_decision':
-            if (params.has('escrow')) {
-                const escrowID = params.get('escrow') ?? ''
-                showEscrowDecisionModal(escrowID)
-                return
-            }
-            console.log('Missing or invalid parameters for modal "escrow_decision".')
-            window.location.hash = '#'
-            return
-        case 'raw_transaction':
-            showRawTransactionModal('', '')
-            return
-        case 'request_burst_qr':
-            showRequestBurstQrModal()
-            return
-        case 'send_message':
-            showSendMessageModal(params.get('recipient') ?? '', params.get('content') ?? '')
-            return
-        case 'subscription_cancel':
-            if (params.has('subscription')) {
-                const subscriptionID = params.get('subscription') ?? ''
-                showSubscriptionCancelModal(subscriptionID)
-                return
-            }
-            console.log('Missing or invalid parameters for modal "subscription_cancel".')
-            window.location.hash = '#'
-            return
+    const modalName = params.get('modal') ?? ''
+    const config = MODAL_CONFIG[modalName]
+    if (!config) {
+        console.log(`Unknown modal "${modalName}".`)
+        window.location.hash = '#'
+        return
     }
+    // Check required parameters
+    for (const param of config.requiredParams ?? []) {
+        if (!params.has(param)) {
+            console.log(`Missing or invalid ${param} for modal "${modalName}".`)
+            window.location.hash = '#'
+            return
+        }
+    }
+    config.handler(params)
 }
 
 /** Checks if a Number is valid and greater than minimum fee. If not, return minimum fee */
