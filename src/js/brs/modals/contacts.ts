@@ -1,7 +1,9 @@
 import { BRS } from '..'
-import { ShowBootstrapModalEvent } from '../typings'
 import { NxtAddress } from '../../util/nxtaddress'
 import { notifyContactOperationSuccess, getContactByName, saveContactToDatabase, removeContactFromDB } from '../tools/contacts'
+import { showModal } from '../core/modals'
+import { notify } from '../core/notifications'
+import { convertNumericToRSAccountFormat } from '../core/util'
 
 export function formsAddContact(data: any) {
     const error = checkContactDataError(data)
@@ -92,39 +94,44 @@ export function formsDeleteContact() {
     return { stop: true, hide: true }
 }
 
-export function evUpdateContactModalOnShowBsModal(e: JQuery.Event) {
-    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-
-    const contactName = $invoker.data('contact')
-    if (!contactName) {
-        console.error('Wrong use')
-        return
-    }
-
-    const contact = getContactByName(contactName)
+export function showUpdateContactModal(account: string) {
+    let contact = getContactByName(account)
     if (!contact) {
-        console.error('Wrong use')
+        contact = BRS.contacts[account]
+    }
+    if (!contact) {
+        contact = BRS.contacts[convertNumericToRSAccountFormat(account)]
+    }
+    if (!contact) {
+        notify($.t('error_contact'), { type: 'danger' })
         return
     }
     $('#update_contact_name').val(contact.name)
     $('#update_contact_email').val(contact.email)
-    $('#update_contact_account_id').val(contact.accountRS)
+    $('#update_contact_account_id').val(contact.accountRS).trigger('blur')
     $('#update_contact_description').val(contact.description)
+
+    showModal('update_contact')
 }
 
-export function evDeleteContactModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-
-    const contactName = $invoker.data('contact')
-
-    const contact = getContactByName(contactName)
+export function showDeleteContactModal(account: string) {
+    let contact = getContactByName(account)
     if (!contact) {
+        contact = BRS.contacts[account]
+    }
+    if (!contact) {
+        contact = BRS.contacts[convertNumericToRSAccountFormat(account)]
+    }
+    if (!contact) {
+        notify($.t('error_contact'), { type: 'danger' })
         return
     }
 
     $('#delete_contact_name').text(contact.name)
     $('#delete_contact_account_rs').text(contact.accountRS)
     $('#delete_contact_account_id').text(contact.account)
+
+    showModal('delete_contact')
 }
 
 /**
@@ -145,4 +152,9 @@ export function checkContactDataError(data: any): string | undefined {
     if (data.email && !/@/.test(data.email)) {
         return $.t('error_email_address')
     }
+}
+
+export function showAddContactModal(account: string) {
+    $('#add_contact_account_id').val(account).trigger('blur')
+    showModal('add_contact')
 }

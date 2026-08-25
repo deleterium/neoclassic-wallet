@@ -19,40 +19,34 @@ export async function pagesAliases() {
     let rows = ''
     if (BRS.pageNumber === 1 && BRS.myTlds.length > 0) {
         for (const tld of BRS.myTlds) {
+            let allowCancel = false
+            const aliasInfo: GetAliasResponse = await sendRequest('getAlias', { alias: tld.alias })
+            if (aliasInfo.priceNQT) {
+                allowCancel = true
+            }
             rows += `
             <tr>
               <td class='alias'></td>
-              <td><a href="#" data-show-alias="${tld.alias}">${tld.aliasName}</a></td>
+              <td><a href="#modal=alias_info&alias=${tld.alias}">${tld.aliasName}</a></td>
               <td class='uri'></td>
               <td class='status'></td>
               <td style="white-space:nowrap">
-                <a href="#"
-                  class="btn btn-xs btn-default"
-                  data-toggle="modal"
-                  data-target="#transfer_alias_modal"
-                  data-alias="${tld.alias}"
-                  data-alias-name=""
-                  data-tld="${tld.aliasName}">
+                <a href="#modal=transfer_alias&alias=${tld.alias}&tld=${tld.aliasName}"
+                  class="btn btn-xs btn-default">
                   ${$.t('transfer')}
                 </a>
-                <a href="#"
-                  class="btn btn-xs btn-default"
-                  data-toggle="modal"
-                  data-target="#sell_alias_modal"
-                  data-alias="${tld.alias}"
-                  data-alias-name=""
-                  data-tld="${tld.aliasName}">
+                <a href="#modal=sell_alias&alias=${tld.alias}&tld=${tld.aliasName}"
+                  class="btn btn-xs btn-default">
                   ${$.t('sell')}
-                </a>
-                <a href="#"
-                  class="btn btn-xs btn-default cancel_alias_sale"
-                  data-toggle="modal"
-                  data-target="#cancel_alias_sale_modal"
-                  data-alias="${tld.alias}"
-                  data-alias-name=""
-                  data-tld="${tld.aliasName}">
+                </a>`
+            if (allowCancel) {
+                rows += `
+                <a href="#modal=cancel_alias_sale&alias=${tld.alias}&tld=${tld.aliasName}"
+                  class="btn btn-xs btn-default">
                   ${$.t('cancel_sale')}
-                </a>
+                </a>`
+            }
+            rows += `
               </td>
             </tr>`
         }
@@ -176,45 +170,25 @@ export async function pagesAliases() {
 
         const tentativeClass = tentative ? " class='tentative'" : ''
         const editButton = `
-            <a href="#"
-              class="btn btn-xs btn-default"
-              data-toggle="modal"
-              data-target="#register_alias_modal"
-              data-alias="${alias.alias}"
-              data-alias-name="${alias.aliasName}"
-              data-tld="${alias.tldName}">
+            <a href="#modal=update_alias&alias=${alias.alias}"
+              class="btn btn-xs btn-default">
               ${$.t('edit')}
             </a>`
         const transferButton = `
-            <a href="#"
-              class="btn btn-xs btn-default"
-              data-toggle="modal"
-              data-target="#transfer_alias_modal"
-              data-alias="${alias.alias}"
-              data-alias-name="${alias.aliasName}"
-              data-tld="${alias.tldName}">
+            <a href="#modal=transfer_alias&alias=${alias.alias}&aliasName=${alias.aliasName}&tld=${alias.tldName}"
+              class="btn btn-xs btn-default">
               ${$.t('transfer')}
             </a>`
         const sellButton = `
-            <a href="#"
-              class="btn btn-xs btn-default"
-              data-toggle="modal"
-              data-target="#sell_alias_modal"
-              data-alias="${alias.alias}"
-              data-alias-name="${alias.aliasName}"
-              data-tld="${alias.tldName}">
+            <a href="#modal=sell_alias&alias=${alias.alias}&aliasName=${alias.aliasName}&tld=${alias.tldName}"
+              class="btn btn-xs btn-default">
               ${$.t('sell')}
             </a>`
         let cancelSaleButton = ''
         if (allowCancel) {
             cancelSaleButton = `
-                <a href="#"
-                  class="btn btn-xs btn-default cancel_alias_sale"
-                  data-toggle="modal"
-                  data-target="#cancel_alias_sale_modal"
-                  data-alias="${alias.alias}"
-                  data-alias-name="${alias.aliasName}"
-                  data-tld="${alias.tldName}">
+                <a href="#modal=cancel_alias_sale&alias=${alias.alias}&aliasName=${alias.aliasName}&tld=${alias.tldName}"
+                  class="btn btn-xs btn-default">
                   ${$.t('cancel_sale')}
                 </a>`
         }
@@ -222,7 +196,7 @@ export async function pagesAliases() {
         rows += `
             <tr ${tentativeClass}>
               <td class='alias'>
-                <a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a>
+                <a href="#modal=alias_info&alias=${alias.alias}">${alias.aliasName}</a>
               </td>
               <td>${alias.tldName}</td>
               <td class='uri'>

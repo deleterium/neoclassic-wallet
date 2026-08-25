@@ -30,12 +30,7 @@ export async function pagesAssestAdministration() {
     let rows = ''
     for (const asset of myIssuedAssets) {
         let mintHTML = `
-            <a href='#'
-                data-toggle='modal'
-                data-target='#mint_asset_modal'
-                data-asset='${asset.asset}'
-                data-name='${asset.name}'
-                data-decimals='${String(asset.decimals)}'>
+            <a href='#modal=mint_asset&asset=${asset.asset}&name=${asset.name}&decimals=${String(asset.decimals)}'>
                 ${$.t('yes')}
             </a>`
         const unconfirmedMintTx = getUnconfirmedTransactionsFromCache(2, 6, {
@@ -45,12 +40,7 @@ export async function pagesAssestAdministration() {
             mintHTML = BRS.pendingTransactionHTML
         }
         let distributionHTML = `
-            <a href='#'
-                data-toggle='modal'
-                data-target='#distribute_to_asset_holders_asset_modal'
-                data-asset='${asset.asset}'
-                data-name='${asset.name}'
-                data-decimals='${String(asset.decimals)}'>
+            <a href='#modal=distribute_to_asset_holders&asset=${asset.asset}&name=${asset.name}&decimals=${String(asset.decimals)}'>
                 <i class="fa fa-magic" aria-hidden="true"></i>
             </a>`
         const unconfirmedDistributionTx = getUnconfirmedTransactionsFromCache(2, 8, {
@@ -60,10 +50,7 @@ export async function pagesAssestAdministration() {
             distributionHTML = BRS.pendingTransactionHTML
         }
         let transferHTML = `
-            <a href='#'
-                data-toggle='modal'
-                data-target='#transfer_asset_ownership_modal'
-                data-asset='${asset.asset}'>
+            <a href='#modal=transfer_asset_ownership&asset=${asset.asset}'>
                 <i class="fa fa-magic" aria-hidden="true"></i>
             </a>`
         const unconfirmedTransferTx = getUnconfirmedTransactionsFromCache(2, 10, {
@@ -73,10 +60,7 @@ export async function pagesAssestAdministration() {
             transferHTML = BRS.pendingTransactionHTML
         }
         let treasuryHTML = `
-            <a href='#'
-                data-toggle='modal'
-                data-target='#add_asset_treasury_account_modal'
-                data-asset='${asset.asset}'>
+            <a href='#modal=add_asset_treasury_account&asset=${asset.asset}'>
                 <i class="fa fa-magic" aria-hidden="true"></i>
             </a>`
         const unconfirmedTreasuryTx = getUnconfirmedTransactionsFromCache(2, 7, {

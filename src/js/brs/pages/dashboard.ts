@@ -54,7 +54,7 @@ function getTransactionRowDashboardHTML(transaction: Transaction) {
 
     return `
         <tr class='${rowClass}'>
-            <td><a href='#' data-transaction='${transaction.transaction}' data-timestamp='${String(transaction.timestamp)}'>${formatTimestampAsDateTime(transaction.timestamp)}</a></td>
+            <td><a href='#modal=transaction_info&transaction=${transaction.transaction}'>${formatTimestampAsDateTime(transaction.timestamp)}</a></td>
             <td>${details.nameOfTransaction}${messageIcon}</td>
             <td>${details.circleText}</td>
             <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
@@ -73,7 +73,6 @@ export function updateDashboardBlocks() {
     for (const block of BRS.blocks) {
         const isBold = block.numberOfTransactions > 0 ? "style='font-weight:bold'" : ''
         const height = String(block.height)
-        const blockId = String(block.block)
         const timestamp = String(block.timestamp)
         const formattedTimestamp = formatTimestampAsDateTime(block.timestamp)
         const totalAmount = formatNQTAsAmount(block.totalAmountNQT)
@@ -83,7 +82,7 @@ export function updateDashboardBlocks() {
         rows += `
             <tr>
               <td>
-                <a href='#' data-block='${height}' data-blockid='${blockId}' class='block' ${isBold}>
+                <a href='#modal=block_info&block=${height}' ${isBold}>
                   ${height}
                 </a>
               </td>

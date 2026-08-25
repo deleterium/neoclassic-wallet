@@ -51,20 +51,16 @@ export function pagesContacts() {
         }
 
         const cName = contact.name.escapeHTML()
+        const paramName = encodeURIComponent(contact.name)
         return `
             <tr>
                 <td>
-                <a href='#'
-                    data-toggle='modal'
-                    data-target='#update_contact_modal'
-                    data-contact='${cName}'>
+                <a href='#modal=update_contact&account=${paramName}'>
                     ${cName}
                 </a>
                 </td>
                 <td>
-                <a href='#'
-                    data-user='${getAccountRSFromObject(contact, 'account')}'
-                    class='user_info'>
+                <a href='#modal=user_info&user=${getAccountRSFromObject(contact, 'account')}'>
                     ${getAccountRSFromObject(contact, 'account')}
                 </a>
                 </td>
@@ -73,24 +69,15 @@ export function pagesContacts() {
                 <td>
                 <div class="btn-group">
                     <a class='btn btn-default'
-                    href='#'
-                    data-toggle='modal'
-                    data-target='#send_money_modal'
-                    data-contact='${cName}'>
+                    href='#modal=send_money&recipient=${paramName}'>
                     <i class="fas fa-paper-plane"></i>
                     </a>
                     <a class='btn btn-default'
-                    href='#'
-                    data-toggle='modal'
-                    data-target='#send_message_modal'
-                    data-contact='${cName}'>
+                    href='#modal=send_message&recipient=${paramName}'>
                     <i class="fas fa-envelope"></i>
                     </a>
                     <a class='btn btn-default'
-                    href='#'
-                    data-toggle='modal'
-                    data-target='#delete_contact_modal'
-                    data-contact='${cName}'>
+                    href='#modal=delete_contact&account=${paramName}'>
                     <i class="fas fa-trash"></i>
                     </a>
                 </div>

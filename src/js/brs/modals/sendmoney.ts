@@ -1,6 +1,6 @@
 import { BRS } from '..'
 import { getContactByName } from '../tools/contacts'
-import { evCheckNumberInput } from '../core/modals'
+import { evCheckNumberInput, showModal } from '../core/modals'
 import { parseAmountToNQT, formatNQTAsAmount } from '../core/numbers'
 import { convertRSAccountToNumeric } from '../core/util'
 
@@ -221,4 +221,15 @@ export function resetModalMultiOut() {
     $('#send_money_same_out_checkbox').prop('checked', false)
     $('#multi_out_same_amount').val('')
     $('#send_ordinary_tab').tab('show')
+}
+
+export function showSendMoneyModal(recipient: string, amount: string) {
+    if (recipient) {
+        $('#send_money_recipient').val(recipient).trigger('checkRecipientEvent')
+    }
+    if (amount) {
+        $('#send_money_amount').val(formatNQTAsAmount(amount))
+    }
+    sendMoneyCalculateTotal($('#send_money_modal'))
+    showModal('send_money')
 }

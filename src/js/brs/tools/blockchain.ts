@@ -24,15 +24,14 @@ export function drawBlocksInCurrentPage(blocks: BlockDetails[]) {
 
         // Format values for display
         const height = String(block.height)
-        const blockId = String(block.block)
-        const isBold = block.numberOfTransactions > 0 ? " style='font-weight:bold'" : ''
+        const isBold = block.numberOfTransactions > 0 ? "style='font-weight:bold'" : ''
         const timestamp = formatTimestampAsDateTime(block.timestamp)
         const amount = formatNQTAsAmount(block.totalAmountNQT)
         const fee = formatNQTAsAmount(block.totalFeeNQT)
         const transactions = formatNumber(block.numberOfTransactions)
         const generatorDisplay =
             block.generator !== BRS.genesis
-                ? `<a href='#' data-user='${getAccountRSFromObject(block, 'generator')}' class='user_info'>${getAccountTitleFromObject(block, 'generator')}</a>`
+                ? `<a href='#modal=user_info&user=${getAccountRSFromObject(block, 'generator')}'>${getAccountTitleFromObject(block, 'generator')}</a>`
                 : $.t('genesis')
         const volume = formatVolume(block.payloadLength)
         const percentage =
@@ -43,7 +42,7 @@ export function drawBlocksInCurrentPage(blocks: BlockDetails[]) {
         // Build row
         rows += `
             <tr>
-                <td><a href='#' data-block='${height}' data-blockid='${blockId}' class='block'${isBold}>${height}</a></td>
+                <td><a href='#modal=block_info&block=${height}' ${isBold}>${height}</a></td>
                 <td>${timestamp}</td>
                 <td>${amount}</td>
                 <td>${fee}</td>

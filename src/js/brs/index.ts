@@ -114,7 +114,7 @@ export const BRS = {
     assetTableKeys: [],
 
     loadingDotsHTML: '<span>.</span><span>.</span><span>.</span>',
-    pendingTransactionHTML: '<i class="fas fa-spinner my-fa-spin"></i>',
+    pendingTransactionHTML: '<i class="fas fa-spinner fa-spin"></i>',
     minimumFeeNumber: 0.01,
 
     stateInterval: null as null | number,
@@ -190,6 +190,7 @@ export const BRS = {
     fetchingModalData: false,
     _encryptedNote: null as null | Transaction,
     showedFormWarning: false,
+    modalZIndex: 2000,
 
     // from modals.account
     userInfoModal: null as null | {

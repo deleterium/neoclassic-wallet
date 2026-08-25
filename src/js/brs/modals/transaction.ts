@@ -17,7 +17,7 @@ import {
 
 import { convertNumericToRSAccountFormat, getAssetLink, getAccountTitle, getAccountRSFromObject, createInfoTable } from '../core/util'
 
-import { removeDecryptionForm } from '../core/modals'
+import { removeDecryptionForm, showModal } from '../core/modals'
 
 import { getAssetDetails } from '../tools/assets'
 
@@ -148,20 +148,21 @@ async function processTransactionModalData(transaction: Transaction) {
     }
 
     function processButtons() {
-        let accountButton: string
+        let accountRecipient = transaction.senderRS
         if (transaction.senderRS === BRS.accountRS) {
-            $('#transaction_info_actions').hide()
-        } else {
-            if (transaction.senderRS in BRS.contacts) {
-                accountButton = BRS.contacts[transaction.senderRS].name.escapeHTML()
-                $('#transaction_info_modal_add_as_contact').hide()
-            } else {
-                accountButton = transaction.senderRS
-                $('#transaction_info_modal_add_as_contact').show()
-            }
-            $('#transaction_info_actions').show()
-            $('#transaction_info_actions_tab button').data('account', accountButton)
+            $('#transaction_info_modal_actions_tab').hide()
+            return
         }
+        if (transaction.senderRS in BRS.contacts) {
+            accountRecipient = encodeURIComponent(BRS.contacts[transaction.senderRS].name)
+            $('#transaction_info_modal_actions_add_contact').hide()
+        } else {
+            accountRecipient = transaction.senderRS
+            $('#transaction_info_modal_actions_add_contact').attr('href', `#modal=add_contact&account=${accountRecipient}`).show()
+        }
+        $('#transaction_info_modal_actions_tab').show()
+        $('#transaction_info_modal_actions_send_burst').attr('href', `#modal=send_money&recipient=${accountRecipient}`)
+        $('#transaction_info_modal_actions_send_message').attr('href', `#modal=send_message&recipient=${accountRecipient}`)
     }
 
     function processDefaultProperties() {
@@ -185,8 +186,8 @@ async function processTransactionModalData(transaction: Transaction) {
 
     function transactionEndLoad() {
         $('#transaction_info_table tbody').append(createInfoTable(data))
-        $('#transaction_info_modal').modal('show')
         $('#transaction_info_table').show()
+        showModal('transaction_info')
         BRS.fetchingModalData = false
     }
 
@@ -321,32 +322,42 @@ async function processTransactionModalData(transaction: Transaction) {
             message =
                 $.t('alias_sale_direct_offer', {
                     burst: formatNQTAsAmount(transaction.attachment.priceNQT),
+                    valueSuffix: BRS.valueSuffix,
                 }) +
-                " <a href='#' data-alias='" +
+                " <a href='#modal=buy_alias&alias=" +
                 String(transaction.attachment.alias) +
-                "' data-toggle='modal' data-target='#buy_alias_modal'>" +
-                $.t('buy_it_q') +
-                '</a>'
-        } else if (typeof transaction.recipient === 'undefined') {
-            message =
-                $.t('alias_sale_indirect_offer', {
-                    burst: formatNQTAsAmount(transaction.attachment.priceNQT),
-                }) +
-                " <a href='#' data-alias='" +
-                String(transaction.attachment.alias) +
-                "' data-toggle='modal' data-target='#buy_alias_modal'>" +
+                "'>" +
                 $.t('buy_it_q') +
                 '</a>'
         } else if (transaction.senderRS === BRS.accountRS) {
             if (transaction.attachment.priceNQT !== '0') {
-                message =
-                    $.t('your_alias_sale_offer') +
-                    " <a href='#' data-alias='" +
-                    String(transaction.attachment.alias) +
-                    "' data-toggle='modal' data-target='#cancel_alias_sale_modal'>" +
-                    $.t('cancel_sale_q') +
-                    '</a>'
+                if (response.tld === undefined) {
+                    // TLD sale
+                    message = `
+                        ${$.t('your_alias_sale_offer')} 
+                        <a href='#modal=cancel_alias_sale&alias=${response.alias}&tld=${response.aliasName}'>
+                            ${$.t('cancel_sale_q')}
+                        </a>`
+                } else {
+                    // Regular alias sale
+                    message = `
+                        ${$.t('your_alias_sale_offer')} 
+                        <a href='#modal=cancel_alias_sale&alias=${response.alias}&aliasName=${response.aliasName}&tld=${response.tldName}'>
+                            ${$.t('cancel_sale_q')}
+                        </a>`
+                }
             }
+        } else if (typeof transaction.recipient === 'undefined') {
+            message =
+                $.t('alias_sale_indirect_offer', {
+                    burst: formatNQTAsAmount(transaction.attachment.priceNQT),
+                    valueSuffix: BRS.valueSuffix,
+                }) +
+                " <a href='#modal=buy_alias&alias=" +
+                String(transaction.attachment.alias) +
+                "'>" +
+                $.t('buy_it_q') +
+                '</a>'
         } else {
             message = $.t('error_alias_sale_different_account')
         }
@@ -783,7 +794,7 @@ async function processTransactionModalData(transaction: Transaction) {
         switch (transaction.subtype) {
             case 0:
                 contractAddress = convertNumericToRSAccountFormat(transaction.transaction)
-                data.at_created_formatted_html = `<a href='#' data-user='${contractAddress}"' class='user-info'>${getAccountTitle(contractAddress)}</a>`
+                data.at_created_formatted_html = `<a href='#modal=user_info&user=${contractAddress}'>${getAccountTitle(contractAddress)}</a>`
                 data.name = transaction.attachment.name
                 data.description = transaction.attachment.description
         }

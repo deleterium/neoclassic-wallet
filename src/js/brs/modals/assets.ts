@@ -1,5 +1,5 @@
 import { BRS } from '..'
-import { GetAssetAccountsResponse, GetTransactionResponse, ShowBootstrapModalEvent } from '../typings'
+import { GetAssetAccountsResponse, GetTransactionResponse } from '../typings'
 import { loadAssetExchangeSidebar } from '../pages/assets.asset_exchange'
 import { dbPut } from '../core/database'
 import {
@@ -14,22 +14,9 @@ import { getAccountTitleFromObject, getTranslatedFieldName } from '../core/util'
 import { notify } from '../core/notifications'
 import { getAssetDetails, getAssetFromCache } from '../tools/assets'
 import { sendRequest } from '../core/send_request'
+import { showModal } from '../core/modals'
 
-export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: string) {
-    const assetId = $invoker.data('asset') ?? ''
-    const assetName = $invoker.data('name') ?? '?'
-    const decimals = $invoker.data('decimals') ?? ''
-
-    let $formGroup = $invoker.closest('.row')
-    if ($formGroup.length === 0) {
-        // click was not in dropdown-menu...
-        $formGroup = $('#form-' + formName?.replace('_', '-'))
-        if ($formGroup.length === 0) {
-            console.error('Unkown form name: ' + formName)
-            return
-        }
-    }
-
+export function populateAssetSelector(assetId: string, assetName: string, decimals: string, $formGroup: JQuery<HTMLElement>) {
     if (assetId === '') {
         $formGroup.find(`span[name=available]`).empty()
         return
@@ -40,7 +27,7 @@ export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: 
     $formGroup.find('span[name=asset-name]').text(assetName)
     $formGroup.find('input[name=name_plus_asset]').val(assetName + ' - ' + assetId)
 
-    if (formName === 'mint_asset') {
+    if ($formGroup.closest('form').attr('id') === 'form-mint-asset') {
         const selectedAsset = getAssetFromCache(assetId)
         if (!selectedAsset) return
         $formGroup
@@ -71,15 +58,15 @@ export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: 
     let availableAssetsMessage = ''
     if (confirmedBalance === unconfirmedBalance) {
         availableAssetsMessage = $.t('available_for_transfer', {
-            qty: formatQNTAsQuantity(confirmedBalance, decimals),
+            qty: formatQNTAsQuantity(confirmedBalance, Number(decimals)),
         })
     } else {
         availableAssetsMessage =
             $.t('available_for_transfer', {
-                qty: formatQNTAsQuantity(unconfirmedBalance, decimals),
+                qty: formatQNTAsQuantity(unconfirmedBalance, Number(decimals)),
             }) +
             ' (' +
-            formatQNTAsQuantity(confirmedBalance, decimals) +
+            formatQNTAsQuantity(confirmedBalance, Number(decimals)) +
             ' ' +
             $.t('total_lowercase') +
             ')'
@@ -87,23 +74,18 @@ export function populateAssetSelector($invoker: JQuery<HTMLElement>, formName?: 
     $formGroup.find(`span[name=available]`).html(availableAssetsMessage)
 }
 
-export function populateDistributeAssetHolders($invoker: JQuery<HTMLElement>) {
-    const $formGroup = $('#form-distribute_to_asset_holders')
-    $formGroup.find('span[name=available]').text('')
+export function showDistributeToAssetHoldersModal(assetId: string, assetName: string, decimals: string) {
+    const $formGroup = $('#form-distribute_to_asset_holders').first()
 
-    const assetId = $invoker.data('asset') ?? ''
     if (!assetId) {
         $formGroup.find('input[name=holders_asset]').empty().addClass('is-invalid')
-        $formGroup.find('input[name=holders_decimals]').empty()
-        $formGroup.find('span[name=holders_asset_name]').text('?')
-        return
+    } else {
+        $formGroup.find('input[name=holders_asset]').val(assetId).removeClass('is-invalid')
     }
-    const assetName = $invoker.data('name') ?? '?'
-    const decimals = $invoker.data('decimals') ?? ''
-
-    $formGroup.find('input[name=holders_asset]').val(assetId).removeClass('is-invalid')
     $formGroup.find('input[name=holders_decimals]').val(decimals)
     $formGroup.find('span[name=holders_asset_name]').text(assetName)
+
+    showModal('distribute_to_asset_holders')
 }
 
 export async function evDistributeToAssetHoldersHoldersAssetInput(e: JQuery.TriggeredEvent) {
@@ -121,28 +103,21 @@ export async function evDistributeToAssetHoldersHoldersAssetInput(e: JQuery.Trig
     $formGroup.find('span[name=holders_asset_name]').text(chainAsset.name)
 }
 
-export async function populateReferencedAsset($invoker: JQuery<HTMLElement>, formName: string) {
-    const assetId = $invoker.data('asset') ?? ''
-    $(formName + '_name_plus_asset')
-        .val($.t('loading_please_wait'))
-        .addClass('is-invalid')
-    $(formName + '_referenced_transaction')
-        .val($.t('loading_please_wait'))
-        .addClass('is-invalid')
+export async function populateReferencedAsset(assetId: string, formName: string) {
+    $(`#${formName}_name_plus_asset`).val($.t('loading_please_wait')).addClass('is-invalid')
+    $(`#${formName}_referenced_transaction`).val($.t('loading_please_wait')).addClass('is-invalid')
 
     const issueAssetTx: GetTransactionResponse = await sendRequest('getTransaction', { transaction: assetId })
     if (issueAssetTx.errorCode) {
-        $(formName + '_name_plus_asset').val($.t('error'))
-        $(formName + '_referenced_transaction').val($.t('error'))
+        $(`#${formName}_name_plus_asset`).val($.t('error'))
+        $(`#${formName}_referenced_transaction`).val($.t('error'))
         return
     }
 
-    $(formName + '_name_plus_asset')
+    $(`#${formName}_name_plus_asset`)
         .val(assetId + ' - ' + issueAssetTx.attachment.name)
         .removeClass('is-invalid')
-    $(formName + '_referenced_transaction')
-        .val(issueAssetTx.fullHash)
-        .removeClass('is-invalid')
+    $(`#${formName}_referenced_transaction`).val(issueAssetTx.fullHash).removeClass('is-invalid')
 }
 
 export function formsTransferAssetOwnership(data: any) {
@@ -256,7 +231,7 @@ export function formsCancelOrder(data: any) {
     delete data.cancel_order_type
     let successMessage = $.t('success_cancelBuyOrder')
     if (requestType === 'cancelAskOrder') {
-        successMessage = $.t('success_cancelSellOrder')
+        successMessage = $.t('success_cancelAskOrder')
     }
     return {
         data,
@@ -353,8 +328,8 @@ export function formsIssueAsset(data: any) {
 }
 
 export function formsAssetExchangeChangeGroupName(data: any) {
-    const oldGroupName = data.asset_exchange_change_group_name_old
-    const newGroupName = data.asset_exchange_change_group_name_new
+    const oldGroupName = data.old_group_name
+    const newGroupName = data.new_group_name
 
     if (!newGroupName.match(/^[a-z0-9 ]+$/i)) {
         return {
@@ -395,11 +370,7 @@ export function formsAssetExchangeChangeGroupName(data: any) {
     }
 }
 
-export function evAssetOrderModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-
-    const orderType: string = String($invoker.data('type')).toLowerCase()
-    const assetId: string = $invoker.data('asset')
+export function showAssetOrderModal(assetId: string, orderType: 'buy' | 'sell') {
     let quantityQNT: string
     let priceNQT: string
     let totalNXT: string
@@ -413,12 +384,12 @@ export function evAssetOrderModalOnShowBsModal(e: JQuery.TriggeredEvent) {
         totalNXT = formatOrderTotal(quantityQNT, priceNQT)
     } catch {
         notify('Invalid input.', { type: 'danger' })
-        return e.preventDefault()
+        return
     }
 
     if (priceNQT === '0' || quantityQNT === '0') {
         notify($.t('error_amount_price_required'), { type: 'danger' })
-        return e.preventDefault()
+        return
     }
 
     const priceNQTPerWholeQNT = BigInt(priceNQT) * BigInt(Math.pow(10, BRS.currentAsset.decimals))
@@ -473,6 +444,8 @@ export function evAssetOrderModalOnShowBsModal(e: JQuery.TriggeredEvent) {
     $('#asset_order_asset').val(assetId)
     $('#asset_order_quantity').val(quantityQNT)
     $('#asset_order_price').val(priceNQT)
+
+    showModal('asset_order')
 }
 
 export function formsOrderAsset(data: any) {
@@ -640,7 +613,7 @@ export async function showAssetHoldersModal(asset: string) {
     for (const holder of response.accountAssets) {
         rows += `
             <tr>
-              <td>${getAccountTitleFromObject(holder, 'account') + (holder.isTreasury ? treasuryHTML : '')}</td>
+              <td><a href='#modal=user_info&user=${holder.accountRS}'>${getAccountTitleFromObject(holder, 'account')}</a> ${holder.isTreasury ? treasuryHTML : ''}</td>
               <td>${formatQNTAsQuantity(holder.quantityQNT, assetDetails.decimals)}</td>
               <td>${holder.isTreasury ? '/' : calculatePercentage(holder.quantityQNT, assetDetails.quantityCirculatingQNT) + '%'}</td>
             </tr>`
@@ -659,5 +632,43 @@ export async function showAssetHoldersModal(asset: string) {
     }
 
     $('#asset_holders_modal_table tbody').html(rows)
-    $('#asset_holders_modal').modal('show')
+    showModal('asset_holders')
+}
+
+export function showCancelOrderModal(orderId: string, orderType: 'bid' | 'ask') {
+    if (orderType === 'bid') {
+        $('#cancel_order_type').val('cancelBidOrder')
+    } else {
+        $('#cancel_order_type').val('cancelAskOrder')
+    }
+    $('#cancel_order_order').val(orderId)
+    showModal('cancel_order')
+}
+
+export function showTransferAssetModal(asset: string, name: string, decimals: string) {
+    const $formGroupOrdinary = $('#form-transfer-asset .form-group').first()
+    populateAssetSelector(asset, name, decimals, $formGroupOrdinary)
+    const $formGroupMulti = $('#form-multi-transfer .form-group').first()
+    populateAssetSelector(asset, name, decimals, $formGroupMulti)
+
+    showModal('transfer_asset')
+}
+
+export function showMintAssetModal(asset: string, name: string, decimals: string) {
+    const $formGroup = $('#form-mint-asset .form-group').first()
+    populateAssetSelector(asset, name, decimals, $formGroup)
+
+    showModal('mint_asset')
+}
+
+export function showTransferAssetOwnershipModal(asset: string) {
+    showModal('transfer_asset_ownership')
+
+    populateReferencedAsset(asset, 'transfer_asset_ownership')
+}
+
+export function showAddAssetTreasuryAccountModal(asset: string) {
+    showModal('add_asset_treasury_account')
+
+    populateReferencedAsset(asset, 'add_asset_treasury_account')
 }

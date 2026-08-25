@@ -33,7 +33,7 @@ export async function pagesTransferHistory() {
             rows += `
                 <tr>
                   <td>
-                    <a href='#' data-transaction='${transfer.assetTransfer}'>
+                    <a href='#modal=transaction_info&transaction=${transfer.assetTransfer}'>
                       ${transfer.assetTransfer}
                     </a>
                   </td>
@@ -47,12 +47,12 @@ export async function pagesTransferHistory() {
                     ${formatQNTAsQuantity(transfer.quantityQNT, transfer.decimals)}
                   </td>
                   <td>
-                    <a href='#' data-user='${getAccountRSFromObject(transfer, 'recipient')}' class='user_info'>
+                    <a href='#modal=user_info&user=${getAccountRSFromObject(transfer, 'recipient')}'>
                       ${getAccountTitleFromObject(transfer, 'recipient')}
                     </a>
                   </td>
                   <td>
-                    <a href='#' data-user='${getAccountRSFromObject(transfer, 'sender')}' class='user_info'>
+                    <a href='#modal=user_info&user=${getAccountRSFromObject(transfer, 'sender')}'>
                       ${getAccountTitleFromObject(transfer, 'sender')}
                     </a>
                   </td>

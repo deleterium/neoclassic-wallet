@@ -20,6 +20,7 @@ import {
 
 import { cacheAsset, getAssetDetails } from '../tools/assets'
 import { notify } from '../core/notifications'
+import { showModal } from '../core/modals'
 
 /** Start the process of showing an "Account Modal".
  * @param {string|GetAccountResponse} account - Account to be shown.
@@ -69,9 +70,10 @@ export async function showAccountModal(account: string | GetAccountResponse) {
         $('#user_info_modal_add_as_contact').hide()
     } else {
         accountNameOrRs = accountRS
-        $('#user_info_modal_add_as_contact').show()
+        $('#user_info_modal_add_as_contact').attr('href', `#modal=add_contact&account=${accountRS}`).show()
     }
-    $('#user_info_modal_actions button').data('account', accountNameOrRs)
+    $('#user_info_modal_send_burst').attr('href', `#modal=send_money&recipient=${encodeURIComponent(accountNameOrRs)}`)
+    $('#user_info_modal_send_message').attr('href', `#modal=send_message&recipient=${encodeURIComponent(accountNameOrRs)}`)
 
     // Update modal title
     $('#user_info_modal_account').html(accountNameOrRs)
@@ -101,7 +103,7 @@ function accountModalDataReady() {
     } else {
         $('#user_info_description').hide()
     }
-    $('#user_info_modal').modal('show')
+    showModal('user_info')
     $('#user_info_modal_details_tab').tab('show')
     userInfoModalDetails()
 }
@@ -150,10 +152,7 @@ async function userInfoModalTransactions() {
         rows += `
                 <tr>
                   <td>
-                    <a href='#'
-                        data-transaction='${transaction.transaction}'
-                        data-timestamp='${transaction.timestamp}'
-                    >
+                    <a href='#modal=transaction_info&transaction=${transaction.transaction}'>
                     ${formatTimestampAsDateTime(transaction.timestamp)}
                     </a>
                   </td>
@@ -161,7 +160,7 @@ async function userInfoModalTransactions() {
                   <td>${details.circleText}</td>
                   <td ${details.colorClass}>${details.amountToFromViewerHTML}</td>
                   <td>${formatNQTAsAmount(transaction.feeNQT)}</td>
-                  <td>${details.accountTitle}</td>
+                  <td>${details.accountLink}</td>
                 </tr>`
     }
     $('#user_info_modal_transactions_table tbody').empty().append(rows)
@@ -193,11 +192,11 @@ async function userInfoModalAliases() {
     for (let i = 0; i < aliases.length; i++) {
         const alias = aliases[i]
         const aliasName = alias.aliasName
-        const tldName = alias.aliasName
+        const tldName = alias.tldName
         const aliasURI = alias.aliasURI
         rows += `
             <tr>
-              <td><a href="#" data-show-alias="${alias.alias}">${aliasName}</a></td>
+              <td><a href="#modal=alias_info&alias=${alias.alias}">${aliasName}</a></td>
               <td>${tldName}</td>
               <td>${aliasURI}</td>
             </tr>`

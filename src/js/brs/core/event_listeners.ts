@@ -19,26 +19,15 @@ import {
 
 import { blockInfoLoad } from '../pages/blockchain.block_info'
 
-import {
-    evAliasModalOnShowBsModal,
-    evBuyAliasModalOnShowBsModal,
-    evRegisterAliasModalOnShowBsModal,
-    setAliasType,
-    evSellAliasSellToSpecificClick,
-    showAliasModal,
-} from '../modals/aliases'
+import { setAliasType, evSellAliasSellToSpecificClick } from '../modals/aliases'
 
 import { evAliasSearchSubmit } from '../pages/aliases'
-
-import { evDeleteContactModalOnShowBsModal, evUpdateContactModalOnShowBsModal } from '../modals/contacts'
 
 import { exportContacts, importContacts } from '../pages/contacts'
 
 import { submitForm } from './forms'
 
 import { parseAmountToNQT, formatNQTAsAmount } from './numbers'
-
-import { convertNumericToRSAccountFormat } from './util'
 
 import {
     bookmarkAllUserAssets,
@@ -48,24 +37,14 @@ import {
     evAssetExchangeSearchInput,
     evAssetExchangeOrdersTableClick,
     evCalculatePricePreviewInput,
-    evAssetExchangeSidebarContextClick,
     goToAsset,
 } from '../pages/assets.asset_exchange'
 
-import {
-    populateAssetSelector,
-    evAssetOrderModalOnShowBsModal,
-    evAssetSelectorButtonClick,
-    populateDistributeAssetHolders,
-    evDistributeToAssetHoldersHoldersAssetInput,
-    populateReferencedAsset,
-} from '../modals/assets'
+import { populateAssetSelector, evAssetSelectorButtonClick, evDistributeToAssetHoldersHoldersAssetInput } from '../modals/assets'
 
 import { evTransactionsPageTypeClick } from '../pages/transactions'
 
-import { evSidebarContextOnContextmenu, closeContextMenu } from './context_menu'
-
-import { evMessagesSidebarContextClick } from '../pages/messages'
+import { evWidgetContextMenuOnContextmenuA, evWidgetContextMenuOnContextClickA } from './context_menu'
 
 import {
     sendMoneyCalculateTotal,
@@ -78,32 +57,22 @@ import {
 import { evAddRecipientsClick, evSpanRecipientSelectorClickButton, evSpanRecipientSelectorClickUlLiA } from './recipient'
 
 import {
-    evModalOnShowBsModal,
     evModalOnHiddenBsModal,
     evAdvancedInfoClick,
     removeDecryptionForm,
     decryptNoteFormSubmit,
     evCheckNumberInput,
     evCheckMessageLengthInput,
+    evModalOnShownBsModal,
 } from './modals'
 
 import { showAccountModal, evShowBsTab } from '../modals/account'
 
-import { evBlocksTableClick } from '../modals/block'
-
-import { showEscrowDecisionModal } from '../modals/escrow'
-
-import { evBrsModalServerInfoOnShowBsModal } from '../modals/server_info'
-
-import { showSubscriptionCancelModal } from '../modals/subscription'
-
-import { showTransactionModal } from '../modals/transaction'
-
-import { ShowBootstrapModalEvent } from '../typings'
-
 import { evVerifyMessageDataIsTransactionClick } from '../modals/sign_message'
 
 import { notify } from './notifications'
+
+import { evNewQrButtonOnClick } from '../modals/request_coins'
 
 export function addEventListeners() {
     // Fixes sidebar not closing after click the button to open it.
@@ -218,24 +187,16 @@ export function addEventListeners() {
     })
 
     // from brs.recipient.js
-    $('#send_message_modal, #send_money_modal, #add_contact_modal').on('show.bs.modal', function (e) {
-        const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-        let account = $invoker.data('account')
-        if (!account) {
-            account = $invoker.data('contact')
-        }
-        if (account) {
-            const $inputField = $(this).find('input[name=recipient], input[name=account_id]').not('[type=hidden]')
-            $inputField.val(account).trigger('checkRecipientEvent')
-        }
-        sendMoneyCalculateTotal($(this))
-    })
     $('#send_money_amount, #send_money_fee').on('change', function () {
         sendMoneyCalculateTotal($(this))
     })
     $('span.asset_selector button').on('click', evAssetSelectorButtonClick)
     $('span.asset_selector').on('click', 'ul li a', (e) => {
-        populateAssetSelector($(e.currentTarget))
+        const assetId = $(e.currentTarget).data('asset') ?? ''
+        const assetName = $(e.currentTarget).data('name') ?? '?'
+        const decimals = $(e.currentTarget).data('decimals') ?? ''
+        const $formGroup = $(e.currentTarget).closest('.row')
+        populateAssetSelector(assetId, assetName, decimals, $formGroup)
     })
     $('.recipient_selector button').on('click', evSpanRecipientSelectorClickButton)
     $('.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
@@ -285,20 +246,6 @@ export function addEventListeners() {
     })
     $('#asset_exchange_bid_orders_table tbody, #asset_exchange_ask_orders_table tbody').on('click', 'td', evAssetExchangeOrdersTableClick)
     $('#sell_asset_quantity, #sell_asset_price, #buy_asset_quantity, #buy_asset_price').on('input', evCalculatePricePreviewInput)
-    $('#asset_order_modal').on('show.bs.modal', evAssetOrderModalOnShowBsModal)
-    $('#asset_exchange_vtab_group_context').on('click', 'a', function (e) {
-        e.preventDefault()
-        if (!BRS.selectedContext) return
-        const groupName = BRS.selectedContext.data('groupname')
-        const option = $(this).data('option')
-        if (option === 'change_group_name') {
-            $('#asset_exchange_change_group_name_old_display').html(groupName.escapeHTML())
-            $('#asset_exchange_change_group_name_old').val(groupName)
-            $('#asset_exchange_change_group_name_new').val('')
-            $('#asset_exchange_change_group_name_modal').modal('show')
-        }
-    })
-    $('#asset_exchange_vtab_context').on('click', 'a', evAssetExchangeSidebarContextClick)
     $('#asset_exchange_group_group').on('change', function () {
         const value = $(this).val()
         if (value === '-1') {
@@ -310,60 +257,9 @@ export function addEventListeners() {
     $('#asset_exchange_group_modal').on('hidden.bs.modal', function () {
         $('#asset_exchange_group_new_group_div').val('').hide()
     })
-    $('#transfer_asset_modal').on('show.bs.modal', (e) => {
-        populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'transfer_asset')
-    })
-    $('#mint_asset_modal').on('show.bs.modal', (e) => {
-        populateAssetSelector($((e as ShowBootstrapModalEvent).relatedTarget), 'mint_asset')
-    })
-    $('#distribute_to_asset_holders_asset_modal').on('show.bs.modal', (e) => {
-        populateDistributeAssetHolders($((e as ShowBootstrapModalEvent).relatedTarget))
-    })
-    $('#transfer_asset_ownership_modal').on('show.bs.modal', (e) => {
-        populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#transfer_asset_ownership')
-    })
-    $('#add_asset_treasury_account_modal').on('show.bs.modal', (e) => {
-        populateReferencedAsset($((e as ShowBootstrapModalEvent).relatedTarget), '#add_asset_treasury_account')
-    })
     $('#distribute_to_asset_holders_holders_asset').on('input', evDistributeToAssetHoldersHoldersAssetInput)
-    $('#cancel_order_modal').on('show.bs.modal', function (e) {
-        const $invoker = $((e as ShowBootstrapModalEvent).relatedTarget)
-        const orderType = $invoker.data('type')
-        const orderId = $invoker.data('order')
-        if (orderType === 'bid') {
-            $('#cancel_order_type').val('cancelBidOrder')
-        } else {
-            $('#cancel_order_type').val('cancelAskOrder')
-        }
-        $('#cancel_order_order').val(orderId)
-    })
 
     // from brs.messages.js
-    $('#send_message_modal').on('show.bs.modal', function () {
-        if (BRS.currentPage === 'messages' && BRS.currentSubPage) {
-            const recipientAddress = convertNumericToRSAccountFormat(BRS.currentSubPage)
-            $('#send_message_message').val($('#message_in_chatbox').val() as string)
-            $('#message_in_chatbox').val('')
-            if (BRS.contacts[recipientAddress]) {
-                $('#send_message_recipient').val(BRS.contacts[recipientAddress].name).trigger('checkRecipientEvent')
-            } else {
-                $('#send_message_recipient').val(recipientAddress).trigger('checkRecipientEvent')
-            }
-        }
-    })
-    $('#messages_vtab_context').on('click', 'a', evMessagesSidebarContextClick)
-    $('#messages_vtab_update_context').on('click', 'a', function (e) {
-        e.preventDefault()
-        if (!BRS.selectedContext) return
-        const option = $(this).data('option')
-        closeContextMenu()
-        if (option === 'update_contact') {
-            $('#update_contact_modal').modal('show')
-        } else if (option === 'send_burst') {
-            $('#send_money_recipient').val(BRS.selectedContext.data('contact')).trigger('blur')
-            $('#send_money_modal').modal('show')
-        }
-    })
     // $('body').on('click', 'a[data-goto-messages-account]', function (e) {
     //     e.preventDefault()
     //     const account = $(this).data('goto-messages-account')
@@ -373,24 +269,14 @@ export function addEventListeners() {
     // })
 
     // from brs.aliases.js
-    $('#transfer_alias_modal, #sell_alias_modal, #cancel_alias_sale_modal').on('show.bs.modal', evAliasModalOnShowBsModal)
     $('#sell_alias_sell_to_specific').on('click', evSellAliasSellToSpecificClick)
-    $('#buy_alias_modal').on('show.bs.modal', evBuyAliasModalOnShowBsModal)
-    $('#register_alias_modal').on('show.bs.modal', evRegisterAliasModalOnShowBsModal)
     $('#register_alias_type').on('change', function () {
         const type = $(this).val() as string
         setAliasType(type, $('#register_alias_uri').val() as string)
     })
     $('#alias_search').on('submit', evAliasSearchSubmit)
-    $('#search_results_contents, #aliases_table, #user_info_modal_aliases_table').on('click', 'a[data-show-alias]', function (e) {
-        e.preventDefault()
-        const alias = $(this).data('show-alias')
-        showAliasModal(alias)
-    })
 
     // from brs.contacts.js
-    $('#update_contact_modal').on('show.bs.modal', evUpdateContactModalOnShowBsModal)
-    $('#delete_contact_modal').on('show.bs.modal', evDeleteContactModalOnShowBsModal)
     $('#export_contacts_button').on('click', function () {
         exportContacts()
     })
@@ -445,7 +331,9 @@ export function addEventListeners() {
     })
 
     // from brs.contextmenu.ts
-    $('#asset_exchange_vtab, #messages_vtab').on('contextmenu', 'a', evSidebarContextOnContextmenu)
+    $('[data-widget=contextMenu]').on('contextmenu', 'a', evWidgetContextMenuOnContextmenuA)
+    $('.context_menu').on('click', 'a', evWidgetContextMenuOnContextClickA)
+
     $('.open_my_account_modal').on('click', function () {
         showAccountModal(BRS.accountInfo.accountRS)
     })
@@ -492,12 +380,7 @@ export function addEventListeners() {
             $(this).closest('form').find('.optional_sell_to_specific').hide()
         }
     })
-    $('.modal').on('show.bs.modal', evModalOnShowBsModal)
-    $('.modal').on('shown.bs.modal', function () {
-        $(this).find('input[autofocus]').trigger('focus')
-        $(this).find('input[name=converted_account_id]').val('')
-        BRS.showedFormWarning = false
-    })
+    $('.modal').on('shown.bs.modal', evModalOnShownBsModal)
     $('.modal').on('hidden.bs.modal', evModalOnHiddenBsModal)
     $('input[name=feeNXT]').on('change', function () {
         const $modal = $(this).closest('.modal')
@@ -513,13 +396,6 @@ export function addEventListeners() {
     $('.advanced_info a').on('click', evAdvancedInfoClick)
 
     // from brs.modals.account.js
-    $(
-        '#latest_blocks_table, #forged_blocks_table, #contacts_table, #transactions_table, #dashboard_transactions_table, #asset_account, #asset_exchange_ask_orders_table, #transfer_history_table, #asset_exchange_bid_orders_table, #alias_info_table, .dgs_page_contents, .modal-content, #block_info_table, #search_results_contents',
-    ).on('click', 'a[data-user]', function (e) {
-        e.preventDefault()
-        const account = $(this).data('user')
-        showAccountModal(account)
-    })
     $('#user_info_modal').on('hidden.bs.modal', function () {
         $(this).find('table tbody').empty()
         $(this).find('.data-container:not(.data-loading,.data-never-loading)').addClass('data-loading')
@@ -533,54 +409,10 @@ export function addEventListeners() {
         $('#account_info_description').val(BRS.accountInfo.description)
     })
 
-    // from brs.modals.block.js
-    $('#latest_blocks_table, #forged_blocks_table, #dashboard_blocks_table, #search_results_contents').on(
-        'click',
-        'a[data-block]',
-        evBlocksTableClick,
-    )
-    $('#block_info_modal_info_tab').tab('show')
-    $('#block_info_modal').on('hide.bs.modal', function () {
-        $('#block_info_modal_info_tab').tab('show')
-    })
-
-    // from brs.modals.escrow.js
-    $('#escrow_table').on('click', 'a[data-escrow]', function (e) {
-        e.preventDefault()
-        const escrowId = $(this).data('escrow')
-        showEscrowDecisionModal(escrowId)
-    })
-
-    // from brs.modals.serverinfo.js
-    $('#brs_modal_server_info').on('show.bs.modal', evBrsModalServerInfoOnShowBsModal)
-
     // from brs.modals.request.js
-    $('#request_burst_qr_modal').on('show.bs.modal', function () {
-        $('#new_qr_button').hide()
-        $('#request_burst_immutable').prop('checked', true)
-        $('#request_burst_account_id').val(BRS.accountRS)
-        $('#request_burst_response_div').hide()
-    })
-    $('#request_burst_qr_modal').on('hide.bs.modal', function () {
-        $('#request_burst_div').show()
-        $('#request_burst_response_div').hide()
-        $('#generate_qr_button').show()
-        $('#request_burst_div').show()
-        $('#request_burst_response_div').hide()
-        $('#request_burst_qr_modal').find('.error_message').html('').hide()
-    })
-    $('#new_qr_button').on('click', function () {
-        $('#request_burst_div').show()
-        $('#request_burst_response_div').hide()
-        $('#request_burst_amount').val('')
-        $('#request_burst_immutable').prop('checked', true)
-        $('#generate_qr_button').show()
-        $('#new_qr_button').hide()
-        $('#request_burst_qr_modal').find('.error_message').html('').hide()
-    })
+    $('#new_qr_button').on('click', evNewQrButtonOnClick)
 
     // from brs.modals.signmessage.js
-    $('#sign_message_tab').tab('show')
     $('#sign_message_modal').on('hidden.bs.modal', function () {
         $('#sign_message_tab').tab('show')
         $('#sign_message_output_signature').text('')
@@ -592,21 +424,7 @@ export function addEventListeners() {
     })
     $('#verify_message_data_is_transaction').on('click', evVerifyMessageDataIsTransactionClick)
 
-    // from brs.modals.subscription.js
-    $('#subscription_table').on('click', 'a[data-subscription]', function (e) {
-        e.preventDefault()
-        const subscriptionId = $(this).data('subscription')
-        showSubscriptionCancelModal(subscriptionId)
-    })
-
     // from brs.modals.transaction.js
-    $(
-        '#transactions_table, #dashboard_transactions_table, #transfer_history_table, #asset_exchange_trade_history_table, #block_info_table, #block_info_transactions_table, #user_info_modal_transactions_table, #search_results_contents',
-    ).on('click', 'a[data-transaction]', function (e) {
-        e.preventDefault()
-        const transactionId = $(this).data('transaction')
-        showTransactionModal(transactionId)
-    })
     $('#send_money_modal').on('hide.bs.modal', function () {
         $('#total_amount_multi_out').html('?')
     })

@@ -43,19 +43,26 @@ export function evCheckMessageLengthInput(e: JQuery.TriggeredEvent) {
     $(inputElement).removeClass('is-invalid')
 }
 
-// hide modal when another one is activated.
-export function evModalOnShowBsModal(e: JQuery.TriggeredEvent) {
-    const $visible_modal = $('.modal.show')
-    if ($visible_modal.length) {
-        if ($visible_modal.hasClass('locked')) {
-            const $btn = $visible_modal.find('button.btn-primary:not([data-dismiss=modal])') as JQuery<HTMLButtonElement>
-            unlockModal($visible_modal, $btn, true)
-        } else {
-            $visible_modal.modal('hide')
-        }
+/**
+ * Common for all modals!
+ */
+export function showModal(id: string) {
+    const modalElement = document.getElementById(id + '_modal')
+    if (!modalElement) {
+        console.error(`Unknow modal: ${id}_modal`)
+        return
     }
+    modalElement.style.zIndex = BRS.modalZIndex.toString()
+    BRS.modalZIndex++
+    showFeeSuggestionsNG(modalElement)
+    $(`#${id}_modal`).modal('show')
+}
 
-    showFeeSuggestionsNG(e.target)
+export function evModalOnShownBsModal(event: JQuery.TriggeredEvent) {
+    const $modal = $(event.target)
+    focusTopMostModal($modal)
+    $modal.find('input[name=converted_account_id]').val('')
+    BRS.showedFormWarning = false
 }
 
 // Reset form to initial state when modal is closed
@@ -150,6 +157,28 @@ export function evModalOnHiddenBsModal(event: JQuery.TriggeredEvent) {
     window.location.hash = '#'
 
     BRS.showedFormWarning = false
+
+    const $visible = $('.modal.show')
+    if ($visible.length === 0) {
+        // Reset z index if no more modals open
+        BRS.modalZIndex = 2000
+        return
+    }
+    focusTopMostModal($visible)
+}
+
+function focusTopMostModal($modals: JQuery<HTMLElement>) {
+    const topModal = $modals.get().sort((a: HTMLElement, b: HTMLElement) => {
+        const zIndexA = parseInt(a.style.zIndex, 10) || 0
+        const zIndexB = parseInt(b.style.zIndex, 10) || 0
+        return zIndexB - zIndexA
+    })[0]
+    const $autofocus = $(topModal).find('input[autofocus]')
+    if ($autofocus.length) {
+        $autofocus.trigger('focus')
+    } else {
+        $(topModal).find('button[data-dismiss="modal"]').trigger('focus')
+    }
 }
 
 export function showModalError(errorMessage: string, $modal: JQuery<HTMLElement>) {

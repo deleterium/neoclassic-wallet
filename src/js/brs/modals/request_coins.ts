@@ -1,4 +1,5 @@
 import { BRS } from '..'
+import { showModal } from '../core/modals'
 
 import { checkMinimumFee } from '../core/navigation'
 
@@ -18,7 +19,7 @@ export function formRequestBurst(data: any) {
     const receiverId = BRS.accountRS
     let immutable = 'false'
     $('#request_burst_immutable_response').html($.t('no'))
-    if (data.immutable !== 'on') {
+    if (data.immutable === 'on') {
         immutable = 'true'
         $('#request_burst_immutable_response').html($.t('yes'))
     }
@@ -37,4 +38,23 @@ export function formRequestBurst(data: any) {
     $('#request_burst_response_div').show()
 
     return { stop: true, hide: false }
+}
+
+export function showRequestBurstQrModal() {
+    evNewQrButtonOnClick()
+
+    $('#request_burst_immutable').prop('checked', true)
+    $('#request_burst_account_id').val(BRS.accountRS)
+
+    showModal('request_burst_qr')
+}
+
+export function evNewQrButtonOnClick() {
+    $('#request_burst_div').show()
+    $('#request_burst_response_div').hide()
+    $('#request_burst_amount').val('')
+    $('#request_burst_immutable').prop('checked', true)
+    $('#generate_qr_button').show()
+    $('#new_qr_button').hide()
+    $('#request_burst_qr_modal').find('.error_message').html('').hide()
 }

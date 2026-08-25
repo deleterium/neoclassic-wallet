@@ -2,11 +2,11 @@ import { BRS } from '..'
 
 import { sendRequest } from '../core/send_request'
 
-import { formatVolume, formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
-
 import { GetStateResponse } from '../typings'
+import { showModal } from '../core/modals'
+import { createInfoTable } from '../core/util'
 
-export async function evBrsModalServerInfoOnShowBsModal() {
+export async function showServerInfoModal() {
     if (BRS.fetchingModalData) {
         return
     }
@@ -16,18 +16,8 @@ export async function evBrsModalServerInfoOnShowBsModal() {
     const state: GetStateResponse = await sendRequest('getState', {})
     BRS.fetchingModalData = false
 
-    for (const key in state) {
-        const el = $('#brs_node_state_' + key)
-        if (el.length) {
-            if (key.indexOf('number') !== -1) {
-                el.text(formatNQTAsAmount(state[key]))
-            } else if (key.indexOf('Memory') !== -1) {
-                el.text(formatVolume(state[key]))
-            } else if (key === 'time') {
-                el.text(formatTimestampAsDateTime(state[key]))
-            } else {
-                el.text(state[key])
-            }
-        }
-    }
+    $('#server_info_server').text(BRS.server)
+    $('#brs_node_state_table tbody').html(createInfoTable(state))
+
+    showModal('server_info')
 }

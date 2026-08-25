@@ -1,11 +1,12 @@
-import { HexString, ParseTransactionResponse, PostResponse } from '../typings'
+import { HexString, ParseTransactionResponse } from '../typings'
 
 import { createInfoTable } from '../core/util'
+import { showModal } from '../core/modals'
 
-export function showRawTransactionModal(transaction: PostResponse, signedTransactionBytes: HexString) {
-    $('#raw_transaction_modal_unsigned_transaction_bytes').val(transaction.unsignedTransactionBytes)
+export function showRawTransactionModal(unsignedTransactionBytes: HexString, signedTransactionBytes: HexString) {
+    $('#raw_transaction_modal_unsigned_transaction_bytes').val(unsignedTransactionBytes)
     $('#raw_transaction_modal_transaction_bytes').val(signedTransactionBytes)
-    $('#raw_transaction_modal').modal('show')
+    showModal('raw_transaction')
 }
 
 export function formsBroadcastTransactionComplete() {

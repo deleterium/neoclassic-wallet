@@ -98,15 +98,12 @@
   <section class="content-header header-space-between">
     <h1 data-i18n="asset_exchange">Asset Exchange</h1>
     <div>
-      <button
-        type="button"
+      <a
         class="btn btn-sm btn-default"
-        id="asset_exchange_add_asset_bookmark"
-        data-toggle="modal"
-        data-target="#add_asset_bookmark_modal"
+        href="#modal=add_asset_bookmark"
         data-i18n="add_asset">
         Add Asset
-      </button>
+      </a>
       <button type="button" class="btn btn-sm btn-default" id="asset_exchange_add_all_assets_bookmark" data-i18n="add_all_my_assets">
         add_all_my_assets
       </button>
@@ -140,7 +137,7 @@
           </div>
         </form>
       </div>
-      <div class="nav flex-column nav-tabs" id="asset_exchange_vtab" role="tablist" aria-orientation="vertical"></div>
+      <div class="nav flex-column nav-tabs" id="asset_exchange_vtab" role="tablist" aria-orientation="vertical" data-widget="contextMenu"></div>
     </div>
     <div class="col-10 col-sm-10">
       <div id="no_assets_available" style="padding-top: 150px; text-align: center; display: none" data-i18n="no_assets_available">
@@ -221,16 +218,12 @@
                 </div>
               </div>
               <div class="card-footer">
-                <button
-                  type="button"
+                <a
                   class="btn btn-primary"
                   id="buy_asset_button"
-                  data-toggle="modal"
-                  data-target="#asset_order_modal"
-                  data-asset=""
-                  data-type="Buy">
+                  href="#modal=asset_order">
                   <span data-i18n="buy">Buy</span> <span class="asset_name"></span>
-                </button>
+                </a>
               </div>
             </div>
             <div class="card card-success" style="max-height: 400px; overflow: auto; border-top: 3px solid #28a745">
@@ -302,16 +295,12 @@
                 </div>
               </div>
               <div class="card-footer">
-                <button
-                  type="button"
+                <a
                   class="btn btn-primary"
                   id="sell_asset_button"
-                  data-toggle="modal"
-                  data-target="#asset_order_modal"
-                  data-asset=""
-                  data-type="Sell">
+                  href="#modal=asset_order">
                   <span data-i18n="sell">Sell</span> <span class="asset_name"></span>
-                </button>
+                </a>
               </div>
             </div>
             <div class="card card-danger" style="max-height: 400px; overflow: auto; border-top: 3px solid #dc3545">
@@ -404,17 +393,12 @@
   <section class="content-header header-space-between">
     <h1 data-i18n="asset_administration">asset_administration</h1>
     <div>
-      <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#issue_asset_modal" data-i18n="issue_asset">
+      <a class="btn btn-sm btn-default" href="#modal=issue_asset" data-i18n="issue_asset">
         issue_asset
-      </button>
-      <button
-        type="button"
-        class="btn btn-sm btn-default"
-        data-toggle="modal"
-        data-target="#distribute_to_asset_holders_asset_modal"
-        data-i18n="distribute_to_asset_holders">
+      </a>
+      <a class="btn btn-sm btn-default" href="#modal=distribute_to_asset_holders" data-i18n="distribute_to_asset_holders">
         distribute_to_asset_holders
-      </button>
+      </a>
     </div>
   </section>
   <section class="content">

@@ -19,8 +19,6 @@ import {
 
 import { getAccountTitleFromObject, getAccountRSFromObject, dataLoadFinished } from '../core/util'
 
-import { closeContextMenu } from '../core/context_menu'
-
 import { cacheAsset, getAssetDetails } from '../tools/assets'
 
 import { AnyAssetOrder, DBAsset, GetAssetResponse, GetTradesResponse } from '../typings'
@@ -230,7 +228,7 @@ export function loadAssetExchangeSidebar(callback?: () => void) {
                     <a href='#'
                     class='nav-link list-group-item-action'
                     data-context='asset_exchange_vtab_group_context'
-                    data-groupname='${asset.groupName.escapeHTML()}'
+                    data-item='${asset.groupName.escapeHTML()}'
                     data-closed='${isClosedGroup}'>
                         <strong>
                             ${asset.groupName.escapeHTML()}
@@ -262,7 +260,7 @@ export function loadAssetExchangeSidebar(callback?: () => void) {
             
             <a href='#page=asset_exchange&subPage=${asset.asset}'
             class='${itemClass}'
-            data-asset='${asset.asset}'
+            data-item='${asset.asset}'
             data-context='asset_exchange_vtab_context'
             ${dataGroupname}
             ${hideClosedGroup}
@@ -271,26 +269,21 @@ export function loadAssetExchangeSidebar(callback?: () => void) {
             </a>`
     }
 
-    let active = ''
-    if ($('#asset_exchange_vtab a.active').length) {
-        active = $('#asset_exchange_vtab a.active').data('asset')
-    }
-
     $('#asset_exchange_vtab').html(rows)
     $('#asset_exchange_vtab_search').show()
 
     if (BRS.assetSearch !== false) {
-        if (active && BRS.assetSearch.indexOf(active) !== -1) {
+        if (BRS.currentSubPage && BRS.assetSearch.indexOf(BRS.currentSubPage) !== -1) {
             // check if currently selected asset is in search results, if so keep it at that
-            $('#asset_exchange_vtab a[data-asset=' + active + ']').addClass('active')
+            $('#asset_exchange_vtab a[data-item=' + BRS.currentSubPage + ']').addClass('active')
         } else if (BRS.assetSearch.length === 1) {
             // if there is only 1 search result, click it
-            $('#asset_exchange_vtab a[data-asset=' + BRS.assetSearch[0] + ']')
+            $('#asset_exchange_vtab a[data-item=' + BRS.assetSearch[0] + ']')
                 .addClass('active')
                 .trigger('click')
         }
-    } else if (active) {
-        $('#asset_exchange_vtab a[data-asset=' + active + ']').addClass('active')
+    } else if (BRS.currentSubPage) {
+        $('#asset_exchange_vtab a[data-item=' + BRS.currentSubPage + ']').addClass('active')
     }
 
     if (BRS.assetSearch !== false || bookmarkedAssets.length >= 10) {
@@ -305,10 +298,11 @@ export function loadAssetExchangeSidebar(callback?: () => void) {
     } else if (!bookmarkedAssets.length) {
         $('#no_asset_selected, #loading_asset_data, #no_asset_search_results, #asset_details').hide()
         $('#no_assets_available').show()
-    } else if (!$('#asset_exchange_vtab  a.active').length) {
+    } else if (!BRS.currentSubPage) {
         $('#no_asset_selected').show()
         $('#asset_details, #no_assets_available, #no_asset_search_results').hide()
-    } else if (active) {
+    } else {
+        // Assuming #asset_details is on screen
         $('#no_assets_available, #no_asset_selected, #no_asset_search_results').hide()
     }
 
@@ -394,7 +388,7 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
 
     if (refreshHTML) {
         $('#asset_exchange_vtab a.active').removeClass('active')
-        $('#asset_exchange_vtab a[data-asset=' + assetId + ']').addClass('active')
+        $('#asset_exchange_vtab a[data-item=' + assetId + ']').addClass('active')
 
         $('#no_asset_selected, #loading_asset_data, #no_assets_available, #no_asset_search_results').hide()
         $('#asset_details').show().parent().animate(
@@ -405,9 +399,9 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
         )
 
         $('#asset_account').html(
-            "<a href='#' data-user='" +
+            "<a href='#modal=user_info&user=" +
                 getAccountRSFromObject(asset, 'account') +
-                "' class='user_info'>" +
+                "'>" +
                 getAccountTitleFromObject(asset, 'account') +
                 '</a>',
         )
@@ -418,12 +412,12 @@ function loadAsset(asset: DBAsset, refreshHTML: boolean, refreshAsset: boolean) 
         $('#asset_quantity').html(formatQNTAsQuantity(asset.quantityCirculatingQNT, asset.decimals))
         $('#asset_mintable').text(asset.mintable ? $.t('yes') : $.t('no'))
         $('#asset_holders_text').html(`
-            <a href="#asset_holders:${asset.asset}">${$.t('view_more')}</a>
+            <a href="#modal=asset_holders&asset=${asset.asset}">${$.t('view_more')}</a>
             `)
 
         $('.asset_name').html(asset.name)
-        $('#sell_asset_button').data('asset', assetId)
-        $('#buy_asset_button').data('asset', assetId)
+        $('#sell_asset_button').attr('href', `#modal=asset_order&asset=${assetId}&type=sell`)
+        $('#buy_asset_button').attr('href', `#modal=asset_order&asset=${assetId}&type=buy`)
         $('#sell_asset_for_burst').html(
             $.t('sell_asset_for_burst', {
                 assetName: asset.name,
@@ -561,8 +555,8 @@ export async function updateMiniTradeHistory() {
               <td>${formatQNTAsQuantity(trade.quantityQNT, BRS.currentAsset.decimals)}</td>
               <td class='asset_price'>${formatPriceNQTAsPriceQuantity(trade.priceNQT, BRS.currentAsset.decimals)}</td>
               <td>${formatNQTAsAmount(totalNQT)}</td>
-              <td><a href='#' data-transaction='${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
-              <td><a href='#' data-transaction='${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
+              <td><a href='#modal=transaction_info&transaction=${trade.askOrder}'>${trade.askOrder.slice(0, 8)}...</a></td>
+              <td><a href='#modal=transaction_info&transaction=${trade.bidOrder}'>${trade.bidOrder.slice(0, 8)}...</a></td>
             </tr>`
     }
     $('#asset_exchange_trade_history_table tbody').empty().append(rows)
@@ -672,7 +666,7 @@ async function loadAssetOrders(type: 'ask' | 'bid', assetId: string, refresh: bo
         } else {
             accountHTML += getAccountTitleFromObject(order, 'account')
         }
-        accountHTML = `<a href='#' data-user='${getAccountRSFromObject(order, 'account')}' class='user_info'>${accountHTML}</a>`
+        accountHTML = `<a href='#modal=user_info&user=${getAccountRSFromObject(order, 'account')}'>${accountHTML}</a>`
 
         rows += `
             <tr class='${className}'
@@ -810,16 +804,7 @@ export function evCalculatePricePreviewInput(e: JQuery.TriggeredEvent) {
     $('#' + orderType + '_asset_total').val(total.toString())
 }
 
-export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
-    e.preventDefault()
-
-    if (!BRS.selectedContext) return
-
-    const assetId = BRS.selectedContext.data('asset')
-    const option = $(e.target).data('option')
-
-    closeContextMenu()
-
+export function assetExchangeVtabContextHandler(option: string, assetId: string) {
     const asset = BRS.assets.find((tkn) => tkn.asset === assetId)
     if (!asset) {
         console.error('OPA!')
@@ -846,7 +831,9 @@ export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
         groupSelect.append(`<option value='-1'>${$.t('new_group')}</option>`)
 
         $('#asset_exchange_group_modal').modal('show')
-    } else if (option === 'remove_from_group') {
+        return
+    }
+    if (option === 'remove_from_group') {
         asset.groupName = ''
         dbPut('assets', asset, function (error) {
             if (error) {
@@ -856,7 +843,9 @@ export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
             loadAssetExchangeSidebar()
             notify($.t('success_asset_group_removal'), { type: 'success' })
         })
-    } else if (option === 'remove_from_bookmarks') {
+        return
+    }
+    if (option === 'remove_from_bookmarks') {
         asset.bookmarked = false
         dbPut('assets', asset, function (error) {
             if (error) {
@@ -866,6 +855,15 @@ export function evAssetExchangeSidebarContextClick(e: JQuery.ClickEvent) {
             loadAssetExchangeSidebar()
             notify($.t('success_asset_bookmark_removal'), { type: 'success' })
         })
+    }
+}
+
+export function assetExchangeVtabGroupContextHandler(option: string, item: string) {
+    if (option === 'change_group_name') {
+        $('#asset_exchange_change_group_name_old_display').html(item.escapeHTML())
+        $('#asset_exchange_change_group_name_old').val(item)
+        $('#asset_exchange_change_group_name_new').val('')
+        $('#asset_exchange_change_group_name_modal').modal('show')
     }
 }
 

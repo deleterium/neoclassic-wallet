@@ -181,11 +181,6 @@
     padding: .25rem;
 }
 
-.my-fa-spin {
-    animation: a 1s steps(8) infinite;
-}
-
-
 /* Left: asset-sidebar; Right: orders */
 .asset-content {
     display: flex;

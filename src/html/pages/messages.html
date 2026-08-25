@@ -4,7 +4,7 @@
   </section>
   <section class="content asset-content">
     <div class="col-5 col-sm-3">
-      <div class="nav flex-column nav-tabs" id="messages_vtab" role="tablist" aria-orientation="vertical"></div>
+      <div class="nav flex-column nav-tabs" id="messages_vtab" role="tablist" aria-orientation="vertical" data-widget="contextMenu"></div>
     </div>
     <div class="col-7 col-sm-9">
       <div id="no_message_selected" style="padding-top: 150px; text-align: center" data-i18n="select_contact_in_sidebar">
@@ -25,7 +25,7 @@
           <div class="input-group">
             <textarea id="message_in_chatbox" placeholder="" class="form-control" rows="4"></textarea>
             <span class="input-group-append">
-              <button class="btn btn-outline-primary" data-i18n="send" data-toggle="modal" data-target="#send_message_modal">send</button>
+              <a class="btn btn-outline-primary" data-i18n="send" href="#modal=send_message&content=message_in_chatbox">send</a>
             </span>
           </div>
         </div>

@@ -6,13 +6,14 @@ import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
 
 import { Subscription, GetSubscriptionResponse } from '../typings'
 import { notify } from '../core/notifications'
+import { showModal } from '../core/modals'
 
 export async function showSubscriptionCancelModal(subscription: string | Subscription) {
     if (BRS.fetchingModalData) {
         return
     }
     if (typeof subscription === 'object') {
-        processSubscriptionCancelModalData(subscription)
+        subscriptionCancelDataReady(subscription)
         return
     }
     BRS.fetchingModalData = true
@@ -24,10 +25,10 @@ export async function showSubscriptionCancelModal(subscription: string | Subscri
         notify($.t('no_transactions_found'))
         return
     }
-    processSubscriptionCancelModalData(response)
+    subscriptionCancelDataReady(response)
 }
 
-function processSubscriptionCancelModalData(subscription: Subscription) {
+function subscriptionCancelDataReady(subscription: Subscription) {
     $('#subscription_cancel_subscription_text').val(subscription.id)
     $('#subscription_cancel_subscription').val(subscription.id)
     $('#subscription_cancel_sender').text(subscription.senderRS)
@@ -36,5 +37,5 @@ function processSubscriptionCancelModalData(subscription: Subscription) {
     $('#subscription_cancel_frequency').text(subscription.frequency)
     $('#subscription_cancel_time_next').text(formatTimestampAsDateTime(subscription.timeNext))
 
-    $('#subscription_cancel_modal').modal('show')
+    showModal('subscription_cancel')
 }

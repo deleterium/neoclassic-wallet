@@ -10,9 +10,9 @@ import {
     GetAccountsWithNameResponse,
     GetAliasResponse,
 } from '../typings'
-import { showAliasModal } from '../modals/aliases'
+import { showAliasInfoModal } from '../modals/aliases'
 import { showAccountModal } from '../modals/account'
-import { showBlockModal } from '../modals/block'
+import { showBlockInfoModal } from '../modals/block'
 import { showTransactionModal } from '../modals/transaction'
 import { sendRequest } from '../core/send_request'
 import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitle } from '../core/util'
@@ -31,7 +31,7 @@ function showAccountSearchResults(accountsList: string[]): void {
     let resultHTML = `<strong>${$.t('account')}:</strong><ul>`
     for (const account of accountsList) {
         const accountRS = convertNumericToRSAccountFormat(account)
-        resultHTML += `<li><a href="#" data-user="${accountRS}" class="user-info">${accountRS}</a></li>`
+        resultHTML += `<li><a href="#modal=user_info&user=${accountRS}">${accountRS}</a></li>`
     }
     resultHTML += '</ul>'
     dataLoaded(resultHTML)
@@ -58,7 +58,7 @@ function showAssetSearchResults(assets: GetAssetResponse[]) {
             <tr>
               <td>${asset.name}</td>
               <td><a href="#page=asset_exchange&subPage=${asset.asset}">${asset.asset}</a></td>
-              <td><a href="#" data-user="${asset.accountRS}" class="user-info">${asset.accountRS}</a></td>
+              <td><a href="#modal=user_info&user=${asset.accountRS}">${asset.accountRS}</a></td>
               <td>${asset.description}</td>
             </tr>`
     }
@@ -97,18 +97,32 @@ function showAliasesSearchResults(aliases: Alias[]) {
         if (alias.priceNQT) {
             priceHTML += formatNQTAsAmount(alias.priceNQT)
             if (alias.buyer === BRS.account || !alias.buyer) {
-                priceHTML += `<br /><a href="#" data-buy-alias="${alias.alias}" data-toggle="modal" data-target="#buy_alias_modal">${$.t('buy_it_q')}</a>`
+                priceHTML += `<br /><a href="#modal=buy_alias&alias=${alias.alias}">${$.t('buy_it_q')}</a>`
             }
         }
-        resultHTML += `
+        if (alias.tld === undefined) {
+            // This is a TLD
+            resultHTML += `
             <tr>
-              <td><a href="#" data-show-alias="${alias.alias}">${alias.aliasName}</a></td>
-              <td><a href="#" data-user="${alias.accountRS}" class="user-info">${alias.accountRS}</a></td>
+              <td></td>
+              <td><a href="#modal=user_info&user=${alias.accountRS}">${alias.accountRS}</a></td>
+              <td><a href="#modal=alias_info&alias=${alias.alias}">${alias.aliasName}</a></td>
+              <td></td>
+              <td>${statusHTML}</td>
+              <th>${priceHTML}</th>
+            </tr>`
+        } else {
+            // This is regular alias
+            resultHTML += `
+            <tr>
+              <td><a href="#modal=alias_info&alias=${alias.alias}">${alias.aliasName}</a></td>
+              <td><a href="#modal=user_info&user=${alias.accountRS}">${alias.accountRS}</a></td>
               <td>${alias.tldName}</td>
               <td>${alias.aliasURI}</td>
               <td>${statusHTML}</td>
               <th>${priceHTML}</th>
             </tr>`
+        }
     }
     resultHTML += `
           </tbody>
@@ -161,7 +175,7 @@ export async function pagesSearchResults() {
         const htmlResult = `
                 <strong>${$.t('transaction')}:</strong>
                 <ul>
-                  <li><a href="#" data-transaction="${response.transaction}">${response.transaction}</a></li>
+                  <li><a href="#modal=transaction_info&transaction=${response.transaction}">${response.transaction}</a></li>
                 </ul>`
         dataLoaded(htmlResult)
         return
@@ -186,11 +200,11 @@ export async function pagesSearchResults() {
                 dataLoaded($.t('error_search_no_results'))
                 return
             }
-            showBlockModal(response)
+            showBlockInfoModal(response)
             const htmlResult = `
                 <strong>${$.t('block')}:</strong>
                 <ul>
-                  <li><a href="#" data-block="${response.height}">${response.height}</a></li>
+                  <li><a href="#modal=block_info&block=${response.height}">${response.height}</a></li>
                 </ul>`
             dataLoaded(htmlResult)
             return
@@ -216,7 +230,7 @@ export async function pagesSearchResults() {
                 return
             }
             if (aliases.length === 1) {
-                showAliasModal(aliases[0])
+                showAliasInfoModal(aliases[0])
             }
             showAliasesSearchResults(aliases)
             return
