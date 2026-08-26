@@ -33,7 +33,8 @@ export async function getAndUpdateAccountDetails(firstRun: boolean, callback?: (
                         .removeClass('alert-danger')
                         .html(
                             $.t('status_new_account', {
-                                account_id: BRS.accountRS,
+                                extended_address: BRS.accountRSExtended,
+                                short_address: BRS.accountRS,
                                 public_key: BRS.publicKey,
                             }) +
                                 '<br /><br />' +
@@ -59,7 +60,8 @@ export async function getAndUpdateAccountDetails(firstRun: boolean, callback?: (
                     .removeClass('alert-danger')
                     .html(
                         $.t('status_new_account', {
-                            account_id: BRS.accountRS,
+                            extended_address: BRS.accountRSExtended,
+                            short_address: BRS.accountRS,
                             public_key: BRS.publicKey,
                         }),
                     )

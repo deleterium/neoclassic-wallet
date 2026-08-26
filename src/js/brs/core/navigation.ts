@@ -47,6 +47,7 @@ import { showRawTransactionModal } from '../modals/advanced'
 import { showRequestBurstQrModal } from '../modals/request_coins'
 import { showSendMessageModal } from '../modals/messages'
 import { showSubscriptionCancelModal } from '../modals/subscription'
+import { activateAccount } from './activate_account'
 
 const pageFunctions = {
     aliases: pagesAliases,
@@ -202,6 +203,10 @@ export function checkLocationHash() {
     }
     if (params.has('modal')) {
         modalRouter(params)
+        return
+    }
+    if (params.has('action')) {
+        actionRouter(params)
         return
     }
     console.log('Unknown hash action.')
@@ -443,6 +448,17 @@ function modalRouter(params: URLSearchParams) {
         }
     }
     config.handler(params)
+}
+
+function actionRouter(params: URLSearchParams) {
+    const action = params.get('action') as string
+
+    if (action === 'activate') {
+        activateAccount()
+        return
+    }
+    console.log('Unknow action ' + action)
+    window.location.hash = '#'
 }
 
 /** Checks if a Number is valid and greater than minimum fee. If not, return minimum fee */
