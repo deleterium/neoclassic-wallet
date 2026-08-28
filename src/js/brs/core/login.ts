@@ -23,6 +23,7 @@ import PassPhraseGenerator from './passphrase_generator'
 import { GetAccountResponse, GetTLDsResponse } from '../typings'
 import { convertSecondsToDuration } from './numbers'
 import { notify } from './notifications'
+import { populateRecipientSelector } from './recipient'
 
 export function showLoginOrWelcomeScreen() {
     if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
@@ -276,6 +277,8 @@ export function showLockscreen() {
 
     $('#lockscreen_loading').hide()
     $('#lockscreen_content').show()
+
+    populateRecipientSelector($('#login_panel'))
 }
 
 function unlock() {

@@ -54,7 +54,7 @@ import {
     evMultiOutFeeChange,
 } from '../modals/sendmoney'
 
-import { evAddRecipientsClick, evSpanRecipientSelectorClickButton, evSpanRecipientSelectorClickUlLiA } from './recipient'
+import { evAddRecipientsClick } from './recipient'
 
 import {
     evModalOnHiddenBsModal,
@@ -198,8 +198,6 @@ export function addEventListeners() {
         const $formGroup = $(e.currentTarget).closest('.row')
         populateAssetSelector(assetId, assetName, decimals, $formGroup)
     })
-    $('.recipient_selector button').on('click', evSpanRecipientSelectorClickButton)
-    $('.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
 
     // from brs.transactions.js
     $('input[type=radio][name=transactions_from_account]').on('click', function () {

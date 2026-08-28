@@ -4,8 +4,6 @@ import { evCheckNumberInput, showModal } from '../core/modals'
 import { parseAmountToNQT, formatNQTAsAmount } from '../core/numbers'
 import { convertRSAccountToNumeric } from '../core/util'
 
-import { evSpanRecipientSelectorClickButton, evSpanRecipientSelectorClickUlLiA } from '../core/recipient'
-
 /**
  * Converts a recipient to accountId, looking for the name in contacts too
  * On error, returns ''. It means invalid rsAddress, or name not found in contacts
@@ -213,8 +211,6 @@ export function resetModalMultiOut() {
     $('#multi_out_same_recipients input[name=recipient_multi_out_same]').off('blur').on('blur', evMultiOutSameAmountChange)
     $('#multi_out_recipients input[name=recipient_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
     $('#multi_out_recipients input[name=amount_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
-    $('span.recipient_selector').on('click', 'button', evSpanRecipientSelectorClickButton)
-    $('span.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
     $('#send_multi_out .remove_recipient').each(function () {
         $(this).remove()
     })

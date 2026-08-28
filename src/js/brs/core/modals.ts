@@ -12,6 +12,7 @@ import { unlockModal } from './lockable_modal'
 import { SuggestFee } from '../typings'
 import { isErrorResponse, sendRequest } from './send_request'
 import converters from '../../util/converters'
+import { populateRecipientSelector } from './recipient'
 
 /**
  * @param {JQuery.TriggeredEvent} e
@@ -52,6 +53,7 @@ export function showModal(id: string) {
         console.error(`Unknow modal: ${id}_modal`)
         return
     }
+    populateRecipientSelector($(modalElement))
     modalElement.style.zIndex = BRS.modalZIndex.toString()
     BRS.modalZIndex++
     showFeeSuggestionsNG(modalElement)

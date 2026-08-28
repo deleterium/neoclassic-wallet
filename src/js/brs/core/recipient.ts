@@ -380,7 +380,7 @@ export function evSpanRecipientSelectorClickButton(event: JQuery.ClickEvent) {
     }
 }
 
-export function evSpanRecipientSelectorClickUlLiA(e: JQuery.ClickEvent) {
+export function evRecipientSelectorClickUlLiA(e: JQuery.ClickEvent) {
     const element = e.target
     e.preventDefault()
     $(element).closest('form').find('input[name=converted_account_id]').val('')
@@ -389,25 +389,58 @@ export function evSpanRecipientSelectorClickUlLiA(e: JQuery.ClickEvent) {
 
 export function evAddRecipientsClick(e: JQuery.ClickEvent) {
     e.preventDefault()
+    let $newRecipient: JQuery<HTMLElement>
+    // add input box
     if ($('#send_money_same_out_checkbox').is(':checked')) {
-        $('#multi_out_same_recipients').append($('#additional_multi_out_same_recipient').html()) // add input box
+        $newRecipient = $('#multi_out_same_recipients').append($('#additional_multi_out_same_recipient').html())
+        $newRecipient = $newRecipient.children().last()
     } else {
-        $('#multi_out_recipients').append($('#additional_multi_out_recipient').html()) // add input box
+        $newRecipient = $('#multi_out_recipients').append($('#additional_multi_out_recipient').html())
+        $newRecipient = $newRecipient.children().last()
     }
-    $('input[name=recipient_multi_out_same]').off('blur').on('blur', evMultiOutSameAmountChange)
-    $('input[name=recipient_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
-    $('input[name=amount_multi_out]').off('blur').on('blur', evMultiOutAmountChange)
-    $('#send_money_modal .ev-check-number-input').off('input').on('input', evCheckNumberInput)
-    $('.remove_recipient .remove_recipient_button').off('click').on('click', evDocumentOnClickRemoveRecipient)
+    // add event listeners
+    $newRecipient.find('input[name=recipient_multi_out_same]').on('blur', evMultiOutSameAmountChange)
+    $newRecipient.find('input[name=recipient_multi_out]').on('blur', evMultiOutAmountChange)
+    $newRecipient.find('input[name=amount_multi_out]').on('blur', evMultiOutAmountChange)
+    $newRecipient.find('.ev-check-number-input').on('input', evCheckNumberInput)
+    $newRecipient.find('.remove_recipient_button').on('click', evDocumentOnClickRemoveRecipient)
+    $newRecipient.find('.recipient_selector ul li a').on('click', evRecipientSelectorClickUlLiA)
+}
 
-    $('span.recipient_selector').on('click', 'button', evSpanRecipientSelectorClickButton)
-    $('span.recipient_selector').on('click', 'ul li a', evSpanRecipientSelectorClickUlLiA)
+export function populateRecipientSelector($place: JQuery<HTMLElement>) {
+    const $allList = $place.find('.recipient_selector ul')
+    if ($allList.length === 0) {
+        return
+    }
+    for (const list of $allList) {
+        const $list = $(list)
+        if (!Object.keys(BRS.contacts).length) {
+            $list.html(`<li><a class='dropdown-item' href='#' data-contact=''>${$.t('error_no_contacts_available')}</a></li>`)
+            return
+        }
+        $list.empty()
+        const names: string[] = []
+        for (const accountId in BRS.contacts) {
+            names.push(BRS.contacts[accountId].name)
+        }
+        names.sort((a, b) => {
+            const nameA = a.toUpperCase()
+            const nameB = b.toUpperCase()
+            if (nameA < nameB) return -1
+            if (nameA > nameB) return 1
+            return 0
+        })
+        for (const name of names) {
+            $list.append(`<li><a class='dropdown-item' href='#' data-contact='${name.escapeHTML()}'>${name.escapeHTML()}</a></li>`)
+        }
+        $list.on('click', 'li a', evRecipientSelectorClickUlLiA)
+    }
 }
 
 export function evDocumentOnClickRemoveRecipient(e: JQuery.ClickEvent) {
     const element = e.target
     e.preventDefault()
-    $(element).parent().parent('div').remove()
+    $(element).closest('.row').remove()
 
     if ($('#send_money_same_out_checkbox').is(':checked')) {
         evMultiOutSameAmountChange()
