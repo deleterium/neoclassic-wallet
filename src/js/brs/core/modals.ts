@@ -13,6 +13,7 @@ import { SuggestFee } from '../typings'
 import { isErrorResponse, sendRequest } from './send_request'
 import converters from '../../util/converters'
 import { populateRecipientSelector } from './recipient'
+import { populateAssetSelector } from '../modals/assets'
 
 /**
  * @param {JQuery.TriggeredEvent} e
@@ -54,6 +55,7 @@ export function showModal(id: string) {
         return
     }
     populateRecipientSelector($(modalElement))
+    populateAssetSelector($(modalElement))
     modalElement.style.zIndex = BRS.modalZIndex.toString()
     BRS.modalZIndex++
     showFeeSuggestionsNG(modalElement)

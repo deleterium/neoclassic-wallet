@@ -16,7 +16,7 @@ import { getAssetDetails, getAssetFromCache } from '../tools/assets'
 import { sendRequest } from '../core/send_request'
 import { showModal } from '../core/modals'
 
-export function populateAssetSelector(assetId: string, assetName: string, decimals: string, $formGroup: JQuery<HTMLElement>) {
+export function fillAssetSelectorDetails(assetId: string, assetName: string, decimals: string, $formGroup: JQuery<HTMLElement>) {
     if (assetId === '') {
         $formGroup.find(`span[name=available]`).empty()
         return
@@ -471,21 +471,34 @@ function sortCachedAssets() {
 
 /** Populates the drop-down list with the user assets, in alphabetical order.
  * It is used in places like "transfer token", so user can pick one easily. */
-export function evAssetSelectorButtonClick(e: JQuery.ClickEvent) {
-    const $list = $(e.target).parent().find('ul')
-    $list.empty()
-    if (!BRS.accountInfo.assetBalances) {
-        $list.append(`<li><a class='dropdown-item' href='#' data-name='' data-asset='' data-decimals=''>${$.t('no_asset_found')}</a></li>`)
-        return
-    }
-    sortCachedAssets()
-    for (const asset of BRS.assets) {
-        const foundAsset = BRS.accountInfo.assetBalances.find((tkn) => tkn.asset === asset.asset)
-        if (foundAsset) {
-            $list.append(
-                `<li><a class='dropdown-item' href='#' data-name='${asset.name}' data-asset='${asset.asset}' data-decimals='${asset.decimals}'>${asset.name} - ${asset.asset}</a></li>`,
-            )
+export function populateAssetSelector($target: JQuery<HTMLElement>) {
+    const $allLists = $target.find('.asset_selector ul')
+    for (const list of $allLists) {
+        const $list = $(list)
+        $list.empty()
+        if (!BRS.accountInfo.assetBalances) {
+            $list.append(`<li><span class='dropdown-item'>${$.t('no_asset_found')}</span></li>`)
+            return
         }
+        sortCachedAssets()
+        let listContent = ''
+        for (const asset of BRS.assets) {
+            const foundAsset = BRS.accountInfo.assetBalances.find((tkn) => tkn.asset === asset.asset)
+            if (foundAsset) {
+                listContent += `<li><a class='dropdown-item' href='#' data-name='${asset.name}' data-asset='${asset.asset}' data-decimals='${asset.decimals}'>${asset.name} - ${asset.asset}</a></li>`
+            }
+        }
+        if (!listContent) {
+            listContent = `<li><span class='dropdown-item'>${$.t('no_asset_found')}</span></li>`
+        }
+        $list.html(listContent)
+        $list.on('click', 'li a', (e) => {
+            const assetId = $(e.currentTarget).data('asset') ?? ''
+            const assetName = $(e.currentTarget).data('name') ?? '?'
+            const decimals = $(e.currentTarget).data('decimals') ?? ''
+            const $formGroup = $(e.currentTarget).closest('.row')
+            fillAssetSelectorDetails(assetId, assetName, decimals, $formGroup)
+        })
     }
 }
 
@@ -647,16 +660,16 @@ export function showCancelOrderModal(orderId: string, orderType: 'bid' | 'ask') 
 
 export function showTransferAssetModal(asset: string, name: string, decimals: string) {
     const $formGroupOrdinary = $('#form-transfer-asset .form-group').first()
-    populateAssetSelector(asset, name, decimals, $formGroupOrdinary)
+    fillAssetSelectorDetails(asset, name, decimals, $formGroupOrdinary)
     const $formGroupMulti = $('#form-multi-transfer .form-group').first()
-    populateAssetSelector(asset, name, decimals, $formGroupMulti)
+    fillAssetSelectorDetails(asset, name, decimals, $formGroupMulti)
 
     showModal('transfer_asset')
 }
 
 export function showMintAssetModal(asset: string, name: string, decimals: string) {
     const $formGroup = $('#form-mint-asset .form-group').first()
-    populateAssetSelector(asset, name, decimals, $formGroup)
+    fillAssetSelectorDetails(asset, name, decimals, $formGroup)
 
     showModal('mint_asset')
 }

@@ -40,7 +40,7 @@ import {
     goToAsset,
 } from '../pages/assets.asset_exchange'
 
-import { populateAssetSelector, evAssetSelectorButtonClick, evDistributeToAssetHoldersHoldersAssetInput } from '../modals/assets'
+import { evDistributeToAssetHoldersHoldersAssetInput } from '../modals/assets'
 
 import { evTransactionsPageTypeClick } from '../pages/transactions'
 
@@ -189,14 +189,6 @@ export function addEventListeners() {
     // from brs.recipient.js
     $('#send_money_amount, #send_money_fee').on('change', function () {
         sendMoneyCalculateTotal($(this))
-    })
-    $('span.asset_selector button').on('click', evAssetSelectorButtonClick)
-    $('span.asset_selector').on('click', 'ul li a', (e) => {
-        const assetId = $(e.currentTarget).data('asset') ?? ''
-        const assetName = $(e.currentTarget).data('name') ?? '?'
-        const decimals = $(e.currentTarget).data('decimals') ?? ''
-        const $formGroup = $(e.currentTarget).closest('.row')
-        populateAssetSelector(assetId, assetName, decimals, $formGroup)
     })
 
     // from brs.transactions.js
