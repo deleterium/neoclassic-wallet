@@ -2,13 +2,11 @@ import { BRS } from '..'
 
 import { reloadCurrentPage } from './navigation'
 
-import { autoSelectServer, getState } from './lockscreen'
+import { autoSelectServer, getState, showLoginOrWelcomeScreen, showLoginScreen } from './lockscreen'
 
 import { updateSettings } from '../pages/settings'
 
 import {
-    showLoginOrWelcomeScreen,
-    showLoginScreen,
     registerUserDefinedAccount,
     registerAccount,
     verifyGeneratedPassphrase,
@@ -92,26 +90,6 @@ export function addEventListeners() {
             updateSettings('automatic_node_selection', false)
             getState()
         }
-    })
-    $('span.node_selector button').on('click', function () {
-        const $list = $(this).parent().find('ul')
-        $list.empty()
-        if (BRS.settings.automatic_node_selection) {
-            $list.append("<li class='divider'></li>")
-            return
-        }
-        for (const server of BRS.nodes.filter((obj) => obj.testnet === false)) {
-            $list.append("<li><a class='dropdown-item' href='#' data-server='" + server.address + "'>" + server.address + '</a></li>')
-        }
-        $list.append("<li><hr class='dropdown-divider'></li>")
-        for (const server of BRS.nodes.filter((obj) => obj.testnet === true)) {
-            $list.append("<li><a class='dropdown-item' href='#' data-server='" + server.address + "'>" + server.address + '</a></li>')
-        }
-    })
-    $('span.node_selector').on('click', 'ul li a', function (e) {
-        e.preventDefault()
-        $(this).closest('div').find('input[name=prefered_node]').val('')
-        $(this).closest('div').find('input[name=prefered_node]').val($(this).data('server')).trigger('blur')
     })
     $('#start_settings_language').on('change', function (e) {
         e.preventDefault()

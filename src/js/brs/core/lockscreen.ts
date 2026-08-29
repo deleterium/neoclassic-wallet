@@ -4,8 +4,7 @@ import { loadClosedGroupsFromDB, loadAssetsFromDB } from '../tools/assets'
 import { loadContactsFromDB } from '../tools/contacts'
 import { loadSettingsFromDB } from '../pages/settings'
 import { createDatabase } from './database'
-import { showLockscreen } from './login'
-import { automaticallyCheckRecipient } from './recipient'
+import { automaticallyCheckRecipient, populateRecipientSelector } from './recipient'
 import { sendRequest } from './send_request'
 import { notify } from './notifications'
 
@@ -154,4 +153,60 @@ function loadAllDBValues() {
     loadClosedGroupsFromDB()
     loadAssetsFromDB()
     loadSettingsFromDB()
+}
+
+function showLockscreen() {
+    showLoginOrWelcomeScreen()
+
+    $('#lockscreen_loading').hide()
+    $('#lockscreen_content').show()
+
+    populateRecipientSelector($('#login_panel'))
+    populateNodeSelector($('.node_selector'))
+}
+
+function populateNodeSelector($target: JQuery<HTMLElement>) {
+    const $list = $target.find('ul')
+    $list.empty()
+    if (BRS.settings.automatic_node_selection) {
+        $list.append("<li class='divider'></li>")
+        return
+    }
+    for (const server of BRS.nodes.filter((obj) => obj.testnet === false)) {
+        $list.append("<li><a class='dropdown-item' href='#' data-server='" + server.address + "'>" + server.address + '</a></li>')
+    }
+    $list.append("<li><hr class='dropdown-divider'></li>")
+    for (const server of BRS.nodes.filter((obj) => obj.testnet === true)) {
+        $list.append("<li><a class='dropdown-item' href='#' data-server='" + server.address + "'>" + server.address + '</a></li>')
+    }
+    $list.on('click', 'li a', function (e) {
+        e.preventDefault()
+        $(this).closest('div').find('input[name=prefered_node]').val($(this).data('server')).trigger('blur')
+    })
+}
+
+export function showLoginOrWelcomeScreen() {
+    if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
+        showLoginScreen()
+    } else {
+        showWelcomeScreen()
+    }
+}
+
+export function showLoginScreen() {
+    $('#account_phrase_custom_panel, #account_phrase_generator_panel, #welcome_panel, #custom_passphrase_link').hide()
+    $('#account_phrase_custom_panel :input:not(:button):not([type=submit])').val('')
+    $('#account_phrase_generator_panel :input:not(:button):not([type=submit])').val('')
+    $('#login_panel').show()
+
+    setTimeout(function () {
+        $('#login_password').trigger('focus')
+    }, 10)
+}
+
+function showWelcomeScreen() {
+    $(
+        '#login_panel, account_phrase_custom_panel, #account_phrase_generator_panel, #account_phrase_custom_panel, #welcome_panel, #custom_passphrase_link',
+    ).hide()
+    $('#welcome_panel').show()
 }

@@ -23,33 +23,6 @@ import PassPhraseGenerator from './passphrase_generator'
 import { GetAccountResponse, GetTLDsResponse } from '../typings'
 import { convertSecondsToDuration } from './numbers'
 import { notify } from './notifications'
-import { populateRecipientSelector } from './recipient'
-
-export function showLoginOrWelcomeScreen() {
-    if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
-        showLoginScreen()
-    } else {
-        showWelcomeScreen()
-    }
-}
-
-export function showLoginScreen() {
-    $('#account_phrase_custom_panel, #account_phrase_generator_panel, #welcome_panel, #custom_passphrase_link').hide()
-    $('#account_phrase_custom_panel :input:not(:button):not([type=submit])').val('')
-    $('#account_phrase_generator_panel :input:not(:button):not([type=submit])').val('')
-    $('#login_panel').show()
-
-    setTimeout(function () {
-        $('#login_password').focus()
-    }, 10)
-}
-
-function showWelcomeScreen() {
-    $(
-        '#login_panel, account_phrase_custom_panel, #account_phrase_generator_panel, #account_phrase_custom_panel, #welcome_panel, #custom_passphrase_link',
-    ).hide()
-    $('#welcome_panel').show()
-}
 
 export function registerUserDefinedAccount() {
     $('#account_phrase_generator_panel, #login_panel, #welcome_panel, #custom_passphrase_link').hide()
@@ -264,21 +237,6 @@ export function evLoginButtonClick(e?: JQuery.ClickEvent) {
     }
     const account = $('#login_account').val() as string
     loginWithAccount(account)
-}
-
-export function showLockscreen() {
-    if (BRS.hasLocalStorage && localStorage.getItem('logged_in')) {
-        setTimeout(function () {
-            $('#login_password').trigger('focus')
-        }, 10)
-    } else {
-        showWelcomeScreen()
-    }
-
-    $('#lockscreen_loading').hide()
-    $('#lockscreen_content').show()
-
-    populateRecipientSelector($('#login_panel'))
 }
 
 function unlock() {
