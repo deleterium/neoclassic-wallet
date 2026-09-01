@@ -493,6 +493,7 @@ export function populateAssetSelector($target: JQuery<HTMLElement>) {
         }
         $list.html(listContent)
         $list.on('click', 'li a', (e) => {
+            e.preventDefault()
             const assetId = $(e.currentTarget).data('asset') ?? ''
             const assetName = $(e.currentTarget).data('name') ?? '?'
             const decimals = $(e.currentTarget).data('decimals') ?? ''
