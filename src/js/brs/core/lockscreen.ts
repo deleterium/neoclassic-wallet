@@ -141,6 +141,7 @@ export function init(): void {
         } else {
             // use user saved choice
             getState()
+            BRS.stateInterval = setInterval(getState, 10000)
         }
         showLockscreen()
     }, 250)

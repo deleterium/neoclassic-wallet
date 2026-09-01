@@ -85,6 +85,12 @@ export async function loginCommon() {
     }
     $('[data-value-suffix]').text(BRS.valueSuffix)
 
+    // clear the getState loop from lockscreen
+    if (BRS.stateInterval) {
+        clearInterval(BRS.stateInterval)
+        BRS.stateInterval = null
+    }
+
     await getAndUpdateAccountDetails(true)
 
     // Prepare tld's translation structure (case loading my_aliases from hash on start)
