@@ -481,6 +481,11 @@ async function processTransactionModalData(transaction: Transaction) {
                 }
                 data.assets_transferred_formatted_html = helperStr
                 break
+            case 10:
+                assetDetails = await getAssetDetails(fullHashToId(transaction.referencedTransactionFullHash as string))
+                if (!assetDetails) return
+                data.asset_name_formatted_html = getAssetLink(assetDetails)
+                break
         }
     }
 

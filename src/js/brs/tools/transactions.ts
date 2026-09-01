@@ -206,6 +206,9 @@ export function getTransactionDetails(transaction: Transaction, viewingAccount: 
                     }
                     hasAssets = true
                     break
+                case 10:
+                    nameOfTransaction = $.t('asset_transfer_ownership')
+                    break
             }
             break
         case 3:
