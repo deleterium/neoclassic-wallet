@@ -123,6 +123,9 @@ export function evModalOnHiddenBsModal(event: JQuery.TriggeredEvent) {
         }
     })
 
+    // needed in distribute_to_holders
+    $modal.find('span[name=available]').empty()
+
     // Hidden form field
     $modal.find('input[name=converted_account_id]').val('')
 
