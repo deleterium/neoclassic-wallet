@@ -36,6 +36,7 @@ import { formsSendMoneyMulti } from '../modals/sendmoney'
 import { formsSignModalButtonClicked, formsSignMessage, formsVerifyMessage } from '../modals/sign_message'
 import { formsAddAssetBookmark } from '../pages/assets.asset_exchange'
 import { formsSendMoneyEscrow } from '../pages/payments.escrow'
+import { formsSendMoneySubscription } from '../modals/subscription'
 
 /**
  * There are the 'requestType' in forms that will check if node is in sync before proceed.
@@ -324,6 +325,7 @@ const formFunctions = {
     sellAlias: formsSellAlias,
     sendMoneyEscrow: formsSendMoneyEscrow,
     sendMoneyMulti: formsSendMoneyMulti,
+    sendMoneySubscription: formsSendMoneySubscription,
     setAccountInfoComplete: formsSetAccountInfoComplete,
     setAlias: formsSetAlias,
     setAliasError: formsSetAliasError,

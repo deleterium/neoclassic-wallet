@@ -29,6 +29,7 @@ import { incomingLatestBlocks } from '../pages/blockchain.latest_blocks'
 import { incomingPeers } from '../pages/peers'
 import { incomingTransactions } from '../pages/transactions'
 import { incomingAssetAdministration } from '../pages/assets.asset_administration'
+import { incomingSubscription } from '../pages/payments.subscription'
 
 export function setCheckIncomingInterval(seconds: number): void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
@@ -221,6 +222,7 @@ const incomingFunctions = {
     my_assets: incomingMyAssets,
     open_orders: incomingOpenOrders,
     peers: incomingPeers,
+    subscription: incomingSubscription,
     transactions: incomingTransactions,
     transfer_history: incomingTransferHistory,
 }

@@ -2,7 +2,7 @@ import { BRS } from '..'
 
 import { sendRequest } from '../core/send_request'
 
-import { formatNQTAsAmount, formatTimestampAsDateTime } from '../core/numbers'
+import { formatNQTAsAmount, formatTimestampAsDateTime, parseAmountToNumber } from '../core/numbers'
 
 import { Subscription, GetSubscriptionResponse } from '../typings'
 import { notify } from '../core/notifications'
@@ -38,4 +38,28 @@ function subscriptionCancelDataReady(subscription: Subscription) {
     $('#subscription_cancel_time_next').text(formatTimestampAsDateTime(subscription.timeNext))
 
     showModal('subscription_cancel')
+}
+
+export function formsSendMoneySubscription(data: any) {
+    // Calculate frequency in seconds from the inputs
+    let totalSeconds = 0
+    try {
+        totalSeconds += parseAmountToNumber(data.frequencySeconds)
+        totalSeconds += 60 * parseAmountToNumber(data.frequencyMinutes)
+        totalSeconds += 60 * 60 * parseAmountToNumber(data.frequencyHours)
+        totalSeconds += 24 * 60 * 60 * parseAmountToNumber(data.frequencyDays)
+    } catch {
+        return {
+            error: $.t('invalid_frequency_number'),
+        }
+    }
+    delete data.frequencySeconds
+    delete data.frequencyMinutes
+    delete data.frequencyHours
+    delete data.frequencyDays
+    data.frequency = totalSeconds
+
+    return {
+        data,
+    }
 }
