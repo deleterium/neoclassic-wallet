@@ -20,7 +20,7 @@ export function lockModal($modal: JQuery<HTMLElement>, $btn: JQuery<HTMLButtonEl
  * @param {JQuery<HTMLButtonElement>} $btn - The jQuery object representing the button that triggered the action (optional)
  * @param {boolean} hide - Whether to hide the modal after unlocking (default false)
  */
-export function unlockModal($modal: JQuery<HTMLElement>, $btn: JQuery<HTMLButtonElement>, hide: boolean) {
+export function unlockModal($modal: JQuery<HTMLElement>, $btn: JQuery<HTMLButtonElement>, hide: boolean | undefined) {
     $modal.find('button').prop('disabled', false)
     if ($btn) {
         $btn.localize()

@@ -87,14 +87,6 @@ function getSuccessMessage(requestType: RequestType) {
     return ''
 }
 
-function getErrorMessage(requestType: RequestType) {
-    const key = 'error_' + requestType
-    if ($.i18n.exists(key)) {
-        return $.t(key, { valueSuffix: BRS.valueSuffix })
-    }
-    return ''
-}
-
 async function addMessageData(data: any, requestType: string) {
     if (requestType === 'sendMessage') {
         data.add_message = true
@@ -344,7 +336,6 @@ const formFunctions = {
  *  Specific modals are coded in `formFunctions` and form data is passed as parameter.
  */
 export async function submitForm($btn: JQuery<HTMLButtonElement>) {
-    let formFunctionError: ((response: any, arg1: any) => void) | false
     let $form: JQuery<HTMLFormElement>
     let data: any
     const $modal = $btn.closest('.modal')
@@ -381,16 +372,20 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
     }
 
     let successMessage = getSuccessMessage(requestType)
-    let errorMessage = getErrorMessage(requestType)
 
-    const formFunction = formFunctions[requestType]
-    formFunctionError = formFunctions[requestType + 'Error']
-
-    if (typeof formFunctionError !== 'function') {
-        formFunctionError = false
+    type formFunctionReturnObject = {
+        error?: string
+        requestType?: string
+        data?: any
+        successMessage?: string
+        stop?: boolean
+        hide?: boolean
     }
 
-    const originalRequestType = requestType
+    const formFunction: undefined | ((data: any) => formFunctionReturnObject) | ((data: any) => Promise<formFunctionReturnObject>) =
+        formFunctions[requestType]
+    const formFunctionError: undefined | ((response: any, arg1: any) => void) = formFunctions[requestType + 'Error']
+    const formFunctionComplete: undefined | ((response: any, data: any) => void) = formFunctions[requestType + 'Complete']
 
     const checkSync: boolean | undefined = submitOnlyWhenInSync[requestType]
     if (checkSync === undefined) {
@@ -428,11 +423,8 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
         if (output.data) {
             data = output.data
         }
-        if ('successMessage' in output) {
+        if (output.successMessage !== undefined) {
             successMessage = output.successMessage
-        }
-        if ('errorMessage' in output) {
-            errorMessage = output.errorMessage
         }
         if (output.stop) {
             unlockModal($modal, $btn, output.hide)
@@ -521,9 +513,11 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
 
     const response: PostResponse = await sendRequest(requestType, data)
 
-    let formFunctionComplete: undefined | ((response: any, data: any) => void)
     if (isErrorResponse(response)) {
-        $form.find('.error_message').text(response.errorDescription).show()
+        $form
+            .find('.error_message')
+            .text(response.errorDescription || $.t('error_unknown'))
+            .show()
         if (formFunctionError) {
             formFunctionError(response, data)
         }
@@ -539,10 +533,8 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
         }
 
         if (successMessage) {
-            notify(successMessage.escapeHTML(), { type: 'success' })
+            notify(successMessage, { type: 'success' })
         }
-
-        formFunctionComplete = formFunctions[originalRequestType + 'Complete']
 
         if (typeof formFunctionComplete === 'function' && response.broadcasted) {
             data.requestType = requestType
@@ -555,33 +547,21 @@ export async function submitForm($btn: JQuery<HTMLButtonElement>) {
         if (BRS.accountInfo && !BRS.accountInfo.publicKey) {
             $('#dashboard_message').hide()
         }
-    } else {
-        // no errorCode but response was not signed. Is this part executed?
-        let sentToFunction = false
-
-        if (!errorMessage) {
-            formFunctionComplete = formFunctions[originalRequestType + 'Complete']
-
-            if (typeof formFunctionComplete === 'function') {
-                sentToFunction = true
-                data.requestType = requestType
-
-                unlockModal($modal, $btn, false)
-
-                if (!$modal.hasClass('modal-no-hide')) {
-                    $modal.modal('hide')
-                }
-                formFunctionComplete(response, data)
-            } else {
-                errorMessage = $.t('error_unknown')
-            }
+        return
+    }
+    // No errorCode and response was not signed. Executed if user don't want to broadcast a transaction. Maybe in other forms?
+    if (typeof formFunctionComplete === 'function') {
+        data.requestType = requestType
+        unlockModal($modal, $btn, false)
+        if (!$modal.hasClass('modal-no-hide')) {
+            $modal.modal('hide')
         }
-
-        if (!sentToFunction) {
-            unlockModal($modal, $btn, true)
-
-            notify(errorMessage.escapeHTML(), { type: 'danger' })
-        }
+        formFunctionComplete(response, data)
+        return
+    }
+    unlockModal($modal, $btn, true)
+    if (response.broadcasted !== false) {
+        notify($.t('error_unknown'), { type: 'danger' })
     }
 }
 

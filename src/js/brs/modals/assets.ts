@@ -454,7 +454,6 @@ export function formsOrderAsset(data: any) {
     return {
         requestType,
         successMessage: requestType === 'placeBidOrder' ? $.t('success_buyOrderAsset') : $.t('success_sellOrderAsset'),
-        errorMessage: $.t('error_orderAsset'),
     }
 }
 

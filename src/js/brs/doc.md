@@ -106,8 +106,6 @@ If present, override the data created with the form fields.
 Must be used if you need to add or delete properties to the data to be submitted.
 * `successMessage?: string`
 Custom message to be presented after data submitted successfull
-* `errorMessage?: string`
-Custom message to be presented if data submitted had an error
 * `stop?: boolean`
 Set to `true` to stop propagation.
 * `hide?: boolan`
