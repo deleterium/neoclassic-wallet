@@ -52,7 +52,7 @@ export function formsSendMoneyEscrow(data: any) {
         totalSeconds += 24 * 60 * 60 * parseAmountToNumber(data.deadlineDays)
     } catch {
         return {
-            error: $.t('invalid_deadline_number'),
+            error: $.t('error_invalid_field', { field: $.t('deadline') }),
         }
     }
     delete data.deadlineSeconds
