@@ -30,6 +30,7 @@ import { incomingPeers } from '../pages/peers'
 import { incomingTransactions } from '../pages/transactions'
 import { incomingAssetAdministration } from '../pages/assets.asset_administration'
 import { incomingSubscription } from '../pages/payments.subscription'
+import { incomingEscrow } from '../pages/payments.escrow'
 
 export function setCheckIncomingInterval(seconds: number): void {
     if (seconds === BRS.stateIntervalSeconds && BRS.stateInterval) {
@@ -217,6 +218,7 @@ const incomingFunctions = {
     aliases: incomingAliases,
     asset_exchange: incomingAssetExchange,
     block_info: incomingBlockInfo,
+    escrow: incomingEscrow,
     latest_blocks: incomingLatestBlocks,
     asset_administration: incomingAssetAdministration,
     my_assets: incomingMyAssets,

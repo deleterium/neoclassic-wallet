@@ -4,35 +4,73 @@ import { sendRequest } from '../core/send_request'
 
 import { formatNQTAsAmount, parseAmountToNumber } from '../core/numbers'
 
-import { dataLoaded, getAccountTitleFromObject } from '../core/util'
+import { convertNumericToRSAccountFormat, dataLoaded, getAccountTitleFromObject, getUnconfirmedTransactionsFromCache } from '../core/util'
 
-import { GetAccountEscrowTransactionsResponse } from '../typings'
+import { Escrow, GetAccountEscrowTransactionsResponse } from '../typings'
 
 import { recipientToId } from '../modals/sendmoney'
+import { reloadCurrentPage } from '../core/navigation'
 
 // Current page is 'escrow'
-// Do not handle unconfirmed neither new blocks nor transactions.
+// Processing unconfirmed!
 
 export async function pagesEscrow() {
     const response: GetAccountEscrowTransactionsResponse = await sendRequest('getAccountEscrowTransactions', {
         account: BRS.account,
     })
 
-    if (!response.escrows || response.escrows.length === 0) {
+    const unconfirmedTX = getUnconfirmedTransactionsFromCache(21, 0) ?? []
+    const unconfEscrows: Escrow[] = unconfirmedTX.map((tx) => {
+        return {
+            id: '0',
+            sender: tx.sender,
+            senderRS: tx.senderRS,
+            recipient: tx.recipient as string,
+            recipientRS: tx.recipientRS as string,
+            amountNQT: tx.attachment.amountNQT,
+            requiredSigners: tx.attachment.requiredSigners,
+            deadline: tx.attachment.deadline,
+            deadlineAction: tx.attachment.deadlineAction,
+            signers: tx.attachment.signers.map((id: string) => {
+                return {
+                    decision: 'undecided',
+                    id,
+                    idRS: convertNumericToRSAccountFormat(id),
+                }
+            }),
+        }
+    })
+
+    const escrows = unconfEscrows.concat(response.escrows)
+
+    if (escrows.length === 0) {
         dataLoaded()
         return
     }
     let rows = ''
-    for (const escrow of response.escrows) {
+    for (const escrow of escrows) {
+        let idHTML = `<a href='#modal=escrow_decision&escrow=${escrow.id}'>${escrow.id}</a>`
+        if (escrow.id === '0') idHTML = BRS.pendingTransactionHTML
         rows += `
             <tr>
-              <td><a href='#modal=escrow_decision&escrow=${escrow.id}'>${escrow.id}</a></td>
+              <td>${idHTML}</td>
               <td>${getAccountTitleFromObject(escrow, 'sender')}</td>
               <td>${getAccountTitleFromObject(escrow, 'recipient')}</td>
               <td>`
         for (let i = 0; i < escrow.signers.length; i++) {
             if (i !== 0) rows += '<br>'
             rows += getAccountTitleFromObject(escrow.signers[i], 'id')
+            rows += ' - '
+
+            const unconfirmedSignature = getUnconfirmedTransactionsFromCache(21, 1, {
+                sender: escrow.signers[i].id,
+                attachment: { escrowId: escrow.id },
+            })
+            if (unconfirmedSignature) {
+                rows += $.t(unconfirmedSignature[0].attachment.decision) + ' ' + BRS.pendingTransactionHTML
+            } else {
+                rows += $.t(escrow.signers[i].decision)
+            }
         }
         rows += `
               </td>
@@ -40,6 +78,12 @@ export async function pagesEscrow() {
             </tr>`
     }
     dataLoaded(rows)
+}
+
+export function incomingEscrow() {
+    if (BRS.checkIncoming.newBlock || BRS.checkIncoming.unconfirmedChanged) {
+        reloadCurrentPage()
+    }
 }
 
 export function formsSendMoneyEscrow(data: any) {
