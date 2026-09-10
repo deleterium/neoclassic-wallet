@@ -287,6 +287,21 @@ export function formatStyledAmount(amount: string) {
 
 // region unconfirmed
 
+/**
+ * Search unconfirmed transactions in cache (to or from the user) for some transaction type and properties.
+ * @param type Transaction type
+ * @param subtype transaction subtype
+ * @param fields Object with the properties to match. All given items must match.
+ * @returns The unconfirmed transaction, or undefined if none matches.
+ *
+ * Note: only works up to two levels of properties, ex: `
+ * {
+ *   sender: '1234',
+ *   attachment: {
+ *       amountNQT: '1234',
+ *   }
+ * }
+ */
 export function getUnconfirmedTransactionsFromCache(type: number, subtype: number, fields?: any) {
     if (!BRS.unconfirmedTransactions.length) {
         return
@@ -299,21 +314,24 @@ export function getUnconfirmedTransactionsFromCache(type: number, subtype: numbe
             continue
         }
 
-        if (fields) {
-            for (const key in fields) {
-                if (typeof fields[key] === 'object' && typeof unconfirmedTransaction[key] === 'object') {
-                    for (const subkey in fields[key]) {
-                        if (unconfirmedTransaction[key][subkey] === fields[key][subkey]) {
-                            unconfirmedTransactions.push(unconfirmedTransaction)
-                        }
+        let total = 0
+        let matched = 0
+        for (const key in fields) {
+            if (typeof fields[key] === 'object' && typeof unconfirmedTransaction[key] === 'object') {
+                for (const subkey in fields[key]) {
+                    total++
+                    if (unconfirmedTransaction[key][subkey] === fields[key][subkey]) {
+                        matched++
                     }
-                    continue
                 }
-                if (unconfirmedTransaction[key] === fields[key]) {
-                    unconfirmedTransactions.push(unconfirmedTransaction)
-                }
+                continue
             }
-        } else {
+            total++
+            if (unconfirmedTransaction[key] === fields[key]) {
+                matched++
+            }
+        }
+        if (total === matched) {
             unconfirmedTransactions.push(unconfirmedTransaction)
         }
     }
