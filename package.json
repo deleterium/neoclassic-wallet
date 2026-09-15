@@ -1,6 +1,6 @@
 {
   "name": "neoclassic-wallet",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Wallet for Signum cryptocurrency. Based on Signum Classic Wallet, adding better dependencies handling and refactoring a lot of code!",
   "main": "src/index.html",
   "scripts": {
@@ -8,7 +8,7 @@
     "lint": "npx eslint ./src --fix && npx prettier './src/html/**/*' -w",
     "dev": "node buildIndexHtml.js && ./cpdev.sh && node esbuild.config.js && npm run start",
     "build": "./cpbuild.sh && node buildIndexHtml.js && node esbuild.config.js",
-    "lang": "pushd ./lang && node updateFiles.js && popd",
+    "lang": "cd lang && node updateFiles.js && cd ..",
     "start": "python3 -m http.server -d dist 1221",
     "release": "npm run build && npm run lang"
   },

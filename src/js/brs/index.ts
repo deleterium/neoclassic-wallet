@@ -29,7 +29,7 @@ import {
 import { RequestController } from './core/request_controller'
 
 export const BRS = {
-    version: '1.0.0',
+    version: '1.1.0',
     server: '',
     blockchainStatus: undefined as undefined | BlockchainStatus,
     blocks: [] as GetBlockResponse[],
