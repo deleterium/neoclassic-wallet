@@ -123,15 +123,12 @@ export const BRS = {
     nodes: [
         // First must be localhost mainnet!
         { address: 'http://localhost:8125', testnet: false },
-        { address: 'https://latam.signum.network', testnet: false },
         { address: 'https://us-east.signum.network', testnet: false },
-        { address: 'https://singapore.signum.network', testnet: false },
         { address: 'https://australia.signum.network', testnet: false },
         { address: 'https://europe.signum.network', testnet: false },
         { address: 'https://brazil.signum.network', testnet: false },
-        { address: 'https://europe1.signum.network', testnet: false },
+        { address: 'https://europe3.signum.network', testnet: false },
         { address: 'https://ru.signum.network', testnet: false },
-        { address: 'https://canada.signum.network', testnet: false },
         { address: 'https://europe3.testnet.signum.network', testnet: true },
         { address: 'http://localhost:6876', testnet: true },
     ],
